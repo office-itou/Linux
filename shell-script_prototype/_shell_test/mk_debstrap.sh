@@ -85,19 +85,21 @@ set -eu
 					locales-all \
 					lsb-release \
 					man \
+					network-manager \
 					openssh-server \
 					polkitd \
 					rsync \
 					shellcheck \
 					sudo \
 					systemd \
+					systemd-resolved \
 					traceroute \
 					tree \
 					vim \
 					wget \
 				" \
 				--components="main contrib non-free non-free-firmware" \
-				--customize-hook='rm "$1"/etc/hostname' \
+				--customize-hook='rm -f "$1"/etc/hostname' \
 				"${_LIST_TGET[2]}" \
 				"/srv/user/share/chroot/${_LIST_TGET[1]}"
 			;;
@@ -143,13 +145,14 @@ set -eu
 					shellcheck \
 					sudo \
 					systemd \
+					systemd-resolved \
 					traceroute \
 					tree \
 					vim \
 					wget \
 				" \
 				--components="main multiverse restricted universe" \
-				--customize-hook='rm "$1"/etc/hostname' \
+				--customize-hook='rm -f "$1"/etc/hostname' \
 				"${_LIST_TGET[2]}" \
 				"/srv/user/share/chroot/${_LIST_TGET[1]}"
 			;;

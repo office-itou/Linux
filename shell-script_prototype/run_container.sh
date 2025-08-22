@@ -277,6 +277,9 @@ function fnSetup_avahi() {
 # shellcheck disable=SC2317,SC2329
 function fnSetup_loop() {
 	declare       FILE_PATH=""
+	if ! lsmod | grep -qE '^loop[ \t]+'; then
+		modprobe loop
+	fi
 	# [ loop device: shell ]
 	FILE_PATH="${DIRS_OLAY}/merged/usr/local/bin/loop.sh"
 	if [[ ! -e "${FILE_PATH}" ]]; then
@@ -518,6 +521,11 @@ function fnSetup_user() {
 	OPTN_PARM+=("--bind=${DIRS_TOPS}:${DIRS_TOPS}:norbind")
 	OPTN_PARM+=("--bind=${DIRS_HGFS}:${DIRS_HGFS}:norbind")
 	OPTN_PARM+=("--bind=/home:/home:norbind")
+#	OPTN_PARM+=("--bind=/dev:/dev:norbind")
+#	OPTN_PARM+=("--bind=/proc:/proc:norbind")
+#	OPTN_PARM+=("--bind=/sys:/sys:norbind")
+#	OPTN_PARM+=("--bind=/run:/run:norbind")
+#	OPTN_PARM+=("--bind=/tmp:/tmp")
 #	if [[ -f /run/systemd/resolve/stub-resolv.conf ]]; then
 #		OPTN_PARM+=("--resolv-conf=copy-uplink")
 #	fi
@@ -526,7 +534,7 @@ function fnSetup_user() {
 	fi
 
 	# --- exec ----------------------------------------------------------------
-#	mount -t proc /proc/         "${DIRS_OLAY}/merged/proc/"												
+#	mount -t proc /proc/         "${DIRS_OLAY}/merged/proc/"
 #	mount --rbind /sys/          "${DIRS_OLAY}/merged/sys/"  && mount --make-rslave "${DIRS_OLAY}/merged/sys/"
 #	DBGS_OUTS="SYSTEMD_LOG_LEVEL=debug"
 	${DBGS_OUTS:-} systemd-nspawn --boot -U \

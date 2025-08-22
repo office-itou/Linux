@@ -40,7 +40,7 @@
 	IPV6_LHST="::1"						# ipv6 local host address
 	IPV4_LHST="127.0.0.1"				# ipv4 local host address
 	IPV4_DUMY="127.0.1.1"				# ipv4 dummy address
-	OLDS_FQDN="$(cat /etc/hostname)"	# old hostname (fqdn)
+	OLDS_FQDN="$(cat /etc/hostname || true)"				# old hostname (fqdn)
 	OLDS_HOST="$(echo "${OLDS_FQDN}." | cut -d '.' -f 1)"	# old hostname (host name)
 	OLDS_WGRP="$(echo "${OLDS_FQDN}." | cut -d '.' -f 2)"	# old hostname (domain)
 	# --- firewalld -----------------------------------------------------------
@@ -121,7 +121,7 @@
 	readonly SAMB_USER="sambauser"							# force user
 	readonly SAMB_GRUP="sambashare"							# force group
 	readonly SAMB_GADM="sambaadmin"							# admin group
-	LGIN_SHEL="$(command -v nologin)"						# login shell (disallow system login to samba user)
+	LGIN_SHEL="$(command -v nologin || true)"				# login shell (disallow system login to samba user)
 	readonly LGIN_SHEL
 	# --- directory parameter -------------------------------------------------
 	readonly DIRS_SRVR="${DIRS_TGET:-}/srv"					# root of shared directory
@@ -559,8 +559,8 @@ funcInitialize() {
 #		NICS_IPV4=""
 #	fi
 	NICS_IPV4="${NICS_IPV4:-"${IPV4_DUMY}"}"
-	NICS_GATE="${NICS_GATE:-"$(ip -4 -brief route list match default | awk '{print $3;}')"}"
-	NICS_FQDN="${NICS_FQDN:-"$(cat "${DIRS_TGET:-}/etc/hostname")"}"
+	NICS_GATE="${NICS_GATE:-"$(ip -4 -brief route list match default | awk '{print $3;}' | uniq)"}"
+	NICS_FQDN="${NICS_FQDN:-"$(cat "${DIRS_TGET:-}/etc/hostname" || true)"}"
 	NICS_HOST="${NICS_HOST:-"$(echo "${NICS_FQDN}." | cut -d '.' -f 1)"}"
 	NICS_WGRP="${NICS_WGRP:-"$(echo "${NICS_FQDN}." | cut -d '.' -f 2)"}"
 	if command -v resolvectl > /dev/null 2>&1; then
@@ -577,7 +577,7 @@ funcInitialize() {
 	fi
 	NICS_HOST="$(echo "${NICS_HOST}" | tr '[:upper:]' '[:lower:]')"
 	NICS_WGRP="$(echo "${NICS_WGRP}" | tr '[:upper:]' '[:lower:]')"
-	if [ "${NICS_FQDN}" = "${NICS_HOST}" ] && [ -n "${NICS_WGRP}" ]; then
+	if [ "${NICS_FQDN}" = "${NICS_HOST}" ] && [ -n "${NICS_HOST}" ] && [ -n "${NICS_WGRP}" ]; then
 		NICS_FQDN="${NICS_HOST}.${NICS_WGRP}"
 	fi
 	IPV6_ADDR="$(ip -6 -brief address show primary dev "${NICS_NAME}" | awk '$1!="lo" {print $3;}')"
@@ -602,15 +602,15 @@ funcInitialize() {
 	IPV4_LADR="${NICS_IPV4##*.}"
 	IPV6_CIDR="${IPV6_ADDR#*/}"
 	IPV6_ADDR="${IPV6_ADDR%%/*}"
-	IPV6_FADR="$(funcIPv6GetFullAddr "${IPV6_ADDR}")"
-	IPV6_UADR="$(echo "${IPV6_FADR}" | cut -d ':' -f 1-4 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
-	IPV6_LADR="$(echo "${IPV6_FADR}" | cut -d ':' -f 5-8 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
+	[ -n "${IPV6_ADDR}" ] && IPV6_FADR="$(funcIPv6GetFullAddr "${IPV6_ADDR}")"
+	IPV6_UADR="$(echo "${IPV6_FADR:-}" | cut -d ':' -f 1-4 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
+	IPV6_LADR="$(echo "${IPV6_FADR:-}" | cut -d ':' -f 5-8 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
 	IPV6_RADR=""
 	LINK_CIDR="${LINK_ADDR#*/}"
 	LINK_ADDR="${LINK_ADDR%%/*}"
-	LINK_FADR="$(funcIPv6GetFullAddr "${LINK_ADDR}")"
-	LINK_UADR="$(echo "${LINK_FADR}" | cut -d ':' -f 1-4 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
-	LINK_LADR="$(echo "${LINK_FADR}" | cut -d ':' -f 5-8 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
+	[ -n "${LINK_ADDR}" ] && LINK_FADR="$(funcIPv6GetFullAddr "${LINK_ADDR}")"
+	LINK_UADR="$(echo "${LINK_FADR:-}" | cut -d ':' -f 1-4 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
+	LINK_LADR="$(echo "${LINK_FADR:-}" | cut -d ':' -f 5-8 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
 	LINK_RADR=""
 
 	# --- complete ------------------------------------------------------------
@@ -1360,6 +1360,10 @@ funcSetupNetwork_hostname() {
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
 
 	# --- hostname ------------------------------------------------------------
+	if [ -z "${NICS_FQDN:-}" ]; then
+		printf "\033[m${PROG_NAME}: \033[43m%s\033[m\n" "skip setup hostname"
+		return
+	fi
 	_FILE_PATH="${DIRS_TGET:-}/etc/hostname"
 	funcFile_backup "${_FILE_PATH}"
 	mkdir -p "${_FILE_PATH%/*}"

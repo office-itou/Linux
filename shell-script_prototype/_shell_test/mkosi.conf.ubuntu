@@ -1,0 +1,97 @@
+#[Match]
+#Distribution=ubuntu
+
+[Distribution]
+Distribution=ubuntu
+Release=plucky
+Repositories=main restricted universe multiverse
+
+[Output]
+Bootable=no
+Format=directory
+OutputDirectory=.
+PackageCacheDirectory=.
+
+[Content]
+RootPassword=r00t
+
+[Validation]
+
+[Content]
+WithRecommends=no
+Packages=
+  live-boot
+  live-config
+  live-tools
+  linux-headers-generic
+  linux-image-generic
+  dosfstools
+  grub-common
+  grub-efi-amd64-bin
+  apparmor
+  apparmor-utils
+  sudo
+  firewalld
+  traceroute
+  network-manager
+  bash-completion
+  build-essential
+  curl
+  vim
+  bc
+  tree
+  shellcheck
+  tasksel
+  snapd
+  clamav
+  openssh-server
+  systemd-resolved
+  dnsmasq
+  bind9-dnsutils
+  apache2
+  samba
+  smbclient
+  cifs-utils
+  libnss-winbind
+  open-vm-tools
+  open-vm-tools-desktop
+  ubuntu-desktop
+  ubuntu-desktop-minimal
+  ubuntu-gnome-desktop
+  language-pack-ja
+  language-pack-gnome-ja
+  fonts-noto
+  im-config
+  zenity
+  ibus-mozc
+  fcitx5-mozc
+  mozc-utils-gui
+  gnome-shell-extensions
+  libreoffice-l10n-ja
+  libreoffice-help-ja
+  firefox
+  firefox-locale-ja
+  thunderbird
+  thunderbird-locale-ja
+  chromium-browser
+  chromium-browser-l10n
+  rhythmbox
+  libavcodec-extra
+  gstreamer1.0-libav
+  lsb-release
+  systemd
+  fakechroot
+  iproute2
+  iputils-ping
+  gnupg
+  apt-utils
+  apt-listchanges
+  bash-completion
+  locales-all
+  locales
+  less
+  vim
+  shellcheck
+  file
+  tree
+  man-db
