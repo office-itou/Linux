@@ -525,7 +525,9 @@ funcInitialize() {
 	NTPS_IPV4="${NTPS_IPV4:-"$(dig "${NTPS_ADDR}" | awk '/^ntp.nict.jp./ {print $5;}' | sort -V | head -n 1)"}"
 
 	# --- network information -------------------------------------------------
-	NICS_NAME="$(find /sys/devices/ -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -E "${NICS_NAME}" | sort | head -n 1)"
+	if ! find /sys/devices/ -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -qE '^'"${NICS_NAME}"'$'; then
+		printf "\033[m${PROG_NAME}: \033[41m%s\033[m\n" "not exist: [${NICS_NAME}]"
+	fi
 	NICS_NAME="${NICS_NAME:-"$(ip -0 -brief address show scope global | awk '$1!="lo" {print $1;}')"}"
 	NICS_NAME="${NICS_NAME:-"ens160"}"
 	if [ -z "${IPV4_DHCP:-}" ]; then
@@ -582,6 +584,8 @@ funcInitialize() {
 	fi
 	IPV6_ADDR="$(ip -6 -brief address show primary dev "${NICS_NAME}" | awk '$1!="lo" {print $3;}')"
 	LINK_ADDR="$(ip -6 -brief address show primary dev "${NICS_NAME}" | awk '$1!="lo" {print $4;}')"
+	IPV6_ADDR="${IPV6_ADDR:-"2000::0/3"}"
+	LINK_ADDR="${LINK_ADDR:-"fe80::0/10"}"
 
 	printf "\033[m${PROG_NAME}: %s\033[m\n" "${TEXT_GAP1}"
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "NICS_FQDN" "${NICS_FQDN:-}"
@@ -1667,6 +1671,10 @@ funcSetupNetwork_dnsmasq() {
 
 		# --- eof ---------------------------------------------------------------------
 _EOT_
+	if [ "${IPV4_DHCP:-}" = "true" ]; then
+		sed -i "${_FILE_PATH}"         \
+		    -e '/^interface=/ s/^/#/g'
+	fi
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
