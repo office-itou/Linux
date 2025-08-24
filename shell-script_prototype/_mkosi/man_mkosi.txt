@@ -1,0 +1,385 @@
+usage: 
+  mkosi [options…] summary
+  mkosi [options…] cat-config
+  mkosi [options…] build         [command line…]
+  mkosi [options…] shell         [command line…]
+  mkosi [options…] boot          [nspawn settings…]
+  mkosi [options…] vm            [vmm parameters…]
+  mkosi [options…] ssh           [command line…]
+  mkosi [options…] journalctl    [command line…]
+  mkosi [options…] coredumpctl   [command line…]
+  mkosi [options…] sysupdate     [command line…]
+  mkosi [options…] sandbox       [command line…]
+  mkosi [options…] clean
+  mkosi [options…] serve
+  mkosi [options…] burn          [device]
+  mkosi [options…] bump
+  mkosi [options…] genkey
+  mkosi [options…] documentation [manual]
+  mkosi [options…] completion    [shell]
+  mkosi [options…] dependencies
+  mkosi [options…] help
+  mkosi -h | --help
+  mkosi --version
+
+Build Bespoke OS Images
+
+options:
+  -f, --force           Remove existing image file before operation
+  -C, --directory PATH  Change to specified directory before doing anything
+  --debug               Turn on debugging output
+  --debug-shell         Spawn an interactive shell in the image if a chroot
+                        command fails
+  --debug-workspace     When an error occurs, the workspace directory will not
+                        be deleted
+  --debug-sandbox       Run mkosi-sandbox with strace
+  --no-pager            Enable paging for long output
+  --genkey-valid-days DAYS
+                        Number of days keys should be valid when generating
+                        keys
+  --genkey-common-name CN
+                        Template for the CN when generating keys
+  -B, --auto-bump       Automatically bump image version after building
+  --doc-format {auto,markdown,man,pandoc,system}
+                        The format to show documentation in
+  --json                Show summary as JSON
+  -w, --wipe-build-dir  Remove the build directory before building the image
+
+Include configuration options:
+  -I, --include INCLUDE
+                        Include configuration from the specified file or
+                        directory
+
+Config configuration options:
+  --profile PROFILES    Build the specified profiles
+  --dependency DEPENDENCIES
+                        Specify other images that this image depends on
+  --minimum-version MINIMUM_VERSION
+                        Specify the minimum required mkosi version
+  --configure-script PATH
+                        Configure script to run before doing anything
+  --pass-environment NAME
+                        Environment variables to pass to subimages
+
+Distribution configuration options:
+  -d, --distribution {fedora,debian,kali,ubuntu,arch,opensuse,mageia,centos,rhel,rhel-ubi,openmandriva,rocky,alma,azure,custom,}
+                        Distribution to install
+  -r, --release RELEASE
+                        Distribution release to install
+  --architecture {alpha,arc,arm,arm64,ia64,loongarch64,mips-le,mips64-le,parisc,ppc,ppc64,ppc64-le,riscv32,riscv64,s390,s390x,tilegx,x86,x86-64,}
+                        Override the architecture of installation
+  -m, --mirror MIRROR   Distribution mirror to use
+  --local-mirror LOCAL_MIRROR
+                        Use a single local, flat and plain mirror to build the
+                        image
+  --repository-key-check [BOOL]
+                        Controls signature and key checks on repositories
+  --repository-key-fetch [BOOL]
+                        Controls whether distribution GPG keys can be fetched
+                        remotely
+  --repositories REPOS  Repositories to use
+
+Output configuration options:
+  -t, --format {confext,cpio,directory,disk,esp,none,portable,sysext,tar,uki,oci,addon,}
+                        Output Format
+  --manifest-format FORMAT
+                        Manifest Format
+  -o, --output NAME     Output name
+  --compress-output [ALG]
+                        Enable whole-output compression (with images or
+                        archives)
+  --compress-level LEVEL
+                        Set the compression level to use
+  -O, --output-directory DIR
+                        Output directory
+  --output-mode MODE    Set file system access mode for image
+  --image-version IMAGE_VERSION
+                        Set version for image
+  --image-id IMAGE_ID   Set ID for image
+  --split-artifacts [SPLIT_ARTIFACTS]
+                        Split artifacts out of the final image
+  --repart-directory PATH
+                        Directory containing systemd-repart partition
+                        definitions
+  --sector-size SECTOR_SIZE
+                        Set the disk image sector size
+  --overlay [BOOL]      Only output the additions on top of the given base
+                        trees
+  --seed UUID           Set the seed for systemd-repart
+  --clean-script PATH   Clean script to run after cleanup
+
+Content configuration options:
+  -p, --package PACKAGE
+                        Add an additional package to the OS image
+  --build-package PACKAGE
+                        Additional packages needed for build scripts
+  --volatile-package PACKAGE
+                        Packages to install after executing build scripts
+  --package-directory PATH
+                        Specify a directory containing extra packages
+  --volatile-package-directory PATH
+                        Specify a directory containing extra volatile packages
+  --with-recommends [BOOL]
+                        Install recommended packages
+  --with-docs [BOOL]    Install documentation
+  --base-tree PATH      Use the given tree as base tree (e.g. lower sysext
+                        layer)
+  --skeleton-tree PATH  Use a skeleton tree to bootstrap the image before
+                        installing anything
+  --extra-tree PATH     Copy an extra tree on top of image
+  --remove-package PACKAGE
+                        Remove package from the image OS image after
+                        installation
+  --remove-files GLOB   Remove files from built image
+  --clean-package-metadata FEATURE
+                        Remove package manager database and other files
+  --source-date-epoch TIMESTAMP
+                        Set the $SOURCE_DATE_EPOCH timestamp
+  --sync-script PATH    Sync script to run before starting the build
+  --prepare-script PATH
+                        Prepare script to run inside the image before it is
+                        cached
+  --build-script PATH   Build script to run inside image
+  --postinst-script PATH
+                        Postinstall script to run inside image
+  --finalize-script PATH
+                        Postinstall script to run outside image
+  --postoutput-script PATH
+                        Output postprocessing script to run outside image
+  --bootable [FEATURE]  Generate ESP partition with systemd-boot and UKIs for
+                        installed kernels
+  --bootloader {none,uki,systemd-boot,grub,uki-signed,systemd-boot-signed,grub-signed,}
+                        Specify which UEFI bootloader to use
+  --bios-bootloader {none,grub,}
+                        Specify which BIOS bootloader to use
+  --shim-bootloader {none,signed,unsigned,}
+                        Specify whether to use shim
+  --unified-kernel-images FEATURE
+                        Specify whether to use UKIs with grub/systemd-boot in
+                        UEFI mode
+  --unified-kernel-image-format UNIFIED_KERNEL_IMAGE_FORMAT
+                        Specify the format used for the UKI filename
+  --uki-profile PATH    Configuration files to generate UKI profiles
+  --initrd PATH         Add a user-provided initrd to image
+  --microcode-host [BOOL]
+                        Only include the host CPU's microcode
+  --initrd-package PACKAGE
+                        Add additional packages to the default initrd
+  --initrd-volatile-package PACKAGE
+                        Packages to install in the initrd that are not cached
+  --devicetree DEVICETREE
+                        Devicetree to be used by the booting kernel
+  --kernel-command-line OPTIONS
+                        Set the kernel command line (only bootable images)
+  --kernel-modules-include REGEX
+                        Include the specified kernel modules in the image
+  --kernel-modules-include-host BOOL
+                        Include the currently loaded modules on the host in
+                        the image
+  --kernel-modules-exclude REGEX
+                        Exclude the specified kernel modules from the image
+  --kernel-modules-initrd [BOOL]
+                        When building a bootable image, add an extra initrd
+                        containing the kernel modules
+  --kernel-modules-initrd-include REGEX
+                        When building a kernel modules initrd, include the
+                        specified kernel modules
+  --kernel-modules-initrd-include-host BOOL
+                        When building a kernel modules initrd, include the
+                        currently loaded modules on the host in the image
+  --kernel-modules-initrd-exclude REGEX
+                        When building a kernel modules initrd, exclude the
+                        specified kernel modules
+  --locale LOCALE       Set the system locale
+  --locale-messages LOCALE
+                        Set the messages locale
+  --keymap KEYMAP       Set the system keymap
+  --timezone TIMEZONE   Set the system timezone
+  --hostname HOSTNAME   Set the system hostname
+  --root-password PASSWORD
+                        Set the password for root
+  --root-shell SHELL    Set the shell for root
+  --machine-id MACHINE_ID
+                        Set the machine ID to use
+  -a, --autologin [BOOL]
+                        Enable root autologin
+  --make-initrd [BOOL]  Make sure the image can be used as an initramfs
+  --ssh [BOOL]          Set up SSH access from the host to the final image via
+                        'mkosi ssh'
+  --selinux-relabel FEATURE
+                        Specify whether to relabel all files with setfiles
+
+Validation configuration options:
+  --secure-boot [BOOL]  Sign the resulting kernel/initrd image for UEFI
+                        SecureBoot
+  --secure-boot-auto-enroll BOOL
+                        Automatically enroll the secureboot signing key on
+                        first boot
+  --secure-boot-key KEY
+                        UEFI SecureBoot private key
+  --secure-boot-key-source SOURCE[:ENGINE]
+                        The source to use to retrieve the secure boot signing
+                        key
+  --secure-boot-certificate PATH
+                        UEFI SecureBoot certificate in X509 format
+  --secure-boot-certificate-source SOURCE[:PROVIDER]
+                        The source to use to retrieve the secure boot signing
+                        certificate
+  --secure-boot-sign-tool {auto,sbsign,systemd-sbsign,}
+                        Tool to use for signing PE binaries for secure boot
+  --verity FEATURE      Configure whether to enforce or disable verity
+                        partitions for disk images
+  --verity-key KEY      Private key for signing verity signature
+  --verity-key-source SOURCE[:ENGINE]
+                        The source to use to retrieve the verity signing key
+  --verity-certificate PATH
+                        Certificate for signing verity signature in X509
+                        format
+  --verity-certificate-source SOURCE[:PROVIDER]
+                        The source to use to retrieve the verity signing
+                        certificate
+  --sign-expected-pcr FEATURE
+                        Measure the components of the unified kernel image
+                        (UKI) and embed the PCR signature into the UKI
+  --sign-expected-pcr-key KEY
+                        Private key for signing expected PCR signature
+  --sign-expected-pcr-key-source SOURCE[:ENGINE]
+                        The source to use to retrieve the expected PCR signing
+                        key
+  --sign-expected-pcr-certificate PATH
+                        Certificate for signing expected PCR signature in X509
+                        format
+  --sign-expected-pcr-certificate-source SOURCE[:PROVIDER]
+                        The source to use to retrieve the expected PCR signing
+                        certificate
+  --passphrase PATH     Path to a file containing the passphrase to use when
+                        LUKS encryption is selected
+  --checksum [BOOL]     Write SHA256SUMS file
+  --sign [BOOL]         Write and sign SHA256SUMS file
+  --key KEY             GPG key to use for signing
+  --openpgp-tool OPENPGP_TOOL
+                        OpenPGP implementation to use for signing
+
+Build configuration options:
+  --tools-tree [PATH]   Look up programs to execute inside the given tree
+  --tools-tree-distribution {fedora,debian,kali,ubuntu,arch,opensuse,mageia,centos,rhel,rhel-ubi,openmandriva,rocky,alma,azure,custom,}
+                        Set the distribution to use for the default tools tree
+  --tools-tree-release RELEASE
+                        Set the release to use for the default tools tree
+  --tools-tree-mirror MIRROR
+                        Set the mirror to use for the default tools tree
+  --tools-tree-repository REPOS
+                        Repositories to use for the default tools tree
+  --tools-tree-sandbox-tree PATH
+                        Sandbox trees for the default tools tree
+  --tools-tree-package PACKAGE
+                        Add additional packages to the default tools tree
+  --tools-tree-package-directory PATH
+                        Specify a directory containing extra tools tree
+                        packages
+  --tools-tree-certificates BOOL
+                        Use certificates from the tools tree
+  --extra-search-path PATH
+                        List of comma-separated paths to look for programs
+                        before looking in PATH
+  -i, --incremental [{yes,no,strict}]
+                        Make use of and generate intermediary cache images
+  --cache-only {always,auto,none,metadata,never,}
+                        Only use the package cache when installing packages
+  --sandbox-tree PATH   Use a sandbox tree to configure the various tools that
+                        mkosi executes
+  --workspace-directory DIR
+                        Workspace directory
+  --cache-directory PATH
+                        Incremental cache directory
+  --package-cache-directory PATH
+                        Package cache directory
+  --build-directory PATH
+                        Path to use as persistent build directory
+  --use-subvolumes [FEATURE]
+                        Use btrfs subvolumes for faster directory operations
+                        where possible
+  --repart-offline REPART_OFFLINE
+                        Build disk images without using loopback devices
+  --history BOOL        Whether mkosi can store information about previous
+                        builds
+  --build-sources PATH  Path for sources to build
+  --build-sources-ephemeral [{yes,no,buildcache}]
+                        Make build sources ephemeral when running scripts
+  -E, --environment NAME[=VALUE]
+                        Set an environment variable when running scripts
+  --env-file PATH       Environment files to set when running scripts
+  -T, --without-tests [WITH_TESTS]
+                        Do not run tests as part of build scripts, if
+                        supported
+  --with-network [BOOL]
+                        Run build and postinst scripts with network access
+                        (instead of private network)
+  --proxy-url URL       Set the proxy to use
+  --proxy-exclude HOST  Don't use the configured proxy for the specified
+                        host(s)
+  --proxy-peer-certificate PROXY_PEER_CERTIFICATE
+                        Set the proxy peer certificate
+  --proxy-client-certificate PROXY_CLIENT_CERTIFICATE
+                        Set the proxy client certificate
+  --proxy-client-key PROXY_CLIENT_KEY
+                        Set the proxy client key
+
+Runtime configuration options:
+  --settings PATH       Add in .nspawn settings file
+  --ephemeral [BOOL]    If specified, the container/VM is run with a temporary
+                        snapshot of the output image that is removed
+                        immediately when the container/VM terminates
+  --credential NAME=VALUE
+                        Pass a systemd credential to a systemd-nspawn
+                        container or a virtual machine
+  --kernel-command-line-extra OPTIONS
+                        Append extra entries to the kernel command line when
+                        booting the image
+  --runtime-tree SOURCE:[TARGET]
+                        Additional mounts to add when booting the image
+  --runtime-size SIZE   Grow disk images to the specified size before booting
+                        them
+  --runtime-scratch FEATURE
+                        Mount extra scratch space to /var/tmp
+  --runtime-network {interface,user,none,}
+                        Set networking backend to use when booting the image
+  --runtime-build-sources BOOL
+                        Mount build sources and build directory in /work when
+                        booting the image
+  --runtime-home BOOL   Mount current home directory to /root when booting the
+                        image
+  --unit-property PROPERTY
+                        Set properties on the scopes spawned by systemd-nspawn
+                        or systemd-run
+  --ssh-key PATH        Private key for use with mkosi ssh in PEM format
+  --ssh-certificate PATH
+                        Certificate for use with mkosi ssh in X509 format
+  --vmm {qemu,vmspawn,}
+                        Set the virtual machine monitor to use for mkosi vm
+  --machine NAME        Set the machine name to use when booting the image
+  --forward-journal PATH
+                        Set the path used to store forwarded machine journals
+  --sysupdate-directory PATH
+                        Directory containing systemd-sysupdate transfer
+                        definitions
+  --console [MODE]      Configure the virtual machine console mode to use
+  --cpus CPUS           Configure number of CPUs in virtual machine
+  --ram BYTES           Configure guest's RAM size
+  --kvm [FEATURE]       Configure whether to use KVM or not
+  --vsock [FEATURE]     Configure whether to use vsock or not
+  --vsock-cid NUMBER|auto|hash
+                        Specify the vsock connection ID to use
+  --tpm [FEATURE]       Configure whether to use a virtual tpm or not
+  --cdrom [BOOLEAN]     Attach the image as a CD-ROM to the virtual machine
+  --removable [BOOLEAN]
+                        Attach the image as a removable drive to the virtual
+                        machine
+  --firmware {auto,linux,uefi,uefi-secure-boot,bios,}
+                        Select the virtual machine firmware to use
+  --firmware-variables PATH
+                        Set the path to the firmware variables file to use
+  --linux PATH          Specify the kernel to use for direct kernel boot
+  --drive DRIVE         Specify drive that mkosi should create and pass to the
+                        virtual machine
+  --register BOOL       Register booted vm/container with systemd-machined
