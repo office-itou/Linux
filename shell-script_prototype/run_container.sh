@@ -521,11 +521,7 @@ function fnSetup_user() {
 	OPTN_PARM+=("--bind=${DIRS_TOPS}:${DIRS_TOPS}:norbind")
 	OPTN_PARM+=("--bind=${DIRS_HGFS}:${DIRS_HGFS}:norbind")
 	OPTN_PARM+=("--bind=/home:/home:norbind")
-#	OPTN_PARM+=("--bind=/dev:/dev:norbind")
-#	OPTN_PARM+=("--bind=/proc:/proc:norbind")
-#	OPTN_PARM+=("--bind=/sys:/sys:norbind")
-#	OPTN_PARM+=("--bind=/run:/run:norbind")
-#	OPTN_PARM+=("--bind=/tmp:/tmp")
+	OPTN_PARM+=("--bind=/sys/module:/sys/module:norbind")
 #	if [[ -f /run/systemd/resolve/stub-resolv.conf ]]; then
 #		OPTN_PARM+=("--resolv-conf=copy-uplink")
 #	fi
@@ -540,7 +536,7 @@ function fnSetup_user() {
 	${DBGS_OUTS:-} systemd-nspawn --boot -U \
 		--directory="${DIRS_OLAY}/merged/" \
 		--machine="${HOST_NAME}" \
-		--capability=CAP_MKNOD,CAP_NET_RAW \
+		--capability=CAP_MKNOD,CAP_NET_RAW,CAP_SYS_ADMIN \
 		--property=DeviceAllow="/dev/console rwm" \
 		--property=DeviceAllow="/dev/loop-control rwm" \
 		--property=DeviceAllow="block-loop rwm" \
