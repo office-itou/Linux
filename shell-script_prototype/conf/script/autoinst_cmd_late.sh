@@ -978,16 +978,16 @@ funcSetupConfig_selinux() {
 	fi
 
 	# --- set selinux ---------------------------------------------------------
-	semanage fcontext -a -t httpd_user_content_t "${DIRS_HTML}(/.*)?"
-	semanage fcontext -a -t tftpdir_t            "${DIRS_TFTP}(/.*)?"
-	semanage fcontext -a -t samba_share_t        "${DIRS_SAMB}(/.*)?"
-	semanage fcontext -a -t public_content_t     "${DIRS_SHAR}(/.*)?"
-	restorecon -R -v "${DIRS_SRVR}"
-	setsebool -P samba_export_all_rw 1
-	setsebool -P httpd_enable_homedirs 1
+	semanage fcontext -a -t httpd_user_content_t "${DIRS_HTML}(/.*)?" || true
+	semanage fcontext -a -t tftpdir_t            "${DIRS_TFTP}(/.*)?" || true
+	semanage fcontext -a -t samba_share_t        "${DIRS_SAMB}(/.*)?" || true
+	semanage fcontext -a -t public_content_t     "${DIRS_SHAR}(/.*)?" || true
+	restorecon -R -v "${DIRS_SRVR}" || true
+	setsebool -P samba_export_all_rw   1 || true
+	setsebool -P httpd_enable_homedirs 1 || true
 
 	# --- debug out -----------------------------------------------------------
-	getenforce
+	getenforce || true
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
@@ -1801,7 +1801,7 @@ _EOT_
 		# --- resolv.conf -> /run/systemd/resolve/stub-resolv.conf ------------
 		_FILE_PATH="${DIRS_TGET:-}/etc/resolv.conf"
 		funcFile_backup "${_FILE_PATH}"
-		cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+#		cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
 		rm -f "${_FILE_PATH}"
 		_WORK_PATH="${DIRS_TGET:-}/run/systemd/resolve/stub-resolv.conf"
 		ln -sfr "${_WORK_PATH}" "${_FILE_PATH}"
