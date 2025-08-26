@@ -1,6 +1,16 @@
 #!/bin/bash
 
-	set -eu
+	export LANG=C
+
+#	set -n								# Check for syntax errors
+#	set -x								# Show command and argument expansion
+	set -o ignoreeof					# Do not exit with Ctrl+D
+	set +m								# Disable job control
+	set -e								# End with status other than 0
+	set -u								# End with undefined variable reference
+	set -o pipefail						# End with in pipe error
+
+	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
 
 	declare -r    _PROG_PATH="$0"
 #	declare -r -a _PROG_PARM=("${@:-}")
@@ -22,40 +32,44 @@
 	declare       _FILE_INRD="${_DIRS_TGET}/initrd"
 	declare       _FILE_KENL="${_DIRS_TGET}/vmlinuz"
 
-	declare -r    _DIST_NAME="${_DIRS_BASE##*/}"
-	case "${_DIST_NAME}" in
-		debian-11          ) sed -e '/Release/ s/=.*$/=bullseye/' /srv/user/share/conf/_template/mkosi.debian.conf > "${_FILE_CONF}";;
-		debian-12          ) sed -e '/Release/ s/=.*$/=bookworm/' /srv/user/share/conf/_template/mkosi.debian.conf > "${_FILE_CONF}";;
-		debian-13          ) sed -e '/Release/ s/=.*$/=trixie/'   /srv/user/share/conf/_template/mkosi.debian.conf > "${_FILE_CONF}";;
-		debian-14          ) sed -e '/Release/ s/=.*$/=forky/'    /srv/user/share/conf/_template/mkosi.debian.conf > "${_FILE_CONF}";;
-		debian-15          ) sed -e '/Release/ s/=.*$/=duke/'     /srv/user/share/conf/_template/mkosi.debian.conf > "${_FILE_CONF}";;
-		debian-testing     ) sed -e '/Release/ s/=.*$/=testing/'  /srv/user/share/conf/_template/mkosi.debian.conf > "${_FILE_CONF}";;
-		debian-sid         ) sed -e '/Release/ s/=.*$/=sid/'      /srv/user/share/conf/_template/mkosi.debian.conf > "${_FILE_CONF}";;
-		ubuntu-22.04       ) sed -e '/Release/ s/=.*$/=jammy/'    /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
-		ubuntu-22.10       ) sed -e '/Release/ s/=.*$/=kinetic/'  /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
-		ubuntu-23.04       ) sed -e '/Release/ s/=.*$/=lunar/'    /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
-		ubuntu-23.10       ) sed -e '/Release/ s/=.*$/=mantic/'   /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
-		ubuntu-24.04       ) sed -e '/Release/ s/=.*$/=noble/'    /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
-		ubuntu-24.10       ) sed -e '/Release/ s/=.*$/=oracular/' /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
-		ubuntu-25.04       ) sed -e '/Release/ s/=.*$/=plucky/'   /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
-		ubuntu-25.10       ) sed -e '/Release/ s/=.*$/=questing/' /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
-		fedora-41          ) ;;
-		fedora-42          ) ;;
-		fedora-43          ) ;;
-		centos-stream-9    ) ;;
-		centos-stream-10   ) ;;
-		almalinux-8.*      ) ;;
-		almalinux-9.*      ) ;;
-		almalinux-10.*     ) ;;
-		rockylinux-8.*     ) ;;
-		rockylinux-9.*     ) ;;
-		rockylinux-10.*    ) ;;
-		miraclelinux-8.*   ) ;;
-		miraclelinux-9.*   ) ;;
+	declare -r    _DIST_INFO="${_DIRS_BASE##*/}"
+	declare       _DIST_NAME="${_DIST_INFO%%-*}"
+	              _TEXT_WRK1="${_DIST_NAME%linux}"
+	              _TEXT_WRK2="${_DIST_NAME#"${_TEXT_WRK1}"}"
+	              _DIST_NAME="${_TEXT_WRK1}"
+	readonly      _DIST_NAME
+	declare -r    _DIST_VERS="${_DIST_INFO#*-}"
+	# fedora,  debian,  kali,  ubuntu,  arch,  opensuse, mageia, centos, rhel, rhel-ubi, openmandriva, rocky, alma, azure or custom
+	case "${_DIST_INFO}" in
+		debian-11          ) sed -e '/^Release/ s/=.*$/=bullseye/' /srv/user/share/conf/_template/mkosi.debian.conf > "${_FILE_CONF}";;
+		debian-12          ) sed -e '/^Release/ s/=.*$/=bookworm/' /srv/user/share/conf/_template/mkosi.debian.conf > "${_FILE_CONF}";;
+		debian-13          ) sed -e '/^Release/ s/=.*$/=trixie/'   /srv/user/share/conf/_template/mkosi.debian.conf > "${_FILE_CONF}";;
+		debian-14          ) sed -e '/^Release/ s/=.*$/=forky/'    /srv/user/share/conf/_template/mkosi.debian.conf > "${_FILE_CONF}";;
+		debian-15          ) sed -e '/^Release/ s/=.*$/=duke/'     /srv/user/share/conf/_template/mkosi.debian.conf > "${_FILE_CONF}";;
+		debian-testing     ) sed -e '/^Release/ s/=.*$/=testing/'  /srv/user/share/conf/_template/mkosi.debian.conf > "${_FILE_CONF}";;
+		debian-sid         ) sed -e '/^Release/ s/=.*$/=sid/'      /srv/user/share/conf/_template/mkosi.debian.conf > "${_FILE_CONF}";;
+		ubuntu-22.04       ) sed -e '/^Release/ s/=.*$/=jammy/'    /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
+		ubuntu-22.10       ) sed -e '/^Release/ s/=.*$/=kinetic/'  /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
+		ubuntu-23.04       ) sed -e '/^Release/ s/=.*$/=lunar/'    /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
+		ubuntu-23.10       ) sed -e '/^Release/ s/=.*$/=mantic/'   /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
+		ubuntu-24.04       ) sed -e '/^Release/ s/=.*$/=noble/'    /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
+		ubuntu-24.10       ) sed -e '/^Release/ s/=.*$/=oracular/' /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
+		ubuntu-25.04       ) sed -e '/^Release/ s/=.*$/=plucky/'   /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
+		ubuntu-25.10       ) sed -e '/^Release/ s/=.*$/=questing/' /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
+		fedora-*           | \
+		centos-stream-*    | \
+		almalinux-*        | \
+		rockylinux-*       | \
+		miraclelinux-*     )
+			sed -e '/^Distribution/ s/=.*$/='"${_DIST_NAME}"'/'         \
+			    -e '/^Release/      s/=.*$/='"${_DIST_VERS}"'/'         \
+				  /srv/user/share/conf/_template/mkosi.rhel-series.conf \
+				> "${_FILE_CONF}"
+			;;
 		opensuse-leap-15.* ) ;;
 		opensuse-leap-16.* ) ;;
 		opensuse-tumbleweed) ;;
-		*                  ) echo "not found: ${_DIST_NAME:-}"; exit 1;;
+		*                  ) echo "not found: ${_DIST_INFO:-}"; exit 1;;
 	esac
 
 	declare       _TGET_DIST=""
@@ -65,7 +79,7 @@
 	              _TGET_SUIT="$(sed -ne '/^\[Distribution\]$/,/\(^$\|^\[.*\]$\)/ {/^Release=/ s/^.*=//p}'      "${_FILE_CONF:?}")"
 	readonly      _TGET_SUIT
 
-	declare -r    _FILE_ISOS="/srv/user/share/rmak/live-${_DIST_NAME}-${_TGET_SUIT}.iso"
+	declare -r    _FILE_ISOS="/srv/user/share/rmak/live-${_DIST_INFO}-${_TGET_SUIT}.iso"
 	declare -r    _FILE_VLID="LIVE-MEDIA"
 
 	declare -r    _DIRS_MNTP="${_DIRS_BASE}/mnt"
@@ -126,31 +140,77 @@
 		-no-emul-boot
 	)
 
+	# --- trap ----------------------------------------------------------------
+	declare -a    _LIST_RMOV=()			# list remove directory / file
+	              _LIST_RMOV+=("${_DIRS_TEMP:?}")
+
+# -----------------------------------------------------------------------------
+# descript: trap
+#   input :        : unused
+#   output: stdout : unused
+#   return:        : unused
+# shellcheck disable=SC2317,SC2329
+function fnTrap() {
+	declare       __PATH=""				# full path
+	declare -i    I=0
+	# --- unmount -------------------------------------------------------------
+	for I in $(printf "%s\n" "${!_LIST_RMOV[@]}" | sort -rV)
+	do
+		__PATH="${_LIST_RMOV[I]}"
+		if [[ -e "${__PATH}" ]] && mountpoint --quiet "${__PATH}"; then
+			printf "[%s]: umount \"%s\"\n" "${I}" "${__PATH}" 1>&2
+			umount --quiet         --recursive "${__PATH}" > /dev/null 2>&1 || \
+			umount --quiet --force --recursive "${__PATH}" > /dev/null 2>&1 || \
+			umount --quiet --lazy  --recursive "${__PATH}" || true
+		fi
+	done
+	# --- remove temporary ----------------------------------------------------
+	if [[ -e "${_DIRS_TEMP:?}" ]]; then
+		printf "%s: \"%s\"\n" "remove" "${_DIRS_TEMP}" 1>&2
+		while read -r __PATH
+		do
+			printf "[%s]: umount \"%s\"\n" "-" "${__PATH}" 1>&2
+			umount --quiet         --recursive "${__PATH}" > /dev/null 2>&1 || \
+			umount --quiet --force --recursive "${__PATH}" > /dev/null 2>&1 || \
+			umount --quiet --lazy  --recursive "${__PATH}" || true
+		done < <(grep "${_DIRS_TEMP:?}" /proc/mounts | cut -d ' ' -f 2 | sort -rV || true)
+		rm -rf "${_DIRS_TEMP:?}"
+	fi
+}
+
+	trap fnTrap EXIT
+
 # === mkosi ===================================================================
 	if [[ "${2:-}" = "-f" ]] || [[ "${2:-}" = "--force" ]] || [[ ! -e "${_DIRS_TGET:?}/." ]]; then
 		rm -rf "${_DIRS_TGET:?}"
-		if ! mkosi ${_TGET_SUIT:+--release ${_TGET_SUIT}} --directory "${_DIRS_TGET%/*}"; then
+		if ! mkosi \
+			${_TGET_SUIT:+--release ${_TGET_SUIT}} \
+			--directory="${_DIRS_TGET%/*}" \
+			--architecture=x86-64 \
+			; then
 			exit "$?"
 		fi
-		_FILE_INRD="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  \) | sort -Vu)"
-		_FILE_KENL="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' \) | sort -Vu)"
-		for _FILE_PATH in "${_DIRS_TGET}"/{initrd.img{,.old},vmlinuz.img{,.old}}
+		_PATH_INRD="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  \) | sort -Vu)"
+		_PATH_KENL="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' \) | sort -Vu)"
+		_FILE_INRD="${_PATH_INRD##*/}"
+		_FILE_KENL="${_PATH_KENL##*/}"
+		for _FILE_PATH in "${_DIRS_TGET}"/{"${_FILE_INRD%%-*}"{,.old},"${_FILE_KENL%%-*}"{,.old}}
 		do
 			if [[ -e "${_FILE_PATH}" ]]; then
 				continue
 			fi
 			case "${_FILE_PATH##*/}" in
-				initrd* ) ln -s "${_FILE_INRD#"${_DIRS_TGET}"/}" "${_FILE_PATH}";;
-				vmlinuz*) ln -s "${_FILE_KENL#"${_DIRS_TGET}"/}" "${_FILE_PATH}";;
+				initrd* ) ln -s "${_PATH_INRD#"${_DIRS_TGET}"/}" "${_FILE_PATH}";;
+				vmlinuz*) ln -s "${_PATH_KENL#"${_DIRS_TGET}"/}" "${_FILE_PATH}";;
 				*       ) ;;
 			esac
 		done
 		if [[ -e /srv/user/share/conf/script/autoinst_cmd_late.sh ]]; then
-			mount --rbind /dev/    "${_DIRS_TGET}/dev/"  && mount --make-rslave "${_DIRS_TGET}/dev/"
-			mount -t proc /proc/   "${_DIRS_TGET}/proc/"
-			mount --rbind /sys/    "${_DIRS_TGET}/sys/"  && mount --make-rslave "${_DIRS_TGET}/sys/"
-			mount  --bind /run/    "${_DIRS_TGET}/run/"
-			mount --rbind /tmp/    "${_DIRS_TGET}/tmp/"  && mount --make-rslave "${_DIRS_TGET}/tmp/"
+			mount --rbind /dev/                  "${_DIRS_TGET}/dev/"  && mount --make-rslave "${_DIRS_TGET}/dev/" && _LIST_RMOV+=("${_DIRS_TGET}/dev/"  )
+			mount -t proc /proc/                 "${_DIRS_TGET}/proc/"                                             && _LIST_RMOV+=("${_DIRS_TGET}/proc/" )
+			mount --rbind /sys/                  "${_DIRS_TGET}/sys/"  && mount --make-rslave "${_DIRS_TGET}/sys/" && _LIST_RMOV+=("${_DIRS_TGET}/sys/"  )
+			mount  --bind /run/                  "${_DIRS_TGET}/run/"                                              && _LIST_RMOV+=("${_DIRS_TGET}/run/"  )
+			mount --rbind "${_DIRS_TEMP:-/tmp/}" "${_DIRS_TGET}/tmp/"  && mount --make-rslave "${_DIRS_TGET}/tmp/" && _LIST_RMOV+=("${_DIRS_TGET}/tmp/"  )
 			_FLAG_WORK=""
 			if [[ -L "${_DIRS_TGET}/etc/resolv.conf" ]] && [[ ! -e "${_DIRS_TGET}/run/systemd/resolve/stub-resolv.conf" ]]; then
 				_FLAG_WORK="true"
@@ -160,6 +220,7 @@
 			cp -a /srv/user/share/conf/script/autoinst_cmd_late.sh "${_DIRS_TGET}/tmp/"
 			chmod 755 "${_DIRS_TGET}/tmp/autoinst_cmd_late.sh"
 			chroot "${_DIRS_TGET}" /tmp/autoinst_cmd_late.sh ip=192.168.1.0::192.168.1.254:255.255.255.0:${_TGET_DIST:+"live-${_TGET_DIST}.workgroup"}:ens160:192.168.1.254 ip=dhcp
+			chroot "${_DIRS_TGET}" sed -i /etc/pam.d/gdm-password -e '1a auth    sufficient      pam_succeed_if.so user ingroup nopasswdlogin'
 			rm -f "${_DIRS_TGET}/tmp/autoinst_cmd_late.sh"
 			if [[ -n "${_FLAG_WORK:-}" ]]; then
 				rm -rf "${_DIRS_TGET}/run/systemd/resolve/"
