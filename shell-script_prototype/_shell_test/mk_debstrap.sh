@@ -203,7 +203,6 @@ set -eu
 						nss-mdns \
 						openssh-server \
 						procps \
-						polkitd \
 						rsync \
 						shellcheck \
 						sudo \
