@@ -27,6 +27,7 @@
 	
 	declare -r    _FILE_CONF="${_DIRS_BASE:?}/mkosi.conf"
 	declare -r    _FILE_SQFS="${_DIRS_BASE:?}/filesystem.squashfs"
+#	declare -r    _FILE_SQFS="${_DIRS_BASE:?}/minimal.squashfs"
 
 	declare -r    _DIRS_TGET="${_DIRS_BASE:?}/image"
 	declare       _FILE_INRD="${_DIRS_TGET}/initrd"
@@ -102,11 +103,10 @@
 	declare -r    _MENU_FTHM="${_DIRS_CDFS}/boot/grub/theme.txt"
 	declare       _MENU_DIST=""
 
-	declare       _FLAG_WORK=""
-
 	declare -r -a _BOOT_OPTN=(\
 		"boot=live" \
-		"ip=dhcp" \
+		"nonetworking" \
+		"dhcp" \
 		"components" \
 		"overlay-size=90%" \
 		"hooks=medium" \
@@ -119,6 +119,8 @@
 		"---" \
 		"quiet" \
 		"splash" \
+		"fsck.mode=skip" \
+		"raid=noautodetect"
 	)
 
 	declare -r -a _OPTN_XORR=(\
@@ -180,57 +182,63 @@ function fnTrap() {
 
 	trap fnTrap EXIT
 
+function fnMkosi() {
+	rm -rf "${_DIRS_TGET:?}"
+	if ! mkosi \
+		${_TGET_SUIT:+--release ${_TGET_SUIT}} \
+		--directory="${_DIRS_TGET%/*}" \
+		--architecture=x86-64 \
+		; then
+		exit "$?"
+	fi
+}
+
+function fnCopy_kernel() {
+	_PATH_INRD="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  \) | sort -Vu)"
+	_PATH_KENL="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' \) | sort -Vu)"
+	_FILE_INRD="${_PATH_INRD##*/}"
+	_FILE_KENL="${_PATH_KENL##*/}"
+	for _FILE_PATH in "${_DIRS_TGET}"/{"${_FILE_INRD%%-*}"{,.old},"${_FILE_KENL%%-*}"{,.old}}
+	do
+		if [[ -e "${_FILE_PATH}" ]]; then
+			continue
+		fi
+		case "${_FILE_PATH##*/}" in
+			initrd* ) ln -s "${_PATH_INRD#"${_DIRS_TGET}"/}" "${_FILE_PATH}";;
+			vmlinuz*) ln -s "${_PATH_KENL#"${_DIRS_TGET}"/}" "${_FILE_PATH}";;
+			*       ) ;;
+		esac
+	done
+}
+
 # === mkosi ===================================================================
 	if [[ "${2:-}" = "-f" ]] || [[ "${2:-}" = "--force" ]] || [[ ! -e "${_DIRS_TGET:?}/." ]]; then
-		rm -rf "${_DIRS_TGET:?}"
-		if ! mkosi \
-			${_TGET_SUIT:+--release ${_TGET_SUIT}} \
-			--directory="${_DIRS_TGET%/*}" \
-			--architecture=x86-64 \
-			; then
-			exit "$?"
+		fnMkosi
+		fnCopy_kernel
+		# ---------------------------------------------------------------------
+		mount --rbind /dev/                  "${_DIRS_TGET}/dev/"  && mount --make-rslave "${_DIRS_TGET}/dev/" && _LIST_RMOV+=("${_DIRS_TGET}/dev/"  )
+		mount -t proc /proc/                 "${_DIRS_TGET}/proc/"                                             && _LIST_RMOV+=("${_DIRS_TGET}/proc/" )
+		mount --rbind /sys/                  "${_DIRS_TGET}/sys/"  && mount --make-rslave "${_DIRS_TGET}/sys/" && _LIST_RMOV+=("${_DIRS_TGET}/sys/"  )
+		mount  --bind /run/                  "${_DIRS_TGET}/run/"                                              && _LIST_RMOV+=("${_DIRS_TGET}/run/"  )
+		mount --rbind /tmp/                  "${_DIRS_TGET}/tmp/"  && mount --make-rslave "${_DIRS_TGET}/tmp/" && _LIST_RMOV+=("${_DIRS_TGET}/tmp/"  )
+		# ---------------------------------------------------------------------
+		_SHEL_NAME="/srv/user/share/conf/script/autoinst_cmd_late.sh"
+		if [[ -e "${_SHEL_NAME}" ]]; then
+			_EXEC_TGET="/tmp/${_SHEL_NAME##*/}"
+			cp -a "${_SHEL_NAME}" "${_DIRS_TGET}${_EXEC_TGET%/*}"
+			chmod 755 "${_DIRS_TGET}${_EXEC_TGET:?}"
+			chroot "${_DIRS_TGET}" "${_EXEC_TGET:?}" \
+				ip=192.168.1.0::192.168.1.254:255.255.255.0:${_TGET_DIST:+"live-${_TGET_DIST}.workgroup"}:ens160:192.168.1.254 \
+				ip=dhcp
+			rm -f "${_DIRS_TGET}${_EXEC_TGET:?}"
 		fi
-		_PATH_INRD="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  \) | sort -Vu)"
-		_PATH_KENL="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' \) | sort -Vu)"
-		_FILE_INRD="${_PATH_INRD##*/}"
-		_FILE_KENL="${_PATH_KENL##*/}"
-		for _FILE_PATH in "${_DIRS_TGET}"/{"${_FILE_INRD%%-*}"{,.old},"${_FILE_KENL%%-*}"{,.old}}
-		do
-			if [[ -e "${_FILE_PATH}" ]]; then
-				continue
-			fi
-			case "${_FILE_PATH##*/}" in
-				initrd* ) ln -s "${_PATH_INRD#"${_DIRS_TGET}"/}" "${_FILE_PATH}";;
-				vmlinuz*) ln -s "${_PATH_KENL#"${_DIRS_TGET}"/}" "${_FILE_PATH}";;
-				*       ) ;;
-			esac
-		done
-		if [[ -e /srv/user/share/conf/script/autoinst_cmd_late.sh ]]; then
-			mount --rbind /dev/                  "${_DIRS_TGET}/dev/"  && mount --make-rslave "${_DIRS_TGET}/dev/" && _LIST_RMOV+=("${_DIRS_TGET}/dev/"  )
-			mount -t proc /proc/                 "${_DIRS_TGET}/proc/"                                             && _LIST_RMOV+=("${_DIRS_TGET}/proc/" )
-			mount --rbind /sys/                  "${_DIRS_TGET}/sys/"  && mount --make-rslave "${_DIRS_TGET}/sys/" && _LIST_RMOV+=("${_DIRS_TGET}/sys/"  )
-			mount  --bind /run/                  "${_DIRS_TGET}/run/"                                              && _LIST_RMOV+=("${_DIRS_TGET}/run/"  )
-			mount --rbind "${_DIRS_TEMP:-/tmp/}" "${_DIRS_TGET}/tmp/"  && mount --make-rslave "${_DIRS_TGET}/tmp/" && _LIST_RMOV+=("${_DIRS_TGET}/tmp/"  )
-			_FLAG_WORK=""
-			if [[ -L "${_DIRS_TGET}/etc/resolv.conf" ]] && [[ ! -e "${_DIRS_TGET}/run/systemd/resolve/stub-resolv.conf" ]]; then
-				_FLAG_WORK="true"
-				mkdir -p "${_DIRS_TGET}/run/systemd/resolve/"
-				cp -a /etc/resolv.conf "${_DIRS_TGET}/run/systemd/resolve/stub-resolv.conf"
-			fi
-			cp -a /srv/user/share/conf/script/autoinst_cmd_late.sh "${_DIRS_TGET}/tmp/"
-			chmod 755 "${_DIRS_TGET}/tmp/autoinst_cmd_late.sh"
-			chroot "${_DIRS_TGET}" /tmp/autoinst_cmd_late.sh ip=192.168.1.0::192.168.1.254:255.255.255.0:${_TGET_DIST:+"live-${_TGET_DIST}.workgroup"}:ens160:192.168.1.254 ip=dhcp
-			chroot "${_DIRS_TGET}" sed -i /etc/pam.d/gdm-password -e '1a auth    sufficient      pam_succeed_if.so user ingroup nopasswdlogin'
-			rm -f "${_DIRS_TGET}/tmp/autoinst_cmd_late.sh"
-			if [[ -n "${_FLAG_WORK:-}" ]]; then
-				rm -rf "${_DIRS_TGET}/run/systemd/resolve/"
-			fi
-			umount --recursive     "${_DIRS_TGET}/tmp/"
-			umount                 "${_DIRS_TGET}/run/"
-			umount --recursive     "${_DIRS_TGET}/sys/"
-			umount                 "${_DIRS_TGET}/proc/"
-			umount --recursive     "${_DIRS_TGET}/dev/"
-		fi
+#		chroot "${_DIRS_TGET}" sed -i /etc/pam.d/gdm-password -e '1a auth    sufficient      pam_succeed_if.so user ingroup nopasswdlogin'
+		# ---------------------------------------------------------------------
+		umount --recursive     "${_DIRS_TGET}/tmp/"
+		umount                 "${_DIRS_TGET}/run/"
+		umount --recursive     "${_DIRS_TGET}/sys/"
+		umount                 "${_DIRS_TGET}/proc/"
+		umount --recursive     "${_DIRS_TGET}/dev/"
 	fi
 
 # === filesystem ==============================================================
@@ -512,7 +520,7 @@ _EOT_
 		  echo '${_MENU_DIST:-} ...'
 		  set gfxpayload=keep
 		  set background_color=black
-		  set options="${_BOOT_OPTN[@]} fsck.mode=skip raid=noautodetect"
+		  set options="${_BOOT_OPTN[@]}"
 		  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 		# insmod net
 		# insmod http

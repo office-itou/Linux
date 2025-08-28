@@ -71,7 +71,8 @@
 	DIST_CODE=""						# code name         (ex. bookworm)
 	DIRS_TGET=""						# target directory
 	if command -v systemd-detect-virt > /dev/null 2>&1 \
-	&& systemd-detect-virt --chroot; then
+	&& ( systemd-detect-virt --chroot    > /dev/null 2>&1 \
+	||   systemd-detect-virt --container > /dev/null 2>&1 ); then
 		CHGE_ROOT="true"
 	fi
 	if [ -d /target/. ]; then
@@ -540,7 +541,7 @@ funcInitialize() {
 			static) IPV4_DHCP="false";;
 			dhcp  ) IPV4_DHCP="true" ;;
 			*     )
-				if ip -4 -oneline address show dev "${NICS_NAME}" 2> /dev/null | grep -qE '[ \t]dynamic[ \t]'; then
+				if ip -4 -oneline address show dev "${NICS_NAME}" 2> /dev/null || true | grep -qE '[ \t]dynamic[ \t]'; then
 					IPV4_DHCP="true"
 				else
 					IPV4_DHCP="false"
@@ -548,8 +549,8 @@ funcInitialize() {
 				;;
 		esac
 	fi
-	NICS_MADR="${NICS_MADR:-"$(ip -0 -brief address show dev "${NICS_NAME}" | awk '$1!="lo" {print $3;}')"}"
-	NICS_IPV4="${NICS_IPV4:-"$(ip -4 -brief address show dev "${NICS_NAME}" | awk '$1!="lo" {print $3;}')"}"
+	NICS_MADR="${NICS_MADR:-"$(ip -0 -brief address show dev "${NICS_NAME}" 2> /dev/null || true | awk '$1!="lo" {print $3;}')"}"
+	NICS_IPV4="${NICS_IPV4:-"$(ip -4 -brief address show dev "${NICS_NAME}" 2> /dev/null || true | awk '$1!="lo" {print $3;}')"}"
 	NICS_BIT4="$(echo "${NICS_IPV4}/" | cut -d '/' -f 2)"
 	NICS_IPV4="$(echo "${NICS_IPV4}/" | cut -d '/' -f 1)"
 	if [ -z "${NICS_BIT4}" ]; then
@@ -595,7 +596,9 @@ funcInitialize() {
 
 	printf "\033[m${PROG_NAME}: %s\033[m\n" "${TEXT_GAP1}"
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "NICS_NAME" "${NICS_NAME:-}"
-	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "NICS_IPV4" "${NICS_IPV4:-}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "NICS_MADR" "${NICS_MADR:-}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "IPV4_DHCP" "${IPV4_DHCP:-}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "NICS_IPV4" "${NICS_IPV4:-}/${NICS_BIT4:-}"
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "NICS_GATE" "${NICS_GATE:-}"
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "NICS_DNS4" "${NICS_DNS4:-}"
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "IPV6_ADDR" "${IPV6_ADDR:-}"
@@ -1237,7 +1240,7 @@ funcSetupNetwork_nmanagr() {
 				connection.autoconnect true \
 				connection.zone "${FWAL_ZONE}" \
 				ethernet.wake-on-lan 0 \
-				ethernet.mac-address "${NICS_MADR}" \
+				${NICS_MADR:+"ethernet.mac-address ${NICS_MADR}"} \
 				ipv4.method auto \
 				ipv6.method auto \
 				ipv6.addr-gen-mode default \
@@ -1250,7 +1253,7 @@ funcSetupNetwork_nmanagr() {
 				connection.autoconnect true \
 				connection.zone "${FWAL_ZONE}" \
 				ethernet.wake-on-lan 0 \
-				ethernet.mac-address "${NICS_MADR}" \
+				${NICS_MADR:+"ethernet.mac-address ${NICS_MADR}"} \
 				ipv4.method manual \
 				ipv4.address "${NICS_IPV4}/${NICS_BIT4}" \
 				ipv4.gateway "${NICS_GATE}" \
@@ -1270,7 +1273,7 @@ funcSetupNetwork_nmanagr() {
 				connection.autoconnect true \
 				connection.zone "${FWAL_ZONE}" \
 				ethernet.wake-on-lan 0 \
-				ethernet.mac-address "${NICS_MADR}" \
+				${NICS_MADR:+"ethernet.mac-address ${NICS_MADR}"} \
 				ipv4.method auto \
 				ipv6.method auto \
 				ipv6.addr-gen-mode default
@@ -1282,7 +1285,7 @@ funcSetupNetwork_nmanagr() {
 				connection.autoconnect true \
 				connection.zone "${FWAL_ZONE}" \
 				ethernet.wake-on-lan 0 \
-				ethernet.mac-address "${NICS_MADR}" \
+				${NICS_MADR:+"ethernet.mac-address ${NICS_MADR}"} \
 				ipv4.method manual \
 				ipv4.address "${NICS_IPV4}/${NICS_BIT4}" \
 				ipv4.gateway "${NICS_GATE}" \
