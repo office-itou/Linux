@@ -2583,7 +2583,7 @@ function fnBoot_option_preseed() {
 	__IMGS="\${srvraddr}/${_DIRS_IMGS##*/}"
 	__ISOS="\${srvraddr}/${_DIRS_ISOS##*/}"
 #	__LOAD="\${srvraddr}/${_DIRS_LOAD##*/}"
-#	__RMAK="\${srvraddr}/${_DIRS_RMAK##*/}"
+	__RMAK="\${srvraddr}/${_DIRS_RMAK##*/}"
 	__BOPT+=("server=${__SRVR}")
 	# ---  1: autoinstall -----------------------------------------------------
 	__WORK=""
@@ -2606,7 +2606,10 @@ function fnBoot_option_preseed() {
 	# ---  2: network ---------------------------------------------------------
 	__WORK=""
 	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
-		__WORK="ip=dhcp"
+		:
+#		__WORK+="${__WORK:+" "}ip=dhcp"
+#		__WORK+="${__WORK:+" "}nonetworking"
+#		__WORK+="${__WORK:+" "}dhcp"
 	else
 		case "${__TGET_LIST[2]}" in
 			ubuntu-*            ) __WORK+="${__WORK:+" "}netcfg/target_network_config=NetworkManager";;
@@ -2624,11 +2627,11 @@ function fnBoot_option_preseed() {
 	# ---  3: locale ----------------------------------------------------------
 	__WORK=""
 	case "${__TGET_LIST[2]}" in
-		live-debian-*       | \
-		live-ubuntu-*       | \
 		debian-live-*       ) __WORK+="${__WORK:+" "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A";;
 		ubuntu-desktop-*    | \
 		ubuntu-legacy-*     ) __WORK+="${__WORK:+" "}debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
+		live-debian-*       | \
+		live-ubuntu-*       ) __WORK+="${__WORK:+" "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp,us keyboard-model=pc105 keyboard-variants=,";;
 		*                   ) __WORK+="${__WORK:+" "}language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese";;
 	esac
 	__BOPT+=("${__WORK}")
@@ -2652,6 +2655,7 @@ function fnBoot_option_preseed() {
 				ubuntu-server-*     | \
 				ubuntu-legacy-*     ) __WORK+="${__WORK:+" "}boot=casper url=${__ISOS}/${__TGET_LIST[13]##*/}";;
 				ubuntu-*            ) __WORK+="${__WORK:+" "}boot=casper iso-url=${__ISOS}/${__TGET_LIST[13]##*/}";;
+				live-*              ) __WORK+="${__WORK:+" "}fetch=${__RMAK}/${__TGET_LIST[13]##*/}";;
 				*                   ) __WORK+="${__WORK:+" "}fetch=${__ISOS}/${__TGET_LIST[13]##*/}";;
 			esac
 			;;
@@ -2694,7 +2698,7 @@ function fnBoot_option_nocloud() {
 	__IMGS="\${srvraddr}/${_DIRS_IMGS##*/}"
 	__ISOS="\${srvraddr}/${_DIRS_ISOS##*/}"
 #	__LOAD="\${srvraddr}/${_DIRS_LOAD##*/}"
-#	__RMAK="\${srvraddr}/${_DIRS_RMAK##*/}"
+	__RMAK="\${srvraddr}/${_DIRS_RMAK##*/}"
 	__BOPT+=("server=${__SRVR}")
 	# ---  1: autoinstall -----------------------------------------------------
 	__WORK=""
@@ -2711,7 +2715,10 @@ function fnBoot_option_nocloud() {
 	# ---  2: network ---------------------------------------------------------
 	__WORK=""
 	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
-		__WORK="ip=dhcp"
+		:
+#		__WORK+="${__WORK:+" "}ip=dhcp"
+#		__WORK+="${__WORK:+" "}nonetworking"
+#		__WORK+="${__WORK:+" "}dhcp"
 	else
 		case "${__TGET_LIST[2]}" in
 			ubuntu-live-18.04   ) __WORK+="${__WORK:+" "}ip=\${ethrname},\${ipv4addr},\${ipv4mask},\${ipv4gway} hostname=\${hostname}";;
@@ -2721,7 +2728,15 @@ function fnBoot_option_nocloud() {
 	__BOPT+=("${__WORK}")
 	# ---  3: locale ----------------------------------------------------------
 	__WORK=""
-	__WORK+="${__WORK:+" "}debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+#	__WORK+="${__WORK:+" "}debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	case "${__TGET_LIST[2]}" in
+		debian-live-*       ) __WORK+="${__WORK:+" "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A";;
+		ubuntu-desktop-*    | \
+		ubuntu-legacy-*     ) __WORK+="${__WORK:+" "}debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
+		live-debian-*       | \
+		live-ubuntu-*       ) __WORK+="${__WORK:+" "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp,us keyboard-model=pc105 keyboard-variants=,";;
+		*                   ) __WORK+="${__WORK:+" "}language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese";;
+	esac
 	__BOPT+=("${__WORK}")
 	# ---  4: ramdisk ---------------------------------------------------------
 	__WORK=""
@@ -2743,6 +2758,7 @@ function fnBoot_option_nocloud() {
 				ubuntu-server-*     | \
 				ubuntu-legacy-*     ) __WORK+="${__WORK:+" "}boot=casper url=${__ISOS}/${__TGET_LIST[13]##*/}";;
 				ubuntu-*            ) __WORK+="${__WORK:+" "}boot=casper iso-url=${__ISOS}/${__TGET_LIST[13]##*/}";;
+				live-*              ) __WORK+="${__WORK:+" "}fetch=${__RMAK}/${__TGET_LIST[13]##*/}";;
 				*                   ) __WORK+="${__WORK:+" "}fetch=${__ISOS}/${__TGET_LIST[13]##*/}";;
 			esac
 			;;
@@ -2802,7 +2818,9 @@ function fnBoot_option_kickstart() {
 	# ---  2: network ---------------------------------------------------------
 	__WORK=""
 	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
-		__WORK="ip=dhcp"
+		:
+#		__WORK+="${__WORK:+" "}ip=dhcp"
+#		__WORK+="${__WORK:+" "}dhcp"
 	else
 		__WORK+="${__WORK:+" "}ip=\${ipv4addr}::\${ipv4gway}:\${ipv4mask}:\${hostname}:\${ethrname}:none,auto6 nameserver=\${ipv4nsvr}"
 	fi
@@ -2877,7 +2895,9 @@ function fnBoot_option_autoyast() {
 	# ---  2: network ---------------------------------------------------------
 	__WORK=""
 	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
-		__WORK="ip=dhcp"
+		:
+#		__WORK+="${__WORK:+" "}ip=dhcp"
+#		__WORK+="${__WORK:+" "}dhcp"
 	else
 		__WORK+="${__WORK:+" "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr}/${_IPV4_CIDR:-},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
 		case "${__TGET_LIST[2]}" in
@@ -2970,7 +2990,9 @@ function fnBoot_option_agama() {
 	# ---  2: network ---------------------------------------------------------
 	__WORK=""
 	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
-		__WORK="ip=dhcp"
+		:
+#		__WORK+="${__WORK:+" "}ip=dhcp"
+#		__WORK+="${__WORK:+" "}dhcp"
 	else
 		__WORK+="${__WORK:+" "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr}/${_IPV4_CIDR:-},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
 	fi
@@ -3016,31 +3038,44 @@ function fnBoot_options() {
 	declare -a    __BOPT=()				# boot options
 
 	# --- create boot options -------------------------------------------------
-	case "${__TGET_LIST[2]%%-*}" in
-		debian       | \
-		ubuntu       )
+	case "${__TGET_LIST[2]}" in
+		debian-*      | \
+		ubuntu-*      | \
+		live-debian-* | \
+		live-ubuntu-* )
 			case "${__TGET_LIST[23]}" in
 				*/preseed/* ) fnBoot_option_preseed "__RSLT" "${__TGET_TYPE}" "${__TGET_LIST[@]}";;
 				*/nocloud/* ) fnBoot_option_nocloud "__RSLT" "${__TGET_TYPE}" "${__TGET_LIST[@]}";;
 				*           ) ;;
 			esac
 			;;
-		fedora       | \
-		centos       | \
-		almalinux    | \
-		rockylinux   | \
-		miraclelinux ) fnBoot_option_kickstart "__RSLT" "${__TGET_TYPE}" "${__TGET_LIST[@]}";;
-		opensuse     )
+		fedora-*            | \
+		centos-*            | \
+		almalinux-*         | \
+		rockylinux-*        | \
+		miraclelinux-*      | \
+		live-fedora-*       | \
+		live-centos-*       | \
+		live-almalinux-*    | \
+		live-rockylinux-*   | \
+		live-miraclelinux-* ) fnBoot_option_kickstart "__RSLT" "${__TGET_TYPE}" "${__TGET_LIST[@]}";;
+		opensuse-*      | \
+		live-opensuse-* )
 			case "${__TGET_LIST[23]}" in
 				*/autoyast/*) fnBoot_option_autoyast  "__RSLT" "${__TGET_TYPE}" "${__TGET_LIST[@]}";;
 				*/agama/*   ) fnBoot_option_agama     "__RSLT" "${__TGET_TYPE}" "${__TGET_LIST[@]}";;
 				*           ) ;;
 			esac
 			;;
-		*            ) ;;
+		* ) ;;
 	esac
 	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__RSLT}")
-	__BOPT+=("fsck.mode=skip raid=noautodetect${_MENU_MODE:+" vga=${_MENU_MODE}"}")
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__BOPT+=("fsck.mode=skip raid=noautodetect noeject")
+	else
+		__BOPT+=("fsck.mode=skip raid=noautodetect")
+#		__BOPT+=("fsck.mode=skip raid=noautodetect${_MENU_MODE:+" vga=${_MENU_MODE}"}")
+	fi
 	# --- finish --------------------------------------------------------------
 	printf -v __RETN_VALU "%s\n" "${__BOPT[@]}"
 	fnDebug_parameter_list
@@ -3342,6 +3377,8 @@ _EOT_
 		fi
 
 		if loadfont \$font ; then
+		  set gfxpayload=keep
+		  set gfxmode=${_MENU_RESO:+"${_MENU_RESO}${_MENU_DPTH:+x"${_MENU_DPTH}"},"}auto
 		  if [ x\$feature_all_video_module = xy ]; then
 		    insmod all_video
 		  else
@@ -3350,12 +3387,23 @@ _EOT_
 		    insmod video_bochs
 		    insmod video_cirrus
 		  fi
+		  load_video
 		  insmod gfxterm
 		  insmod png
 		  terminal_output gfxterm
 		fi
 
-		set gfxmode=${_MENU_RESO:+"${_MENU_RESO}${_MENU_DPTH:+x"${_MENU_DPTH}"},"}auto
+		if background_image /isolinux/splash.png 2> /dev/null; then
+		  set color_normal=light-gray/black
+		  set color_highlight=white/black
+		elif background_image /splash.png 2> /dev/null; then
+		  set color_normal=light-gray/black
+		  set color_highlight=white/black
+		else
+		  set menu_color_normal=cyan/blue
+		  set menu_color_highlight=white/blue
+		fi
+
 		set default=0
 		set timeout=${_MENU_TOUT:-5}
 		set timeout_style=menu
@@ -4207,12 +4255,12 @@ _EOT_
 			fi
 			__ENTR="${__TGET_LIST[2]}"
 			case "${__TGET_LIST[0]}" in
-				tool          ) ;;							# tools
-				system        ) ;;							# system command
-				custom_live   ) ;;							# custom media live mode
-				custom_netinst) ;;							# custom media install mode
-				live          ) __ENTR="live-${__ENTR}";;	# original media live mode
-				*             ) ;;							# original media install mode
+				tool    ) ;;						# tools
+				system  ) ;;						# system command
+				clive   ) ;;						# custom media live mode
+				cnetinst) ;;						# custom media install mode
+				live    ) __ENTR="live-${__ENTR}";;	# original media live mode
+				*       ) ;;						# original media install mode
 			esac
 			__WORK="$(printf "%-48.48s%-55.55s%19.19s" "item -- ${__ENTR}" "- ${__TGET_LIST[3]//%20/ } ${_TEXT_SPCE// /.}" "${__TGET_LIST[14]//%20/ }")"
 			sed -i "${__PATH_TGET}" -e "/\[ System command \]/i \\${__WORK}"
@@ -4961,8 +5009,8 @@ function fnExec() {
 #				system  ) ;;
 				*       )
 					case "${__COMD:-}" in
-						pxeboot ) __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all" "live" "all" "tool" "all" "system" "all");;
-						*       ) __OPTN=("mini"       "netinst"       "dvd"       "liveinst"                                               );;
+						pxeboot ) __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all" "live" "all" "tool" "all" "clive" "all" "cnetinst" "all" "system" "all");;
+						*       ) __OPTN=("mini"       "netinst"       "dvd"       "liveinst"                                                                              );;
 					esac
 					;;
 			esac

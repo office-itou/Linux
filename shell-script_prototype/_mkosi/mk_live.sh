@@ -33,7 +33,8 @@
 	declare       _FILE_INRD="${_DIRS_TGET}/initrd"
 	declare       _FILE_KENL="${_DIRS_TGET}/vmlinuz"
 
-	declare -r    _DIST_INFO="${_DIRS_BASE##*/}"
+	declare       _DIST_INFO="${_DIRS_BASE##*/}"
+	readonly      _DIST_INFO="${_DIST_INFO,,}"
 	declare       _DIST_NAME="${_DIST_INFO%%-*}"
 	              _TEXT_WRK1="${_DIST_NAME%linux}"
 	              _TEXT_WRK2="${_DIST_NAME#"${_TEXT_WRK1}"}"
@@ -72,15 +73,59 @@
 		opensuse-tumbleweed) ;;
 		*                  ) echo "not found: ${_DIST_INFO:-}"; exit 1;;
 	esac
+	declare       _FILE_SPLS=""
+	case "${_DIST_INFO}" in
+		debian-6           ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/spacefun-theme/grub/grub-16x9.png       ;;
+		debian-7           ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/joy-theme/grub/grub-16x9.png            ;;
+		debian-8           ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/lines-theme/grub/grub-16x9.png          ;;
+		debian-9           ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/softwaves-theme/grub/grub-16x9.png      ;;
+#		debian-10          ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/moonlight-theme/grub/grub-16x9.png      ;;
+		debian-10          ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/futureprototype-theme/grub/grub-16x9.png;;
+		debian-11          ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/homeworld-theme/grub/grub-16x9.png      ;;
+		debian-12          ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/emerald-theme/grub/grub-16x9.png        ;;
+		debian-13          ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/ceratopsian-theme/grub/grub-16x9.png    ;;
+#		debian-13          ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/ceratopsian-theme/grub/grub-16x9.png    ;;
+		debian-14          ) ;;
+		debian-15          ) ;;
+		debian-testing     ) ;;
+		debian-sid         ) ;;
+		ubuntu-16.04       ) ;;
+		ubuntu-18.04       ) ;;
+		ubuntu-20.04       ) ;;
+		ubuntu-22.04       ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/backgrounds/warty-final-ubuntu.png;;
+		ubuntu-24.04       ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/backgrounds/warty-final-ubuntu.png;;
+		ubuntu-24.10       ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/backgrounds/warty-final-ubuntu.png;;
+		ubuntu-25.04       ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/backgrounds/warty-final-ubuntu.png;;
+		ubuntu-25.10       ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/backgrounds/warty-final-ubuntu.png;;
+		fedora-42          ) ;;
+		fedora-43          ) ;;
+		centos-stream-9    ) ;;
+		centos-stream-10   ) ;;
+		almalinux-9        ) ;;
+		almalinux-10       ) ;;
+		rockylinux-9       ) ;;
+		rockylinux-10      ) ;;
+		miraclelinux-9     ) ;;
+		miraclelinux-10    ) ;;
+		opensuse-leap-15   ) ;;
+		opensuse-leap-16   ) ;;
+		opensuse-tumbleweed) ;;
+		*                  ) echo "not found: ${_DIST_INFO:-}"; exit 1;;
+	esac
+	readonly      _FILE_SPLS
+
+#	declare -r    _VIDE_MODE="1280x720"
+	declare -r    _VIDE_MODE="854x480"	# 16:9
+#	declare -r    _VIDE_MODE="1024x768"	# 4:3
 
 	declare       _TGET_DIST=""
 	              _TGET_DIST="$(sed -ne '/^\[Distribution\]$/,/\(^$\|^\[.*\]$\)/ {/^Distribution=/ s/^.*=//p}' "${_FILE_CONF:?}")"
-	readonly      _TGET_DIST
+	readonly      _TGET_DIST="${_TGET_DIST,,}"
 	declare       _TGET_SUIT=""
 	              _TGET_SUIT="$(sed -ne '/^\[Distribution\]$/,/\(^$\|^\[.*\]$\)/ {/^Release=/ s/^.*=//p}'      "${_FILE_CONF:?}")"
-	readonly      _TGET_SUIT
+	readonly      _TGET_SUIT="${_TGET_SUIT,,}"
 
-	declare -r    _FILE_ISOS="/srv/user/share/rmak/live-${_DIST_INFO}-${_TGET_SUIT}.iso"
+	declare -r    _FILE_ISOS="/srv/user/share/rmak/live-${_DIST_INFO}-${_TGET_SUIT}-amd64.iso"
 	declare -r    _FILE_VLID="LIVE-MEDIA"
 
 	declare -r    _DIRS_MNTP="${_DIRS_BASE}/mnt"
@@ -113,9 +158,9 @@
 		"utc=yes" \
 		"locales=ja_JP.UTF-8" \
 		"timezone=Asia/Tokyo" \
+		"keyboard-layouts=jp,us" \
 		"keyboard-model=pc105" \
-		"keyboard-layouts=jp" \
-		"keyboard-variants=OADG109A" \
+		"keyboard-variants=," \
 		"---" \
 		"quiet" \
 		"splash" \
@@ -182,18 +227,22 @@ function fnTrap() {
 
 	trap fnTrap EXIT
 
-function fnMkosi() {
+# -----------------------------------------------------------------------------
+# descript: create filesystem image
+#   input :        : unused
+#   output: stdout : unused
+#   return:        : unused
+# shellcheck disable=SC2317,SC2329
+function fnCreate_fsimage() {
 	rm -rf "${_DIRS_TGET:?}"
-	if ! mkosi \
+	if ! nice -n 19 mkosi \
 		${_TGET_SUIT:+--release ${_TGET_SUIT}} \
 		--directory="${_DIRS_TGET%/*}" \
 		--architecture=x86-64 \
 		; then
 		exit "$?"
 	fi
-}
-
-function fnCopy_kernel() {
+	# -------------------------------------------------------------------------
 	_PATH_INRD="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  \) | sort -Vu)"
 	_PATH_KENL="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' \) | sort -Vu)"
 	_FILE_INRD="${_PATH_INRD##*/}"
@@ -211,42 +260,218 @@ function fnCopy_kernel() {
 	done
 }
 
-# === mkosi ===================================================================
-	if [[ "${2:-}" = "-f" ]] || [[ "${2:-}" = "--force" ]] || [[ ! -e "${_DIRS_TGET:?}/." ]]; then
-		fnMkosi
-		fnCopy_kernel
-		# ---------------------------------------------------------------------
-		mount --rbind /dev/                  "${_DIRS_TGET}/dev/"  && mount --make-rslave "${_DIRS_TGET}/dev/" && _LIST_RMOV+=("${_DIRS_TGET}/dev/"  )
-		mount -t proc /proc/                 "${_DIRS_TGET}/proc/"                                             && _LIST_RMOV+=("${_DIRS_TGET}/proc/" )
-		mount --rbind /sys/                  "${_DIRS_TGET}/sys/"  && mount --make-rslave "${_DIRS_TGET}/sys/" && _LIST_RMOV+=("${_DIRS_TGET}/sys/"  )
-		mount  --bind /run/                  "${_DIRS_TGET}/run/"                                              && _LIST_RMOV+=("${_DIRS_TGET}/run/"  )
-		mount --rbind /tmp/                  "${_DIRS_TGET}/tmp/"  && mount --make-rslave "${_DIRS_TGET}/tmp/" && _LIST_RMOV+=("${_DIRS_TGET}/tmp/"  )
-		# ---------------------------------------------------------------------
-		_SHEL_NAME="/srv/user/share/conf/script/autoinst_cmd_late.sh"
-		if [[ -e "${_SHEL_NAME}" ]]; then
-			_EXEC_TGET="/tmp/${_SHEL_NAME##*/}"
-			cp -a "${_SHEL_NAME}" "${_DIRS_TGET}${_EXEC_TGET%/*}"
-			chmod 755 "${_DIRS_TGET}${_EXEC_TGET:?}"
-			chroot "${_DIRS_TGET}" "${_EXEC_TGET:?}" \
-				ip=192.168.1.0::192.168.1.254:255.255.255.0:${_TGET_DIST:+"live-${_TGET_DIST}.workgroup"}:ens160:192.168.1.254 \
-				ip=dhcp
-			rm -f "${_DIRS_TGET}${_EXEC_TGET:?}"
-		fi
-#		chroot "${_DIRS_TGET}" sed -i /etc/pam.d/gdm-password -e '1a auth    sufficient      pam_succeed_if.so user ingroup nopasswdlogin'
-		# ---------------------------------------------------------------------
-		umount --recursive     "${_DIRS_TGET}/tmp/"
-		umount                 "${_DIRS_TGET}/run/"
-		umount --recursive     "${_DIRS_TGET}/sys/"
-		umount                 "${_DIRS_TGET}/proc/"
-		umount --recursive     "${_DIRS_TGET}/dev/"
+# -----------------------------------------------------------------------------
+# descript: configure filesystem image
+#   input :        : unused
+#   output: stdout : unused
+#   return:        : unused
+# shellcheck disable=SC2317,SC2329
+function fnConfig_fsimage() {
+	mount --rbind /dev/                  "${_DIRS_TGET}/dev/"  && mount --make-rslave "${_DIRS_TGET}/dev/" && _LIST_RMOV+=("${_DIRS_TGET}/dev/"  )
+	mount -t proc /proc/                 "${_DIRS_TGET}/proc/"                                             && _LIST_RMOV+=("${_DIRS_TGET}/proc/" )
+	mount --rbind /sys/                  "${_DIRS_TGET}/sys/"  && mount --make-rslave "${_DIRS_TGET}/sys/" && _LIST_RMOV+=("${_DIRS_TGET}/sys/"  )
+	mount  --bind /run/                  "${_DIRS_TGET}/run/"                                              && _LIST_RMOV+=("${_DIRS_TGET}/run/"  )
+	mount --rbind /tmp/                  "${_DIRS_TGET}/tmp/"  && mount --make-rslave "${_DIRS_TGET}/tmp/" && _LIST_RMOV+=("${_DIRS_TGET}/tmp/"  )
+	# -------------------------------------------------------------------------
+	_SHEL_NAME="/srv/user/share/conf/script/autoinst_cmd_late.sh"
+	if [[ -e "${_SHEL_NAME}" ]]; then
+		_EXEC_TGET="/tmp/${_SHEL_NAME##*/}"
+		cp -a "${_SHEL_NAME}" "${_DIRS_TGET}${_EXEC_TGET%/*}"
+		chmod +x "${_DIRS_TGET}${_EXEC_TGET:?}"
+		chroot "${_DIRS_TGET}" "${_EXEC_TGET:?}" \
+			ip=192.168.1.0::192.168.1.254:255.255.255.0:${_TGET_DIST:+"live-${_TGET_DIST}.workgroup"}:-:192.168.1.254
+		rm -f "${_DIRS_TGET:?}${_EXEC_TGET:?}"
 	fi
+	[[ -e "${_DIRS_TGET:?}/usr/lib/systemd/user/orca.service"        ]] && chroot "${_DIRS_TGET}" systemctl --global disable orca.service
+	# -------------------------------------------------------------------------
+	_SHEL_NAME="/usr/local/bin/zz-all-ethernet.sh"
+	_EXEC_TGET="${_DIRS_TGET:?}${_SHEL_NAME}"
+	mkdir -p "${_EXEC_TGET%/*}"
+	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_EXEC_TGET}"
+		#!/bin/sh
 
-# === filesystem ==============================================================
+		/usr/bin/nmcli connection up zz-all-en  2> /dev/null || true
+		/usr/bin/nmcli connection up zz-all-eth 2> /dev/null || true
+
+		exit 0
+_EOT_
+	chmod +x "${_EXEC_TGET}"
+	# -------------------------------------------------------------------------
+	_FILE_PATH="${_DIRS_TGET:?}/etc/systemd/system/zz-all-ethernet.service"
+	mkdir -p "${_FILE_PATH%/*}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+		[Unit]
+		Description=Up zz-all-ethernet
+		After=NetworkManager.service
+
+		[Service]
+		ExecStart=${_SHEL_NAME}
+		Type=oneshot
+
+		[Install]
+		WantedBy=default.target
+_EOT_
+	chroot "${_DIRS_TGET}" systemctl enable "${_FILE_PATH##*/}"
+	# -------------------------------------------------------------------------
+	umount --recursive     "${_DIRS_TGET}/tmp/"
+	umount                 "${_DIRS_TGET}/run/"
+	umount --recursive     "${_DIRS_TGET}/sys/"
+	umount                 "${_DIRS_TGET}/proc/"
+	umount --recursive     "${_DIRS_TGET}/dev/"
+	# -------------------------------------------------------------------------
+	_FILE_INRD="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  \) | sort -Vu)"
+	_FILE_KENL="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' \) | sort -Vu)"
+	[[ -e "${_FILE_KENL:-}"              ]] && cp -aL "${_FILE_KENL}"                "${_DIRS_BASE}"
+	[[ -e "${_FILE_INRD:-}"              ]] && cp -aL "${_FILE_INRD}"                "${_DIRS_BASE}"
+	[[ -e "${_DIRS_TGET}/etc/os-release" ]] && cp -aL "${_DIRS_TGET}/etc/os-release" "${_DIRS_BASE}"
+	[[ -e "${_FILE_SPLS:-}"              ]] && cp -aL "${_FILE_SPLS}"                "${_DIRS_BASE}/splash.png"
+}
+
+# -----------------------------------------------------------------------------
+# descript: create config file
+#   input :        : unused
+#   output: stdout : unused
+#   return:        : unused
+# shellcheck disable=SC2317,SC2329
+function fnCreate_config() {
+	_PATH_CONF="${_DIRS_TGET}/etc/live/config.conf.d/user.conf"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_PATH_CONF}"
+		 	export LIVE_HOSTNAME="live-${_TGET_DIST}"
+		 	export LIVE_USERNAME="master"
+		 	export LIVE_USER_PASSWORD="master"
+		 	export LIVE_USER_FULLNAME="${_TGET_DIST^} Live user"
+		 	export LIVE_USER_DEFAULT_GROUPS="audio cdrom dip floppy video plugdev netdev powerdev scanner bluetooth debian-tor"
+
+		 	for _PARAMETER in \${LIVE_CONFIG_CMDLINE:-}
+		 	do
+		 		case "\${_PARAMETER}" in
+		 			live-config.user-password=*|user-password=*            ) LIVE_USER_PASSWORD="\${_PARAMETER#*user-password=}";;
+		 			live-config.user-default-groups=*|user-default-groups=*) LIVE_USER_DEFAULT_GROUPS="\${_PARAMETER#*user-default-groups=}";;
+		 			live-config.user-fullname=*|user-fullname=*            ) LIVE_USER_FULLNAME="\${_PARAMETER#*user-fullname=}";;
+		 			live-config.username=*|username=*                      ) LIVE_USERNAME="\${_PARAMETER#*username=}";;
+		 			*) ;;
+		 		esac
+		 	done
+_EOT_
+	# -------------------------------------------------------------------------
+	_PATH_CONF="${_DIRS_TGET}/usr/lib/live/config/0000-early-user-settings"
+	_FILE_NAME="${_PATH_CONF##*/}"
+	_FILE_NAME="${_FILE_NAME#[0-9]*-}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_PATH_CONF}"
+		#!/bin/sh
+
+		 	[ -n "\${LIVE_BOOT_DEBUG:-}" ] && set -x
+
+		Cmdline ()
+		{
+		 	for _PARAMETER in \${LIVE_CONFIG_CMDLINE:-}
+		 	do
+		 		case "\${_PARAMETER}" in
+		 			live-config.user-password=*|user-password=*            ) LIVE_USER_PASSWORD="\${_PARAMETER#*user-password=}";;
+		 			live-config.user-default-groups=*|user-default-groups=*) LIVE_USER_DEFAULT_GROUPS="\${_PARAMETER#*user-default-groups=}";;
+		 			live-config.user-fullname=*|user-fullname=*            ) LIVE_USER_FULLNAME="\${_PARAMETER#*user-fullname=}";;
+		 			live-config.username=*|username=*                      ) LIVE_USERNAME="\${_PARAMETER#*username=}";;
+		 			*) ;;
+		 		esac
+		 	done
+		}
+
+		Init ()
+		{
+		 	printf "%s\n" " ${_FILE_NAME}"
+		}
+
+		Config ()
+		{
+		 	# Creating state file
+		 	touch "/var/lib/live/config/${_FILE_NAME}"
+		}
+
+		 	Cmdline
+		 	Init
+		 	Config
+
+_EOT_
+	chmod 755 "${_PATH_CONF}"
+	# -------------------------------------------------------------------------
+	_PATH_CONF="${_DIRS_TGET}/usr/lib/live/config/9999-late-user-settings"
+	_FILE_NAME="${_PATH_CONF##*/}"
+	_FILE_NAME="${_FILE_NAME#[0-9]*-}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_PATH_CONF}"
+		#!/bin/sh
+
+		 	[ -n "\${LIVE_BOOT_DEBUG:-}" ] && set -x
+
+		Cmdline ()
+		{
+		 	for _PARAMETER in \${LIVE_CONFIG_CMDLINE:-}
+		 	do
+		 		case "\${_PARAMETER}" in
+		 			live-config.user-password=*|user-password=*            ) LIVE_USER_PASSWORD="\${_PARAMETER#*user-password=}";;
+		 			live-config.user-default-groups=*|user-default-groups=*) LIVE_USER_DEFAULT_GROUPS="\${_PARAMETER#*user-default-groups=}";;
+		 			live-config.user-fullname=*|user-fullname=*            ) LIVE_USER_FULLNAME="\${_PARAMETER#*user-fullname=}";;
+		 			live-config.username=*|username=*                      ) LIVE_USERNAME="\${_PARAMETER#*username=}";;
+		 			*) ;;
+		 		esac
+		 	done
+		}
+
+		Init ()
+		{
+		 	printf "%s\n" " ${_FILE_NAME}"
+		}
+
+		Config ()
+		{
+		 	# Setup user
+		 	_PASSWORD="\$(echo "\${LIVE_USER_PASSWORD}" | mkpasswd -s)"
+		 	if id "\${LIVE_USERNAME}" > /dev/null 2>&1; then
+		 		usermod --password "\${_PASSWORD:?}" "\${LIVE_USERNAME}"
+		 	else
+		 		useradd --create-home --user-group --groups "\${LIVE_USER_DEFAULT_GROUPS}" --comment "\${LIVE_USER_FULLNAME}" --password "\${_PASSWORD:?}" "\${LIVE_USERNAME}"
+		 	fi
+
+		 	# Setup samba user
+		 	printf "%s\n%s\n" "\${LIVE_USER_PASSWORD}" "\${LIVE_USER_PASSWORD}" | smbpasswd -a -s "\${LIVE_USERNAME}"
+
+		 	# Creating state file
+		 	touch "/var/lib/live/config/${_FILE_NAME}"
+		}
+
+		 	Cmdline
+		 	Init
+		 	Config
+
+_EOT_
+	chmod 755 "${_PATH_CONF}"
+
+		 	# Setup network
+		 	#find /run/NetworkManager/system-connections/ /etc/NetworkManager/system-connections/ -type f \( ! -name 'lo*' -a ! -name 'netplan-*' \) | while read -r _COMM_NAME
+		 	#do
+		 	#	nmcli connection down filename "\${_COMM_NAME}" || true
+		 	#done
+
+		 	#find /sys/devices/ -name net -exec ls -1 '{}' \; | while read -r _NICS_NAME
+		 	#do
+		 	#	if [ "\${_NICS_NAME}" = "lo" ]; then
+		 	#		continue
+		 	#	fi
+		 	#	ip link set "\${_NICS_NAME}" down || true
+		 	#done
+
+}
+
+# === mkosi ===================================================================
 	if [[ "${2:-}" = "-f" ]] || [[ "${2:-}" = "--force" ]] || [[ ! -e "${_FILE_SQFS:?}" ]]; then
+		fnCreate_fsimage
+		fnConfig_fsimage
+		fnCreate_config
+# === filesystem ==============================================================
 		rm -f "${_FILE_SQFS:?}"
-		if ! mksquashfs "${_DIRS_TGET:?}" "${_FILE_SQFS:?}"; then
+		if ! nice -n 19 mksquashfs "${_DIRS_TGET:?}" "${_FILE_SQFS:?}"; then
 			exit "$?"
 		fi
+		rm -rf "${_DIRS_TGET:?}"
 	fi
 
 # === iso image ===============================================================
@@ -310,8 +535,10 @@ _EOT_
 	losetup --detach "${_DEVS_LOOP}"
 	# --- file copy -----------------------------------------------------------
 	echo "file copy ..."
-	_FILE_INRD="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  \) | sort -Vu)"
-	_FILE_KENL="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' \) | sort -Vu)"
+#	_FILE_INRD="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  \) | sort -Vu)"
+#	_FILE_KENL="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' \) | sort -Vu)"
+	_FILE_INRD="$(find "${_DIRS_BASE}"         -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  \) | sort -Vu)"
+	_FILE_KENL="$(find "${_DIRS_BASE}"         -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' \) | sort -Vu)"
 #	[[ -e /usr/lib/grub/i386-pc/boot.img                     ]] && nice -n 19 cp -a /usr/lib/grub/i386-pc/boot.img                  "${_FILE_BIOS}"
 #	[[ -e /usr/lib/grub/i386-pc/.                            ]] && nice -n 19 cp -a /usr/lib/grub/i386-pc/                          "${_DIRS_CDFS}/boot/grub/"
 #	[[ -e /usr/lib/grub/x86_64-efi/.                         ]] && nice -n 19 cp -a /usr/lib/grub/x86_64-efi/                       "${_DIRS_CDFS}/boot/grub/"
@@ -326,39 +553,8 @@ _EOT_
 		cp -a /usr/lib/syslinux/modules/bios/* "${_DIRS_CDFS}/isolinux/"
 		cp -a /usr/lib/ISOLINUX/isolinux.bin   "${_DIRS_CDFS}/isolinux/"
 	fi
-	_FILE_SPLS=""
-	case "${_DIRS_BASE##*/}" in
-		debian-11          ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/homeworld-theme/grub/grub-4x3.png  ;;
-		debian-12          ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/emerald-theme/grub/grub-4x3.png    ;;
-		debian-13          ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/ceratopsian-theme/grub/grub-4x3.png;;
-		debian-14          ) ;;
-		debian-15          ) ;;
-		debian-testing     ) ;;
-		debian-sid         ) ;;
-		ubuntu-16.04       ) ;;
-		ubuntu-18.04       ) ;;
-		ubuntu-20.04       ) ;;
-		ubuntu-22.04       ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/backgrounds/warty-final-ubuntu.png;;
-		ubuntu-24.04       ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/backgrounds/warty-final-ubuntu.png;;
-		ubuntu-24.10       ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/backgrounds/warty-final-ubuntu.png;;
-		ubuntu-25.04       ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/backgrounds/warty-final-ubuntu.png;;
-		ubuntu-25.10       ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/backgrounds/warty-final-ubuntu.png;;
-		fedora-42          ) ;;
-		fedora-43          ) ;;
-		centos-stream-9    ) ;;
-		centos-stream-10   ) ;;
-		almalinux-9        ) ;;
-		almalinux-10       ) ;;
-		rockylinux-9       ) ;;
-		rockylinux-10      ) ;;
-		miraclelinux-9     ) ;;
-		miraclelinux-10    ) ;;
-		opensuse-leap-15   ) ;;
-		opensuse-leap-16   ) ;;
-		opensuse-tumbleweed) ;;
-	esac
-	if [[ -e "${_FILE_SPLS:-}" ]]; then
-		convert "${_FILE_SPLS}" -resize 1024x "${_DIRS_CDFS}"/isolinux/splash.png
+	if [[ -e "${_DIRS_BASE}/splash.png" ]]; then
+		convert "${_DIRS_BASE}/splash.png" -resize "${_VIDE_MODE}" "${_DIRS_CDFS}"/isolinux/splash.png
 	fi
 	# --- create efi image file -----------------------------------------------
 	rm -f "${_FILE_UEFI:?}"
@@ -370,7 +566,7 @@ _EOT_
 	[[ -e "${_DIRS_CDFS}/EFI/".  ]] && cp -a "${_DIRS_CDFS}/EFI/" "${_DIRS_MNTP}/"
 	umount "${_DIRS_MNTP}"
 	# --- get distribution information ----------------------------------------
-	_MENU_DIST="$(awk -F '=' '$1=="PRETTY_NAME" {print $2;}' "${_DIRS_BASE:?}/image/etc/os-release")"
+	_MENU_DIST="$(awk -F '=' '$1=="PRETTY_NAME" {print $2;}' "${_DIRS_BASE:?}/os-release")"
 	_MENU_DIST="${_MENU_DIST#"${_MENU_DIST%%[!\"]*}"}"
 	_MENU_DIST="${_MENU_DIST%"${_MENU_DIST##*[!\"]}"}"
 	# --- create isolinux.cfg -------------------------------------------------
@@ -379,7 +575,7 @@ _EOT_
 
 		default vesamenu.c32
 
-		menu resolution 1024 768
+		menu resolution ${_VIDE_MODE//x/ }
 		menu title Boot Menu: ${_MENU_DIST:-}
 		menu background splash.png
 		menu color title        * #FFFFFFFF *
@@ -482,19 +678,22 @@ _EOT_
 
 		if loadfont \$font ; then
 		  set gfxpayload=keep
+		  set gfxmode=${_VIDE_MODE}
 		  insmod efi_gop
 		  insmod efi_uga
 		  insmod video_bochs
 		  insmod video_cirrus
+		  insmod all_video
+		  load_video
 		  insmod gfxterm
 		  insmod png
 		  terminal_output gfxterm
 		fi
 
-		if background_image /isolinux/splash.png; then
+		if background_image /isolinux/splash.png 2> /dev/null; then
 		  set color_normal=light-gray/black
 		  set color_highlight=white/black
-		elif background_image /splash.png; then
+		elif background_image /splash.png 2> /dev/null; then
 		  set color_normal=light-gray/black
 		  set color_highlight=white/black
 		else
@@ -505,7 +704,6 @@ _EOT_
 		insmod play
 		play 960 440 1 0 4 440 1
 
-		set gfxmode=1024x768x16,auto
 		set default=0
 		set timeout=5
 		set timeout_style=menu
@@ -566,4 +764,4 @@ _EOT_
 		fi
 		rm -f "${_FILE_WORK:?}"
 	popd > /dev/null || exit
-	rm -rf "${_DIRS_TEMP:?}" "${_DIRS_MNTP:?}"
+	rm -rf "${_DIRS_TEMP:?}" "${_DIRS_BASE:?}"

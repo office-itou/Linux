@@ -1060,42 +1060,46 @@ _EOT_
 #	funcFile_backup   "${_FILE_PATH}" "init"
 
 	# --- configures ----------------------------------------------------------
-	_WORK_TEXT="$(echo "${NICS_MADR}" | sed -e 's/://g')"
-	_FILE_PATH="${DIRS_TGET:-}/var/lib/connman/ethernet_${_WORK_TEXT}_cable/settings"
-	funcFile_backup "${_FILE_PATH}"
-	mkdir -p "${_FILE_PATH%/*}"
-	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-		[ethernet_${_WORK_TEXT}_cable]
-		Name=Wired
-		AutoConnect=true
-		Modified=
-_EOT_
-	if [ "${IPV4_DHCP}" = "true" ]; then
-		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-			IPv4.method=dhcp
-			IPv4.DHCP.LastAddress=
-			IPv6.method=auto
-			IPv6.privacy=prefered
-_EOT_
+	if [ -z "${NICS_MADR:-}" ] || [ -z "${NICS_MADR##-}" ]; then
+		printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "--- skip cfg: [${__FUNC_NAME}] ---"
 	else
-		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-			IPv4.method=manual
-			IPv4.netmask_prefixlen=${NICS_BIT4}
-			IPv4.local_address=${NICS_IPV4}
-			IPv4.gateway=${NICS_GATE}
-			IPv6.method=auto
-			IPv6.privacy=prefered
-			Nameservers=${NICS_DNS4};
-			Domains=${NICS_WGRP};
-			IPv6.DHCP.DUID=
+		_WORK_TEXT="$(echo "${NICS_MADR}" | sed -e 's/://g')"
+		_FILE_PATH="${DIRS_TGET:-}/var/lib/connman/ethernet_${_WORK_TEXT}_cable/settings"
+		funcFile_backup "${_FILE_PATH}"
+		mkdir -p "${_FILE_PATH%/*}"
+		cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+			[ethernet_${_WORK_TEXT}_cable]
+			Name=Wired
+			AutoConnect=true
+			Modified=
 _EOT_
-	fi
-	chmod 600 "${_FILE_PATH}"
+		if [ "${IPV4_DHCP}" = "true" ]; then
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+				IPv4.method=dhcp
+				IPv4.DHCP.LastAddress=
+				IPv6.method=auto
+				IPv6.privacy=prefered
+_EOT_
+		else
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+				IPv4.method=manual
+				IPv4.netmask_prefixlen=${NICS_BIT4}
+				IPv4.local_address=${NICS_IPV4}
+				IPv4.gateway=${NICS_GATE}
+				IPv6.method=auto
+				IPv6.privacy=prefered
+				Nameservers=${NICS_DNS4};
+				Domains=${NICS_WGRP};
+				IPv6.DHCP.DUID=
+_EOT_
+		fi
+		chmod 600 "${_FILE_PATH}"
 
-	# --- debug out -----------------------------------------------------------
-	funcDebugout_file "${_FILE_PATH}"
-	funcFile_backup   "${_FILE_PATH}" "init"
+		# --- debug out -------------------------------------------------------
+		funcDebugout_file "${_FILE_PATH}"
+		funcFile_backup   "${_FILE_PATH}" "init"
+	fi
 
 	# --- systemctl -----------------------------------------------------------
 	_SRVC_NAME="connman.service"
@@ -1152,50 +1156,99 @@ _EOT_
 			funcDebugout_file "${_FILE_PATH}"
 			funcFile_backup   "${_FILE_PATH}" "init"
 		fi
-	else
-		_FILE_PATH="${DIRS_TGET:-}/etc/netplan/99-network-config-${NICS_NAME}.yaml"
-		funcFile_backup "${_FILE_PATH}"
-		mkdir -p "${_FILE_PATH%/*}"
-		cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
-		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-			network:
-			  version: 2
-			  renderer: networkd
-			  ethernets:
-			    ${NICS_NAME}:
-_EOT_
-		if [ "${IPV4_DHCP}" = "true" ]; then
-			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-				      dhcp4: true
-				      dhcp6: true
-				      ipv6-privacy: true
-_EOT_
-		else
-			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-				      addresses:
-				      - ${NICS_IPV4}/${NICS_BIT4}
-				      routes:
-				      - to: default
-				        via: ${NICS_GATE}
-				      nameservers:
-				        search:
-				        - ${NICS_WGRP}
-				        addresses:
-				        - ${NICS_DNS4}
-				      dhcp4: false
-				      dhcp6: true
-				      ipv6-privacy: true
-_EOT_
-		fi
-		chmod 600 "${_FILE_PATH}"
 
-		# --- debug out -------------------------------------------------------
-		funcDebugout_file "${_FILE_PATH}"
-		funcFile_backup   "${_FILE_PATH}" "init"
+		# --- 50-cloud-init.yaml ----------------------------------------------
+#		_FILE_PATH="${DIRS_TGET:-}/etc/netplan/50-cloud-init.yaml"
+		# --- 99-network-manager-ethernets.yaml -------------------------------
+#		_FILE_PATH="${DIRS_TGET:-}/etc/netplan/99-network-manager-ethernets.yaml"
+#		if { [ -z "${NICS_NAME:-}" ] || [ -z "${NICS_NAME##-}" ]; } && [ ! -e "${_FILE_PATH}" ]; then
+#			funcFile_backup "${_FILE_PATH}"
+#			mkdir -p "${_FILE_PATH%/*}"
+#			cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+#			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+#				network:
+#				  version: 2
+#				  renderer: NetworkManager
+#				  ethernets:
+#				    zz-all-en:
+#				      match:
+#				        name: "en*"
+#				      dhcp4: true
+#				      dhcp6: true
+#				      ipv6-privacy: true
+#				      networkmanager:
+#				        name: "netplan-zz-all-en"
+#				        passthrough:
+#				          connection.autoconnect: "true"
+#				          connection.zone: "${FWAL_ZONE}"
+#				          match.interface-name: "en*;"
+#				    zz-all-eth:
+#				      match:
+#				        name: "eth*"
+#				      dhcp4: true
+#				      dhcp6: true
+#				      ipv6-privacy: true
+#				      networkmanager:
+#				        name: "netplan-zz-all-eth"
+#				        passthrough:
+#				          connection.autoconnect: "true"
+#				          connection.zone: "${FWAL_ZONE}"
+#				          match.interface-name: "eth*;"
+#_EOT_
+#			chmod 600 "${_FILE_PATH}"
+#
+#			# --- debug out ---------------------------------------------------
+#			funcDebugout_file "${_FILE_PATH}"
+#			funcFile_backup   "${_FILE_PATH}" "init"
+#		fi
+	else
+		if [ -z "${NICS_NAME:-}" ] || [ -z "${NICS_NAME##-}" ]; then
+			printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "--- skip cfg: [${__FUNC_NAME}] ---"
+		else
+			_FILE_PATH="${DIRS_TGET:-}/etc/netplan/99-network-config-${NICS_NAME}.yaml"
+			funcFile_backup "${_FILE_PATH}"
+			mkdir -p "${_FILE_PATH%/*}"
+			cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+				network:
+				  version: 2
+				  renderer: networkd
+				  ethernets:
+				    ${NICS_NAME}:
+_EOT_
+			if [ "${IPV4_DHCP}" = "true" ]; then
+				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+					      dhcp4: true
+					      dhcp6: true
+					      ipv6-privacy: true
+_EOT_
+			else
+				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+					      addresses:
+					      - ${NICS_IPV4}/${NICS_BIT4}
+					      routes:
+					      - to: default
+					        via: ${NICS_GATE}
+					      nameservers:
+					        search:
+					        - ${NICS_WGRP}
+					        addresses:
+					        - ${NICS_DNS4}
+					      dhcp4: false
+					      dhcp6: true
+					      ipv6-privacy: true
+_EOT_
+			fi
+			chmod 600 "${_FILE_PATH}"
+
+			# --- debug out ---------------------------------------------------
+			funcDebugout_file "${_FILE_PATH}"
+			funcFile_backup   "${_FILE_PATH}" "init"
+		fi
 	fi
 
 	# --- netplan -------------------------------------------------------------
-	netplan apply
+	netplan status 2> /dev/null && netplan apply
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
@@ -1213,91 +1266,117 @@ funcSetupNetwork_nmanagr() {
 	fi
 
 	# --- configures ----------------------------------------------------------
-	case "${DIST_NAME:-}" in
-		debian | ubuntu ) _FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/system-connections/Wired connection 1";;
-		*               ) _FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/system-connections/${NICS_NAME}.nmconnection";;
-	esac
-	_SRVC_NAME="NetworkManager.service"
-	_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
-	if [ "${_SRVC_STAT}" = "active" ]; then
-		_FIND_UUID="$(nmcli --fields DEVICE,UUID connection show | awk '$1=="'"${NICS_NAME}"'" {print $2;}')"
-		for _FIND_PATH in "${DIRS_TGET:-}/etc/NetworkManager/system-connections/"* "${DIRS_TGET:-}/run/NetworkManager/system-connections/"*
+	if [ -z "${NICS_NAME:-}" ] || [ -z "${NICS_NAME##-}" ]; then
+		printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "--- skip cfg: [${__FUNC_NAME}] ---"
+		for _NICS_NAME in zz-all-en zz-all-eth
 		do
-			if grep -Hqs "uuid=${_FIND_UUID}" "${_FIND_PATH}"; then
-				_FILE_PATH="${_FIND_PATH}"
-				break
-			fi
-		done
-	fi
-	_CONN_NAME="${_FILE_PATH##*/}"
-	_CONN_NAME="${_CONN_NAME%.nmconnection}"
-	if [ -z "${_FIND_UUID:-}" ]; then
-		if [ "${IPV4_DHCP}" = "true" ]; then
+			_FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/system-connections/${_NICS_NAME}.nmconnection"
 			nmcli --offline connection add \
 				type ethernet \
-				connection.id "${_CONN_NAME}" \
-				connection.interface-name "${NICS_NAME}" \
+				match.interface-name "${_NICS_NAME##*-}*" \
+				connection.id "${_NICS_NAME}" \
 				connection.autoconnect true \
+				connection.autoconnect-priority 999 \
 				connection.zone "${FWAL_ZONE}" \
 				ethernet.wake-on-lan 0 \
-				${NICS_MADR:+"ethernet.mac-address ${NICS_MADR}"} \
 				ipv4.method auto \
 				ipv6.method auto \
 				ipv6.addr-gen-mode default \
 			> "${_FILE_PATH}"
-		else
-			nmcli --offline connection add \
-				type ethernet \
-				connection.id "${_CONN_NAME}" \
-				connection.interface-name "${NICS_NAME}" \
-				connection.autoconnect true \
-				connection.zone "${FWAL_ZONE}" \
-				ethernet.wake-on-lan 0 \
-				${NICS_MADR:+"ethernet.mac-address ${NICS_MADR}"} \
-				ipv4.method manual \
-				ipv4.address "${NICS_IPV4}/${NICS_BIT4}" \
-				ipv4.gateway "${NICS_GATE}" \
-				ipv4.dns "${NICS_DNS4}" \
-				ipv6.method auto \
-				ipv6.addr-gen-mode default \
-			> "${_FILE_PATH}"
-		fi
-		chown root:root "${_FILE_PATH}"
-		chmod 600 "${_FILE_PATH}"
-	else
-		if [ "${IPV4_DHCP}" = "true" ]; then
-			nmcli connection modify uuid "${_FIND_UUID}" \
-				type ethernet \
-				connection.id "${_CONN_NAME}" \
-				connection.interface-name "${NICS_NAME}" \
-				connection.autoconnect true \
-				connection.zone "${FWAL_ZONE}" \
-				ethernet.wake-on-lan 0 \
-				${NICS_MADR:+"ethernet.mac-address ${NICS_MADR}"} \
-				ipv4.method auto \
-				ipv6.method auto \
-				ipv6.addr-gen-mode default
-		else
-			nmcli connection modify uuid "${_FIND_UUID}" \
-				type ethernet \
-				connection.id "${_CONN_NAME}" \
-				connection.interface-name "${NICS_NAME}" \
-				connection.autoconnect true \
-				connection.zone "${FWAL_ZONE}" \
-				ethernet.wake-on-lan 0 \
-				${NICS_MADR:+"ethernet.mac-address ${NICS_MADR}"} \
-				ipv4.method manual \
-				ipv4.address "${NICS_IPV4}/${NICS_BIT4}" \
-				ipv4.gateway "${NICS_GATE}" \
-				ipv4.dns "${NICS_DNS4}" \
-				ipv6.method auto \
-				ipv6.addr-gen-mode default
-		fi
-	fi
+			chown root:root "${_FILE_PATH}"
+			chmod 600 "${_FILE_PATH}"
 
-	# --- debug out -----------------------------------------------------------
-	funcDebugout_file "${_FILE_PATH}"
-	funcFile_backup   "${_FILE_PATH}" "init"
+			# --- debug out ---------------------------------------------------
+			funcDebugout_file "${_FILE_PATH}"
+			funcFile_backup   "${_FILE_PATH}" "init"
+		done
+	else
+		case "${DIST_NAME:-}" in
+			debian | ubuntu ) _FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/system-connections/Wired connection 1";;
+			*               ) _FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/system-connections/${NICS_NAME}.nmconnection";;
+		esac
+		_SRVC_NAME="NetworkManager.service"
+		_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
+		if [ "${_SRVC_STAT}" = "active" ]; then
+			_FIND_UUID="$(nmcli --fields DEVICE,UUID connection show | awk '$1=="'"${NICS_NAME}"'" {print $2;}')"
+			for _FIND_PATH in "${DIRS_TGET:-}/etc/NetworkManager/system-connections/"* "${DIRS_TGET:-}/run/NetworkManager/system-connections/"*
+			do
+				if grep -Hqs "uuid=${_FIND_UUID}" "${_FIND_PATH}"; then
+					_FILE_PATH="${_FIND_PATH}"
+					break
+				fi
+			done
+		fi
+		_CONN_NAME="${_FILE_PATH##*/}"
+		_CONN_NAME="${_CONN_NAME%.nmconnection}"
+		if [ -z "${_FIND_UUID:-}" ]; then
+			if [ "${IPV4_DHCP}" = "true" ]; then
+				nmcli --offline connection add \
+					type ethernet \
+					connection.id "${_CONN_NAME}" \
+					connection.interface-name "${NICS_NAME}" \
+					connection.autoconnect true \
+					connection.zone "${FWAL_ZONE}" \
+					ethernet.wake-on-lan 0 \
+					${NICS_MADR:+"ethernet.mac-address ${NICS_MADR}"} \
+					ipv4.method auto \
+					ipv6.method auto \
+					ipv6.addr-gen-mode default \
+				> "${_FILE_PATH}"
+			else
+				nmcli --offline connection add \
+					type ethernet \
+					connection.id "${_CONN_NAME}" \
+					connection.interface-name "${NICS_NAME}" \
+					connection.autoconnect true \
+					connection.zone "${FWAL_ZONE}" \
+					ethernet.wake-on-lan 0 \
+					${NICS_MADR:+"ethernet.mac-address ${NICS_MADR}"} \
+					ipv4.method manual \
+					ipv4.address "${NICS_IPV4}/${NICS_BIT4}" \
+					ipv4.gateway "${NICS_GATE}" \
+					ipv4.dns "${NICS_DNS4}" \
+					ipv6.method auto \
+					ipv6.addr-gen-mode default \
+				> "${_FILE_PATH}"
+			fi
+			chown root:root "${_FILE_PATH}"
+			chmod 600 "${_FILE_PATH}"
+		else
+			if [ "${IPV4_DHCP}" = "true" ]; then
+				nmcli connection modify uuid "${_FIND_UUID}" \
+					type ethernet \
+					connection.id "${_CONN_NAME}" \
+					connection.interface-name "${NICS_NAME}" \
+					connection.autoconnect true \
+					connection.zone "${FWAL_ZONE}" \
+					ethernet.wake-on-lan 0 \
+					${NICS_MADR:+"ethernet.mac-address ${NICS_MADR}"} \
+					ipv4.method auto \
+					ipv6.method auto \
+					ipv6.addr-gen-mode default
+			else
+				nmcli connection modify uuid "${_FIND_UUID}" \
+					type ethernet \
+					connection.id "${_CONN_NAME}" \
+					connection.interface-name "${NICS_NAME}" \
+					connection.autoconnect true \
+					connection.zone "${FWAL_ZONE}" \
+					ethernet.wake-on-lan 0 \
+					${NICS_MADR:+"ethernet.mac-address ${NICS_MADR}"} \
+					ipv4.method manual \
+					ipv4.address "${NICS_IPV4}/${NICS_BIT4}" \
+					ipv4.gateway "${NICS_GATE}" \
+					ipv4.dns "${NICS_DNS4}" \
+					ipv6.method auto \
+					ipv6.addr-gen-mode default
+			fi
+		fi
+
+		# --- debug out -------------------------------------------------------
+		funcDebugout_file "${_FILE_PATH}"
+		funcFile_backup   "${_FILE_PATH}" "init"
+	fi
 
 	# --- dns.conf ------------------------------------------------------------
 	_FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/conf.d/dns.conf"
@@ -1396,9 +1475,14 @@ funcSetupNetwork_hosts() {
 	mkdir -p "${_FILE_PATH%/*}"
 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
 	TEXT_GAPS="$(funcString "$((16-${#NICS_IPV4}))" " ")"
+	if [ "${NICS_IPV4##*.}" -eq 0 ]; then
+		_WORK_TEXT="#${IPV4_DUMY:-"127.0.1.1"}       ${NICS_FQDN} ${NICS_HOST}"
+	else
+		_WORK_TEXT="${NICS_IPV4}${TEXT_GAPS}${NICS_FQDN} ${NICS_HOST}"
+	fi
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
 		${IPV4_LHST:-"127.0.0.1"}       localhost
-		${NICS_IPV4}${TEXT_GAPS}${NICS_FQDN} ${NICS_HOST}
+		${_WORK_TEXT}
 
 		# The following lines are desirable for IPv6 capable hosts
 		${IPV6_LHST:-"::1"}             localhost ip6-localhost ip6-loopback
@@ -1488,73 +1572,79 @@ funcSetupNetwork_firewalld() {
 	# memo: log output settings : firewall-cmd --set-log-denied=all
 	#       service name output ; firewall-cmd --get-services
 	#       setting value output: firewall-cmd --list-all --zone=home_use
-	_FILE_PATH="${DIRS_TGET:-}/etc/firewalld/zones/${FWAL_ZONE}.xml"
-	_WORK_PATH="${DIRS_TGET:-}/lib/firewalld/zones/drop.xml"
-	if [ ! -e "${_WORK_PATH}" ]; then
-		_WORK_PATH="${DIRS_TGET:-}/usr/lib/firewalld/zones/drop.xml"
-	fi
-	cp -a "${_WORK_PATH}" "${_FILE_PATH}"
-	funcFile_backup "${_FILE_PATH}"
-	mkdir -p "${_FILE_PATH%/*}"
-	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
-	_IPV4_ADDR="${IPV4_UADR}.0/${NICS_BIT4}"
-	_IPV6_ADDR="${IPV6_UADR%%::}::/${IPV6_CIDR}"
-	_LINK_ADDR="${LINK_UADR%%::}::/10"
-	_SRVC_NAME="firewalld.service"
-	_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
-	if [ "${_SRVC_STAT}" = "active" ]; then
-		printf "\033[m${PROG_NAME}: %s\033[m\n" "service active: ${_SRVC_NAME}"
-		firewall-cmd --quiet --permanent --set-default-zone="${FWAL_ZONE}" || true
-		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --change-interface="${NICS_NAME}" || true
-		for _FWAL_NAME in ${FWAL_NAME}
-		do
-			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" service name="'"${_FWAL_NAME}"'" accept' || true
-#			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" service name="'"${_FWAL_NAME}"'" accept' || true
-			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" service name="'"${_FWAL_NAME}"'" accept' || true
-		done
-		for _FWAL_PORT in ${FWAL_PORT}
-		do
-			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
-#			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
-			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
-		done
-		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" protocol value="icmp"      accept'
-#		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" protocol value="ipv6-icmp" accept'
-		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" protocol value="ipv6-icmp" accept'
-		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="0.0.0.0" service name="tftp" accept' || true
-		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="0.0.0.0" port protocol="udp" port="67-68" accept' || true
-		firewall-cmd --quiet --reload
-		firewall-cmd --get-zone-of-interface="${NICS_NAME}"
-		firewall-cmd --list-all --zone="${FWAL_ZONE}"
-	else
-		printf "\033[m${PROG_NAME}: %s\033[m\n" "service inactive: ${_SRVC_NAME}"
-		firewall-offline-cmd --quiet --set-default-zone="${FWAL_ZONE}" || true
-		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --change-interface="${NICS_NAME}" || true
-		for _FWAL_NAME in ${FWAL_NAME}
-		do
-			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" service name="'"${_FWAL_NAME}"'" accept' || true
-#			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" service name="'"${_FWAL_NAME}"'" accept' || true
-			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" service name="'"${_FWAL_NAME}"'" accept' || true
-		done
-		for _FWAL_PORT in ${FWAL_PORT}
-		do
-			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
-#			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
-			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
-		done
-		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" protocol value="icmp"      accept'
-#		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" protocol value="ipv6-icmp" accept'
-		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" protocol value="ipv6-icmp" accept'
-		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="0.0.0.0" service name="tftp" accept' || true
-		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="0.0.0.0" port protocol="udp" port="67-68" accept' || true
-#		firewall-offline-cmd --quiet --reload
-		firewall-offline-cmd --get-zone-of-interface="${NICS_NAME}"
-		firewall-offline-cmd --list-all --zone="${FWAL_ZONE}"
-	fi
+#	if [ -z "${NICS_NAME:-}" ] || [ -z "${NICS_NAME##-}" ]; then
+#		printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "--- skip cfg: [${__FUNC_NAME}] ---"
+#		systemctl --quiet mask firewalld.service
+#		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "**      mask: [firewalld.service] **"
+#	else
+		_FILE_PATH="${DIRS_TGET:-}/etc/firewalld/zones/${FWAL_ZONE}.xml"
+		_WORK_PATH="${DIRS_TGET:-}/lib/firewalld/zones/drop.xml"
+		if [ ! -e "${_WORK_PATH}" ]; then
+			_WORK_PATH="${DIRS_TGET:-}/usr/lib/firewalld/zones/drop.xml"
+		fi
+		cp -a "${_WORK_PATH}" "${_FILE_PATH}"
+		funcFile_backup "${_FILE_PATH}"
+		mkdir -p "${_FILE_PATH%/*}"
+		cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+		_IPV4_ADDR="${IPV4_UADR}.0/${NICS_BIT4}"
+		_IPV6_ADDR="${IPV6_UADR%%::}::/${IPV6_CIDR}"
+		_LINK_ADDR="${LINK_UADR%%::}::/10"
+		_SRVC_NAME="firewalld.service"
+		_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
+		if [ "${_SRVC_STAT}" = "active" ]; then
+			printf "\033[m${PROG_NAME}: %s\033[m\n" "service active: ${_SRVC_NAME}"
+			firewall-cmd --quiet --permanent --set-default-zone="${FWAL_ZONE}" || true
+			[ -n "${NICS_NAME##-}" ] && firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --change-interface="${NICS_NAME}" || true
+			for _FWAL_NAME in ${FWAL_NAME}
+			do
+				firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" service name="'"${_FWAL_NAME}"'" accept' || true
+#				firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" service name="'"${_FWAL_NAME}"'" accept' || true
+				firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" service name="'"${_FWAL_NAME}"'" accept' || true
+			done
+			for _FWAL_PORT in ${FWAL_PORT}
+			do
+				firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
+#				firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
+				firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
+			done
+			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" protocol value="icmp"      accept'
+#			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" protocol value="ipv6-icmp" accept'
+			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" protocol value="ipv6-icmp" accept'
+			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="0.0.0.0" service name="tftp" accept' || true
+			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="0.0.0.0" port protocol="udp" port="67-68" accept' || true
+			firewall-cmd --quiet --reload
+			[ -n "${NICS_NAME##-}" ] && firewall-cmd --get-zone-of-interface="${NICS_NAME}"
+			firewall-cmd --list-all --zone="${FWAL_ZONE}"
+		else
+			printf "\033[m${PROG_NAME}: %s\033[m\n" "service inactive: ${_SRVC_NAME}"
+			firewall-offline-cmd --quiet --set-default-zone="${FWAL_ZONE}" || true
+			[ -n "${NICS_NAME##-}" ] && firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --change-interface="${NICS_NAME}" || true
+			for _FWAL_NAME in ${FWAL_NAME}
+			do
+				firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" service name="'"${_FWAL_NAME}"'" accept' || true
+#				firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" service name="'"${_FWAL_NAME}"'" accept' || true
+				firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" service name="'"${_FWAL_NAME}"'" accept' || true
+			done
+			for _FWAL_PORT in ${FWAL_PORT}
+			do
+				firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
+#				firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
+				firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
+			done
+			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" protocol value="icmp"      accept'
+#			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" protocol value="ipv6-icmp" accept'
+			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" protocol value="ipv6-icmp" accept'
+			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="0.0.0.0" service name="tftp" accept' || true
+			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="0.0.0.0" port protocol="udp" port="67-68" accept' || true
+#			firewall-offline-cmd --quiet --reload
+			[ -n "${NICS_NAME##-}" ] && firewall-offline-cmd --get-zone-of-interface="${NICS_NAME}"
+			firewall-offline-cmd --list-all --zone="${FWAL_ZONE}"
+		fi
 
-	# --- debug out -----------------------------------------------------------
-	funcDebugout_file "${_FILE_PATH}"
-	funcFile_backup   "${_FILE_PATH}" "init"
+		# --- debug out -------------------------------------------------------
+		funcDebugout_file "${_FILE_PATH}"
+		funcFile_backup   "${_FILE_PATH}" "init"
+#	fi
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
@@ -1626,6 +1716,7 @@ funcSetupNetwork_dnsmasq() {
 	funcFile_backup "${_FILE_PATH}"
 	mkdir -p "${_FILE_PATH%/*}"
 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+	[ -n "${NICS_NAME##-}" ] && _NICS_NAME="${NICS_NAME}" || _NICS_NAME="${NICS_NAME:-"      "}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
 		# --- log ---------------------------------------------------------------------
 		#log-queries                                                # dns query log output
@@ -1639,7 +1730,7 @@ funcSetupNetwork_dnsmasq() {
 		#domain=${NICS_WGRP}                                           # local domain name
 		#expand-hosts                                               # add domain name to host
 		#filterwin2k                                                # filter for windows
-		interface=${NICS_NAME}                                            # listen to interface
+		#interface=${_NICS_NAME:-}                                           # listen to interface
 		#listen-address=${IPV4_LHST}                                   # listen to ip address
 		#listen-address=${IPV6_LHST}                                         # listen to ip address
 		#listen-address=${NICS_IPV4}                                 # listen to ip address
@@ -1688,13 +1779,14 @@ _EOT_
 	funcFile_backup "${_FILE_PATH}"
 	mkdir -p "${_FILE_PATH%/*}"
 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+	[ -n "${NICS_NAME##-}" ] && _NICS_NAME="${NICS_NAME}" || _NICS_NAME="${NICS_NAME:-"      "}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
 		#log-queries                                                # dns query log output
 		#log-dhcp                                                   # dhcp transaction log output
 		#log-facility=                                              # log output file name
 
 		# --- tftp --------------------------------------------------------------------
-		#enable-tftp=${NICS_NAME}                                         # enable tftp server
+		#enable-tftp=${_NICS_NAME:-}                                         # enable tftp server
 		#tftp-root=${DIRS_TFTP}                                        # tftp root directory
 		#tftp-lowercase                                             # convert tftp request path to all lowercase
 		#tftp-no-blocksize                                          # stop negotiating "block size" option
@@ -2070,6 +2162,15 @@ funcSetupNetwork_samba() {
 	    -e  '/^[ \t]*interfaces[ \t]*=/                   s/=.*$/= '"${NICS_NAME}"'/' \
 	    -e  'p                                                                     }' \
 	> "${_WORK_PATH}"
+	if [ -z "${NICS_HOST:-}" ] || [ -z "${NICS_HOST##-}" ]; then
+		sed -i "${_WORK_PATH}" -e '/^[ \t]*netbios name[ \t]*=/d'
+	fi
+	if [ -z "${NICS_WGRP:-}" ] || [ -z "${NICS_WGRP##-}" ]; then
+		sed -i "${_WORK_PATH}" -e '/^[ \t]*workgroup[ \t]*=/d'
+	fi
+	if [ -z "${NICS_NAME:-}" ] || [ -z "${NICS_NAME##-}" ]; then
+		sed -i "${_WORK_PATH}" -e '/^[ \t]*interfaces[ \t]*=/d'
+	fi
 
 	# --- shared settings section ---------------------------------------------
 	# wide links = Yes
@@ -2377,7 +2478,7 @@ _EOT_
 	mkdir -p "${_FILE_PATH%/*}"
 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-		.host:/         ${DIRS_HGFS:?}       ${_HGFS_FSYS} allow_other,auto_unmount,defaults 0 0
+		.host:/         ${DIRS_HGFS:?}       ${_HGFS_FSYS} nofail,allow_other,auto_unmount,defaults 0 0
 _EOT_
 
 	# --- systemctl -----------------------------------------------------------
@@ -2702,7 +2803,7 @@ funcSetupConfig_sudo() {
 	_WORK_TEXT="${_WORK_TEXT:+"%${_WORK_TEXT}$(funcString "$((6-${#_WORK_TEXT}))" " ")ALL=(ALL:ALL) ALL"}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_WORK_PATH}"
 		Defaults !targetpw
-		Defaults authenticate
+		#Defaults authenticate
 		root   ALL=(ALL:ALL) ALL
 		${_WORK_TEXT:-}
 _EOT_
@@ -2729,7 +2830,7 @@ _EOT_
 			cp -a "${_WORK_PATH}" "${_FILE_PATH}"
 			chown -c root:root "${_FILE_PATH}"
 			chmod -c 0440 "${_FILE_PATH}"
-			printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "sudo -ll: list user's privileges or check a specific command"
+			printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "sudo -ll: list user's privileges or check a specific command"
 
 			# --- debug out ---------------------------------------------------
 			funcDebugout_file "${_FILE_PATH}"
