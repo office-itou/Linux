@@ -125,7 +125,7 @@
 	              _TGET_SUIT="$(sed -ne '/^\[Distribution\]$/,/\(^$\|^\[.*\]$\)/ {/^Release=/ s/^.*=//p}'      "${_FILE_CONF:?}")"
 	readonly      _TGET_SUIT="${_TGET_SUIT,,}"
 
-	declare -r    _FILE_ISOS="/srv/user/share/rmak/live-${_DIST_INFO}-${_TGET_SUIT}-amd64.iso"
+	declare -r    _FILE_ISOS="/srv/user/share/rmak/live-${_DIST_INFO%"-${_TGET_SUIT}"}-${_TGET_SUIT}-amd64.iso"
 	declare -r    _FILE_VLID="LIVE-MEDIA"
 
 	declare -r    _DIRS_MNTP="${_DIRS_BASE}/mnt"
@@ -261,6 +261,70 @@ function fnCreate_fsimage() {
 }
 
 # -----------------------------------------------------------------------------
+# descript: create initramfs
+#   input :        : unused
+#   output: stdout : unused
+#   return:        : unused
+# shellcheck disable=SC2317,SC2329
+function fnCreate_initrd() {
+	_SHEL_NAME="/tmp/create_initrd"
+	_FILE_PATH="${_DIRS_TGET}${_SHEL_NAME}"
+	mkdir -p "${_FILE_PATH%/*}"
+	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+	#!/bin/sh
+	 	declare -r -a _LIST_PAKG=(\
+	 		bash \
+	 		shell-interpreter \
+	 		systemd \
+	 		fips \
+	 		fips-crypto-policies \
+	 		systemd-ask-password \
+	 		systemd-initrd \
+	 		systemd-journald \
+	 		systemd-modules-load \
+	 		systemd-sysctl \
+	 		systemd-sysusers \
+	 		systemd-tmpfiles \
+	 		systemd-udevd \
+	 		nss-softokn \
+	 		i18n \
+	 		drm \
+	 		plymouth \
+	 		prefixdevname \
+	 		kernel-modules \
+	 		kernel-modules-extra \
+	 		qemu \
+	 		hwdb \
+	 		resume \
+	 		rootfs-block \
+	 		terminfo \
+	 		udev-rules \
+	 		virtiofs \
+	 		dracut-systemd \
+	 		usrmount \
+	 		base \
+	 		fs-lib \
+	 		memstrack \
+	 		microcode_ctl-fw_dir_override \
+	 		openssl \
+	 		shutdown \
+	 	)
+
+#	 	_ARCH_TYPE="$(uname -m)"
+#	 	_KRNL_VERS="$(uname -r)"
+	 	_KRNL_INFO="$(ls /usr/lib/modules/)"
+	 	_ARCH_TYPE="${_KRNL_INFO##*[-.]}"
+	 	_KRNL_VERS="${_KRNL_INFO%"[-.]${_ARCH_TYPE}"}"
+	 	cp -a "/usr/lib/modules/${_KRNL_INFO}/vmlinuz" "/boot/vmlinuz-${_KRNL_INFO}"
+	 	dracut --add "${_LIST_PAKG[*]}"                "/boot/initramfs-${_KRNL_INFO}.img" --kver "${_KRNL_INFO}"
+_EOT_
+
+	chmod +x "${_FILE_PATH}"
+	chroot "${_DIRS_TGET}" "${_SHEL_NAME}"
+	rm -f "${_FILE_PATH:?}"
+}
+
+# -----------------------------------------------------------------------------
 # descript: configure filesystem image
 #   input :        : unused
 #   output: stdout : unused
@@ -313,18 +377,31 @@ _EOT_
 _EOT_
 	chroot "${_DIRS_TGET}" systemctl enable "${_FILE_PATH##*/}"
 	# -------------------------------------------------------------------------
+	case "${_DIST_INFO}" in
+		debian-*           | \
+		ubuntu-*           ) ;;
+		fedora-*           | \
+		centos-stream-*    | \
+		almalinux-*        | \
+		rockylinux-*       | \
+		miraclelinux-*     ) fnCreate_initrd;;
+		opensuse-leap-*    | \
+		opensuse-tumbleweed) ;;
+		*                  ) echo "not found: ${_DIST_INFO:-}"; exit 1;;
+	esac
+	# -------------------------------------------------------------------------
 	umount --recursive     "${_DIRS_TGET}/tmp/"
 	umount                 "${_DIRS_TGET}/run/"
 	umount --recursive     "${_DIRS_TGET}/sys/"
 	umount                 "${_DIRS_TGET}/proc/"
 	umount --recursive     "${_DIRS_TGET}/dev/"
 	# -------------------------------------------------------------------------
-	_FILE_INRD="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  \) | sort -Vu)"
-	_FILE_KENL="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' \) | sort -Vu)"
-	[[ -e "${_FILE_KENL:-}"              ]] && cp -aL "${_FILE_KENL}"                "${_DIRS_BASE}"
-	[[ -e "${_FILE_INRD:-}"              ]] && cp -aL "${_FILE_INRD}"                "${_DIRS_BASE}"
-	[[ -e "${_DIRS_TGET}/etc/os-release" ]] && cp -aL "${_DIRS_TGET}/etc/os-release" "${_DIRS_BASE}"
-	[[ -e "${_FILE_SPLS:-}"              ]] && cp -aL "${_FILE_SPLS}"                "${_DIRS_BASE}/splash.png"
+	_FILE_INRD="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  -o -name 'initramfs' -o -name 'initramfs-*' \) | sort -Vu || true)"
+	_FILE_KENL="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*'                                             \) | sort -Vu || true)"
+	[[ -e "${_FILE_KENL:-}"                ]] && cp -aL "${_FILE_KENL}"                  "${_DIRS_BASE}"
+	[[ -e "${_FILE_INRD:-}"                ]] && cp -aL "${_FILE_INRD}"                  "${_DIRS_BASE}"
+	[[ -e "${_FILE_SPLS:-}"                ]] && cp -aL "${_FILE_SPLS}"                  "${_DIRS_BASE}/splash.png"
+	[[ -e "${_DIRS_TGET:-}/etc/os-release" ]] && cp -aL "${_DIRS_TGET:-}/etc/os-release" "${_DIRS_BASE}"
 }
 
 # -----------------------------------------------------------------------------
@@ -465,7 +542,18 @@ _EOT_
 	if [[ "${2:-}" = "-f" ]] || [[ "${2:-}" = "--force" ]] || [[ ! -e "${_FILE_SQFS:?}" ]]; then
 		fnCreate_fsimage
 		fnConfig_fsimage
-		fnCreate_config
+		case "${_DIST_INFO}" in
+			debian-*           | \
+			ubuntu-*           ) fnCreate_config;;
+			fedora-*           | \
+			centos-stream-*    | \
+			almalinux-*        | \
+			rockylinux-*       | \
+			miraclelinux-*     ) ;;
+			opensuse-leap-*    | \
+			opensuse-tumbleweed) ;;
+			*                  ) echo "not found: ${_DIST_INFO:-}"; exit 1;;
+		esac
 # === filesystem ==============================================================
 		rm -f "${_FILE_SQFS:?}"
 		if ! nice -n 19 mksquashfs "${_DIRS_TGET:?}" "${_FILE_SQFS:?}"; then
@@ -537,8 +625,8 @@ _EOT_
 	echo "file copy ..."
 #	_FILE_INRD="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  \) | sort -Vu)"
 #	_FILE_KENL="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' \) | sort -Vu)"
-	_FILE_INRD="$(find "${_DIRS_BASE}"         -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  \) | sort -Vu)"
-	_FILE_KENL="$(find "${_DIRS_BASE}"         -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' \) | sort -Vu)"
+	_FILE_INRD="$(find "${_DIRS_BASE}"         -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  -o -name 'initramfs' -o -name 'initramfs-*' \) | sort -Vu)"
+	_FILE_KENL="$(find "${_DIRS_BASE}"         -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*'                                             \) | sort -Vu)"
 #	[[ -e /usr/lib/grub/i386-pc/boot.img                     ]] && nice -n 19 cp -a /usr/lib/grub/i386-pc/boot.img                  "${_FILE_BIOS}"
 #	[[ -e /usr/lib/grub/i386-pc/.                            ]] && nice -n 19 cp -a /usr/lib/grub/i386-pc/                          "${_DIRS_CDFS}/boot/grub/"
 #	[[ -e /usr/lib/grub/x86_64-efi/.                         ]] && nice -n 19 cp -a /usr/lib/grub/x86_64-efi/                       "${_DIRS_CDFS}/boot/grub/"

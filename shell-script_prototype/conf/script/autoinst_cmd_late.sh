@@ -651,7 +651,7 @@ funcFile_backup() {
 		*   ) ___BACK_PATH="${DIRS_TGET:+"${DIRS_TGET}/"}${DIRS_ORIG}/${___BACK_PATH#/}";;
 	esac
 	mkdir -p "${___BACK_PATH%/*}"
-	if [ -e "${___BACK_PATH}" ]; then
+	if [ -e "${___BACK_PATH}" ] || [ -L "${___BACK_PATH}" ]; then
 		___BACK_PATH="${___BACK_PATH}.$(date +"%Y%m%d%H%M%S")"
 	fi
 	if [ -n "${DBGS_FLAG:-}" ]; then
