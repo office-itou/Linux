@@ -541,7 +541,7 @@ funcInitialize() {
 			static) IPV4_DHCP="false";;
 			dhcp  ) IPV4_DHCP="true" ;;
 			*     )
-				if ip -4 -oneline address show dev "${NICS_NAME}" 2> /dev/null || true | grep -qE '[ \t]dynamic[ \t]'; then
+				if ip -4 -oneline address show dev "${NICS_NAME}" 2> /dev/null | grep -qE '[ \t]dynamic[ \t]' || true; then
 					IPV4_DHCP="true"
 				else
 					IPV4_DHCP="false"
@@ -549,8 +549,8 @@ funcInitialize() {
 				;;
 		esac
 	fi
-	NICS_MADR="${NICS_MADR:-"$(ip -0 -brief address show dev "${NICS_NAME}" 2> /dev/null || true | awk '$1!="lo" {print $3;}')"}"
-	NICS_IPV4="${NICS_IPV4:-"$(ip -4 -brief address show dev "${NICS_NAME}" 2> /dev/null || true | awk '$1!="lo" {print $3;}')"}"
+	NICS_MADR="${NICS_MADR:-"$(ip -0 -brief address show dev "${NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}' || true)"}"
+	NICS_IPV4="${NICS_IPV4:-"$(ip -4 -brief address show dev "${NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}' || true)"}"
 	NICS_BIT4="$(echo "${NICS_IPV4}/" | cut -d '/' -f 2)"
 	NICS_IPV4="$(echo "${NICS_IPV4}/" | cut -d '/' -f 1)"
 	if [ -z "${NICS_BIT4}" ]; then
@@ -1255,8 +1255,8 @@ _EOT_
 }
 
 # --- network setup network manager -------------------------------------------
-funcSetupNetwork_nmanagr() {
-	__FUNC_NAME="funcSetupNetwork_nmanagr"
+funcSetupNetwork_manager() {
+	__FUNC_NAME="funcSetupNetwork_manager"
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
 
 	# --- check command -------------------------------------------------------
@@ -1318,7 +1318,7 @@ funcSetupNetwork_nmanagr() {
 					connection.autoconnect true \
 					connection.zone "${FWAL_ZONE}" \
 					ethernet.wake-on-lan 0 \
-					${NICS_MADR:+"ethernet.mac-address ${NICS_MADR}"} \
+					${NICS_MADR:+ethernet.mac-address "${NICS_MADR}"} \
 					ipv4.method auto \
 					ipv6.method auto \
 					ipv6.addr-gen-mode default \
@@ -1331,7 +1331,7 @@ funcSetupNetwork_nmanagr() {
 					connection.autoconnect true \
 					connection.zone "${FWAL_ZONE}" \
 					ethernet.wake-on-lan 0 \
-					${NICS_MADR:+"ethernet.mac-address ${NICS_MADR}"} \
+					${NICS_MADR:+ethernet.mac-address "${NICS_MADR}"} \
 					ipv4.method manual \
 					ipv4.address "${NICS_IPV4}/${NICS_BIT4}" \
 					ipv4.gateway "${NICS_GATE}" \
@@ -1351,7 +1351,7 @@ funcSetupNetwork_nmanagr() {
 					connection.autoconnect true \
 					connection.zone "${FWAL_ZONE}" \
 					ethernet.wake-on-lan 0 \
-					${NICS_MADR:+"ethernet.mac-address ${NICS_MADR}"} \
+					${NICS_MADR:+ethernet.mac-address "${NICS_MADR}"} \
 					ipv4.method auto \
 					ipv6.method auto \
 					ipv6.addr-gen-mode default
@@ -1363,7 +1363,7 @@ funcSetupNetwork_nmanagr() {
 					connection.autoconnect true \
 					connection.zone "${FWAL_ZONE}" \
 					ethernet.wake-on-lan 0 \
-					${NICS_MADR:+"ethernet.mac-address ${NICS_MADR}"} \
+					${NICS_MADR:+ethernet.mac-address "${NICS_MADR}"} \
 					ipv4.method manual \
 					ipv4.address "${NICS_IPV4}/${NICS_BIT4}" \
 					ipv4.gateway "${NICS_GATE}" \
@@ -3122,7 +3122,7 @@ funcMain() {
 	# --- network manager -----------------------------------------------------
 	funcSetupNetwork_connman			# network setup connman
 	funcSetupNetwork_netplan			# network setup netplan
-	funcSetupNetwork_nmanagr			# network setup network manager
+	funcSetupNetwork_manager			# network setup network manager
 
 	# --- network settings ----------------------------------------------------
 	funcSetupNetwork_hostname			# network setup hostname
