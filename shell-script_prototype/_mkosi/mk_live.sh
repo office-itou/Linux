@@ -21,15 +21,37 @@
 	readonly      _DIRS_TEMP
 
 	declare       _DIRS_BASE="live/${1:?}"
+	shift
+	declare       _FLAG_FORC=""
+	declare       _FLAG_HOLD=""
+	while [[ -n "${1:-}" ]]
+	do
+		case "${1:-}" in
+			-f|--force) _FLAG_FORC="true";;
+			-h|--hold ) _FLAG_HOLD="true";;
+			*         ) ;;
+		esac
+		shift
+	done
+	readonly      _FLAG_FORC
+	readonly      _FLAG_HOLD
+
 	mkdir -p "${_DIRS_BASE}"
 	              _DIRS_BASE="$(realpath "${_DIRS_BASE%/}")"
 	readonly      _DIRS_BASE
-	
-	declare -r    _FILE_CONF="${_DIRS_BASE:?}/mkosi.conf"
-	declare -r    _FILE_SQFS="${_DIRS_BASE:?}/filesystem.squashfs"
+	declare -r    _DIRS_OLAY="${_DIRS_BASE}/overlay"
+	declare -r    _FILE_CONF="${_DIRS_BASE}/mkosi.conf"
+	declare       _FILE_SQFS=""
+#	declare -r    _FILE_SQFS="${_DIRS_BASE:?}/filesystem.squashfs"
 #	declare -r    _FILE_SQFS="${_DIRS_BASE:?}/minimal.squashfs"
+	declare -r    _DIRS_TGET="${_DIRS_OLAY}/merged"
 
-	declare -r    _DIRS_TGET="${_DIRS_BASE:?}/image"
+	rm -rf "${_DIRS_OLAY:?}"
+	mkdir -p "${_DIRS_BASE}"/image \
+	         "${_DIRS_OLAY}"/{upper,lower,work,merged}
+	mv "${_DIRS_OLAY}"/lower "${_DIRS_OLAY}"/lower.back
+	ln -sr "${_DIRS_BASE}"/image "${_DIRS_OLAY}"/lower
+
 	declare       _FILE_INRD="${_DIRS_TGET}/initrd"
 	declare       _FILE_KENL="${_DIRS_TGET}/vmlinuz"
 
@@ -41,6 +63,24 @@
 	              _DIST_NAME="${_TEXT_WRK1}"
 	readonly      _DIST_NAME
 	declare -r    _DIST_VERS="${_DIST_INFO#*-}"
+	declare       _DIRS_LIVE=""
+	case "${_DIST_INFO}" in
+		debian-*           | \
+		ubuntu-*           ) _DIRS_LIVE="live"; _FILE_SQFS="${_DIRS_BASE:?}/filesystem.squashfs";;
+		fedora-*           | \
+		centos-stream-*    | \
+		almalinux-*        | \
+		rockylinux-*       | \
+		miraclelinux-*     ) _DIRS_LIVE="LiveOS"; _FILE_SQFS="${_DIRS_BASE:?}/squashfs.img";;
+		opensuse-leap-15.* ) ;;
+		opensuse-leap-16.* ) ;;
+		opensuse-tumbleweed) ;;
+		*                  ) echo "not found: ${_DIST_INFO:-}"; exit 1;;
+	esac
+#	_DIRS_LIVE="live"
+#	_FILE_SQFS="${_DIRS_BASE:?}/filesystem.squashfs"
+	readonly      _DIRS_LIVE
+	readonly      _FILE_SQFS
 	# fedora,  debian,  kali,  ubuntu,  arch,  opensuse, mageia, centos, rhel, rhel-ubi, openmandriva, rocky, alma, azure or custom
 	case "${_DIST_INFO}" in
 		debian-11          ) sed -e '/^Release/ s/=.*$/=bullseye/' /srv/user/share/conf/_template/mkosi.debian.conf > "${_FILE_CONF}";;
@@ -126,7 +166,8 @@
 	readonly      _TGET_SUIT="${_TGET_SUIT,,}"
 
 	declare -r    _FILE_ISOS="/srv/user/share/rmak/live-${_DIST_INFO%"-${_TGET_SUIT}"}-${_TGET_SUIT}-amd64.iso"
-	declare -r    _FILE_VLID="LIVE-MEDIA"
+	declare -r    _FILE_VLID="${_DIST_INFO^}-Live-Media"
+#	declare -r    _FILE_VLID="LiveOS_rootfs"
 
 	declare -r    _DIRS_MNTP="${_DIRS_BASE}/mnt"
 	declare -r    _DIRS_CDFS="${_DIRS_BASE}/cdfs"
@@ -148,8 +189,8 @@
 	declare -r    _MENU_FTHM="${_DIRS_CDFS}/boot/grub/theme.txt"
 	declare       _MENU_DIST=""
 
-	declare -r -a _BOOT_OPTN=(\
-		"boot=live" \
+	declare -r -a _BOOT_DEBS=(\
+		"boot=${_DIRS_LIVE}" \
 		"nonetworking" \
 		"dhcp" \
 		"components" \
@@ -165,8 +206,39 @@
 		"quiet" \
 		"splash" \
 		"fsck.mode=skip" \
-		"raid=noautodetect"
+		"raid=noautodetect" \
 	)
+
+	declare -r -a _BOOT_RHEL=(\
+		"selinux=0" \
+		"ip=dhcp" \
+		"root=LABEL=${_FILE_VLID}" \
+		"iso-scan/filename=${_FILE_ISOS##*/}" \
+		"timezone=Asia/Tokyo" \
+		"rd.locale.LANG=ja_JP.UTF-8" \
+		"rd.vconsole.keymap=jp" \
+		"rd.live.ram=1" \
+	)
+#		"rd.live.overlay.overlayfs=1" \
+#		"rd.live.overlay=/dev/sr0:auto" \
+#		"rd.live.dir=/${_DIRS_LIVE}" \
+#		"rd.locale.LANG=ja_JP.UTF-8" \
+#		"rd.locale.LC_ALL=ja_JP.UTF-8" \
+#		"rd.vconsole.keymap=jp" \
+#		"rd.vconsole.font=default8x16" \
+#		"rd.live.ram=1" \
+#		"rd.info" \
+#		"rd.debug" \
+#		"rd.shell" \
+#		"rd.live.debug=1" \
+#	declare -r -a _BOOT_RHEL=(\
+#		"ip=dhcp" \
+#		"boot=${_DIRS_LIVE}" \
+#		"iso-scan/filename=${_FILE_ISOS##*/}" \
+#		"root=live:LABEL=${_FILE_VLID}" \
+#		"rd.live.image" \
+#		"rd.live.overlay.overlayfs=1" \
+#	)
 
 	declare -r -a _OPTN_XORR=(\
 		-quiet -rational-rock \
@@ -198,6 +270,7 @@
 #   return:        : unused
 # shellcheck disable=SC2317,SC2329
 function fnTrap() {
+	echo "fnTrap"
 	declare       __PATH=""				# full path
 	declare -i    I=0
 	# --- unmount -------------------------------------------------------------
@@ -234,30 +307,17 @@ function fnTrap() {
 #   return:        : unused
 # shellcheck disable=SC2317,SC2329
 function fnCreate_fsimage() {
-	rm -rf "${_DIRS_TGET:?}"
+	echo "fnCreate_fsimage"
+#	rm -rf "${_DIRS_TGET:?}"
 	if ! nice -n 19 mkosi \
+		--force \
+		--wipe-build-dir \
 		${_TGET_SUIT:+--release ${_TGET_SUIT}} \
-		--directory="${_DIRS_TGET%/*}" \
+		--directory="${_DIRS_BASE}" \
 		--architecture=x86-64 \
 		; then
 		exit "$?"
 	fi
-	# -------------------------------------------------------------------------
-	_PATH_INRD="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  \) | sort -Vu)"
-	_PATH_KENL="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' \) | sort -Vu)"
-	_FILE_INRD="${_PATH_INRD##*/}"
-	_FILE_KENL="${_PATH_KENL##*/}"
-	for _FILE_PATH in "${_DIRS_TGET}"/{"${_FILE_INRD%%-*}"{,.old},"${_FILE_KENL%%-*}"{,.old}}
-	do
-		if [[ -e "${_FILE_PATH}" ]]; then
-			continue
-		fi
-		case "${_FILE_PATH##*/}" in
-			initrd* ) ln -s "${_PATH_INRD#"${_DIRS_TGET}"/}" "${_FILE_PATH}";;
-			vmlinuz*) ln -s "${_PATH_KENL#"${_DIRS_TGET}"/}" "${_FILE_PATH}";;
-			*       ) ;;
-		esac
-	done
 }
 
 # -----------------------------------------------------------------------------
@@ -267,60 +327,84 @@ function fnCreate_fsimage() {
 #   return:        : unused
 # shellcheck disable=SC2317,SC2329
 function fnCreate_initrd() {
-	_SHEL_NAME="/tmp/create_initrd"
+	echo "fnCreate_initrd"
+	_SHEL_NAME="/tmp/create_initrd.sh"
 	_FILE_PATH="${_DIRS_TGET}${_SHEL_NAME}"
 	mkdir -p "${_FILE_PATH%/*}"
-	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-	#!/bin/sh
-	 	declare -r -a _LIST_PAKG=(\
-	 		bash \
-	 		shell-interpreter \
-	 		systemd \
-	 		fips \
-	 		fips-crypto-policies \
-	 		systemd-ask-password \
-	 		systemd-initrd \
-	 		systemd-journald \
-	 		systemd-modules-load \
-	 		systemd-sysctl \
-	 		systemd-sysusers \
-	 		systemd-tmpfiles \
-	 		systemd-udevd \
-	 		nss-softokn \
-	 		i18n \
-	 		drm \
-	 		plymouth \
-	 		prefixdevname \
-	 		kernel-modules \
-	 		kernel-modules-extra \
-	 		qemu \
-	 		hwdb \
-	 		resume \
-	 		rootfs-block \
-	 		terminfo \
-	 		udev-rules \
-	 		virtiofs \
-	 		dracut-systemd \
-	 		usrmount \
-	 		base \
-	 		fs-lib \
-	 		memstrack \
-	 		microcode_ctl-fw_dir_override \
-	 		openssl \
-	 		shutdown \
-	 	)
-
-#	 	_ARCH_TYPE="$(uname -m)"
-#	 	_KRNL_VERS="$(uname -r)"
-	 	_KRNL_INFO="$(ls /usr/lib/modules/)"
-	 	_ARCH_TYPE="${_KRNL_INFO##*[-.]}"
-	 	_KRNL_VERS="${_KRNL_INFO%"[-.]${_ARCH_TYPE}"}"
-	 	cp -a "/usr/lib/modules/${_KRNL_INFO}/vmlinuz" "/boot/vmlinuz-${_KRNL_INFO}"
-	 	dracut --add "${_LIST_PAKG[*]}"                "/boot/initramfs-${_KRNL_INFO}.img" --kver "${_KRNL_INFO}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+		#!/bin/bash
+		set -eu
+		declare -a    _INST_PAKG=(\\
+		)
+		readonly      _INST_PAKG
+		declare -a    _MODU_ADDS=(\\
+		 	"busybox" \\
+		 	"rescue" \\
+		 	"pollcdrom" \\
+		 	"ecryptfs" \\
+		 	"dbus" \\
+		 	"kernel-network-modules" \\
+		 	"network" \\
+		 	"net-lib" \\
+		 	"ssh-client" \\
+		 	"url-lib" \\
+		 	"numlock" \\
+		 	"overlayfs" \\
+		 	"pcmcia" \\
+			"systemd-timedated" \\
+			"warpclock" \\
+		)
+		readonly      _MODU_ADDS
+		declare -a    _MODU_OMIT=(\\
+		)
+		readonly      _MODU_OMIT
+		# -----------------------------------------------------------------------------
+		_SHEL_NAME="mount_sysroot.sh"
+		_FILE_PATH="/tmp/\${_SHEL_NAME}"
+		mkdir -p "\${_FILE_PATH%/*}"
+		cat <<- __EOT__ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "\${_FILE_PATH}" || true
+		 	#!/bin/bash
+		 	set -eu
+		 	_PATH_MDIA="\\\${root:-}"
+		 	_PATH_MDIA="\\\${_PATH_MDIA#block:}"
+		 	if [[ -n "\\\${_PATH_MDIA:-}" ]]; then
+		 	 	mkdir -p /run/${_DIRS_LIVE}/{cdrom,overlay/{lowerdir,upperdir,workdir,merged}}
+		 	 	mount -t iso9660  -o ro,nofail "\\\${_PATH_MDIA}" /run/${_DIRS_LIVE}/cdrom
+		 	 	mount -t squashfs -o ro,nofail /run/${_DIRS_LIVE}/cdrom/${_DIRS_LIVE}/${_FILE_SQFS##*/} /run/${_DIRS_LIVE}/overlay/lowerdir
+		 	 	mount -t overlay overlay -o lowerdir=/run/${_DIRS_LIVE}/overlay/lowerdir,upperdir=/run/${_DIRS_LIVE}/overlay/upperdir,workdir=/run/${_DIRS_LIVE}/overlay/workdir /run/${_DIRS_LIVE}/overlay/merged
+		 	 	mount --bind /run/${_DIRS_LIVE}/overlay/merged /sysroot
+		 	fi
+		__EOT__
+		chmod +x "\${_FILE_PATH}"
+		# -----------------------------------------------------------------------------
+		ln -s ../usr/share/zoneinfo/Asia/Tokyo /tmp/localtime
+		echo 'LANG="ja_JP.UTF-8"' > /tmp/locale.conf
+		_KRNL_INFO="\$(ls /usr/lib/modules/)"
+		_ARCH_TYPE="\${_KRNL_INFO##*[-.]}"
+		_KRNL_VERS="\${_KRNL_INFO%"[-.]\${_ARCH_TYPE}"}"
+		cp -a "/usr/lib/modules/\${_KRNL_INFO}/vmlinuz" "/boot/vmlinuz-\${_KRNL_INFO}"
+		dracut \\
+		 	--force \\
+		 	--no-hostonly \\
+		 	--no-hostonly-i18n \\
+		 	--regenerate-all \\
+		 	\${_MODU_ADDS[*]:+--add "\${_MODU_ADDS[*]}"} \\
+		 	\${_MODU_OMIT[*]:+--omit "\${_MODU_OMIT[*]}"} \\
+		 	--filesystems "ext4 fat exfat isofs squashfs udf xfs" \\
+			--include "/tmp/localtime"                 "/etc/localtime" \\
+		 	--include "/usr/share/zoneinfo"            "/usr/share/zoneinfo" \\
+		 	--include "\${_FILE_PATH}" "/lib/dracut/hooks/mount/00-\${_SHEL_NAME}"
+		#	--mount "/dev/sr0 /cdrom/ iso9660 ro,nofail" \\
+		#	--mount "/cdrom/\${_DIRS_LIVE}/${_FILE_SQFS##*/} /squashfs/ squashfs ro,nofail" \\
+		#	--mount "/tmp /overlay tmpfs bind" \\
+		#	--mount "/squashfs /sysroot overlay lowerdir=/squashfs,upperdir=/overlay/upperdir,workdir=/overlay/workdir"
+		rm -f /tmp/localtime
+		rm -f /tmp/locale.conf
+		rm -f "\${_FILE_PATH:?}"
 _EOT_
 
 	chmod +x "${_FILE_PATH}"
-	chroot "${_DIRS_TGET}" "${_SHEL_NAME}"
+	chroot "${_DIRS_TGET}" "${_SHEL_NAME}" || exit $?
 	rm -f "${_FILE_PATH:?}"
 }
 
@@ -331,6 +415,7 @@ _EOT_
 #   return:        : unused
 # shellcheck disable=SC2317,SC2329
 function fnConfig_fsimage() {
+	echo "fnConfig_fsimage"
 	mount --rbind /dev/                  "${_DIRS_TGET}/dev/"  && mount --make-rslave "${_DIRS_TGET}/dev/" && _LIST_RMOV+=("${_DIRS_TGET}/dev/"  )
 	mount -t proc /proc/                 "${_DIRS_TGET}/proc/"                                             && _LIST_RMOV+=("${_DIRS_TGET}/proc/" )
 	mount --rbind /sys/                  "${_DIRS_TGET}/sys/"  && mount --make-rslave "${_DIRS_TGET}/sys/" && _LIST_RMOV+=("${_DIRS_TGET}/sys/"  )
@@ -384,6 +469,23 @@ _EOT_
 		centos-stream-*    | \
 		almalinux-*        | \
 		rockylinux-*       | \
+		miraclelinux-*     )
+			chroot "${_DIRS_TGET}" systemctl set-default graphical.target
+			chroot "${_DIRS_TGET}" systemctl enable smb.service nmb.service systemd-resolved.service dnsmasq.service
+			chroot "${_DIRS_TGET}" useradd -U -G wheel master
+			;;
+		opensuse-leap-*    | \
+		opensuse-tumbleweed) ;;
+		*                  ) echo "not found: ${_DIST_INFO:-}"; exit 1;;
+	esac
+	# -------------------------------------------------------------------------
+	case "${_DIST_INFO}" in
+		debian-*           | \
+		ubuntu-*           ) ;;
+		fedora-*           | \
+		centos-stream-*    | \
+		almalinux-*        | \
+		rockylinux-*       | \
 		miraclelinux-*     ) fnCreate_initrd;;
 		opensuse-leap-*    | \
 		opensuse-tumbleweed) ;;
@@ -396,12 +498,29 @@ _EOT_
 	umount                 "${_DIRS_TGET}/proc/"
 	umount --recursive     "${_DIRS_TGET}/dev/"
 	# -------------------------------------------------------------------------
+	rm -f "${_DIRS_BASE:?}"/{initrd*,initramfs*,vmlinuz*,linux*splash.png,os-release}
 	_FILE_INRD="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  -o -name 'initramfs' -o -name 'initramfs-*' \) | sort -Vu || true)"
 	_FILE_KENL="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*'                                             \) | sort -Vu || true)"
 	[[ -e "${_FILE_KENL:-}"                ]] && cp -aL "${_FILE_KENL}"                  "${_DIRS_BASE}"
 	[[ -e "${_FILE_INRD:-}"                ]] && cp -aL "${_FILE_INRD}"                  "${_DIRS_BASE}"
 	[[ -e "${_FILE_SPLS:-}"                ]] && cp -aL "${_FILE_SPLS}"                  "${_DIRS_BASE}/splash.png"
 	[[ -e "${_DIRS_TGET:-}/etc/os-release" ]] && cp -aL "${_DIRS_TGET:-}/etc/os-release" "${_DIRS_BASE}"
+	# -------------------------------------------------------------------------
+#	_PATH_INRD="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  \) | sort -Vu)"
+#	_PATH_KENL="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' \) | sort -Vu)"
+#	_FILE_INRD="${_PATH_INRD##*/}"
+#	_FILE_KENL="${_PATH_KENL##*/}"
+#	for _FILE_PATH in "${_DIRS_TGET}"/{"${_FILE_INRD%%-*}"{,.old},"${_FILE_KENL%%-*}"{,.old}}
+#	do
+#		if [[ -e "${_FILE_PATH}" ]]; then
+#			continue
+#		fi
+#		case "${_FILE_PATH##*/}" in
+#			initrd* ) ln -s "${_PATH_INRD#"${_DIRS_TGET}"/}" "${_FILE_PATH}";;
+#			vmlinuz*) ln -s "${_PATH_KENL#"${_DIRS_TGET}"/}" "${_FILE_PATH}";;
+#			*       ) ;;
+#		esac
+#	done
 }
 
 # -----------------------------------------------------------------------------
@@ -411,7 +530,8 @@ _EOT_
 #   return:        : unused
 # shellcheck disable=SC2317,SC2329
 function fnCreate_config() {
-	_PATH_CONF="${_DIRS_TGET}/etc/live/config.conf.d/user.conf"
+	echo "fnCreate_config"
+	_PATH_CONF="${_DIRS_TGET}/etc/${_DIRS_LIVE}/config.conf.d/user.conf"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_PATH_CONF}"
 		 	export LIVE_HOSTNAME="live-${_TGET_DIST}"
 		 	export LIVE_USERNAME="master"
@@ -431,7 +551,7 @@ function fnCreate_config() {
 		 	done
 _EOT_
 	# -------------------------------------------------------------------------
-	_PATH_CONF="${_DIRS_TGET}/usr/lib/live/config/0000-early-user-settings"
+	_PATH_CONF="${_DIRS_TGET}/usr/lib/${_DIRS_LIVE}/config/0000-early-user-settings"
 	_FILE_NAME="${_PATH_CONF##*/}"
 	_FILE_NAME="${_FILE_NAME#[0-9]*-}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_PATH_CONF}"
@@ -461,7 +581,7 @@ _EOT_
 		Config ()
 		{
 		 	# Creating state file
-		 	touch "/var/lib/live/config/${_FILE_NAME}"
+		 	touch "/var/lib/${_DIRS_LIVE}/config/${_FILE_NAME}"
 		}
 
 		 	Cmdline
@@ -471,7 +591,7 @@ _EOT_
 _EOT_
 	chmod 755 "${_PATH_CONF}"
 	# -------------------------------------------------------------------------
-	_PATH_CONF="${_DIRS_TGET}/usr/lib/live/config/9999-late-user-settings"
+	_PATH_CONF="${_DIRS_TGET}/usr/lib/${_DIRS_LIVE}/config/9999-late-user-settings"
 	_FILE_NAME="${_PATH_CONF##*/}"
 	_FILE_NAME="${_FILE_NAME#[0-9]*-}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_PATH_CONF}"
@@ -512,7 +632,7 @@ _EOT_
 		 	printf "%s\n%s\n" "\${LIVE_USER_PASSWORD}" "\${LIVE_USER_PASSWORD}" | smbpasswd -a -s "\${LIVE_USERNAME}"
 
 		 	# Creating state file
-		 	touch "/var/lib/live/config/${_FILE_NAME}"
+		 	touch "/var/lib/${_DIRS_LIVE}/config/${_FILE_NAME}"
 		}
 
 		 	Cmdline
@@ -538,9 +658,20 @@ _EOT_
 
 }
 
+function funcMount_overlay() {
+	echo "funcMount_overlay"
+	# shellcheck disable=SC2140
+	mount -t overlay overlay -o lowerdir="${1:?}",upperdir="${2:?}",workdir="${3:?}" "${4:?}" && _LIST_RMOV+=("${4:?}")
+}
+
 # === mkosi ===================================================================
-	if [[ "${2:-}" = "-f" ]] || [[ "${2:-}" = "--force" ]] || [[ ! -e "${_FILE_SQFS:?}" ]]; then
-		fnCreate_fsimage
+	if [[ -n "${_FLAG_FORC:-}" ]] || [[ ! -e "${_FILE_SQFS:?}" ]]; then
+		if [[ -z "${_FLAG_HOLD:-}" ]]; then
+			fnCreate_fsimage
+		fi
+	fi
+	funcMount_overlay "${_DIRS_OLAY:?}/lower" "${_DIRS_OLAY:?}/upper" "${_DIRS_OLAY:?}/work" "${_DIRS_OLAY:?}/merged"
+	if [[ -n "${_FLAG_FORC:-}" ]] || [[ ! -e "${_FILE_SQFS:?}" ]]; then
 		fnConfig_fsimage
 		case "${_DIST_INFO}" in
 			debian-*           | \
@@ -559,13 +690,15 @@ _EOT_
 		if ! nice -n 19 mksquashfs "${_DIRS_TGET:?}" "${_FILE_SQFS:?}"; then
 			exit "$?"
 		fi
-		rm -rf "${_DIRS_TGET:?}"
+#		rm -rf "${_DIRS_TGET:?}"
 	fi
 
 # === iso image ===============================================================
+	__DIST="debian"
+#	__DIST="${_DIST_NAME}"
 	rm -rf "${_DIRS_CDFS:?}"
 #	mkdir -p "${_DIRS_CDFS}/"{.disk,EFI/boot,boot/grub/{live-theme,i386-pc,x86_64-efi},isolinux,live/{boot,config.conf.d,config-hooks,config-preseed}}
-	mkdir -p "${_DIRS_CDFS}/"{.disk,EFI/boot,boot/grub,isolinux,live/{boot,config.conf.d,config-hooks,config-preseed}}
+	mkdir -p "${_DIRS_CDFS}/"{.disk,EFI/boot,boot/grub,isolinux,${_DIRS_LIVE}/{boot,config.conf.d,config-hooks,config-preseed}}
 	: > "${_DIRS_CDFS}/.disk/info"
 	rm -f "${_FILE_UEFI:?}"
 	dd if=/dev/zero of="${_FILE_UEFI:?}" bs=1M count=100
@@ -598,8 +731,8 @@ _EOF_
 			--boot-directory="${_DIRS_MNTP}/boot/" \
 			"${_DEVS_LOOP}"
 		# --- file copy -------------------------------------------------------
-		mkdir -p "${_DIRS_CDFS}/EFI/debian/"
-		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_DIRS_CDFS}/EFI/debian/grub.cfg" || true
+		mkdir -p "${_DIRS_CDFS}/EFI/${__DIST}/"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_DIRS_CDFS}/EFI/${__DIST}/grub.cfg" || true
 			search --file --set=root /.disk/info
 			set prefix=($root)/boot/grub
 			source $prefix/grub.cfg
@@ -634,9 +767,9 @@ _EOT_
 #	[[ -e /usr/lib/shim/mmx64.efi                            ]] && nice -n 19 cp -a /usr/lib/shim/mmx64.efi                         "${_DIRS_CDFS}/EFI/boot/"
 	[[ -e "${_PATH_ETRI:-}"                                  ]] && nice -n 19 cp -a  "${_PATH_ETRI}"                                "${_DIRS_CDFS}/boot/grub/i386-pc/"
 	[[ -e "${_FILE_UEFI:-}"                                  ]] && nice -n 19 cp -a  "${_FILE_UEFI}"                                "${_DIRS_CDFS}/boot/grub/${_FILE_UEFI##*/}"
-	[[ -e "${_FILE_SQFS:-}"                                  ]] && nice -n 19 cp -a  "${_FILE_SQFS}"                                "${_DIRS_CDFS}/live/"
-	[[ -e "${_FILE_KENL:-}"                                  ]] && nice -n 19 cp -aL "${_FILE_KENL}"                                "${_DIRS_CDFS}/live/"
-	[[ -e "${_FILE_INRD:-}"                                  ]] && nice -n 19 cp -aL "${_FILE_INRD}"                                "${_DIRS_CDFS}/live/"
+	[[ -e "${_FILE_SQFS:-}"                                  ]] && nice -n 19 cp -a  "${_FILE_SQFS}"                                "${_DIRS_CDFS}/${_DIRS_LIVE}/"
+	[[ -e "${_FILE_KENL:-}"                                  ]] && nice -n 19 cp -aL "${_FILE_KENL}"                                "${_DIRS_CDFS}/${_DIRS_LIVE}/"
+	[[ -e "${_FILE_INRD:-}"                                  ]] && nice -n 19 cp -aL "${_FILE_INRD}"                                "${_DIRS_CDFS}/${_DIRS_LIVE}/"
 	if [[ -e /usr/lib/ISOLINUX/isolinux.bin ]]; then
 		cp -a /usr/lib/syslinux/modules/bios/* "${_DIRS_CDFS}/isolinux/"
 		cp -a /usr/lib/ISOLINUX/isolinux.bin   "${_DIRS_CDFS}/isolinux/"
@@ -657,6 +790,19 @@ _EOT_
 	_MENU_DIST="$(awk -F '=' '$1=="PRETTY_NAME" {print $2;}' "${_DIRS_BASE:?}/os-release")"
 	_MENU_DIST="${_MENU_DIST#"${_MENU_DIST%%[!\"]*}"}"
 	_MENU_DIST="${_MENU_DIST%"${_MENU_DIST##*[!\"]}"}"
+	# --- set boot options ----------------------------------------------------
+	case "${_DIST_INFO}" in
+		debian-*           | \
+		ubuntu-*           ) _BOOT_OPTN=("${_BOOT_DEBS[@]}");;
+		fedora-*           | \
+		centos-stream-*    | \
+		almalinux-*        | \
+		rockylinux-*       | \
+		miraclelinux-*     ) _BOOT_OPTN=("${_BOOT_RHEL[@]}");;
+		opensuse-leap-*    | \
+		opensuse-tumbleweed) _BOOT_OPTN=();;
+		*                  ) echo "not found: ${_DIST_INFO:-}"; exit 1;;
+	esac
 	# --- create isolinux.cfg -------------------------------------------------
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_MENU_SLNX}" || true
 		path
@@ -673,18 +819,18 @@ _EOT_
 		menu color tabmsg       * #ffffffff #00000000 *
 		menu color help         37;40 #ffdddd00 #00000000 none
 		menu vshift 8
-		menu rows 32
-		menu helpmsgrow 38
-		menu cmdlinerow 32
-		menu timeoutrow 38
-		menu tabmsgrow 38
+		menu rows 12
+		menu helpmsgrow 14
+		menu cmdlinerow 16
+		menu timeoutrow 16
+		menu tabmsgrow 18
 		menu tabmsg Press ENTER to boot or TAB to edit a menu entry
 
 		label live
 		  menu label ^${_MENU_DIST//%20/ }
 		  menu default
-		  linux  /live/${_FILE_KENL##*/}
-		  initrd /live/${_FILE_INRD##*/}
+		  linux  /${_DIRS_LIVE}/${_FILE_KENL##*/}
+		  initrd /${_DIRS_LIVE}/${_FILE_INRD##*/}
 		  append ${_BOOT_OPTN[@]}
 
 		label poweroff
@@ -798,9 +944,13 @@ _EOT_
 		set theme=/boot/grub/theme.txt
 		export theme
 
-		# insmod net
-		# insmod http
-		# insmod progress
+		insmod net
+		insmod http
+		insmod progress
+		insmod gzio
+		insmod part_gpt
+		insmod ext2
+		insmod chain
 
 		menuentry 'Live mode' {
 		  echo '${_MENU_DIST:-} ...'
@@ -808,13 +958,10 @@ _EOT_
 		  set background_color=black
 		  set options="${_BOOT_OPTN[@]}"
 		  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-		# insmod net
-		# insmod http
-		# insmod progress
 		  echo 'Loading linux ...'
-		  linux  /live/${_FILE_KENL##*/} \${options}
+		  linux  /${_DIRS_LIVE}/${_FILE_KENL##*/} \${options}
 		  echo 'Loading initrd ...'
-		  initrd /live/${_FILE_INRD##*/}
+		  initrd /${_DIRS_LIVE}/${_FILE_INRD##*/}
 		}
 
 		menuentry 'System shutdown' {
@@ -852,4 +999,5 @@ _EOT_
 		fi
 		rm -f "${_FILE_WORK:?}"
 	popd > /dev/null || exit
-	rm -rf "${_DIRS_TEMP:?}" "${_DIRS_BASE:?}"
+	umount "${_DIRS_OLAY:?}/merged"
+	rm -rf "${_DIRS_TEMP:?}" "${_DIRS_OLAY:?}"
