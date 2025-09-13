@@ -422,17 +422,6 @@ function fnConfig_fsimage() {
 	mount  --bind /run/                  "${_DIRS_TGET}/run/"                                              && _LIST_RMOV+=("${_DIRS_TGET}/run/"  )
 	mount --rbind /tmp/                  "${_DIRS_TGET}/tmp/"  && mount --make-rslave "${_DIRS_TGET}/tmp/" && _LIST_RMOV+=("${_DIRS_TGET}/tmp/"  )
 	# -------------------------------------------------------------------------
-	_SHEL_NAME="/srv/user/share/conf/script/autoinst_cmd_late.sh"
-	if [[ -e "${_SHEL_NAME}" ]]; then
-		_EXEC_TGET="/tmp/${_SHEL_NAME##*/}"
-		cp -a "${_SHEL_NAME}" "${_DIRS_TGET}${_EXEC_TGET%/*}"
-		chmod +x "${_DIRS_TGET}${_EXEC_TGET:?}"
-		chroot "${_DIRS_TGET}" "${_EXEC_TGET:?}" \
-			ip=192.168.1.0::192.168.1.254:255.255.255.0:${_TGET_DIST:+"live-${_TGET_DIST}.workgroup"}:-:192.168.1.254
-		rm -f "${_DIRS_TGET:?}${_EXEC_TGET:?}"
-	fi
-	[[ -e "${_DIRS_TGET:?}/usr/lib/systemd/user/orca.service"        ]] && chroot "${_DIRS_TGET}" systemctl --global disable orca.service
-	# -------------------------------------------------------------------------
 	_SHEL_NAME="/usr/local/bin/zz-all-ethernet.sh"
 	_EXEC_TGET="${_DIRS_TGET:?}${_SHEL_NAME}"
 	mkdir -p "${_EXEC_TGET%/*}"
@@ -470,14 +459,39 @@ _EOT_
 		almalinux-*        | \
 		rockylinux-*       | \
 		miraclelinux-*     )
+			_FILE_PATH="${_DIRS_TGET:?}/etc/systemd/system-preset/00-user-custom.preset"
+			mkdir -p "${_FILE_PATH%/*}"
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+				enable sshd.service
+				#enable sshd.socket
+				enable systemd-resolved.service
+				enable dnsmasq.service
+				enable smb.service
+				enable nmb.service
+				enable httpd.service
+				#enable httpd.socket
+				enable firewalld.service
+_EOT_
 			chroot "${_DIRS_TGET}" systemctl set-default graphical.target
-			chroot "${_DIRS_TGET}" systemctl enable smb.service nmb.service systemd-resolved.service dnsmasq.service
-			chroot "${_DIRS_TGET}" useradd -U -G wheel master
+			chroot "${_DIRS_TGET}" systemctl enable sshd.service systemd-resolved.service dnsmasq.service smb.service nmb.service httpd.service firewalld.service
+			chroot "${_DIRS_TGET}" useradd --create-home --user-group --groups audio,cdrom,floppy,video,wheel --comment "${_DIST_INFO%%-[0-9]*} Live user" --password '$y$j9T$ke439aNLCgDVj6bFX9yO//$61x.uzoS5y.XV.dx31D0fwQgvV0bFLuhfi.xiDzT1P8' "master"
+			# echo "master" | mkpasswd -s
 			;;
 		opensuse-leap-*    | \
 		opensuse-tumbleweed) ;;
 		*                  ) echo "not found: ${_DIST_INFO:-}"; exit 1;;
 	esac
+	# -------------------------------------------------------------------------
+	_SHEL_NAME="/srv/user/share/conf/script/autoinst_cmd_late.sh"
+	if [[ -e "${_SHEL_NAME}" ]]; then
+		_EXEC_TGET="/tmp/${_SHEL_NAME##*/}"
+		cp -a "${_SHEL_NAME}" "${_DIRS_TGET}${_EXEC_TGET%/*}"
+		chmod +x "${_DIRS_TGET}${_EXEC_TGET:?}"
+		chroot "${_DIRS_TGET}" "${_EXEC_TGET:?}" \
+			ip=192.168.1.0::192.168.1.254:255.255.255.0:${_TGET_DIST:+"live-${_TGET_DIST}.workgroup"}:-:192.168.1.254
+		rm -f "${_DIRS_TGET:?}${_EXEC_TGET:?}"
+	fi
+	[[ -e "${_DIRS_TGET:?}/usr/lib/systemd/user/orca.service"        ]] && chroot "${_DIRS_TGET}" systemctl --global disable orca.service
 	# -------------------------------------------------------------------------
 	case "${_DIST_INFO}" in
 		debian-*           | \
