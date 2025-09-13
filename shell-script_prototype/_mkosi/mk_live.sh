@@ -142,7 +142,7 @@
 		centos-stream-9    ) ;;
 		centos-stream-10   ) ;;
 		almalinux-9        ) ;;
-		almalinux-10       ) ;;
+		almalinux-10       ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/backgrounds/almalinux-day.jpg;;
 		rockylinux-9       ) ;;
 		rockylinux-10      ) ;;
 		miraclelinux-9     ) ;;
@@ -517,8 +517,10 @@ _EOT_
 	_FILE_KENL="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*'                                             \) | sort -Vu || true)"
 	[[ -e "${_FILE_KENL:-}"                ]] && cp -aL "${_FILE_KENL}"                  "${_DIRS_BASE}"
 	[[ -e "${_FILE_INRD:-}"                ]] && cp -aL "${_FILE_INRD}"                  "${_DIRS_BASE}"
-	[[ -e "${_FILE_SPLS:-}"                ]] && cp -aL "${_FILE_SPLS}"                  "${_DIRS_BASE}/splash.png"
+#	[[ -e "${_FILE_SPLS:-}"                ]] && cp -aL "${_FILE_SPLS}"                  "${_DIRS_BASE}/splash.png"
 	[[ -e "${_DIRS_TGET:-}/etc/os-release" ]] && cp -aL "${_DIRS_TGET:-}/etc/os-release" "${_DIRS_BASE}"
+	[[ -e "${_FILE_SPLS:-}"                ]] && convert "${_FILE_SPLS}" -format "png" -resize "${_VIDE_MODE}" "${_DIRS_BASE}/splash.png"
+
 	# -------------------------------------------------------------------------
 #	_PATH_INRD="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  \) | sort -Vu)"
 #	_PATH_KENL="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' \) | sort -Vu)"
@@ -784,13 +786,14 @@ _EOT_
 	[[ -e "${_FILE_SQFS:-}"                                  ]] && nice -n 19 cp -a  "${_FILE_SQFS}"                                "${_DIRS_CDFS}/${_DIRS_LIVE}/"
 	[[ -e "${_FILE_KENL:-}"                                  ]] && nice -n 19 cp -aL "${_FILE_KENL}"                                "${_DIRS_CDFS}/${_DIRS_LIVE}/"
 	[[ -e "${_FILE_INRD:-}"                                  ]] && nice -n 19 cp -aL "${_FILE_INRD}"                                "${_DIRS_CDFS}/${_DIRS_LIVE}/"
+	[[ -e "${_DIRS_BASE}/splash.png"                         ]] && nice -n 19 cp -aL "${_DIRS_BASE}/splash.png"                     "${_DIRS_CDFS}/isolinux/splash.png"
 	if [[ -e /usr/lib/ISOLINUX/isolinux.bin ]]; then
 		cp -a /usr/lib/syslinux/modules/bios/* "${_DIRS_CDFS}/isolinux/"
 		cp -a /usr/lib/ISOLINUX/isolinux.bin   "${_DIRS_CDFS}/isolinux/"
 	fi
-	if [[ -e "${_DIRS_BASE}/splash.png" ]]; then
-		convert "${_DIRS_BASE}/splash.png" -resize "${_VIDE_MODE}" "${_DIRS_CDFS}"/isolinux/splash.png
-	fi
+#	if [[ -e "${_DIRS_BASE}/splash.png" ]]; then
+#		convert "${_DIRS_BASE}/splash.png" -resize "${_VIDE_MODE}" "${_DIRS_CDFS}"/isolinux/splash.png
+#	fi
 	# --- create efi image file -----------------------------------------------
 	rm -f "${_FILE_UEFI:?}"
 	dd if=/dev/zero of="${_FILE_UEFI:?}" bs=1M count=5
