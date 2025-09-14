@@ -40,7 +40,7 @@
 	IPV6_LHST="::1"						# ipv6 local host address
 	IPV4_LHST="127.0.0.1"				# ipv4 local host address
 	IPV4_DUMY="127.0.1.1"				# ipv4 dummy address
-	OLDS_FQDN="$(cat /etc/hostname || true)"				# old hostname (fqdn)
+	OLDS_FQDN="$(cat /etc/hostname 2> /dev/null|| true)"	# old hostname (fqdn)
 	OLDS_HOST="$(echo "${OLDS_FQDN}." | cut -d '.' -f 1)"	# old hostname (host name)
 	OLDS_WGRP="$(echo "${OLDS_FQDN}." | cut -d '.' -f 2)"	# old hostname (domain)
 	# --- firewalld -----------------------------------------------------------
