@@ -212,12 +212,12 @@
 	declare -r -a _BOOT_RHEL=(\
 		"selinux=0" \
 		"ip=dhcp" \
-		"root=LABEL=${_FILE_VLID}" \
+		"root=live:LABEL=${_FILE_VLID}" \
 		"iso-scan/filename=${_FILE_ISOS##*/}" \
 		"timezone=Asia/Tokyo" \
 		"rd.locale.LANG=ja_JP.UTF-8" \
 		"rd.vconsole.keymap=jp" \
-		"rd.live.ram=1" \
+		"rd.live.image=1" \
 	)
 #		"rd.live.overlay.overlayfs=1" \
 #		"rd.live.overlay=/dev/sr0:auto" \
@@ -337,46 +337,121 @@ function fnCreate_initrd() {
 		declare -a    _INST_PAKG=(\\
 		)
 		readonly      _INST_PAKG
+		#declare -a    _MODU_ADDS=(\\
+		#	"busybox" \\
+		#	"rescue" \\
+		#	"pollcdrom" \\
+		#	"ecryptfs" \\
+		#	"dbus" \\
+		#	"kernel-network-modules" \\
+		#	"network" \\
+		#	"net-lib" \\
+		#	"ssh-client" \\
+		#	"url-lib" \\
+		#	"numlock" \\
+		#	"overlayfs" \\
+		#	"pcmcia" \\
+		#	"systemd-timedated" \\
+		#	"warpclock" \\
+		#)
 		declare -a    _MODU_ADDS=(\\
-		 	"busybox" \\
-		 	"rescue" \\
-		 	"pollcdrom" \\
-		 	"ecryptfs" \\
+		 	"bash" \\
+		 	"shell-interpreter" \\
+		 	"systemd" \\
+		 	"fips" \\
+		 	"fips-crypto-policies" \\
+		 	"systemd-ask-password" \\
+		 	"systemd-cryptsetup" \\
+		 	"systemd-initrd" \\
+		 	"systemd-journald" \\
+		 	"systemd-modules-load" \\
+		 	"systemd-pcrphase" \\
+		 	"systemd-sysctl" \\
+		 	"systemd-sysusers" \\
+		 	"systemd-tmpfiles" \\
+		 	"systemd-udevd" \\
+		 	"modsign" \\
+		 	"nss-softokn" \\
+		 	"dbus-broker" \\
 		 	"dbus" \\
-		 	"kernel-network-modules" \\
+		 	"i18n" \\
+		 	"convertfs" \\
+		 	"network-manager" \\
 		 	"network" \\
 		 	"net-lib" \\
-		 	"ssh-client" \\
 		 	"url-lib" \\
-		 	"numlock" \\
+		 	"drm" \\
+		 	"plymouth" \\
+		 	"prefixdevname" \\
+		 	"crypt" \\
+		 	"dm" \\
+		 	"dmsquash-live" \\
+		 	"kernel-modules" \\
+		 	"kernel-modules-extra" \\
+		 	"kernel-network-modules" \\
+		 	"livenet" \\
+		 	"lvm" \\
+		 	"mdraid" \\
+		 	"multipath" \\
+		 	"nvdimm" \\
 		 	"overlayfs" \\
-		 	"pcmcia" \\
-			"systemd-timedated" \\
-			"warpclock" \\
+		 	"qemu" \\
+		 	"qemu-net" \\
+		 	"fido2" \\
+		 	"pkcs11" \\
+		 	"tpm2-tss" \\
+		 	"cifs" \\
+		 	"hwdb" \\
+		 	"iscsi" \\
+		 	"lunmask" \\
+		 	"nfs" \\
+		 	"nvmf" \\
+		 	"resume" \\
+		 	"rootfs-block" \\
+		 	"terminfo" \\
+		 	"udev-rules" \\
+		 	"virtfs" \\
+		 	"virtiofs" \\
+		 	"dracut-systemd" \\
+		 	"pollcdrom" \\
+		 	"usrmount" \\
+		 	"base" \\
+		 	"fs-lib" \\
+		 	"img-lib" \\
+		 	"memstrack" \\
+		 	"microcode_ctl-fw_dir_override" \\
+		 	"openssl" \\
+		 	"shutdown" \\
+		 	"busybox" \\
+		 	"rescue" \\
 		)
 		readonly      _MODU_ADDS
 		declare -a    _MODU_OMIT=(\\
 		)
 		readonly      _MODU_OMIT
 		# -----------------------------------------------------------------------------
-		_SHEL_NAME="mount_sysroot.sh"
-		_FILE_PATH="/tmp/\${_SHEL_NAME}"
-		mkdir -p "\${_FILE_PATH%/*}"
-		cat <<- __EOT__ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "\${_FILE_PATH}" || true
-		 	#!/bin/bash
-		 	set -eu
-		 	_PATH_MDIA="\\\${root:-}"
-		 	_PATH_MDIA="\\\${_PATH_MDIA#block:}"
-		 	if [[ -n "\\\${_PATH_MDIA:-}" ]]; then
-		 	 	mkdir -p /run/${_DIRS_LIVE}/{cdrom,overlay/{lowerdir,upperdir,workdir,merged}}
-		 	 	mount -t iso9660  -o ro,nofail "\\\${_PATH_MDIA}" /run/${_DIRS_LIVE}/cdrom
-		 	 	mount -t squashfs -o ro,nofail /run/${_DIRS_LIVE}/cdrom/${_DIRS_LIVE}/${_FILE_SQFS##*/} /run/${_DIRS_LIVE}/overlay/lowerdir
-		 	 	mount -t overlay overlay -o lowerdir=/run/${_DIRS_LIVE}/overlay/lowerdir,upperdir=/run/${_DIRS_LIVE}/overlay/upperdir,workdir=/run/${_DIRS_LIVE}/overlay/workdir /run/${_DIRS_LIVE}/overlay/merged
-		 	 	mount --bind /run/${_DIRS_LIVE}/overlay/merged /sysroot
-		 	fi
+		#_SHEL_NAME="mount_sysroot.sh"
+		if [ -n "\${_SHEL_NAME:-}" ]; then
+		 	_FILE_PATH="/tmp/\${_SHEL_NAME}"
+		 	mkdir -p "\${_FILE_PATH%/*}"
+		 		cat <<- __EOT__ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "\${_FILE_PATH}" || true
+		 		#!/bin/bash
+		 		set -eu
+		 		_PATH_MDIA="\\\${root:-}"
+		 		_PATH_MDIA="\\\${_PATH_MDIA#block:}"
+		 		if [[ -n "\\\${_PATH_MDIA:-}" ]]; then
+		 		 	mkdir -p /run/${_DIRS_LIVE}/{cdrom,overlay/{lowerdir,upperdir,workdir,merged}}
+		 		 	mount -t iso9660  -o ro,nofail "\\\${_PATH_MDIA}" /run/${_DIRS_LIVE}/cdrom
+		 		 	mount -t squashfs -o ro,nofail /run/${_DIRS_LIVE}/cdrom/${_DIRS_LIVE}/${_FILE_SQFS##*/} /run/${_DIRS_LIVE}/overlay/lowerdir
+		 		 	mount -t overlay overlay -o lowerdir=/run/${_DIRS_LIVE}/overlay/lowerdir,upperdir=/run/${_DIRS_LIVE}/overlay/upperdir,workdir=/run/${_DIRS_LIVE}/overlay/workdir /run/${_DIRS_LIVE}/overlay/merged
+		 		 	mount --bind /run/${_DIRS_LIVE}/overlay/merged /sysroot
+		 		fi
 		__EOT__
-		chmod +x "\${_FILE_PATH}"
+		 	chmod +x "\${_FILE_PATH}"
+		fi
 		# -----------------------------------------------------------------------------
+		rm -f /tmp/localtime
+		rm -f /tmp/locale.conf
 		ln -s ../usr/share/zoneinfo/Asia/Tokyo /tmp/localtime
 		echo 'LANG="ja_JP.UTF-8"' > /tmp/locale.conf
 		_KRNL_INFO="\$(ls /usr/lib/modules/)"
@@ -384,23 +459,38 @@ function fnCreate_initrd() {
 		_KRNL_VERS="\${_KRNL_INFO%"[-.]\${_ARCH_TYPE}"}"
 		cp -a "/usr/lib/modules/\${_KRNL_INFO}/vmlinuz" "/boot/vmlinuz-\${_KRNL_INFO}"
 		dracut \\
+		 	--verbose \\
+		 	--stdlog 3 \\
 		 	--force \\
 		 	--no-hostonly \\
-		 	--no-hostonly-i18n \\
-		 	--regenerate-all \\
+		 	--no-early-microcode \\
+		 	--nomdadmconf \\
+		 	--nolvmconf \\
+		 	--xz \\
+		 	\${_KRNL_VERS:+--kver "\${_KRNL_VERS}"} \\
 		 	\${_MODU_ADDS[*]:+--add "\${_MODU_ADDS[*]}"} \\
 		 	\${_MODU_OMIT[*]:+--omit "\${_MODU_OMIT[*]}"} \\
-		 	--filesystems "ext4 fat exfat isofs squashfs udf xfs" \\
-			--include "/tmp/localtime"                 "/etc/localtime" \\
-		 	--include "/usr/share/zoneinfo"            "/usr/share/zoneinfo" \\
-		 	--include "\${_FILE_PATH}" "/lib/dracut/hooks/mount/00-\${_SHEL_NAME}"
+		 	--filesystems "ext4 fat exfat isofs squashfs udf xfs"
+		#	--debug \\
+		#dracut \\
+		#	--force \\
+		#	--no-hostonly \\
+		#	--no-hostonly-i18n \\
+		#	--regenerate-all \\
+		#	\${_MODU_ADDS[*]:+--add "\${_MODU_ADDS[*]}"} \\
+		#	\${_MODU_OMIT[*]:+--omit "\${_MODU_OMIT[*]}"} \\
+		#	--filesystems "ext4 fat exfat isofs squashfs udf xfs" \\
+		#	--include "/tmp/localtime"                 "/etc/localtime" \\
+		#	--include "/usr/share/zoneinfo"            "/usr/share/zoneinfo" \\
+		#	--include "\${_FILE_PATH}" "/lib/dracut/hooks/mount/00-\${_SHEL_NAME}"
 		#	--mount "/dev/sr0 /cdrom/ iso9660 ro,nofail" \\
 		#	--mount "/cdrom/\${_DIRS_LIVE}/${_FILE_SQFS##*/} /squashfs/ squashfs ro,nofail" \\
 		#	--mount "/tmp /overlay tmpfs bind" \\
 		#	--mount "/squashfs /sysroot overlay lowerdir=/squashfs,upperdir=/overlay/upperdir,workdir=/overlay/workdir"
 		rm -f /tmp/localtime
 		rm -f /tmp/locale.conf
-		rm -f "\${_FILE_PATH:?}"
+		[ -n "\${_FILE_PATH:-}" ] && rm -f "\${_FILE_PATH:?}"
+		exit 0
 _EOT_
 
 	chmod +x "${_FILE_PATH}"
@@ -472,9 +562,12 @@ _EOT_
 				#enable httpd.socket
 				enable firewalld.service
 _EOT_
-			chroot "${_DIRS_TGET}" systemctl set-default graphical.target
-			chroot "${_DIRS_TGET}" systemctl enable sshd.service systemd-resolved.service dnsmasq.service smb.service nmb.service httpd.service firewalld.service
-			chroot "${_DIRS_TGET}" useradd --create-home --user-group --groups audio,cdrom,floppy,video,wheel --comment "${_DIST_INFO%%-[0-9]*} Live user" --password '$y$j9T$ke439aNLCgDVj6bFX9yO//$61x.uzoS5y.XV.dx31D0fwQgvV0bFLuhfi.xiDzT1P8' "master"
+#			chroot "${_DIRS_TGET}" systemctl set-default graphical.target
+#			chroot "${_DIRS_TGET}" systemctl enable sshd.service systemd-resolved.service dnsmasq.service smb.service nmb.service httpd.service firewalld.service
+#			chroot "${_DIRS_TGET}" useradd --create-home --user-group --groups audio,cdrom,floppy,video,wheel --comment "${_DIST_INFO%%-[0-9]*} Live user" --password '$y$j9T$ke439aNLCgDVj6bFX9yO//$61x.uzoS5y.XV.dx31D0fwQgvV0bFLuhfi.xiDzT1P8' "master"
+#			chroot "${_DIRS_TGET}" timedatectl set-timezone Asia/Tokyo
+#			chroot "${_DIRS_TGET}" localectl set-locale LANG=ja_JP.UTF-8
+#			chroot "${_DIRS_TGET}" localectl set-keymap jp
 			# echo "master" | mkpasswd -s
 			;;
 		opensuse-leap-*    | \
