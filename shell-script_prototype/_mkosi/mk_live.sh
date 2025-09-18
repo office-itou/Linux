@@ -213,12 +213,15 @@
 		"selinux=0" \
 		"ip=dhcp" \
 		"root=live:LABEL=${_FILE_VLID}" \
-		"iso-scan/filename=${_FILE_ISOS##*/}" \
-		"timezone=Asia/Tokyo" \
-		"rd.locale.LANG=ja_JP.UTF-8" \
+		"rd.locale.LANG=ja_JP.utf8" \
 		"rd.vconsole.keymap=jp" \
 		"rd.live.image=1" \
 	)
+#		"language=ja" \
+#		"country=JP" \
+#		"timezone=Asia/Tokyo" \
+#		"keyboard-configuration/xkb-keymap=jp" \
+#		"keyboard-configuration/variant=Japanese" \
 #		"rd.live.overlay.overlayfs=1" \
 #		"rd.live.overlay=/dev/sr0:auto" \
 #		"rd.live.dir=/${_DIRS_LIVE}" \
@@ -312,12 +315,16 @@ function fnCreate_fsimage() {
 	if ! nice -n 19 mkosi \
 		--force \
 		--wipe-build-dir \
+		${SUDO_HOME:+--workspace-directory="${SUDO_HOME}"/.cache} \
+		--selinux-relabel=no \
+		--remove-files=/.cache,/.viminfo,/.autorelabel \
 		${_TGET_SUIT:+--release ${_TGET_SUIT}} \
 		--directory="${_DIRS_BASE}" \
 		--architecture=x86-64 \
 		; then
 		exit "$?"
 	fi
+# https://github.com/systemd/mkosi/blob/main/mkosi/resources/man/mkosi.1.md
 }
 
 # -----------------------------------------------------------------------------
@@ -334,27 +341,9 @@ function fnCreate_initrd() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
 		#!/bin/bash
 		set -eu
-		declare -a    _INST_PAKG=(\\
+		declare -r -a _INST_PAKG=(\\
 		)
-		readonly      _INST_PAKG
-		#declare -a    _MODU_ADDS=(\\
-		#	"busybox" \\
-		#	"rescue" \\
-		#	"pollcdrom" \\
-		#	"ecryptfs" \\
-		#	"dbus" \\
-		#	"kernel-network-modules" \\
-		#	"network" \\
-		#	"net-lib" \\
-		#	"ssh-client" \\
-		#	"url-lib" \\
-		#	"numlock" \\
-		#	"overlayfs" \\
-		#	"pcmcia" \\
-		#	"systemd-timedated" \\
-		#	"warpclock" \\
-		#)
-		declare -a    _MODU_ADDS=(\\
+		declare -r -a _MODU_ADDS=(\\
 		 	"bash" \\
 		 	"shell-interpreter" \\
 		 	"systemd" \\
@@ -425,41 +414,14 @@ function fnCreate_initrd() {
 		 	"busybox" \\
 		 	"rescue" \\
 		)
-		readonly      _MODU_ADDS
-		declare -a    _MODU_OMIT=(\\
+		declare -r -a _MODU_OMIT=(\\
 		)
-		readonly      _MODU_OMIT
 		# -----------------------------------------------------------------------------
-		#_SHEL_NAME="mount_sysroot.sh"
-		if [ -n "\${_SHEL_NAME:-}" ]; then
-		 	_FILE_PATH="/tmp/\${_SHEL_NAME}"
-		 	mkdir -p "\${_FILE_PATH%/*}"
-		 		cat <<- __EOT__ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "\${_FILE_PATH}" || true
-		 		#!/bin/bash
-		 		set -eu
-		 		_PATH_MDIA="\\\${root:-}"
-		 		_PATH_MDIA="\\\${_PATH_MDIA#block:}"
-		 		if [[ -n "\\\${_PATH_MDIA:-}" ]]; then
-		 		 	mkdir -p /run/${_DIRS_LIVE}/{cdrom,overlay/{lowerdir,upperdir,workdir,merged}}
-		 		 	mount -t iso9660  -o ro,nofail "\\\${_PATH_MDIA}" /run/${_DIRS_LIVE}/cdrom
-		 		 	mount -t squashfs -o ro,nofail /run/${_DIRS_LIVE}/cdrom/${_DIRS_LIVE}/${_FILE_SQFS##*/} /run/${_DIRS_LIVE}/overlay/lowerdir
-		 		 	mount -t overlay overlay -o lowerdir=/run/${_DIRS_LIVE}/overlay/lowerdir,upperdir=/run/${_DIRS_LIVE}/overlay/upperdir,workdir=/run/${_DIRS_LIVE}/overlay/workdir /run/${_DIRS_LIVE}/overlay/merged
-		 		 	mount --bind /run/${_DIRS_LIVE}/overlay/merged /sysroot
-		 		fi
-		__EOT__
-		 	chmod +x "\${_FILE_PATH}"
-		fi
-		# -----------------------------------------------------------------------------
-		rm -f /tmp/localtime
-		rm -f /tmp/locale.conf
-		ln -s ../usr/share/zoneinfo/Asia/Tokyo /tmp/localtime
-		echo 'LANG="ja_JP.UTF-8"' > /tmp/locale.conf
 		_KRNL_INFO="\$(ls /usr/lib/modules/)"
 		_ARCH_TYPE="\${_KRNL_INFO##*[-.]}"
 		_KRNL_VERS="\${_KRNL_INFO%"[-.]\${_ARCH_TYPE}"}"
 		cp -a "/usr/lib/modules/\${_KRNL_INFO}/vmlinuz" "/boot/vmlinuz-\${_KRNL_INFO}"
 		dracut \\
-		 	--verbose \\
 		 	--stdlog 3 \\
 		 	--force \\
 		 	--no-hostonly \\
@@ -471,25 +433,6 @@ function fnCreate_initrd() {
 		 	\${_MODU_ADDS[*]:+--add "\${_MODU_ADDS[*]}"} \\
 		 	\${_MODU_OMIT[*]:+--omit "\${_MODU_OMIT[*]}"} \\
 		 	--filesystems "ext4 fat exfat isofs squashfs udf xfs"
-		#	--debug \\
-		#dracut \\
-		#	--force \\
-		#	--no-hostonly \\
-		#	--no-hostonly-i18n \\
-		#	--regenerate-all \\
-		#	\${_MODU_ADDS[*]:+--add "\${_MODU_ADDS[*]}"} \\
-		#	\${_MODU_OMIT[*]:+--omit "\${_MODU_OMIT[*]}"} \\
-		#	--filesystems "ext4 fat exfat isofs squashfs udf xfs" \\
-		#	--include "/tmp/localtime"                 "/etc/localtime" \\
-		#	--include "/usr/share/zoneinfo"            "/usr/share/zoneinfo" \\
-		#	--include "\${_FILE_PATH}" "/lib/dracut/hooks/mount/00-\${_SHEL_NAME}"
-		#	--mount "/dev/sr0 /cdrom/ iso9660 ro,nofail" \\
-		#	--mount "/cdrom/\${_DIRS_LIVE}/${_FILE_SQFS##*/} /squashfs/ squashfs ro,nofail" \\
-		#	--mount "/tmp /overlay tmpfs bind" \\
-		#	--mount "/squashfs /sysroot overlay lowerdir=/squashfs,upperdir=/overlay/upperdir,workdir=/overlay/workdir"
-		rm -f /tmp/localtime
-		rm -f /tmp/locale.conf
-		[ -n "\${_FILE_PATH:-}" ] && rm -f "\${_FILE_PATH:?}"
 		exit 0
 _EOT_
 
@@ -540,6 +483,31 @@ _EOT_
 		WantedBy=default.target
 _EOT_
 	chroot "${_DIRS_TGET}" systemctl enable "${_FILE_PATH##*/}"
+	# --- LANG=ja=JP.UTF-8 ----------------------------------------------------
+	_FILE_PATH="${_DIRS_TGET:?}/etc/locale.conf"
+#	if [[ ! -e "${_FILE_PATH}" ]]; then
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+			LANG=ja_JP.UTF-8
+_EOT_
+#	else
+#		sed -i "${_FILE_PATH}"                  \
+#		    -e '/^LANG=/ s/=.*$/=ja_JP\.UTF-8/'
+#	fi
+	# --- keyboard ------------------------------------------------------------
+	_FILE_PATH="${_DIRS_TGET:?}/etc/vconsole.conf"
+#	if [[ ! -e "${_FILE_PATH}" ]]; then
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+			XKBMODEL="pc105"
+			XKBLAYOUT="jp"
+			XKBVARIANT=""
+			XKBOPTIONS=""
+			BACKSPACE="guess"
+_EOT_
+#	fi
+	# --- timezone ------------------------------------------------------------
+	_FILE_PATH="${_DIRS_TGET:?}/etc/localtime"
+	rm -f "${_FILE_PATH}"
+	ln -s ../usr/share/zoneinfo/Asia/Tokyo "${_FILE_PATH}"
 	# -------------------------------------------------------------------------
 	case "${_DIST_INFO}" in
 		debian-*           | \
@@ -549,6 +517,7 @@ _EOT_
 		almalinux-*        | \
 		rockylinux-*       | \
 		miraclelinux-*     )
+			fnCreate_initrd
 			_FILE_PATH="${_DIRS_TGET:?}/etc/systemd/system-preset/00-user-custom.preset"
 			mkdir -p "${_FILE_PATH%/*}"
 			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
@@ -562,6 +531,7 @@ _EOT_
 				#enable httpd.socket
 				enable firewalld.service
 _EOT_
+#			chroot "${_DIRS_TGET}" restorecon -R -v -F /
 #			chroot "${_DIRS_TGET}" systemctl set-default graphical.target
 #			chroot "${_DIRS_TGET}" systemctl enable sshd.service systemd-resolved.service dnsmasq.service smb.service nmb.service httpd.service firewalld.service
 #			chroot "${_DIRS_TGET}" useradd --create-home --user-group --groups audio,cdrom,floppy,video,wheel --comment "${_DIST_INFO%%-[0-9]*} Live user" --password '$y$j9T$ke439aNLCgDVj6bFX9yO//$61x.uzoS5y.XV.dx31D0fwQgvV0bFLuhfi.xiDzT1P8' "master"
@@ -586,19 +556,6 @@ _EOT_
 	fi
 	[[ -e "${_DIRS_TGET:?}/usr/lib/systemd/user/orca.service"        ]] && chroot "${_DIRS_TGET}" systemctl --global disable orca.service
 	# -------------------------------------------------------------------------
-	case "${_DIST_INFO}" in
-		debian-*           | \
-		ubuntu-*           ) ;;
-		fedora-*           | \
-		centos-stream-*    | \
-		almalinux-*        | \
-		rockylinux-*       | \
-		miraclelinux-*     ) fnCreate_initrd;;
-		opensuse-leap-*    | \
-		opensuse-tumbleweed) ;;
-		*                  ) echo "not found: ${_DIST_INFO:-}"; exit 1;;
-	esac
-	# -------------------------------------------------------------------------
 	umount --recursive     "${_DIRS_TGET}/tmp/"
 	umount                 "${_DIRS_TGET}/run/"
 	umount --recursive     "${_DIRS_TGET}/sys/"
@@ -612,7 +569,7 @@ _EOT_
 	[[ -e "${_FILE_INRD:-}"                ]] && cp -aL "${_FILE_INRD}"                  "${_DIRS_BASE}"
 #	[[ -e "${_FILE_SPLS:-}"                ]] && cp -aL "${_FILE_SPLS}"                  "${_DIRS_BASE}/splash.png"
 	[[ -e "${_DIRS_TGET:-}/etc/os-release" ]] && cp -aL "${_DIRS_TGET:-}/etc/os-release" "${_DIRS_BASE}"
-	[[ -e "${_FILE_SPLS:-}"                ]] && convert "${_FILE_SPLS}" -format "png" -resize "${_VIDE_MODE}" "${_DIRS_BASE}/splash.png"
+	[[ -e "${_FILE_SPLS:-}"                ]] && command -v convert > /dev/null 2>&1 && convert "${_FILE_SPLS}" -format "png" -resize "${_VIDE_MODE}" "${_DIRS_BASE}/splash.png" || true
 
 	# -------------------------------------------------------------------------
 #	_PATH_INRD="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  \) | sort -Vu)"
@@ -829,16 +786,30 @@ _EOF_
 		rm -rf "${_DIRS_MNTP:?}"
 		mkdir -p "${_DIRS_MNTP}"
 		mkfs.vfat -F 32 "${_DEVS_LOOP}p1"
-		mount "${_DEVS_LOOP}p1" "${_DIRS_MNTP}"
-		grub-install \
-			--target=x86_64-efi \
-			--efi-directory="${_DIRS_MNTP}/" \
-			--boot-directory="${_DIRS_MNTP}/boot/" \
-			--removable
-		grub-install \
-			--target=i386-pc \
-			--boot-directory="${_DIRS_MNTP}/boot/" \
-			"${_DEVS_LOOP}"
+		mount "${_DEVS_LOOP}p1" "${_DIRS_MNTP}" && _LIST_RMOV+=("${_DIRS_MNTP}")
+		if command -v grub-install > /dev/null 2>&1; then
+			grub-install \
+				--target=x86_64-efi \
+				--efi-directory="${_DIRS_MNTP}/" \
+				--boot-directory="${_DIRS_MNTP}/boot/" \
+				--removable
+			grub-install \
+				--target=i386-pc \
+				--boot-directory="${_DIRS_MNTP}/boot/" \
+				"${_DEVS_LOOP}"
+		else
+
+			grub2-install \
+				--force \
+				--target=x86_64-efi \
+				--efi-directory="${_DIRS_MNTP}/" \
+				--boot-directory="${_DIRS_MNTP}/boot/" \
+				--removable
+			grub2-install \
+				--target=i386-pc \
+				--boot-directory="${_DIRS_MNTP}/boot/" \
+				"${_DEVS_LOOP}"
+		fi
 		# --- file copy -------------------------------------------------------
 		mkdir -p "${_DIRS_CDFS}/EFI/${__DIST}/"
 		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_DIRS_CDFS}/EFI/${__DIST}/grub.cfg" || true
@@ -883,6 +854,8 @@ _EOT_
 	if [[ -e /usr/lib/ISOLINUX/isolinux.bin ]]; then
 		cp -a /usr/lib/syslinux/modules/bios/* "${_DIRS_CDFS}/isolinux/"
 		cp -a /usr/lib/ISOLINUX/isolinux.bin   "${_DIRS_CDFS}/isolinux/"
+	elif [[ -e /usr/share/syslinux/isolinux.bin ]]; then
+		cp -a /usr/share/syslinux/*            "${_DIRS_CDFS}/isolinux/"
 	fi
 #	if [[ -e "${_DIRS_BASE}/splash.png" ]]; then
 #		convert "${_DIRS_BASE}/splash.png" -resize "${_VIDE_MODE}" "${_DIRS_CDFS}"/isolinux/splash.png
@@ -893,7 +866,7 @@ _EOT_
 	mkfs.fat -F 12 -n "ESP" "${_FILE_UEFI}"
 	rm -rf "${_DIRS_MNTP:?}"
 	mkdir -p "${_DIRS_MNTP}"
-	mount "${_FILE_UEFI}" "${_DIRS_MNTP}"
+	mount "${_FILE_UEFI}" "${_DIRS_MNTP}" && _LIST_RMOV+=("${_DIRS_MNTP}")
 	[[ -e "${_DIRS_CDFS}/EFI/".  ]] && cp -a "${_DIRS_CDFS}/EFI/" "${_DIRS_MNTP}/"
 	umount "${_DIRS_MNTP}"
 	# --- get distribution information ----------------------------------------
@@ -1111,3 +1084,19 @@ _EOT_
 	popd > /dev/null || exit
 	umount "${_DIRS_OLAY:?}/merged"
 	rm -rf "${_DIRS_TEMP:?}" "${_DIRS_OLAY:?}"
+
+# debian / ubuntu
+# mkosi
+# squashfs-tools
+# graphicsmagick-imagemagick-compat
+# xorriso
+
+# rhel
+# https://github.com/systemd/mkosi
+# squashfs-tools
+# ImageMagick
+# xorriso
+# grub2-efi-x64-cdboot
+# grub2-efi-x64-modules
+# grub2-pc-modules
+# syslinux
