@@ -2453,7 +2453,8 @@ funcSetupConfig_vmware() {
 _EOT_
 
 	# --- check command -------------------------------------------------------
-	if ! command -v vmware-hgfsclient > /dev/null 2>&1; then
+	if ! command -v fusermount > /dev/null 2>&1 \
+	|| ! command -v vmware-hgfsclient > /dev/null 2>&1; then
 		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
 		return
 	fi
@@ -2473,12 +2474,19 @@ _EOT_
 	fi
 
 	# --- fstab ---------------------------------------------------------------
+	_OPTN_FTAB="allow_other,defaults 0 0"
+	_COMD_VERS="$(fusermount --version || true)"
+	_COMD_VERS="${_COMD_VERS##* }"
+	_COMD_VERS="${_COMD_VERS%%.*}"
+	if [ "${_COMD_VERS:-"0"}" -ge 3 ]; then
+		_OPTN_FTAB="nofail${_OPTN_FTAB:+",${_OPTN_FTAB}"}"
+	fi
 	_FILE_PATH="${DIRS_TGET:-}/etc/fstab"
 	funcFile_backup "${_FILE_PATH}"
 	mkdir -p "${_FILE_PATH%/*}"
 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-		.host:/         ${DIRS_HGFS:?}       ${_HGFS_FSYS} nofail,allow_other,auto_unmount,defaults 0 0
+		.host:/         ${DIRS_HGFS:?}       ${_HGFS_FSYS} ${_OPTN_FTAB}
 _EOT_
 
 	# --- systemctl -----------------------------------------------------------
