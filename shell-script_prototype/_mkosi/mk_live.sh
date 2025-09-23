@@ -14,10 +14,12 @@
 
 	declare -r    _PROG_PATH="$0"
 #	declare -r -a _PROG_PARM=("${@:-}")
-#	declare -r    _PROG_DIRS="${_PROG_PATH%/*}"
+	declare       _PROG_DIRS="${_PROG_PATH%/*}"
+	              _PROG_DIRS="$(realpath "${_PROG_DIRS%/}")"
+	readonly      _PROG_DIRS
 	declare -r    _PROG_NAME="${_PROG_PATH##*/}"
 	declare -r    _PROG_PROC="${_PROG_NAME}.$$"
-	              _DIRS_TEMP="$(mktemp -qtd "${_PROG_PROC}.XXXXXX")"
+	              _DIRS_TEMP="$(mktemp -qtd -p "${_PROG_DIRS:-"${SUDO_HOME:-"${HOME:-"${TMPDIR:-"/tmp"}"}"}"}" "${_PROG_PROC}.XXXXXX")"
 	readonly      _DIRS_TEMP
 
 	declare       _DIRS_BASE="live/${1:?}"
@@ -315,8 +317,8 @@ function fnCreate_fsimage() {
 	if ! nice -n 19 mkosi \
 		--force \
 		--wipe-build-dir \
-		${SUDO_HOME:+--workspace-directory="${SUDO_HOME}"/.cache} \
-		--selinux-relabel=no \
+		${_DIRS_TEMP:+--workspace-directory="${_DIRS_TEMP}"/.cache} \
+		--selinux-relabel=yes \
 		--remove-files=/.cache,/.viminfo,/.autorelabel \
 		${_TGET_SUIT:+--release ${_TGET_SUIT}} \
 		--directory="${_DIRS_BASE}" \
@@ -439,6 +441,7 @@ _EOT_
 	chmod +x "${_FILE_PATH}"
 	chroot "${_DIRS_TGET}" "${_SHEL_NAME}" || exit $?
 	rm -f "${_FILE_PATH:?}"
+# https://wiki.archlinux.jp/index.php/Dracut
 }
 
 # -----------------------------------------------------------------------------
@@ -545,15 +548,15 @@ _EOT_
 		*                  ) echo "not found: ${_DIST_INFO:-}"; exit 1;;
 	esac
 	# -------------------------------------------------------------------------
-	_SHEL_NAME="/srv/user/share/conf/script/autoinst_cmd_late.sh"
-	if [[ -e "${_SHEL_NAME}" ]]; then
-		_EXEC_TGET="/tmp/${_SHEL_NAME##*/}"
-		cp -a "${_SHEL_NAME}" "${_DIRS_TGET}${_EXEC_TGET%/*}"
-		chmod +x "${_DIRS_TGET}${_EXEC_TGET:?}"
-		chroot "${_DIRS_TGET}" "${_EXEC_TGET:?}" \
-			ip=192.168.1.0::192.168.1.254:255.255.255.0:${_TGET_DIST:+"live-${_TGET_DIST}.workgroup"}:-:192.168.1.254
-		rm -f "${_DIRS_TGET:?}${_EXEC_TGET:?}"
-	fi
+#	_SHEL_NAME="/srv/user/share/conf/script/autoinst_cmd_late.sh"
+#	if [[ -e "${_SHEL_NAME}" ]]; then
+#		_EXEC_TGET="/tmp/${_SHEL_NAME##*/}"
+#		cp -a "${_SHEL_NAME}" "${_DIRS_TGET}${_EXEC_TGET%/*}"
+#		chmod +x "${_DIRS_TGET}${_EXEC_TGET:?}"
+#		chroot "${_DIRS_TGET}" "${_EXEC_TGET:?}" \
+#			ip=192.168.1.0::192.168.1.254:255.255.255.0:${_TGET_DIST:+"live-${_TGET_DIST}.workgroup"}:-:192.168.1.254
+#		rm -f "${_DIRS_TGET:?}${_EXEC_TGET:?}"
+#	fi
 	[[ -e "${_DIRS_TGET:?}/usr/lib/systemd/user/orca.service"        ]] && chroot "${_DIRS_TGET}" systemctl --global disable orca.service
 	# -------------------------------------------------------------------------
 	umount --recursive     "${_DIRS_TGET}/tmp/"
@@ -733,6 +736,21 @@ function funcMount_overlay() {
 # === mkosi ===================================================================
 	if [[ -n "${_FLAG_FORC:-}" ]] || [[ ! -e "${_FILE_SQFS:?}" ]]; then
 		if [[ -z "${_FLAG_HOLD:-}" ]]; then
+			_SHEL_NAME="/srv/user/share/conf/script/autoinst_cmd_late.sh"
+			if [[ -e "${_SHEL_NAME}" ]]; then
+				cp -a "${_SHEL_NAME}" "${_FILE_CONF%/*}"
+				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_CONF%.*}.finalize"
+					#!/bin/sh
+					if [ "\$container" != "mkosi" ]; then
+						exec mkosi-chroot "\$CHROOT_SCRIPT" "\$@"
+					fi
+					if ! ./${_SHEL_NAME##*/} ip=192.168.1.0::192.168.1.254:255.255.255.0:live-\$DISTRIBUTION-\$RELEASE.workgroup:-:192.168.1.254; then
+						/bin/bash
+						exit -1
+					fi
+_EOT_
+				chmod 755 "${_FILE_CONF%.*}.finalize"
+			fi
 			fnCreate_fsimage
 		fi
 	fi
@@ -769,9 +787,9 @@ function funcMount_overlay() {
 	rm -f "${_FILE_UEFI:?}"
 	dd if=/dev/zero of="${_FILE_UEFI:?}" bs=1M count=100
 	_DEVS_LOOP="$(losetup --find --show "${_FILE_UEFI}")"
-	sfdisk "${_FILE_UEFI}" << _EOF_
+	sfdisk "${_FILE_UEFI}" << _EOT_
 		,,U,
-_EOF_
+_EOT_
 	partprobe "${_DEVS_LOOP}"
 	_DEVS_ARRY=()
 	while read -r _DEVS_NAME DEVS_NODE

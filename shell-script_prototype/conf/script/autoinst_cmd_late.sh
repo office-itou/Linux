@@ -71,8 +71,7 @@
 	DIST_CODE=""						# code name         (ex. bookworm)
 	DIRS_TGET=""						# target directory
 	if command -v systemd-detect-virt > /dev/null 2>&1 \
-	&& ( systemd-detect-virt --chroot    > /dev/null 2>&1 \
-	||   systemd-detect-virt --container > /dev/null 2>&1 ); then
+	&& systemd-detect-virt --container --quiet > /dev/null 2>&1; then
 		CHGE_ROOT="true"
 	fi
 	if [ -d /target/. ]; then
@@ -526,7 +525,7 @@ funcInitialize() {
 	NTPS_IPV4="${NTPS_IPV4:-"$(dig "${NTPS_ADDR}" | awk '/^ntp.nict.jp./ {print $5;}' | sort -V | head -n 1)"}"
 
 	# --- network information -------------------------------------------------
-	if ! find /sys/devices/ -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -qE '^'"${NICS_NAME}"'$'; then
+	if [ ! -e /sys/devices/. ] || ! find /sys/devices/ -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -qE '^'"${NICS_NAME}"'$'; then
 		printf "\033[m${PROG_NAME}: \033[41m%s\033[m\n" "not exist: [${NICS_NAME}]"
 	fi
 	NICS_NAME="${NICS_NAME:-"$(ip -0 -brief address show scope global | awk '$1!="lo" {print $1;}')"}"
@@ -567,10 +566,10 @@ funcInitialize() {
 	NICS_HOST="${NICS_HOST:-"$(echo "${NICS_FQDN}." | cut -d '.' -f 1)"}"
 	NICS_WGRP="${NICS_WGRP:-"$(echo "${NICS_FQDN}." | cut -d '.' -f 2)"}"
 	if command -v resolvectl > /dev/null 2>&1; then
-		NICS_DNS4="${NICS_DNS4:-"$(resolvectl dns    | sed -ne '/^Global:/            s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
-		NICS_DNS4="${NICS_DNS4:-"$(resolvectl dns    | sed -ne '/('"${NICS_NAME}"'):/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
-		NICS_WGRP="${NICS_WGRP:-"$(resolvectl domain | sed -ne '/^Global:/            s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
-		NICS_WGRP="${NICS_WGRP:-"$(resolvectl domain | sed -ne '/('"${NICS_NAME}"'):/ s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
+		NICS_DNS4="${NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/^Global:/            s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
+		NICS_DNS4="${NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/('"${NICS_NAME}"'):/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
+		NICS_WGRP="${NICS_WGRP:-"$(resolvectl domain 2> /dev/null | sed -ne '/^Global:/            s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
+		NICS_WGRP="${NICS_WGRP:-"$(resolvectl domain 2> /dev/null | sed -ne '/('"${NICS_NAME}"'):/ s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
 	fi
 	if [ -e "${DIRS_TGET:-}/etc/resolv.conf" ]; then
 		NICS_DNS4="${NICS_DNS4:-"$(sed -ne '/^nameserver/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' "${DIRS_TGET:-}/etc/resolv.conf")"}"
@@ -583,8 +582,8 @@ funcInitialize() {
 	if [ "${NICS_FQDN}" = "${NICS_HOST}" ] && [ -n "${NICS_HOST}" ] && [ -n "${NICS_WGRP}" ]; then
 		NICS_FQDN="${NICS_HOST}.${NICS_WGRP}"
 	fi
-	IPV6_ADDR="$(ip -6 -brief address show primary dev "${NICS_NAME}" | awk '$1!="lo" {print $3;}')"
-	LINK_ADDR="$(ip -6 -brief address show primary dev "${NICS_NAME}" | awk '$1!="lo" {print $4;}')"
+	IPV6_ADDR="$(ip -6 -brief address show primary dev "${NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}')"
+	LINK_ADDR="$(ip -6 -brief address show primary dev "${NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $4;}')"
 	IPV6_ADDR="${IPV6_ADDR:-"2000::0/3"}"
 	LINK_ADDR="${LINK_ADDR:-"fe80::0/10"}"
 
@@ -1295,6 +1294,7 @@ funcSetupNetwork_manager() {
 			debian | ubuntu ) _FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/system-connections/Wired connection 1";;
 			*               ) _FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/system-connections/${NICS_NAME}.nmconnection";;
 		esac
+		mkdir -p "${_FILE_PATH%/*}"
 		_SRVC_NAME="NetworkManager.service"
 		_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
 		if [ "${_SRVC_STAT}" = "active" ]; then
@@ -1876,10 +1876,12 @@ funcSetupNetwork_resolv() {
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
 
 	# --- check command -------------------------------------------------------
+	_FILE_PATH="${DIRS_TGET:-}/etc/resolv.conf"
+	funcFile_backup "${_FILE_PATH}"
 	if ! command -v resolvectl > /dev/null 2>&1; then
 		# --- resolv.conf -----------------------------------------------------
-		_FILE_PATH="${DIRS_TGET:-}/etc/resolv.conf"
-		funcFile_backup "${_FILE_PATH}"
+#		_FILE_PATH="${DIRS_TGET:-}/etc/resolv.conf"
+#		funcFile_backup "${_FILE_PATH}"
 		mkdir -p "${_FILE_PATH%/*}"
 		cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
@@ -1894,15 +1896,19 @@ _EOT_
 		funcFile_backup   "${_FILE_PATH}" "init"
 	else
 		# --- resolv.conf -> /run/systemd/resolve/stub-resolv.conf ------------
-		_FILE_PATH="${DIRS_TGET:-}/etc/resolv.conf"
-		funcFile_backup "${_FILE_PATH}"
-#		cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
-		rm -f "${_FILE_PATH}"
-		_WORK_PATH="${DIRS_TGET:-}/run/systemd/resolve/stub-resolv.conf"
-		ln -sfr "${_WORK_PATH}" "${_FILE_PATH}"
-		if [ ! -e "${_WORK_PATH}" ]; then
-			mkdir -p "${_WORK_PATH%/*}"
-			touch "${_WORK_PATH}"
+		if grep -qi 'Do not edit.' "${_FILE_PATH}"; then
+			printf "\033[m${PROG_NAME}: \033[43m%s\033[m\n" "skip resolv.conf setup for chroot"
+		else
+#			_FILE_PATH="${DIRS_TGET:-}/etc/resolv.conf"
+#			funcFile_backup "${_FILE_PATH}"
+#			cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+			_WORK_PATH="${DIRS_TGET:-}/run/systemd/resolve/stub-resolv.conf"
+			rm -f "${_FILE_PATH}"
+			ln -sfr "${_WORK_PATH}" "${_FILE_PATH}"
+			if [ ! -e "${_WORK_PATH}" ]; then
+				mkdir -p "${_WORK_PATH%/*}"
+				touch "${_WORK_PATH}"
+			fi
 		fi
 
 		# --- debug out -------------------------------------------------------
@@ -2092,7 +2098,7 @@ funcSetupNetwork_samba() {
 	fi
 
 	# --- create passdb.tdb ---------------------------------------------------
-	pdbedit -L > /dev/null
+	pdbedit -L > /dev/null 2>&1 || true
 #	_SAMB_PWDB="$(find /var/lib/samba/ -name 'passdb.tdb' \( -type f -o -type l \))"
 
 	# --- nsswitch.conf -------------------------------------------------------
@@ -2161,7 +2167,7 @@ funcSetupNetwork_samba() {
 	    -e  '/^[ \t]*workgroup[ \t]*=/                    s/=.*$/= '"${NICS_WGRP}"'/' \
 	    -e  '/^[ \t]*interfaces[ \t]*=/                   s/=.*$/= '"${NICS_NAME}"'/' \
 	    -e  'p                                                                     }' \
-	> "${_WORK_PATH}"
+	> "${_WORK_PATH}" 2> /dev/null
 	if [ -z "${NICS_HOST:-}" ] || [ -z "${NICS_HOST##-}" ]; then
 		sed -i "${_WORK_PATH}" -e '/^[ \t]*netbios name[ \t]*=/d'
 	fi
@@ -2453,8 +2459,7 @@ funcSetupConfig_vmware() {
 _EOT_
 
 	# --- check command -------------------------------------------------------
-	if ! command -v fusermount > /dev/null 2>&1 \
-	|| ! command -v vmware-hgfsclient > /dev/null 2>&1; then
+	if ! command -v vmware-hgfsclient > /dev/null 2>&1; then
 		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
 		return
 	fi
@@ -2466,32 +2471,50 @@ _EOT_
 		return
 	fi
 
+	# --- create symlink mount.fuse3 ------------------------------------------
+	find "${DIRS_TGET:-}/bin/" "${DIRS_TGET:-}/sbin/" "${DIRS_TGET:-}/usr/bin/" "${DIRS_TGET:-}/usr/sbin/" -type f -name mount.fuse3 | while read -r _FILE_TGET
+	do
+		_FILE_PATH="${_FILE_TGET%/*}/mount.fuse"
+		_FILE_REAL="$(realpath "${_FILE_PATH}")"
+		if [ "${_FILE_TGET##*/}" = "${_FILE_REAL##*/}" ]; then
+			continue
+		fi
+		if [ -e "${_FILE_PATH}" ] && [ ! -e "${_FILE_PATH}.back" ]; then
+			mv "${_FILE_PATH}" "${_FILE_PATH}.back"
+		fi
+		if [ ! -e "${_FILE_PATH}" ]; then
+			ln -s "${_FILE_TGET##*/}" "${_FILE_PATH}"
+#			if command -v fixfiles > /dev/null 2>&1; then
+#				fixfiles -F restore "${_FILE_PATH}"
+#			fi
+		fi
+	done
+
 	# --- check file system ---------------------------------------------------
 	if command -v vmhgfs-fuse > /dev/null 2>&1; then
-		_HGFS_FSYS="fuse.vmhgfs-fuse"
+		_FSYS_HGFS="fuse.vmhgfs-fuse"
 	else
-		_HGFS_FSYS="vmhgfs"
+		_FSYS_HGFS="vmhgfs"
 	fi
 
 	# --- fstab ---------------------------------------------------------------
-	_OPTN_FTAB="allow_other,defaults 0 0"
-	_COMD_VERS="$(fusermount --version || true)"
-	_COMD_VERS="${_COMD_VERS##* }"
-	_COMD_VERS="${_COMD_VERS%%.*}"
-	if [ "${_COMD_VERS:-"0"}" -ge 3 ]; then
-		_OPTN_FTAB="nofail${_OPTN_FTAB:+",${_OPTN_FTAB}"}"
+	_FSTB_HGFS=".host:/         ${DIRS_HGFS:?}       ${_FSYS_HGFS} nofail,allow_other,defaults 0 0"
+	if ! vmware-hgfsclient > /dev/null 2>&1; then
+		_FSTB_HGFS="#${_FSTB_HGFS}"
 	fi
 	_FILE_PATH="${DIRS_TGET:-}/etc/fstab"
 	funcFile_backup "${_FILE_PATH}"
 	mkdir -p "${_FILE_PATH%/*}"
 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-		.host:/         ${DIRS_HGFS:?}       ${_HGFS_FSYS} ${_OPTN_FTAB}
+		${_FSTB_HGFS}
 _EOT_
 
 	# --- systemctl -----------------------------------------------------------
+	if [ -z "${CHGE_ROOT:-}" ]; then
 		printf "\033[m${PROG_NAME}: %s\033[m\n" "daemon reload"
 		systemctl --quiet daemon-reload
+	fi
 
 	# --- check mount ---------------------------------------------------------
 	if [ "${CHGE_ROOT:-}" = "true" ]; then
