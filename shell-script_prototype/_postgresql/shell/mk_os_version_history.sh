@@ -70,7 +70,7 @@ _EOT_
 		"${_LIST[8]//-/\/}" \
 		"${_LIST[9]:-}" \
 		"${_LIST[10]:-}"
-	done < <(psql -qtAX --host=sv-server --username=dbuser --dbname=mydb --command="
+	done < <(psql -qtAX --host=localhost --username=dbuser --dbname=mydb --command="
 SELECT
     *
 FROM
