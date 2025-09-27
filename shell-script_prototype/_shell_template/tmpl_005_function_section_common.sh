@@ -556,11 +556,12 @@ function fnBoot_options() {
 		* ) ;;
 	esac
 	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__RSLT}")
+	__BOPT+=("selinux=1 security=selinux enforcing=1 audit=1")
 	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
 		__BOPT+=("fsck.mode=skip raid=noautodetect noeject")
 	else
-		__BOPT+=("fsck.mode=skip raid=noautodetect")
-#		__BOPT+=("fsck.mode=skip raid=noautodetect${_MENU_MODE:+" vga=${_MENU_MODE}"}")
+#		__BOPT+=("fsck.mode=skip raid=noautodetect")
+		__BOPT+=("fsck.mode=skip raid=noautodetect${_MENU_MODE:+" vga=${_MENU_MODE}"}")
 	fi
 	# --- finish --------------------------------------------------------------
 	printf -v __RETN_VALU "%s\n" "${__BOPT[@]}"
@@ -938,8 +939,10 @@ _EOT_
 			  set language="${__BOPT[3]:-}"
 			  set ramsdisk="${__BOPT[4]:-}"
 			  set isosfile="${__BOPT[5]:-}"
+			  set selinuxs="${__BOPT[6]:-}"
+			  set otheropt="${__BOPT[7]:-}"
 			  set knladdr="(tftp,${_SRVR_ADDR:?})/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}"
-			  set options="\${autoinst} \${networks} \${language} \${ramsdisk} \${isosfile} ${__BOPT[@]:6}"
+			  set options="\${autoinst} \${networks} \${language} \${ramsdisk} \${isosfile} \${selinuxs} \${otheropt}"
 			  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 			# insmod net
 			# insmod http
@@ -973,8 +976,10 @@ _EOT_
 				  set language="${__BOPT[3]:-}"
 				  set ramsdisk="${__BOPT[4]:-}"
 				  set isosfile="${__BOPT[5]:-}"
+				  set selinuxs="${__BOPT[6]:-}"
+				  set otheropt="${__BOPT[7]:-}"
 				  set knladdr="(tftp,${_SRVR_ADDR:?})/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}"
-				  set options="\${autoinst} \${networks} \${language} \${ramsdisk} \${isosfile} ${__BOPT[@]:6}"
+				  set options="\${autoinst} \${networks} \${language} \${ramsdisk} \${isosfile} \${selinuxs} \${otheropt}"
 				  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 				# insmod net
 				# insmod http
@@ -1856,6 +1861,8 @@ _EOT_
 								set language ${__BOPT[3]:-}
 								set ramsdisk ${__BOPT[4]:-}
 								set isosfile ${__BOPT[5]:-}
+								set selinuxs ${__BOPT[6]:-}
+								set otheropt ${__BOPT[7]:-}
 
 _EOT_
 						)"
@@ -1894,6 +1901,12 @@ _EOT_
 								item ramsdisk                           RAM disk
 								item isosfile                           ISO file
 								present ||
+								set selinuxs ${__BOPT[6]:-}
+								set otheropt ${__BOPT[7]:-}
+								form                                    Configure Boot Options
+								item selinuxs                           SELinux
+								item otheropt                           Other options
+								present ||
 
 _EOT_
 						)"
@@ -1901,7 +1914,7 @@ _EOT_
 					__WORK+="$(
 						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
 							set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}
-							set options \${autoinst} \${networks} \${language} \${ramsdisk} \${isosfile} ${__BOPT[@]:6}
+							set options \${autoinst} \${networks} \${language} \${ramsdisk} \${isosfile} \${selinuxs} \${otheropt}
 							echo Loading kernel and initrd ...
 							kernel \${knladdr}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/} \${options} --- quiet || goto error
 							initrd \${knladdr}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/} || goto error
@@ -2144,8 +2157,10 @@ _EOT_
 							  set language="${__BOPT[3]:-}"
 							  set ramsdisk="${__BOPT[4]:-}"
 							  set isosfile="${__BOPT[5]:-}"
+							  set selinuxs="${__BOPT[6]:-}"
+							  set otheropt="${__BOPT[7]:-}"
 							  set knladdr="(tftp,${_SRVR_ADDR:?})/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}"
-							  set options="\${autoinst} \${networks} \${language} \${ramsdisk} \${isosfile} ${__BOPT[@]:6}"
+							  set options="\${autoinst} \${networks} \${language} \${ramsdisk} \${isosfile} \${selinuxs} \${otheropt}"
 							  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 							  insmod net
 							  insmod http
