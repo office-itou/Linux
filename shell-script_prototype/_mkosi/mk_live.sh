@@ -178,7 +178,8 @@
 	readonly      _FILE_WORK
 	declare -r    _FILE_UEFI="${_DIRS_BASE}/efi.img"
 	declare -r    _FILE_BIOS="${_DIRS_BASE}/boot.img"
-	declare -r    _PATH_ETRI="/usr/lib/grub/i386-pc/eltorito.img"
+#	declare -r    _PATH_ETRI="/usr/lib/grub/i386-pc/eltorito.img"
+	declare -r    _PATH_ETRI="/srv/user/private/work/efiboot.img"
 	if [[ -e "${_PATH_ETRI}" ]]; then
 		declare -r    _FILE_BCAT="boot/grub/boot.catalog"
 		declare -r    _FILE_ETRI="boot/grub/i386-pc/${_PATH_ETRI##*/}"
@@ -209,15 +210,18 @@
 		"splash" \
 		"fsck.mode=skip" \
 		"raid=noautodetect" \
+		"vga=791" \
+		"security=selinux" \
 	)
 
 	declare -r -a _BOOT_RHEL=(\
-		"selinux=0" \
 		"ip=dhcp" \
 		"root=live:LABEL=${_FILE_VLID}" \
 		"rd.locale.LANG=ja_JP.utf8" \
 		"rd.vconsole.keymap=jp" \
 		"rd.live.image=1" \
+		"vga=791" \
+		"security=selinux" \
 	)
 #		"language=ja" \
 #		"country=JP" \
@@ -421,7 +425,7 @@ function fnCreate_initrd() {
 		# -----------------------------------------------------------------------------
 		_KRNL_INFO="\$(ls /usr/lib/modules/)"
 		_ARCH_TYPE="\${_KRNL_INFO##*[-.]}"
-		_KRNL_VERS="\${_KRNL_INFO%"[-.]\${_ARCH_TYPE}"}"
+		_KRNL_VERS="\${_KRNL_INFO%[-.]\${_ARCH_TYPE}}"
 		cp -a "/usr/lib/modules/\${_KRNL_INFO}/vmlinuz" "/boot/vmlinuz-\${_KRNL_INFO}"
 		dracut \\
 		 	--stdlog 3 \\
@@ -431,7 +435,7 @@ function fnCreate_initrd() {
 		 	--nomdadmconf \\
 		 	--nolvmconf \\
 		 	--xz \\
-		 	\${_KRNL_VERS:+--kver "\${_KRNL_VERS}"} \\
+		 	\${_KRNL_INFO:+--kver "\${_KRNL_INFO}"} \\
 		 	\${_MODU_ADDS[*]:+--add "\${_MODU_ADDS[*]}"} \\
 		 	\${_MODU_OMIT[*]:+--omit "\${_MODU_OMIT[*]}"} \\
 		 	--filesystems "ext4 fat exfat isofs squashfs udf xfs"
@@ -739,7 +743,17 @@ function funcMount_overlay() {
 			_SHEL_NAME="/srv/user/share/conf/script/autoinst_cmd_late.sh"
 			if [[ -e "${_SHEL_NAME}" ]]; then
 				cp -a "${_SHEL_NAME}" "${_FILE_CONF%/*}"
-				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_CONF%.*}.finalize"
+#				_FILE_PATH="${_FILE_CONF%/*}/mkosi.configure"	# (ConfigureScripts=)        exists, it is executed before building the image. This script may be used to dynamically modify the configuration. It receives the configuration serialized as JSON on stdin and should output the modified configuration serialized as JSON on stdout. Note that this script only runs when building or booting the image (build, vm, boot and shell verbs). If a default tools tree is configured, it will be built before running the configure scripts and the configure scripts will run with the tools tree available. This also means that the modifications made by configure scripts will not be visible in the summary output.
+#				_FILE_PATH="${_FILE_CONF%/*}/mkosi.sync"		# (SyncScripts=)             exists, it is executed before the image is built. This script may be used to update various sources that are used to build the image. One use case is to run git pull on various source repositories before building the image. Specifically, the BuildSourcesEphemeral= setting does not apply to sync scripts, which means sync scripts can be used to update build sources even if BuildSourcesEphemeral= is enabled.
+				_FILE_PATH="${_FILE_CONF%/*}/mkosi.prepare"		# (PrepareScripts=)          exists, it is first called with the final argument, right after the software packages are installed. It is called a second time with the build command line parameter, right after the build packages are installed and the build overlay mounted on top of the image’s root directory . This script has network access and may be used to install packages from other sources than the distro’s package manager (e.g. pip, npm, ...), after all software packages are installed but before the image is cached (if incremental mode is enabled). In contrast to a general purpose installation, it is safe to install packages to the system (pip install, npm install -g) instead of in $SRCDIR itself because the build image is only used for a single project and can easily be thrown away and rebuilt so there’s no risk of conflicting dependencies and no risk of polluting the host system.
+#				_FILE_PATH="${_FILE_CONF%/*}/mkosi.build"		# (BuildScripts=)            exists, it is executed with the build overlay mounted on top of the image’s root directory. When running the build script, $DESTDIR points to a directory where the script should place any files generated it would like to end up in the image. Note that make-, automake-, and meson-based build systems generally honor $DESTDIR, thus making it very natural to build source trees from the build script. After running the build script, the contents of $DESTDIR are copied into the image.
+#				_FILE_PATH="${_FILE_CONF%/*}/mkosi.postinst"	# (PostInstallationScripts=) exists, it is executed after the (optional) build tree and extra trees have been installed. This script may be used to alter the images without any restrictions, after all software packages and built sources have been installed.
+#				_FILE_PATH="${_FILE_CONF%/*}/mkosi.finalize"	# (FinalizeScripts=)         exists, it is executed as the last step of preparing an image.
+#				_FILE_PATH="${_FILE_CONF%/*}/mkosi.postoutput"	# (PostOutputScripts=)       exists, it is executed right after all the output files have been generated, before they are finally moved into the output directory. This can be used to generate additional or alternative outputs, e.g. SHA256FILES or SBOM manifests.
+#				_FILE_PATH="${_FILE_CONF%/*}/mkosi.clean"		# (CleanScripts=)            exists, it is executed right after the outputs of a previous build have been cleaned up. A clean script can clean up any outputs that mkosi does not know about (e.g. artifacts from SplitArtifacts=partitions or RPMs built in a build script). Note that this script does not use the tools tree even if one is configured.
+#				_FILE_PATH="${_FILE_CONF%/*}/mkosi.version"		#                            exists and is executable, it is run during configuration parsing and populates ImageVersion= with the output on stdout. This can be used for external version tracking, e.g. with git describe or date '+%Y-%m-%d'. Note that this script is executed on the host system without any sandboxing.
+#				_FILE_PATH="${_FILE_CONF%/*}/mkosi.rootpw"		#                            exists and is executable, it is run during configuration parsing and populates RootPassword= with the output on stdout. This can be used to randomly generate a password and can be remembered by outputting it to stderr or by reading $MKOSI_CONFIG in another script (e.g. mkosi.postoutput). Note that this script is executed on the host system without any sandboxing.
+				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
 					#!/bin/sh
 					if [ "\$container" != "mkosi" ]; then
 						exec mkosi-chroot "\$CHROOT_SCRIPT" "\$@"
@@ -749,7 +763,7 @@ function funcMount_overlay() {
 						exit -1
 					fi
 _EOT_
-				chmod 755 "${_FILE_CONF%.*}.finalize"
+				chmod 755 "${_FILE_PATH}"
 			fi
 			fnCreate_fsimage
 		fi
@@ -816,7 +830,6 @@ _EOT_
 				--boot-directory="${_DIRS_MNTP}/boot/" \
 				"${_DEVS_LOOP}"
 		else
-
 			grub2-install \
 				--force \
 				--target=x86_64-efi \
@@ -866,8 +879,8 @@ _EOT_
 	[[ -e "${_PATH_ETRI:-}"                                  ]] && nice -n 19 cp -a  "${_PATH_ETRI}"                                "${_DIRS_CDFS}/boot/grub/i386-pc/"
 	[[ -e "${_FILE_UEFI:-}"                                  ]] && nice -n 19 cp -a  "${_FILE_UEFI}"                                "${_DIRS_CDFS}/boot/grub/${_FILE_UEFI##*/}"
 	[[ -e "${_FILE_SQFS:-}"                                  ]] && nice -n 19 cp -a  "${_FILE_SQFS}"                                "${_DIRS_CDFS}/${_DIRS_LIVE}/"
-	[[ -e "${_FILE_KENL:-}"                                  ]] && nice -n 19 cp -aL "${_FILE_KENL}"                                "${_DIRS_CDFS}/${_DIRS_LIVE}/"
-	[[ -e "${_FILE_INRD:-}"                                  ]] && nice -n 19 cp -aL "${_FILE_INRD}"                                "${_DIRS_CDFS}/${_DIRS_LIVE}/"
+	[[ -e "${_FILE_KENL:-}"                                  ]] && nice -n 19 cp -aL "${_FILE_KENL}"                                "${_DIRS_CDFS}/${_DIRS_LIVE}/" && ln -sr "${_DIRS_CDFS}/${_DIRS_LIVE}/${_FILE_KENL##*/}" "${_DIRS_CDFS}/${_DIRS_LIVE}/vmlinuz"
+	[[ -e "${_FILE_INRD:-}"                                  ]] && nice -n 19 cp -aL "${_FILE_INRD}"                                "${_DIRS_CDFS}/${_DIRS_LIVE}/" && ln -sr "${_DIRS_CDFS}/${_DIRS_LIVE}/${_FILE_INRD##*/}" "${_DIRS_CDFS}/${_DIRS_LIVE}/initrd.img"
 	[[ -e "${_DIRS_BASE}/splash.png"                         ]] && nice -n 19 cp -aL "${_DIRS_BASE}/splash.png"                     "${_DIRS_CDFS}/isolinux/splash.png"
 	if [[ -e /usr/lib/ISOLINUX/isolinux.bin ]]; then
 		cp -a /usr/lib/syslinux/modules/bios/* "${_DIRS_CDFS}/isolinux/"
