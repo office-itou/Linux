@@ -344,6 +344,11 @@ function fnCreate_agama() {
 #	__PDCT="${__VERS%%-*}"
 	__PDID="${__VERS//-/_}"
 	__PDID="${__PDID^}"
+	# --- by product id -------------------------------------------------------
+	case "${__TGET_PATH}" in
+		*_tumbleweed_*) __PDID="Tumbleweed";;
+		*             ) __PDID="openSUSE_Leap";;
+	esac
 	# --- by media ------------------------------------------------------------
 	# --- by version ----------------------------------------------------------
 	case "${__TGET_PATH}" in

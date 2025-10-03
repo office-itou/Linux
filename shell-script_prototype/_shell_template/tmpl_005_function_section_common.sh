@@ -556,7 +556,7 @@ function fnBoot_options() {
 		* ) ;;
 	esac
 	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__RSLT}")
-	__BOPT+=("selinux=1 security=selinux enforcing=1 audit=1")
+	__BOPT+=("security=selinux enforcing=0")
 	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
 		__BOPT+=("fsck.mode=skip raid=noautodetect noeject")
 	else
