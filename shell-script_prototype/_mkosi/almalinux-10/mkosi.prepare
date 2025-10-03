@@ -1,0 +1,8 @@
+#!/bin/sh
+if [ "$container" != "mkosi" ]; then
+exec mkosi-chroot "$CHROOT_SCRIPT" "$@"
+fi
+if ! ./autoinst_cmd_late.sh ip=192.168.1.0::192.168.1.254:255.255.255.0:live-$DISTRIBUTION-$RELEASE.workgroup:-:192.168.1.254; then
+/bin/bash
+exit -1
+fi

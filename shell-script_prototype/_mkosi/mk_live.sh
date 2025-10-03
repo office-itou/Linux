@@ -48,6 +48,16 @@
 #	declare -r    _FILE_SQFS="${_DIRS_BASE:?}/minimal.squashfs"
 	declare -r    _DIRS_TGET="${_DIRS_OLAY}/merged"
 
+	if [[ -n "${_FLAG_FORC:-}" ]]; then
+		if [[ -z "${_FLAG_HOLD:-}" ]]; then
+			rm -rf "${_DIRS_BASE:?}"
+		else
+			mv "${_DIRS_BASE}" "${_DIRS_BASE}.back"
+			mkdir -p "${_DIRS_BASE}"
+			mv "${_DIRS_BASE}.back/image" "${_DIRS_BASE}"
+			rm -rf "${_DIRS_BASE:?}.back"
+		fi
+	fi
 	rm -rf "${_DIRS_OLAY:?}"
 	mkdir -p "${_DIRS_BASE}"/image \
 	         "${_DIRS_OLAY}"/{upper,lower,work,merged}
@@ -322,13 +332,25 @@ function fnCreate_fsimage() {
 		--force \
 		--wipe-build-dir \
 		${_DIRS_TEMP:+--workspace-directory="${_DIRS_TEMP}"/.cache} \
-		--selinux-relabel=yes \
+		--selinux-relabel=no \
 		--remove-files=/.cache,/.viminfo,/.autorelabel \
 		${_TGET_SUIT:+--release ${_TGET_SUIT}} \
 		--directory="${_DIRS_BASE}" \
 		--architecture=x86-64 \
 		; then
 		exit "$?"
+	fi
+	if command -v setfiles > /dev/null 2>&1; then
+		_DIRS_ROOT="${_DIRS_BASE}/image"
+		find "${_DIRS_ROOT}/etc/selinux/" -name file_contexts | while read -r _FILE_CTXT
+		do
+			_FILE_PLCY="${_FILE_CTXT%/contexts/*}/policy/policy.34"
+			setfiles -F \
+				-mFr "${_DIRS_ROOT:-}" \
+				-T0 -c "${_FILE_PLCY}" \
+				"${_FILE_CTXT}" \
+				"${_DIRS_ROOT}"
+		done
 	fi
 # https://github.com/systemd/mkosi/blob/main/mkosi/resources/man/mkosi.1.md
 }
