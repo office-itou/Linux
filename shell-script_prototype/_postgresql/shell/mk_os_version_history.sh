@@ -5,33 +5,33 @@ set -u
 #set -x
 
 	# --- shared directory parameter ------------------------------------------
-	declare -r    DIRS_TOPS="/srv"							# top of shared directory
-	declare -r    DIRS_HGFS="${DIRS_TOPS}/hgfs"				# vmware shared
-	declare -r    DIRS_HTML="${DIRS_TOPS}/http/html"		# html contents
-	declare -r    DIRS_SAMB="${DIRS_TOPS}/samba"			# samba shared
-	declare -r    DIRS_TFTP="${DIRS_TOPS}/tftp"				# tftp contents
-	declare -r    DIRS_USER="${DIRS_TOPS}/user"				# user file
+#	declare -r    DIRS_TOPS="/srv"							# top of shared directory
+#	declare -r    DIRS_HGFS="${DIRS_TOPS}/hgfs"				# vmware shared
+#	declare -r    DIRS_HTML="${DIRS_TOPS}/http/html"		# html contents
+#	declare -r    DIRS_SAMB="${DIRS_TOPS}/samba"			# samba shared
+#	declare -r    DIRS_TFTP="${DIRS_TOPS}/tftp"				# tftp contents
+#	declare -r    DIRS_USER="${DIRS_TOPS}/user"				# user file
 
 	# --- shared of user file -------------------------------------------------
-	declare -r    DIRS_SHAR="${DIRS_USER}/share"			# shared of user file
-	declare -r    DIRS_CONF="${DIRS_SHAR}/conf"				# configuration file
-	declare -r    DIRS_KEYS="${DIRS_CONF}/_keyring"			# keyring file
-	declare -r    DIRS_TMPL="${DIRS_CONF}/_template"		# templates for various configuration files
-	declare -r    DIRS_IMGS="${DIRS_SHAR}/imgs"				# iso file extraction destination
-	declare -r    DIRS_ISOS="${DIRS_SHAR}/isos"				# iso file
-	declare -r    DIRS_LOAD="${DIRS_SHAR}/load"				# load module
-	declare -r    DIRS_RMAK="${DIRS_SHAR}/rmak"				# remake file
+#	declare -r    DIRS_SHAR="${DIRS_USER}/share"			# shared of user file
+#	declare -r    DIRS_CONF="${DIRS_SHAR}/conf"				# configuration file
+#	declare -r    DIRS_KEYS="${DIRS_CONF}/_keyring"			# keyring file
+#	declare -r    DIRS_TMPL="${DIRS_CONF}/_template"		# templates for various configuration files
+#	declare -r    DIRS_IMGS="${DIRS_SHAR}/imgs"				# iso file extraction destination
+#	declare -r    DIRS_ISOS="${DIRS_SHAR}/isos"				# iso file
+#	declare -r    DIRS_LOAD="${DIRS_SHAR}/load"				# load module
+#	declare -r    DIRS_RMAK="${DIRS_SHAR}/rmak"				# remake file
 
 	# --- open-vm-tools -------------------------------------------------------
-	declare -r    HGFS_DIRS="${DIRS_HGFS}/workspace/image"	# vmware shared directory
+#	declare -r    HGFS_DIRS="${DIRS_HGFS}/workspace/image"	# vmware shared directory
 
 	# --- configuration file template -----------------------------------------
-	declare -r    CONF_DIRS="${DIRS_CONF}/_template"
-	declare -r    CONF_KICK="${CONF_DIRS}/kickstart_common.cfg"
-	declare -r    CONF_CLUD="${CONF_DIRS}/nocloud-ubuntu-user-data"
-	declare -r    CONF_SEDD="${CONF_DIRS}/preseed_debian.cfg"
-	declare -r    CONF_SEDU="${CONF_DIRS}/preseed_ubuntu.cfg"
-	declare -r    CONF_YAST="${CONF_DIRS}/yast_opensuse.xml"
+#	declare -r    CONF_DIRS="${DIRS_CONF}/_template"
+#	declare -r    CONF_KICK="${CONF_DIRS}/kickstart_common.cfg"
+#	declare -r    CONF_CLUD="${CONF_DIRS}/nocloud-ubuntu-user-data"
+#	declare -r    CONF_SEDD="${CONF_DIRS}/preseed_debian.cfg"
+#	declare -r    CONF_SEDU="${CONF_DIRS}/preseed_ubuntu.cfg"
+#	declare -r    CONF_YAST="${CONF_DIRS}/yast_opensuse.xml"
 
 	declare       _FLAG=""
 	declare -a    _LINE=()
@@ -143,4 +143,9 @@ ORDER BY
 
 		* <https://en.wikipedia.org/wiki/OpenSUSE>
 		* <https://ja.wikipedia.org/wiki/OpenSUSE>
+
+		### Windows
+
+		* <https://ja.wikipedia.org/wiki/Microsoft_Windows_11%E3%81%AE%E3%83%90%E3%83%BC%E3%82%B8%E3%83%A7%E3%83%B3%E5%B1%A5%E6%AD%B4>
+
 _EOT_
