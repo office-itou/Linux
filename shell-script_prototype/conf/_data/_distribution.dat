@@ -63,7 +63,7 @@ ubuntu-23.10        Ubuntu          23.10           Mantic%20Minotaur           
 ubuntu-24.04        Ubuntu          24.04           Noble%20Numbat              -           2024-04-25  2029-05-31  2034-04-25  -           6.8                     -
 ubuntu-24.10        Ubuntu          24.10           Oracular%20Oriole           EOL         2024-10-10  2025-07-xx  -           -           6.11                    -
 ubuntu-25.04        Ubuntu          25.04           Plucky%20Puffin             -           2025-04-17  2026-01-xx  -           -           6.14                    -
-ubuntu-25.10        Ubuntu          25.10           Questing%20Quokka           -           2025-10-09  2026-07-xx  -           -           -                       -
+ubuntu-25.10        Ubuntu          25.10           Questing%20Quokka           -           2025-10-09  2026-07-xx  -           -           6.17                    -
 fedora-27           Fedora          27              -                           EOL         2017-11-14  2018-11-30  -           -           4.13                    -
 fedora-28           Fedora          28              -                           EOL         2018-05-01  2019-05-28  -           -           4.16                    -
 fedora-29           Fedora          29              -                           EOL         2018-10-30  2019-11-26  -           -           4.18                    -
@@ -143,10 +143,11 @@ opensuse-leap-15.3  openSUSE        15.3            -                           
 opensuse-leap-15.4  openSUSE        15.4            -                           EOL         2022-06-08  2023-12-31  -           -           5.14.21                 -
 opensuse-leap-15.5  openSUSE        15.5            -                           EOL         2023-06-07  2024-12-31  -           -           5.14.21                 -
 opensuse-leap-15.6  openSUSE        15.6            -                           -           2024-06-12  2025-12-31  -           -           6.4                     -
-opensuse-leap-16.0  openSUSE        16.0            -                           -           2025-10-xx  20xx-xx-xx  -           -           -                       -
+opensuse-leap-16.0  openSUSE        16.0            -                           -           2025-10-01  2027-10-31  -           -           6.12                    -
 opensuse-tumbleweed openSUSE        tumbleweed      -                           -           2014-11-xx  20xx-xx-xx  -           -           -                       -
 windows-10          windows         10.0-22h2       -                           -           2022-10-18  2025-10-14  -           -           -                       -
 windows-11          windows         11.0-24h2       -                           -           2024-10-01  2026-10-13  -           -           -                       -
+windows-11          windows         11.0-25h2       -                           -           2025-09-30  2027-10-12  -           -           -                       -
 memtest86plus       memtest86plus   7.20            -                           -           20xx-xx-xx  20xx-xx-xx  -           -           -                       -
 winpe-x86           winpe-x86       -               -                           -           20xx-xx-xx  20xx-xx-xx  -           -           -                       -
 winpe-x64           winpe-x64       -               -                           -           20xx-xx-xx  20xx-xx-xx  -           -           -                       -
