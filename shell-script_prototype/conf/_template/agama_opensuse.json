@@ -84,6 +84,7 @@
       "rhythmbox",
 // desktop
       "lvm2",
+      "selinux-utils",
       "sudo",
       "firewalld",
       "traceroute",

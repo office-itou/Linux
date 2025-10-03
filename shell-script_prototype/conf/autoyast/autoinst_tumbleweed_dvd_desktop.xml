@@ -600,6 +600,7 @@ fixed address -->
     <install_recommended t="boolean">true</install_recommended>
     <instsource/>
     <packages t="list">
+      <package>selinux-utils</package>
       <package>sudo</package>
       <package>firewalld</package>
       <package>traceroute</package>

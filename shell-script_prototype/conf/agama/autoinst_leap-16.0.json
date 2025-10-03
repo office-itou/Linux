@@ -5,7 +5,7 @@
     "timezone": "Asia/Tokyo"
   },
   "product": {
-    "id": "Leap_16.0"
+    "id": "openSUSE_Leap"
   },
   "root": {
     "password": "r00t"
@@ -57,6 +57,7 @@
     ],
     "packages": [
       "lvm2",
+      "selinux-utils",
       "sudo",
       "firewalld",
       "traceroute",

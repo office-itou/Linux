@@ -176,6 +176,9 @@ autoinstall:
   packages:
   - apparmor
   - apparmor-utils
+  - selinux-basics
+  - selinux-policy-default
+  - auditd
   - sudo
   - firewalld
   - traceroute
