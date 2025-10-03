@@ -72,11 +72,14 @@
 	DIRS_TGET=""						# target directory
 	if command -v systemd-detect-virt > /dev/null 2>&1 \
 	&& systemd-detect-virt --container --quiet > /dev/null 2>&1; then
+		printf "\033[m${PROG_NAME}: \033[43m%s\033[m\n" "mode: container"
 		CHGE_ROOT="true"
 	fi
 	if [ -d /target/. ]; then
+		printf "\033[m${PROG_NAME}: \033[43m%s\033[m\n" "mode: target"
 		DIRS_TGET="/target"
 	elif [ -d /mnt/sysimage/. ]; then
+		printf "\033[m${PROG_NAME}: \033[43m%s\033[m\n" "mode: sysimage"
 		DIRS_TGET="/mnt/sysimage"
 	fi
 	readonly DIRS_TGET
@@ -715,7 +718,7 @@ funcInstall_package() {
 
 	# --- sources.list --------------------------------------------------------
 	_FILE_PATH="${DIRS_TGET:-}/etc/apt/sources.list"
-	if grep -q '^[ \t]*deb[ \t]\+cdrom:' "${_FILE_PATH}"; then
+	if grep -qs '^[ \t]*deb[ \t]\+cdrom:' "${_FILE_PATH}"; then
 		funcFile_backup "${_FILE_PATH}"
 		mkdir -p "${_FILE_PATH%/*}"
 		cp -a -Z "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
@@ -972,6 +975,13 @@ funcSetupConfig_apparmor() {
 funcSetupConfig_selinux() {
 	__FUNC_NAME="funcSetupConfig_selinux"
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+
+	# --- check container -----------------------------------------------------
+	if [ -n "${DIRS_TGET:-}" ] || [ -n "${CHGE_ROOT:-}" ]; then
+		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    mode    : container"
+		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
+		return
+	fi
 
 	# --- check command -------------------------------------------------------
 	if ! command -v getenforce > /dev/null 2>&1; then
@@ -3061,9 +3071,9 @@ _EOT_
 	fi
 
 	# --- selinux-activate ----------------------------------------------------
-	if command -v selinux-activate > /dev/null 2>&1; then
-		selinux-activate
-	fi
+#	if command -v selinux-activate > /dev/null 2>&1; then
+#		selinux-activate
+#	fi
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
