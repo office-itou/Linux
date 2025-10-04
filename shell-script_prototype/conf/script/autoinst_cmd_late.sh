@@ -173,8 +173,7 @@
 			                                 NICS_NAME="$(echo "${LINE#*ip*=}" | cut -d ':' -f 6)"
 			                                 NICS_DNS4="$(echo "${LINE#*ip*=}" | cut -d ':' -f 8)"
 			                                 ;;
-			ifcfg=*                        ) LINE="ifcfg=${1:-"*"}=${2:-"dhcp6"}"
-			                                 NICS_NAME="$(echo "${LINE#*ifcfg*=}" | cut -d '=' -f 1)"
+			ifcfg=*                        ) NICS_NAME="$(echo "${LINE#*ifcfg*=}" | cut -d '=' -f 1)"
 			                                 if [ -z "${NICS_NAME#*"*"}" ]; then
 			                                     NICS_NAME="$(find /sys/devices/ -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -E "${NICS_NAME}" | sort | head -n 1)"
 			                                 fi
@@ -1001,12 +1000,27 @@ funcSetupConfig_selinux() {
 
 	# --- restore context labels ----------------------------------------------
 	printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "*** restore : start ***"
-	fixfiles restore "${DIRS_TGET:-}"/* || true
+	restorecon -RF "${DIRS_TGET:-}"/ || true
+#	fixfiles restore "${DIRS_TGET:-}"/* || true
 	printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "*** restore : complete ***"
 
 	# --- selinux activate ----------------------------------------------------
 	if command -v selinux-activate > /dev/null 2>&1; then
 		selinux-activate || true
+	fi
+	if ! grep -q 'selinux' /etc/default/grub \
+	&& command -v grub2-mkconfig > /dev/null 2>&1; then
+		_FILE_PATH="${DIRS_TGET:-}/etc/default/grub"
+		funcFile_backup "${_FILE_PATH}"
+		mkdir -p "${_FILE_PATH%/*}"
+		cp -a -Z "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+		sed -i "${_FILE_PATH}"                                                        \
+		    -e '/GRUB_CMDLINE_LINUX_DEFAULT/ s/\("*\)$/ lsm=selinux,bpf selinux=1\1/'
+		_FILE_PATH="${DIRS_TGET:-}/boot/grub2/grub.cfg"
+		funcFile_backup "${_FILE_PATH}"
+		mkdir -p "${_FILE_PATH%/*}"
+		cp -a -Z "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+		grub2-mkconfig -o "${_FILE_PATH}"
 	fi
 
 	# --- debug out -----------------------------------------------------------
