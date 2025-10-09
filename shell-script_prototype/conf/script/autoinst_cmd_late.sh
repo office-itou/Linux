@@ -995,7 +995,10 @@ funcSetupConfig_selinux() {
 	# --- backup original file ------------------------------------------------
 	find "${DIRS_TGET:-}/etc/selinux/" \( -name targeted -o -name default \) | while read -r _DIRS_TGET
 	do
-		funcFile_backup "${_DIRS_TGET}/contexts/files/"
+		find "${_DIRS_TGET}/contexts/files/" -type f | while read -r _FILE_PATH
+		do
+			funcFile_backup "${_FILE_PATH}"
+		done
 	done
 
 	# --- set selinux ---------------------------------------------------------
@@ -1156,7 +1159,10 @@ funcSetupConfig_selinux() {
 	# --- backup initial file -------------------------------------------------
 	find "${DIRS_TGET:-}/etc/selinux/" \( -name targeted -o -name default \) | while read -r _DIRS_TGET
 	do
-		funcFile_backup "${_DIRS_TGET}/contexts/files/" "init"
+		find "${_DIRS_TGET}/contexts/files/" -type f | while read -r _FILE_PATH
+		do
+			funcFile_backup "${_FILE_PATH}" "init"
+		done
 	done
 
 	# --- restore context labels ----------------------------------------------
