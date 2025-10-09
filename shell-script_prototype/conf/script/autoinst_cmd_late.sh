@@ -1055,6 +1055,7 @@ funcSetupConfig_selinux() {
 		# --- create rule -----------------------------------------------------
 		sepolicy generate --customize -d dnsmasq_t        -n custom_dnsmasq        --path "${_DIRS_TGET}" || true > /dev/null
 		sepolicy generate --customize -d winbind_t        -n custom_winbind        --path "${_DIRS_TGET}" || true > /dev/null
+		sepolicy generate --customize -d httpd_t          -n custom_httpd          --path "${_DIRS_TGET}" || true > /dev/null
 		sepolicy generate --customize -d firewalld_t      -n custom_firewalld      --path "${_DIRS_TGET}" || true > /dev/null
 		sepolicy generate --customize -d vmware_tools_t   -n custom_vmware_tools   --path "${_DIRS_TGET}" || true > /dev/null
 		sepolicy generate --customize -d systemd_logind_t -n custom_systemd_logind --path "${_DIRS_TGET}" || true > /dev/null
@@ -1081,6 +1082,21 @@ funcSetupConfig_selinux() {
 		    -e '$a allow winbind_t samba_runtime_t:file map;'                       \
 		    -e '$a allow winbind_t samba_var_t:file map;'                           \
 		    -e '$a allow winbind_t self:capability net_admin;'
+		# --- httpd_t ---------------------------------------------------------
+			sed -i "${_DIRS_TGET}/custom_httpd.te"                                  \
+		    -e '/type[ \t]\+httpd_t;/ {'                                            \
+		    -e 'a \  type fusefs_t;'                                                \
+		    -e 'a \  type public_content_t;'                                        \
+		    -e 'a \  type tftpdir_t;'                                               \
+		    -e 'a \  class dir { getattr open read search };'                       \
+		    -e 'a \  class file { getattr open read map };'                         \
+		    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+		    -e '}'                                                                  \
+		    -e '$a allow httpd_t fusefs_t:dir { getattr open read search };'        \
+		    -e '$a allow httpd_t fusefs_t:file { getattr open read };'              \
+		    -e '$a allow httpd_t public_content_t:file map;'                        \
+		    -e '$a allow httpd_t tftpdir_t:dir { getattr open read search };'       \
+		    -e '$a allow httpd_t tftpdir_t:file { getattr open read };'
 		# --- firewalld_t -----------------------------------------------------
 		sed -i "${_DIRS_TGET}/custom_firewalld.te"                                  \
 		    -e '/type[ \t]\+firewalld_t;/ {'                                        \
@@ -1148,6 +1164,7 @@ funcSetupConfig_selinux() {
 		# --- make rule -------------------------------------------------------
 		"${_DIRS_TGET}/custom_dnsmasq.sh"        || true > /dev/null
 		"${_DIRS_TGET}/custom_winbind.sh"        || true > /dev/null
+		"${_DIRS_TGET}/custom_httpd.sh"          || true > /dev/null
 		"${_DIRS_TGET}/custom_firewalld.sh"      || true > /dev/null
 		"${_DIRS_TGET}/custom_vmware_tools.sh"   || true > /dev/null
 		"${_DIRS_TGET}/custom_systemd_logind.sh" || true > /dev/null
