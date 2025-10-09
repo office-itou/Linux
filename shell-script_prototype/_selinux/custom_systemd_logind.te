@@ -1,0 +1,13 @@
+policy_module(custom_systemd_logind, 1.0.0)
+
+gen_require(`
+  type systemd_logind_t;
+  type unconfined_t;
+  class fd use;
+')
+
+########################################
+#
+# custom_systemd_logind customized policy
+#
+allow systemd_logind_t unconfined_t:fd use;

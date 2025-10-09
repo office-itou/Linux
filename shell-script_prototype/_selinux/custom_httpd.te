@@ -1,0 +1,20 @@
+policy_module(custom_httpd, 1.0.0)
+
+gen_require(`
+  type httpd_t;
+  type fusefs_t;
+  type public_content_t;
+  type tftpdir_t;
+  class dir { getattr open read search };
+  class file { getattr open read map };
+')
+
+########################################
+#
+# custom_httpd customized policy
+#
+allow httpd_t fusefs_t:dir { getattr open read search };
+allow httpd_t fusefs_t:file { getattr open read };
+allow httpd_t public_content_t:file map;
+allow httpd_t tftpdir_t:dir { getattr open read search };
+allow httpd_t tftpdir_t:file { getattr open read };

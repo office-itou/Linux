@@ -1,0 +1,17 @@
+policy_module(custom_vmware_tools, 1.0.0)
+
+gen_require(`
+  type vmware_tools_t;
+  type vmware_log_t;
+  type vmware_vgauth_service_t;
+  class dir { search };
+  class file { unlink write };
+')
+
+########################################
+#
+# custom_vmware_tools customized policy
+#
+allow vmware_tools_t vmware_log_t:file unlink;
+allow vmware_tools_t vmware_log_t:file write;
+allow vmware_tools_t vmware_vgauth_service_t:dir search;
