@@ -992,30 +992,6 @@ funcSetupConfig_selinux() {
 		return
 	fi
 
-	# --- ipfilter.conf -------------------------------------------------------
-	_FILE_PATH="${DIRS_TGET:-}/usr/lib/systemd/system/systemd-logind.service.d/ipfilter.conf"
-	funcFile_backup "${_FILE_PATH}"
-	mkdir -p "${_FILE_PATH%/*}"
-	cp -a -Z "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-		[Service]
-		IPAddressDeny=any           # 0.0.0.0/0      ::/0
-		IPAddressAllow=localhost    # 127.0.0.0/8    ::1/128
-		IPAddressAllow=link-local   # 169.254.0.0/16 fe80::/64
-		IPAddressAllow=multicast    # 224.0.0.0/4    ff00::/8
-		IPAddressAllow=${NICS_IPV4%.*}.0/${NICS_BIT4}
-_EOT_
-
-#	/usr/lib/systemd/system/open-vm-tools.service.d:
-#	/usr/lib/systemd/system/rc-local.service.d:
-#	/usr/lib/systemd/system/systemd-fsck-root.service.d:
-#	/usr/lib/systemd/system/systemd-localed.service.d:
-#	/usr/lib/systemd/system/systemd-logind.service.d:
-#	/usr/lib/systemd/system/systemd-udevd.service.d:
-#	/usr/lib/systemd/system/user-.slice.d:
-#	/usr/lib/systemd/system/user@.service.d:
-#	/usr/lib/systemd/system/user@0.service.d:
-
 	# --- backup original file ------------------------------------------------
 	find "${DIRS_TGET:-}/etc/selinux/" \( -name targeted -o -name default \) | while read -r _DIRS_TGET
 	do
@@ -1172,6 +1148,7 @@ _EOT_
 		"${_DIRS_TGET}/custom_firewalld.sh"      || true > /dev/null
 		"${_DIRS_TGET}/custom_vmware_tools.sh"   || true > /dev/null
 		"${_DIRS_TGET}/custom_systemd_logind.sh" || true > /dev/null
+		"${_DIRS_TGET}/custom_mount.sh"          || true > /dev/null
 #		semodule -i "${_DIRS_TGET}/custom_dnsmasq.pp" || true > /dev/null
 #		semodule -i "${_DIRS_TGET}/custom_winbind.pp" || true > /dev/null
 	fi
@@ -1189,10 +1166,10 @@ _EOT_
 	printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "*** restore : complete ***"
 
 	# --- selinux activate ----------------------------------------------------
-	case "${DIST_NAME:-}" in
-		debian | ubuntu ) command -v selinux-activate > /dev/null 2>&1 && selinux-activate || true;;
-		*               ) ;;
-	esac
+#	case "${DIST_NAME:-}" in
+#		debian | ubuntu ) command -v selinux-activate > /dev/null 2>&1 && selinux-activate || true;;
+#		*               ) ;;
+#	esac
 
 	# --- check command -------------------------------------------------------
 #	if command -v grub-mkconfig > /dev/null 2>&1; then
@@ -1279,18 +1256,18 @@ funcSetupConfig_ipfilter() {
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
 
 	# --- systemd-logind.service.d/ipfilter.conf ------------------------------
-	_FILE_PATH="${DIRS_TGET:-}/usr/lib/systemd/system/systemd-logind.service.d/ipfilter.conf"
-	funcFile_backup "${_FILE_PATH}"
-	mkdir -p "${_FILE_PATH%/*}"
-	cp -a -Z "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-		[Service]
-		IPAddressDeny=any           # 0.0.0.0/0      ::/0
-		IPAddressAllow=localhost    # 127.0.0.0/8    ::1/128
-		IPAddressAllow=link-local   # 169.254.0.0/16 fe80::/64
-		IPAddressAllow=multicast    # 224.0.0.0/4    ff00::/8
-		IPAddressAllow=${NICS_IPV4%.*}.0/${NICS_BIT4}
-_EOT_
+#	_FILE_PATH="${DIRS_TGET:-}/usr/lib/systemd/system/systemd-logind.service.d/ipfilter.conf"
+#	funcFile_backup "${_FILE_PATH}"
+#	mkdir -p "${_FILE_PATH%/*}"
+#	cp -a -Z "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+#	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+#		[Service]
+#		IPAddressDeny=any           # 0.0.0.0/0      ::/0
+#		IPAddressAllow=localhost    # 127.0.0.0/8    ::1/128
+#		IPAddressAllow=link-local   # 169.254.0.0/16 fe80::/64
+#		IPAddressAllow=multicast    # 224.0.0.0/4    ff00::/8
+#		IPAddressAllow=${NICS_IPV4%.*}.0/${NICS_BIT4}
+#_EOT_
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
@@ -3298,8 +3275,11 @@ funcSetupConfig_grub_menu() {
 	fi
 
 	# --- grub ----------------------------------------------------------------
-	if command -v semanage > /dev/null 2>&1; then
-		printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "add selinux enable"
+	_FILE_PATH="${DIRS_TGET:-}/etc/default/grub"
+	funcFile_backup "${_FILE_PATH}"
+	mkdir -p "${_FILE_PATH%/*}"
+	if command -v getenforce > /dev/null 2>&1; then
+		printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "activating se linux"
 		sed -i "${_FILE_PATH}"                                \
 		    -e '/GRUB_CMDLINE_LINUX/                       {' \
 		    -e 's/="/=/                                     ' \
@@ -3322,20 +3302,16 @@ funcSetupConfig_grub_menu() {
 		    -e 's/=/="/                                     ' \
 		    -e 's/$/"/                                      ' \
 		    -e '}'
+		touch /.autorelabel
+		printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "se linux is activated.  you may need to reboot now."
 	fi
 
 	_TITL_TEXT="### User Custom ###"
-	_FILE_PATH="${DIRS_TGET:-}/etc/default/grub"
-	funcFile_backup "${_FILE_PATH}"
-	mkdir -p "${_FILE_PATH%/*}"
-	if grep -q "${_TITL_TEXT}" "${_FILE_PATH}"; then
-		printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "already setup"
-#		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
-#		return
-	else
+	if ! grep -q "${_TITL_TEXT}" "${_FILE_PATH}"; then
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
 
 			${_TITL_TEXT}
+			GRUB_INIT_TUNE="480 440 1"
 			GRUB_RECORDFAIL_TIMEOUT=10
 			GRUB_TIMEOUT=3
 
