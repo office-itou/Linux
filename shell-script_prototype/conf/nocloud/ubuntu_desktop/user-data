@@ -179,6 +179,7 @@ autoinstall:
   - selinux-basics
   - selinux-policy-default
   - auditd
+  - rpm
   - sudo
   - firewalld
   - traceroute

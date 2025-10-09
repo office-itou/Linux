@@ -49,7 +49,6 @@
   },
   "software": {
     "patterns": [
-      "apparmor",
       "base",
       "documentation",
       "enhanced_base",
@@ -57,11 +56,7 @@
     ],
     "packages": [
       "lvm2",
-      "restorecond",
-      "policycoreutils",
-      "setools-console",
       "selinux-policy-targeted",
-      "selinux-policy-devel",
       "sudo",
       "firewalld",
       "traceroute",

@@ -50,7 +50,6 @@
   "software": {
     "patterns": [
       "gnome",
-      "apparmor",
       "base",
       "documentation",
       "enhanced_base",
@@ -59,11 +58,7 @@
     "packages": [
       "rhythmbox",
       "lvm2",
-      "restorecond",
-      "policycoreutils",
-      "setools-console",
       "selinux-policy-targeted",
-      "selinux-policy-devel",
       "sudo",
       "firewalld",
       "traceroute",

@@ -646,7 +646,6 @@ leap -->
 <!-- desktop -->
     </packages>
     <patterns t="list">
-      <pattern>apparmor</pattern>
       <pattern>base</pattern>
       <pattern>basesystem</pattern>
       <pattern>documentation</pattern>
