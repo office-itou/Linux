@@ -515,6 +515,8 @@ funcInitialize() {
 		DIST_CODE="$(sed -ne 's/^VERSION=\".*(\([[:graph:]]\+\)).*\"$/\1/p'         "${DIRS_TGET:-}/etc/lsb-release" | tr '[:upper:]' '[:lower:]')"
 		DIST_VERS="$(sed -ne 's/DISTRIB_RELEASE=\"\([[:graph:]]\+\)[ \t].*\"$/\1/p' "${DIRS_TGET:-}/etc/lsb-release" | tr '[:upper:]' '[:lower:]')"
 	fi
+	DIST_NAME="${DIST_NAME#\"}"
+	DIST_NAME="${DIST_NAME%\"}"
 
 	printf "\033[m${PROG_NAME}: %s\033[m\n" "${TEXT_GAP1}"
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "DIRS_TGET" "${DIRS_TGET:-}"
@@ -854,6 +856,9 @@ funcCreate_shared_env() {
 	mkdir -p "${DIRS_SHAR}"/isos
 	mkdir -p "${DIRS_SHAR}"/load
 	mkdir -p "${DIRS_SHAR}"/rmak
+	# --- container -----------------------------------------------------------
+	mkdir -p "${DIRS_SHAR}"/cache
+	mkdir -p "${DIRS_SHAR}"/containers
 
 	ln -sf "${DIRS_SHAR#"${DIRS_TGET:-}"}"/conf "${DIRS_HTML}"/html/
 	ln -sf "${DIRS_SHAR#"${DIRS_TGET:-}"}"/imgs "${DIRS_HTML}"/html/
@@ -863,7 +868,6 @@ funcCreate_shared_env() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${DIRS_HTML}/html/index.html"
 		"Hello, world!" from ${NICS_HOST}
 _EOT_
-
 
 	ln -sf "${DIRS_SHAR#"${DIRS_TGET:-}"}"/conf "${DIRS_TFTP}"/
 	ln -sf "${DIRS_SHAR#"${DIRS_TGET:-}"}"/imgs "${DIRS_TFTP}"/
@@ -988,48 +992,305 @@ funcSetupConfig_selinux() {
 		return
 	fi
 
+	# --- ipfilter.conf -------------------------------------------------------
+	_FILE_PATH="${DIRS_TGET:-}/usr/lib/systemd/system/systemd-logind.service.d/ipfilter.conf"
+	funcFile_backup "${_FILE_PATH}"
+	mkdir -p "${_FILE_PATH%/*}"
+	cp -a -Z "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+		[Service]
+		IPAddressDeny=any           # 0.0.0.0/0      ::/0
+		IPAddressAllow=localhost    # 127.0.0.0/8    ::1/128
+		IPAddressAllow=link-local   # 169.254.0.0/16 fe80::/64
+		IPAddressAllow=multicast    # 224.0.0.0/4    ff00::/8
+		IPAddressAllow=${NICS_IPV4%.*}.0/${NICS_BIT4}
+_EOT_
+
+#	/usr/lib/systemd/system/open-vm-tools.service.d:
+#	/usr/lib/systemd/system/rc-local.service.d:
+#	/usr/lib/systemd/system/systemd-fsck-root.service.d:
+#	/usr/lib/systemd/system/systemd-localed.service.d:
+#	/usr/lib/systemd/system/systemd-logind.service.d:
+#	/usr/lib/systemd/system/systemd-udevd.service.d:
+#	/usr/lib/systemd/system/user-.slice.d:
+#	/usr/lib/systemd/system/user@.service.d:
+#	/usr/lib/systemd/system/user@0.service.d:
+
+	# --- backup original file ------------------------------------------------
+	find "${DIRS_TGET:-}/etc/selinux/" \( -name targeted -o -name default \) | while read -r _DIRS_TGET
+	do
+		funcFile_backup "${_DIRS_TGET}/contexts/files/"
+	done
+
 	# --- set selinux ---------------------------------------------------------
-	semanage fcontext -a -t httpd_user_content_t "${DIRS_HTML}(/.*)?" || true
-	semanage fcontext -a -t tftpdir_t            "${DIRS_TFTP}(/.*)?" || true
-	semanage fcontext -a -t samba_share_t        "${DIRS_SAMB}(/.*)?" || true
-	semanage fcontext -a -t public_content_t     "${DIRS_SHAR}(/.*)?" || true
-	restorecon -Rv "${DIRS_SRVR}" || true
-	setsebool -P samba_export_all_rw   1 || true
-	setsebool -P httpd_enable_homedirs 1 || true
-#	restorecon -RFv "${DIRS_TGET:-}/" || true
+	# sudo semanage fcontext -l | grep -E '^/srv'
+	#	/srv                                               all files          system_u:object_r:var_t:s0
+	#	/srv/([^/]*/)?ftp(/.*)?                            all files          system_u:object_r:public_content_t:s0
+	#	/srv/([^/]*/)?rsync(/.*)?                          all files          system_u:object_r:public_content_t:s0
+	#	/srv/([^/]*/)?www(/.*)?                            all files          system_u:object_r:httpd_sys_content_t:s0
+	#	/srv/([^/]*/)?www/logs(/.*)?                       all files          system_u:object_r:httpd_log_t:s0
+	#	/srv/.*                                            all files          system_u:object_r:var_t:s0
+	# *	/srv/containers(/.*)?                              all files          system_u:object_r:container_file_t:s0
+	#	/srv/gallery2(/.*)?                                all files          system_u:object_r:httpd_sys_content_t:s0
+	#	/srv/gallery2/smarty(/.*)?                         all files          system_u:object_r:httpd_sys_rw_content_t:s0
+	#	/srv/gitolite(3)?(/.*)?                            all files          system_u:object_r:gitosis_var_lib_t:s0
+	#	/srv/gitolite/\.ssh(/.*)?                          all files          system_u:object_r:ssh_home_t:s0
+	#	/srv/gitolite3/\.ssh(/.*)?                         all files          system_u:object_r:ssh_home_t:s0
+	# *	/srv/http(/.*)?                                    all files          system_u:object_r:httpd_user_content_t:s0
+	#	/srv/lib/gitosis(/.*)?                             all files          system_u:object_r:gitosis_var_lib_t:s0
+	#	/srv/loopback-device(/.*)?                         all files          system_u:object_r:swift_data_t:s0
+	#	/srv/node(/.*)?                                    all files          system_u:object_r:swift_data_t:s0
+	# *	/srv/samba(/.*)?                                   all files          system_u:object_r:samba_share_t:s0
+	#	/srv/samba/adm(/.*)?                               all files          system_u:object_r:samba_share_t:s0
+	#	/srv/samba/pub(/.*)?                               all files          system_u:object_r:samba_share_t:s0
+	#	/srv/samba/pub/contents/dlna(/.*)?                 all files          system_u:object_r:samba_share_t:s0
+	#	/srv/samba/usr(/.*)?                               all files          system_u:object_r:samba_share_t:s0
+	# *	/srv/tftp(/.*)?                                    all files          system_u:object_r:tftpdir_t:s0
+	# *	/srv/user/share(/.*)?                              all files          system_u:object_r:public_content_t:s0
+	#	/srv/tftpboot = /var/lib/tftpboot
+	#	/srv/www = /var/www
+
+	semanage fcontext -a -t var_t                "${DIRS_SRVR}(/.*)?" || true	# root of shared directory
+	semanage fcontext -a -t fusefs_t             "${DIRS_HGFS}(/.*)?" || true	# root of hgfs shared directory
+	semanage fcontext -a -t httpd_user_content_t "${DIRS_HTML}(/.*)?" || true	# root of html shared directory
+	semanage fcontext -a -t samba_share_t        "${DIRS_SAMB}(/.*)?" || true	# root of samba shared directory
+	semanage fcontext -a -t tftpdir_t            "${DIRS_TFTP}(/.*)?" || true	# root of tftp shared directory
+	semanage fcontext -a -t var_t                "${DIRS_USER}(/.*)?" || true	# root of user shared directory
+	# --- user share ----------------------------------------------------------
+	semanage fcontext -a -t var_t                "${DIRS_PVAT}(/.*)?" || true	# root of private contents directory
+	semanage fcontext -a -t public_content_t     "${DIRS_SHAR}(/.*)?" || true	# root of public contents directory
+	# --- container -----------------------------------------------------------
+	semanage fcontext -a -t public_content_t     "${DIRS_SHAR}/cache(/.*)?"      || true
+	semanage fcontext -a -t container_file_t     "${DIRS_SHAR}/containers(/.*)?" || true
+
+	setsebool -P samba_export_all_rw=on   || true			# Determine whether samba can share any content readable and writable.
+	setsebool -P httpd_enable_homedirs=on || true			# Determine whether httpd can traverse user home directories.
+#	setsebool -P global_ssp=on            || true			# Enable reading of urandom for all domains.
+
+	# --- custom rule ---------------------------------------------------------
+	# ausearch --start today | audit2allow -a -M test_rule
+	if command -v sepolicy > /dev/null 2>&1; then
+		_DIRS_TGET="${DIRS_INIT}/tmp/rule"
+		rm -rf "{_DIRS_TGET:?}"
+		mkdir -p "${_DIRS_TGET}"
+		# --- create rule -----------------------------------------------------
+		sepolicy generate --customize -d dnsmasq_t        -n custom_dnsmasq        --path "${_DIRS_TGET}" || true > /dev/null
+		sepolicy generate --customize -d winbind_t        -n custom_winbind        --path "${_DIRS_TGET}" || true > /dev/null
+		sepolicy generate --customize -d firewalld_t      -n custom_firewalld      --path "${_DIRS_TGET}" || true > /dev/null
+		sepolicy generate --customize -d vmware_tools_t   -n custom_vmware_tools   --path "${_DIRS_TGET}" || true > /dev/null
+		sepolicy generate --customize -d systemd_logind_t -n custom_systemd_logind --path "${_DIRS_TGET}" || true > /dev/null
+		sepolicy generate --customize -d mount_t          -n custom_mount          --path "${_DIRS_TGET}" || true > /dev/null
+		# --- dnsmasq_t -------------------------------------------------------
+		sed -i "${_DIRS_TGET}/custom_dnsmasq.te"                                    \
+		    -e '/type[ \t]\+dnsmasq_t;/ {'                                          \
+		    -e 'a \  type systemd_resolved_runtime_t;'                              \
+		    -e 'a \  class lnk_file read;'                                          \
+		    -e 'a \  class dir { read watch };'                                     \
+		    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+		    -e '}'                                                                  \
+		    -e '$a allow dnsmasq_t systemd_resolved_runtime_t:dir { read watch };'  \
+		    -e '$a allow dnsmasq_t systemd_resolved_runtime_t:lnk_file read;'
+		# --- winbind_t -------------------------------------------------------
+			sed -i "${_DIRS_TGET}/custom_winbind.te"                                \
+		    -e '/type[ \t]\+winbind_t;/ {'                                          \
+		    -e 'a \  type samba_var_t;'                                             \
+		    -e 'a \  type samba_runtime_t;'                                         \
+		    -e 'a \  class file map;'                                               \
+		    -e 'a \  class capability net_admin;'                                   \
+		    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+		    -e '}'                                                                  \
+		    -e '$a allow winbind_t samba_runtime_t:file map;'                       \
+		    -e '$a allow winbind_t samba_var_t:file map;'                           \
+		    -e '$a allow winbind_t self:capability net_admin;'
+		# --- firewalld_t -----------------------------------------------------
+		sed -i "${_DIRS_TGET}/custom_firewalld.te"                                  \
+		    -e '/type[ \t]\+firewalld_t;/ {'                                        \
+		    -e 'a \  type firewalld_tmpfs_t;'                                       \
+		    -e 'a \  type initrc_t;'                                                \
+		    -e 'a \  type proc_t;'                                                  \
+		    -e 'a \  type sysctl_kernel_t;'                                         \
+		    -e 'a \  type unconfined_t;'                                            \
+		    -e 'a \  class capability dac_read_search;'                             \
+		    -e 'a \  class capability setpcap;'                                     \
+		    -e 'a \  class dbus send_msg;'                                          \
+		    -e 'a \  class dir search;'                                             \
+		    -e 'a \  class file execute;'                                           \
+		    -e 'a \  class file open;'                                              \
+		    -e 'a \  class file read;'                                              \
+		    -e 'a \  class filesystem getattr;'                                     \
+		    -e 'a \  class process getcap;'                                         \
+		    -e 'a \  class process setcap;'                                         \
+		    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+		    -e '}'                                                                  \
+		    -e '$a allow firewalld_t firewalld_tmpfs_t:file execute;'               \
+		    -e '$a allow firewalld_t initrc_t:dbus send_msg;'                       \
+		    -e '$a allow firewalld_t proc_t:filesystem getattr;'                    \
+		    -e '$a allow firewalld_t self:capability dac_read_search;'              \
+		    -e '$a allow firewalld_t self:capability setpcap;'                      \
+		    -e '$a allow firewalld_t self:process getcap;'                          \
+		    -e '$a allow firewalld_t self:process setcap;'                          \
+		    -e '$a allow firewalld_t sysctl_kernel_t:dir search;'                   \
+		    -e '$a allow firewalld_t sysctl_kernel_t:file open;'                    \
+		    -e '$a allow firewalld_t sysctl_kernel_t:file read;'                    \
+		    -e '$a allow firewalld_t unconfined_t:dbus send_msg;'
+		# --- vmware_tools_t --------------------------------------------------
+		sed -i "${_DIRS_TGET}/custom_vmware_tools.te"                               \
+		    -e '/type[ \t]\+vmware_tools_t;/ {'                                     \
+		    -e 'a \  type vmware_log_t;'                                            \
+		    -e 'a \  type vmware_vgauth_service_t;'                                 \
+		    -e 'a \  class dir { search };'                                         \
+		    -e 'a \  class file { unlink write };'                                  \
+		    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+		    -e '}'                                                                  \
+		    -e '$a allow vmware_tools_t vmware_log_t:file unlink;'                  \
+		    -e '$a allow vmware_tools_t vmware_log_t:file write;'                   \
+		    -e '$a allow vmware_tools_t vmware_vgauth_service_t:dir search;'
+		# --- systemd_logind_t ------------------------------------------------
+		sed -i "${_DIRS_TGET}/custom_systemd_logind.te"                             \
+		    -e '/type[ \t]\+systemd_logind_t;/ {'                                   \
+		    -e 'a \  type unconfined_t;'                                            \
+		    -e 'a \  class fd use;'                                                 \
+		    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+		    -e '}'                                                                  \
+		    -e '$a allow systemd_logind_t unconfined_t:fd use;'
+		# --- mount_t ---------------------------------------------------------
+		sed -i "${_DIRS_TGET}/custom_mount.te"                                      \
+		    -e '/type[ \t]\+mount_t;/ {'                                            \
+		    -e 'a \  type sysctl_vm_overcommit_t;'                                  \
+		    -e 'a \  type sysctl_vm_t;'                                             \
+		    -e 'a \  class process signal;'                                         \
+		    -e 'a \  class dir { search };'                                         \
+		    -e 'a \  class file { open read };'                                     \
+		    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+		    -e '}'                                                                  \
+		    -e '$a allow mount_t self:process signal;'                              \
+		    -e '$a allow mount_t sysctl_vm_overcommit_t:file { open read };'        \
+		    -e '$a allow mount_t sysctl_vm_t:dir search;'
+		# --- make rule -------------------------------------------------------
+		"${_DIRS_TGET}/custom_dnsmasq.sh"        || true > /dev/null
+		"${_DIRS_TGET}/custom_winbind.sh"        || true > /dev/null
+		"${_DIRS_TGET}/custom_firewalld.sh"      || true > /dev/null
+		"${_DIRS_TGET}/custom_vmware_tools.sh"   || true > /dev/null
+		"${_DIRS_TGET}/custom_systemd_logind.sh" || true > /dev/null
+#		semodule -i "${_DIRS_TGET}/custom_dnsmasq.pp" || true > /dev/null
+#		semodule -i "${_DIRS_TGET}/custom_winbind.pp" || true > /dev/null
+	fi
+
+	# --- backup initial file -------------------------------------------------
+	find "${DIRS_TGET:-}/etc/selinux/" \( -name targeted -o -name default \) | while read -r _DIRS_TGET
+	do
+		funcFile_backup "${_DIRS_TGET}/contexts/files/" "init"
+	done
 
 	# --- restore context labels ----------------------------------------------
 	printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "*** restore : start ***"
 	restorecon -RF "${DIRS_TGET:-}"/ || true
-#	fixfiles restore "${DIRS_TGET:-}"/* || true
+#	fixfiles restore "${DIRS_TGET:-}"/ || true
 	printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "*** restore : complete ***"
 
 	# --- selinux activate ----------------------------------------------------
-	if command -v selinux-activate > /dev/null 2>&1; then
-		selinux-activate || true
-	fi
-	if ! grep -q 'selinux' /etc/default/grub \
-	&& command -v grub2-mkconfig > /dev/null 2>&1; then
-		_FILE_PATH="${DIRS_TGET:-}/etc/default/grub"
-		funcFile_backup "${_FILE_PATH}"
-		mkdir -p "${_FILE_PATH%/*}"
-		cp -a -Z "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
-		sed -i "${_FILE_PATH}"                                                        \
-		    -e '/GRUB_CMDLINE_LINUX_DEFAULT/ s/\("*\)$/ lsm=selinux,bpf selinux=1\1/'
-		_FILE_PATH="${DIRS_TGET:-}/boot/grub2/grub.cfg"
-		funcFile_backup "${_FILE_PATH}"
-		mkdir -p "${_FILE_PATH%/*}"
-		cp -a -Z "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
-		grub2-mkconfig -o "${_FILE_PATH}"
-	fi
+	case "${DIST_NAME:-}" in
+		debian | ubuntu ) command -v selinux-activate > /dev/null 2>&1 && selinux-activate || true;;
+		*               ) ;;
+	esac
+
+	# --- check command -------------------------------------------------------
+#	if command -v grub-mkconfig > /dev/null 2>&1; then
+#		_WORK_COMD="grub-mkconfig"
+#	elif command -v grub2-mkconfig > /dev/null 2>&1; then
+#		_WORK_COMD="grub2-mkconfig"
+#	else
+#		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
+#		return
+#	fi
+
+	# --- grub ----------------------------------------------------------------
+#	_FILE_PATH="${DIRS_TGET:-}/etc/default/grub"
+#	funcFile_backup "${_FILE_PATH}"
+#	mkdir -p "${_FILE_PATH%/*}"
+#	cp -a -Z "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+#	sed -i "${_FILE_PATH}"                                \
+#	    -e '/GRUB_CMDLINE_LINUX/                       {' \
+#	    -e 's/="/=/                                     ' \
+#	    -e 's/"$//                                      ' \
+#	    -e 's/[ \t]*security=[[:graph:]]*//             ' \
+#	    -e 's/[ \t]*selinux=[[:graph:]]*//              ' \
+#	    -e 's/[ \t]*enforcing=[[:graph:]]*//            ' \
+#	    -e 's/[ \t]\+/ /g                               ' \
+#	    -e 's/=/="/                                     ' \
+#	    -e 's/$/"/                                      ' \
+#	    -e '}                                           ' \
+#	    -e '/GRUB_CMDLINE_LINUX_DEFAULT/               {' \
+#	    -e 's/="/=/                                     ' \
+#	    -e 's/"$//                                      ' \
+#	    -e 's/[ \t]*security=[[:graph:]]*//             ' \
+#	    -e 's/[ \t]*selinux=[[:graph:]]*//              ' \
+#	    -e 's/[ \t]*enforcing=[[:graph:]]*//            ' \
+#	    -e 's/[ \t]\+/ /g                               ' \
+#	    -e 's/$/ security=selinux selinux=1 enforcing=1/' \
+#	    -e 's/=/="/                                     ' \
+#	    -e 's/$/"/                                      ' \
+#	    -e '}'
 
 	# --- debug out -----------------------------------------------------------
-	printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "*** selinux : status ***"
-	getenforce || true
-	if command -v sestatus > /dev/null 2>&1; then
-		sestatus || true
+#	funcDebugout_file "${_FILE_PATH}"
+#	funcFile_backup   "${_FILE_PATH}" "init"
+
+	# --- create grub.cfg -----------------------------------------------------
+#	_FILE_PATH="$(find "${DIRS_TGET:-}"/boot/ \( -path '/*/efi' -o -path '/*/EFI' \) -prune -o -type f -name 'grub.cfg' -print)"
+#	if [ -n "${_FILE_PATH}" ]; then
+#		_WORK_PATH="${DIRS_TGET:-}/tmp/grub.cfg.work"
+#		if "${_WORK_COMD}" --output="${_WORK_PATH}"; then
+#			if cp --preserve=timestamps "${_WORK_PATH}" "${_FILE_PATH}"; then
+#				printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "success to create ${_FILE_PATH}"
+#
+#				# --- debug out -----------------------------------------------
+#				funcDebugout_file "${_FILE_PATH}"
+#				funcFile_backup   "${_FILE_PATH}" "init"
+#			else
+#				printf "\033[m${PROG_NAME}: \033[41m%s\033[m\n" "failed to copy ${_FILE_PATH}"
+#			fi
+#		else
+#			printf "\033[m${PROG_NAME}: \033[41m%s\033[m\n" "failed to create grub.cfg"
+#		fi
+#	fi
+
+	# --- debug out -----------------------------------------------------------
+	if [ -n "${DBGS_FLAG:-}" ]; then
+		printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "*** selinux : status ***"
+		getenforce || true
+		if command -v sestatus > /dev/null 2>&1; then
+			sestatus || true
+		fi
+		printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "*** selinux : status ***"
+
+		printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "*** selinux : fcontext ***"
+		semanage fcontext -l | grep -E '^/srv' || true
+		printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "*** selinux : fcontext ***"
 	fi
-	printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "*** selinux : status ***"
+
+	# --- complete ------------------------------------------------------------
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
+}
+
+# --- ipfilter settings -------------------------------------------------------
+funcSetupConfig_ipfilter() {
+	__FUNC_NAME="funcSetupConfig_ipfilter"
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+
+	# --- systemd-logind.service.d/ipfilter.conf ------------------------------
+	_FILE_PATH="${DIRS_TGET:-}/usr/lib/systemd/system/systemd-logind.service.d/ipfilter.conf"
+	funcFile_backup "${_FILE_PATH}"
+	mkdir -p "${_FILE_PATH%/*}"
+	cp -a -Z "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+		[Service]
+		IPAddressDeny=any           # 0.0.0.0/0      ::/0
+		IPAddressAllow=localhost    # 127.0.0.0/8    ::1/128
+		IPAddressAllow=link-local   # 169.254.0.0/16 fe80::/64
+		IPAddressAllow=multicast    # 224.0.0.0/4    ff00::/8
+		IPAddressAllow=${NICS_IPV4%.*}.0/${NICS_BIT4}
+_EOT_
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
@@ -2289,18 +2550,18 @@ funcSetupNetwork_samba() {
 		        path = ${DIRS_SAMB}/pub/contents/dlna
 		        valid users = @${SAMB_GRUP}
 		        write list = @${SAMB_GADM}
-		[html-share]
-		        browseable = No
-		        comment = HTML shared directories
-		        guest ok = Yes
-		        path = ${DIRS_HTML}
-		        wide links = Yes
-		[tftp-share]
-		        browseable = No
-		        comment = TFTP shared directories
-		        guest ok = Yes
-		        path = ${DIRS_TFTP}
-		        wide links = Yes
+		#[html-share]
+		#        browseable = No
+		#        comment = HTML shared directories
+		#        guest ok = Yes
+		#        path = ${DIRS_HTML}
+		#        wide links = Yes
+		#[tftp-share]
+		#        browseable = No
+		#        comment = TFTP shared directories
+		#        guest ok = Yes
+		#        path = ${DIRS_TFTP}
+		#        wide links = Yes
 _EOT_
 
 	# --- output --------------------------------------------------------------
@@ -3036,30 +3297,50 @@ funcSetupConfig_grub_menu() {
 		return
 	fi
 
-	# --- check setup ---------------------------------------------------------
+	# --- grub ----------------------------------------------------------------
+	if command -v semanage > /dev/null 2>&1; then
+		printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "add selinux enable"
+		sed -i "${_FILE_PATH}"                                \
+		    -e '/GRUB_CMDLINE_LINUX/                       {' \
+		    -e 's/="/=/                                     ' \
+		    -e 's/"$//                                      ' \
+		    -e 's/[ \t]*security=[[:graph:]]*//             ' \
+		    -e 's/[ \t]*selinux=[[:graph:]]*//              ' \
+		    -e 's/[ \t]*enforcing=[[:graph:]]*//            ' \
+		    -e 's/[ \t]\+/ /g                               ' \
+		    -e 's/=/="/                                     ' \
+		    -e 's/$/"/                                      ' \
+		    -e '}                                           ' \
+		    -e '/GRUB_CMDLINE_LINUX_DEFAULT/               {' \
+		    -e 's/="/=/                                     ' \
+		    -e 's/"$//                                      ' \
+		    -e 's/[ \t]*security=[[:graph:]]*//             ' \
+		    -e 's/[ \t]*selinux=[[:graph:]]*//              ' \
+		    -e 's/[ \t]*enforcing=[[:graph:]]*//            ' \
+		    -e 's/[ \t]\+/ /g                               ' \
+		    -e 's/$/ security=selinux selinux=1 enforcing=1/' \
+		    -e 's/=/="/                                     ' \
+		    -e 's/$/"/                                      ' \
+		    -e '}'
+	fi
+
 	_TITL_TEXT="### User Custom ###"
 	_FILE_PATH="${DIRS_TGET:-}/etc/default/grub"
 	funcFile_backup "${_FILE_PATH}"
 	mkdir -p "${_FILE_PATH%/*}"
 	if grep -q "${_TITL_TEXT}" "${_FILE_PATH}"; then
 		printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "already setup"
-		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
-		return
-	fi
+#		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
+#		return
+	else
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
 
-	# --- grub ----------------------------------------------------------------
-#	if command -v semanage > /dev/null 2>&1; then
-#		printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "add selinux enable"
-#		sed -i "${_FILE_PATH}"                                                                         \
-#		    -e '/^GRUB_CMDLINE_LINUX_DEFAULT/ s/"$/ selinux=1 security=selinux enforcing=0 audit=1"/g'
-#	fi
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-
-		${_TITL_TEXT}
-		GRUB_RECORDFAIL_TIMEOUT=10
-		GRUB_TIMEOUT=3
+			${_TITL_TEXT}
+			GRUB_RECORDFAIL_TIMEOUT=10
+			GRUB_TIMEOUT=3
 
 _EOT_
+	fi
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
@@ -3241,9 +3522,6 @@ funcMain() {
 	# --- blacklist settings --------------------------------------------------
 	funcSetupConfig_blacklist
 
-	# --- grub menu settings --------------------------------------------------
-	funcSetupConfig_grub_menu
-
 	# --- ipxe module settings ------------------------------------------------
 	funcSetupModule_ipxe
 
@@ -3252,6 +3530,12 @@ funcMain() {
 
 	# --- selinux settings ----------------------------------------------------
 	funcSetupConfig_selinux
+
+	# --- ipfilter settings ---------------------------------------------------
+	funcSetupConfig_ipfilter
+
+	# --- grub menu settings --------------------------------------------------
+	funcSetupConfig_grub_menu
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${_FUNC_NAME}] ---"
