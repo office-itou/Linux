@@ -427,15 +427,12 @@ function funcCurl() {
 
 # --- service status ----------------------------------------------------------
 function funcServiceStatus() {
-	declare -i    _RET_CD=0
-	declare       _SRVC_STAT=""
 	_SRVC_STAT="$(systemctl "$@" 2> /dev/null || true)"
-	_RET_CD="$?"
-	case "${_RET_CD}" in
+	case "$?" in
 		4) _SRVC_STAT="not-found";;		# no such unit
 		*) _SRVC_STAT="${_SRVC_STAT%-*}";;
 	esac
-	echo "${_SRVC_STAT:-"undefined"}: ${_RET_CD}"
+	echo "${_SRVC_STAT:-"undefined"}"
 
 	# systemctl return codes
 	#-------+--------------------------------------------------+-------------------------------------#
@@ -537,6 +534,8 @@ function funcTest_system() {
 			*                 ) ;;
 		esac
 	done
+	DIST_NAME="${DIST_NAME#\"}"
+	DIST_NAME="${DIST_NAME%\"}"
 	# --- complete ------------------------------------------------------------
 	printf "${TXT_RESET}${PROG_NAME}: ${TXT_GREEN}%s${TXT_RESET}\n" "--- complete: [${_FUNC_NAME}] ---"
 }
@@ -547,7 +546,7 @@ function funcTest_network() {
 
 	printf "${TXT_RESET}${PROG_NAME}: ${TXT_GREEN}%s${TXT_RESET}\n" "--- start   : [${_FUNC_NAME}] ---"
 
-	NICS_NAME="${NICS_NAME:-"$(ip -4 -oneline address show primary | grep -E '^2:' | cut -d ' ' -f 2)"}"
+	NICS_NAME="${NICS_NAME:-"$(ip -4 -oneline address show primary | grep -E '^[^1]:' | cut -d ' ' -f 2)"}"
 	NICS_NAME="${NICS_NAME:-"ens160"}"
 
 	NICS_MADR="${NICS_MADR:-"$(ip -4 -oneline link    show dev "${NICS_NAME}" 2> /dev/null | sed -ne 's%^.*[ \t]link/ether[ \t]\+\([[:alnum:]:]\+\)[ \t].*$%\1%p')"}"
@@ -812,14 +811,15 @@ function funcTest_ntp() {
 		else
 			printf "${TXT_RESET}${TXT_DWHITE}${PROG_NAME}${TXT_RESET}: ${TXT_RED}%s${TXT_RESET}: %s${TXT_RESET}\n"   "fail   " "${_WORK_TEXT}"
 		fi
-		_WORK_TEXT="timedatectl timesync-status"
-		if timedatectl timesync-status; then
-			printf "${TXT_RESET}${TXT_DWHITE}${PROG_NAME}${TXT_RESET}: ${TXT_GREEN}%s${TXT_RESET}: %s${TXT_RESET}\n" "success" "${_WORK_TEXT}"
-		else
-			printf "${TXT_RESET}${TXT_DWHITE}${PROG_NAME}${TXT_RESET}: ${TXT_RED}%s${TXT_RESET}: %s${TXT_RESET}\n"   "fail   " "${_WORK_TEXT}"
+		if systemctl is-system-running -q "systemd-timesyncd.service" > /dev/null 2>&1; then
+			_WORK_TEXT="timedatectl timesync-status"
+			if timedatectl timesync-status; then
+				printf "${TXT_RESET}${TXT_DWHITE}${PROG_NAME}${TXT_RESET}: ${TXT_GREEN}%s${TXT_RESET}: %s${TXT_RESET}\n" "success" "${_WORK_TEXT}"
+			else
+				printf "${TXT_RESET}${TXT_DWHITE}${PROG_NAME}${TXT_RESET}: ${TXT_RED}%s${TXT_RESET}: %s${TXT_RESET}\n"   "fail   " "${_WORK_TEXT}"
+			fi
 		fi
 	fi
-
 	# --- chronyc check -------------------------------------------------------
 	if command -v chronyc > /dev/null 2>&1; then
 		_WORK_TEXT="chronyc sources"
@@ -863,14 +863,14 @@ function funcTest_samba() {
 		if command -v traceroute > /dev/null 2>&1; then
 			_WORK_TEXT="traceroute -4 ${_BRWS_NAME,,}"
 			funcPrintf "${TXT_RESET}${TXT_DWHITE}${PROG_NAME}${TXT_RESET}: %s${TXT_RESET}\n" "${_WORK_TEXT} ${TEXT_GAP1}"
-			if traceroute -4 "${_BRWS_NAME,,}" > /dev/null 2>&1; then
+			if traceroute -4 -w 1 "${_BRWS_NAME,,}" > /dev/null 2>&1; then
 				printf "${TXT_RESET}${TXT_DWHITE}${PROG_NAME}${TXT_RESET}: ${TXT_GREEN}%s${TXT_RESET}: %s${TXT_RESET}\n" "success" "${_WORK_TEXT}"
 			else
 				printf "${TXT_RESET}${TXT_DWHITE}${PROG_NAME}${TXT_RESET}: ${TXT_RED}%s${TXT_RESET}: %s${TXT_RESET}\n"   "fail   " "${_WORK_TEXT}"
 			fi
 			_WORK_TEXT="traceroute -6 ${_BRWS_NAME,,}"
 			funcPrintf "${TXT_RESET}${TXT_DWHITE}${PROG_NAME}${TXT_RESET}: %s${TXT_RESET}\n" "${_WORK_TEXT} ${TEXT_GAP1}"
-			if traceroute -6 "${_BRWS_NAME,,}" > /dev/null 2>&1; then
+			if traceroute -6 -w 1 "${_BRWS_NAME,,}" > /dev/null 2>&1; then
 				printf "${TXT_RESET}${TXT_DWHITE}${PROG_NAME}${TXT_RESET}: ${TXT_GREEN}%s${TXT_RESET}: %s${TXT_RESET}\n" "success" "${_WORK_TEXT}"
 			else
 				printf "${TXT_RESET}${TXT_DWHITE}${PROG_NAME}${TXT_RESET}: ${TXT_RED}%s${TXT_RESET}: %s${TXT_RESET}\n"   "fail   " "${_WORK_TEXT}"
@@ -940,6 +940,46 @@ function funcTest_httpd() {
 			printf "${TXT_RESET}${TXT_DWHITE}${PROG_NAME}${TXT_RESET}: ${TXT_RED}%s${TXT_RESET}: %s${TXT_RESET}\n"   "fail   " "${_WORK_TEXT}"
 		fi
 	fi
+
+	# --- complete ------------------------------------------------------------
+	printf "${TXT_RESET}${PROG_NAME}: ${TXT_GREEN}%s${TXT_RESET}\n" "--- complete: [${_FUNC_NAME}] ---"
+}
+
+# --- test of service ---------------------------------------------------------
+function funcTest_service() {
+	declare -r    _FUNC_NAME="funcTest_service"
+
+	printf "${TXT_RESET}${PROG_NAME}: ${TXT_GREEN}%s${TXT_RESET}\n" "--- start   : [${_FUNC_NAME}] ---"
+
+	systemctl list-unit-files --type=service --no-pager \
+		apparmor.service auditd.service \
+		firewalld.service clamav-freshclam.service \
+		NetworkManager.service systemd-resolved.service dnsmasq.service \
+		systemd-timesyncd.service chronyd.service\
+		open-vm-tools.service vmtoolsd.service \
+		ssh.service sshd.service \
+		apache2.service httpd.service \
+		smb.service smbd.service \
+		nmb.service nmbd.service \
+		avahi-daemon.service
+
+#	printf "\n"
+#	systemctl list-units --type=service --no-pager
+#	printf "\n"
+#	systemctl list-unit-files --type=service --no-pager
+#	printf "\n"
+
+	# --- complete ------------------------------------------------------------
+	printf "${TXT_RESET}${PROG_NAME}: ${TXT_GREEN}%s${TXT_RESET}\n" "--- complete: [${_FUNC_NAME}] ---"
+}
+
+# --- test of vmware ----------------------------------------------------------
+function funcTest_vmware() {
+	declare -r    _FUNC_NAME="funcTest_vmware"
+
+	printf "${TXT_RESET}${PROG_NAME}: ${TXT_GREEN}%s${TXT_RESET}\n" "--- start   : [${_FUNC_NAME}] ---"
+
+	df -h /srv/hgfs/
 
 	# --- complete ------------------------------------------------------------
 	printf "${TXT_RESET}${PROG_NAME}: ${TXT_GREEN}%s${TXT_RESET}\n" "--- complete: [${_FUNC_NAME}] ---"
@@ -1303,6 +1343,10 @@ funcMain() {
 
 		funcTest_samba					# test of samba
 		funcTest_httpd					# test of httpd
+
+		funcTest_service				# test of service
+
+		funcTest_vmware					# test of vmware
 	fi
 
 	# --- complete ------------------------------------------------------------
