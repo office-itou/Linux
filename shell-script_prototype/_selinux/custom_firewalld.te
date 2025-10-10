@@ -7,16 +7,12 @@ gen_require(`
   type proc_t;
   type sysctl_kernel_t;
   type unconfined_t;
-  class capability dac_read_search;
-  class capability setpcap;
+  class capability { dac_read_search setpcap };
   class dbus send_msg;
   class dir search;
-  class file execute;
-  class file open;
-  class file read;
+  class file { execute open read };
   class filesystem getattr;
-  class process getcap;
-  class process setcap;
+  class process { getcap setcap };
 ')
 
 ########################################
@@ -26,11 +22,8 @@ gen_require(`
 allow firewalld_t firewalld_tmpfs_t:file execute;
 allow firewalld_t initrc_t:dbus send_msg;
 allow firewalld_t proc_t:filesystem getattr;
-allow firewalld_t self:capability dac_read_search;
-allow firewalld_t self:capability setpcap;
-allow firewalld_t self:process getcap;
-allow firewalld_t self:process setcap;
 allow firewalld_t sysctl_kernel_t:dir search;
-allow firewalld_t sysctl_kernel_t:file open;
-allow firewalld_t sysctl_kernel_t:file read;
+allow firewalld_t sysctl_kernel_t:file { open read };
 allow firewalld_t unconfined_t:dbus send_msg;
+allow firewalld_t self:capability { dac_read_search setpcap };
+allow firewalld_t self:process { getcap setcap };

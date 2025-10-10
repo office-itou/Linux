@@ -4,8 +4,12 @@ gen_require(`
   type winbind_t;
   type samba_var_t;
   type samba_runtime_t;
-  class file map;
-  class capability net_admin;
+  type samba_log_t;
+  type shell_exec_t;
+  type urandom_device_t;
+  class file { map execute };
+  class capability { net_admin setgid };
+  class chr_file write;
 ')
 
 ########################################
@@ -14,4 +18,7 @@ gen_require(`
 #
 allow winbind_t samba_runtime_t:file map;
 allow winbind_t samba_var_t:file map;
-allow winbind_t self:capability net_admin;
+allow winbind_t samba_log_t:file { read unlink write };
+allow winbind_t shell_exec_t:file execute;
+allow winbind_t urandom_device_t:chr_file write;
+allow winbind_t self:capability { net_admin setgid };
