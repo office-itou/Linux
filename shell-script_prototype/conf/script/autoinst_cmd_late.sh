@@ -940,7 +940,9 @@ _EOT_
 #	ln -sf "${DIRS_TFTP#${DIRS_TGET:-}}" "${_WORK_PATH}"
 
 	# --- debug out -----------------------------------------------------------
-	funcFile_backup "${DIRS_SRVR:?}" "init"
+	if ! mount | grep -q '/srv/'; then
+		funcFile_backup "${DIRS_SRVR:?}" "init"
+	fi
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
@@ -1052,123 +1054,199 @@ funcSetupConfig_selinux() {
 		_DIRS_TGET="${DIRS_INIT}/tmp/rule"
 		rm -rf "{_DIRS_TGET:?}"
 		mkdir -p "${_DIRS_TGET}"
-		# --- create rule -----------------------------------------------------
-		sepolicy generate --customize -d dnsmasq_t        -n custom_dnsmasq        --path "${_DIRS_TGET}" || true > /dev/null
-		sepolicy generate --customize -d winbind_t        -n custom_winbind        --path "${_DIRS_TGET}" || true > /dev/null
-		sepolicy generate --customize -d httpd_t          -n custom_httpd          --path "${_DIRS_TGET}" || true > /dev/null
-		sepolicy generate --customize -d firewalld_t      -n custom_firewalld      --path "${_DIRS_TGET}" || true > /dev/null
-		sepolicy generate --customize -d vmware_tools_t   -n custom_vmware_tools   --path "${_DIRS_TGET}" || true > /dev/null
-		sepolicy generate --customize -d systemd_logind_t -n custom_systemd_logind --path "${_DIRS_TGET}" || true > /dev/null
-		sepolicy generate --customize -d mount_t          -n custom_mount          --path "${_DIRS_TGET}" || true > /dev/null
 		# --- dnsmasq_t -------------------------------------------------------
-		sed -i "${_DIRS_TGET}/custom_dnsmasq.te"                                    \
-		    -e '/type[ \t]\+dnsmasq_t;/ {'                                          \
-		    -e 'a \  type systemd_resolved_runtime_t;'                              \
-		    -e 'a \  class lnk_file read;'                                          \
-		    -e 'a \  class dir { read watch };'                                     \
-		    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
-		    -e '}'                                                                  \
-		    -e '$a allow dnsmasq_t systemd_resolved_runtime_t:dir { read watch };'  \
-		    -e '$a allow dnsmasq_t systemd_resolved_runtime_t:lnk_file read;'
+		if seinfo -t | grep -q "dnsmasq_t"; then
+			sepolicy generate --customize -d dnsmasq_t        -n custom_dnsmasq        --path "${_DIRS_TGET}" || true > /dev/null
+			sed -i "${_DIRS_TGET}/custom_dnsmasq.te"                                    \
+			    -e '/type[ \t]\+dnsmasq_t;/ {'                                          \
+			    -e 'a \  type systemd_resolved_runtime_t;'                              \
+			    -e 'a \  class lnk_file read;'                                          \
+			    -e 'a \  class dir { read watch };'                                     \
+			    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+			    -e '}'                                                                  \
+			    -e '$a allow dnsmasq_t systemd_resolved_runtime_t:dir { read watch };'  \
+			    -e '$a allow dnsmasq_t systemd_resolved_runtime_t:lnk_file read;'
+			"${_DIRS_TGET}/custom_dnsmasq.sh"        || true > /dev/null
+		fi
 		# --- winbind_t -------------------------------------------------------
-			sed -i "${_DIRS_TGET}/custom_winbind.te"                                \
-		    -e '/type[ \t]\+winbind_t;/ {'                                          \
-		    -e 'a \  type samba_var_t;'                                             \
-		    -e 'a \  type samba_runtime_t;'                                         \
-		    -e 'a \  class file map;'                                               \
-		    -e 'a \  class capability net_admin;'                                   \
-		    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
-		    -e '}'                                                                  \
-		    -e '$a allow winbind_t samba_runtime_t:file map;'                       \
-		    -e '$a allow winbind_t samba_var_t:file map;'                           \
-		    -e '$a allow winbind_t self:capability net_admin;'
+		if seinfo -t | grep -q "winbind_t"; then
+			sepolicy generate --customize -d winbind_t        -n custom_winbind        --path "${_DIRS_TGET}" || true > /dev/null
+			sed -i "${_DIRS_TGET}/custom_winbind.te"                                    \
+			    -e '/type[ \t]\+winbind_t;/ {'                                          \
+			    -e 'a \  type samba_var_t;'                                             \
+			    -e 'a \  type samba_runtime_t;'                                         \
+			    -e 'a \  type samba_log_t;'                                             \
+			    -e 'a \  type shell_exec_t;'                                            \
+			    -e 'a \  type urandom_device_t;'                                        \
+			    -e 'a \  class file { map execute };'                                   \
+			    -e 'a \  class capability { net_admin setgid };'                        \
+			    -e 'a \  class chr_file write;'                                         \
+			    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+			    -e '}'                                                                  \
+			    -e '$a allow winbind_t samba_runtime_t:file map;'                       \
+			    -e '$a allow winbind_t samba_var_t:file map;'                           \
+			    -e '$a allow winbind_t samba_log_t:file { read unlink write };'         \
+			    -e '$a allow winbind_t shell_exec_t:file execute;'                      \
+			    -e '$a allow winbind_t urandom_device_t:chr_file write;'                \
+			    -e '$a allow winbind_t self:capability { net_admin setgid };'
+			"${_DIRS_TGET}/custom_winbind.sh"        || true > /dev/null
+		fi
 		# --- httpd_t ---------------------------------------------------------
-			sed -i "${_DIRS_TGET}/custom_httpd.te"                                  \
-		    -e '/type[ \t]\+httpd_t;/ {'                                            \
-		    -e 'a \  type fusefs_t;'                                                \
-		    -e 'a \  type public_content_t;'                                        \
-		    -e 'a \  type tftpdir_t;'                                               \
-		    -e 'a \  class dir { getattr open read search };'                       \
-		    -e 'a \  class file { getattr open read map };'                         \
-		    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
-		    -e '}'                                                                  \
-		    -e '$a allow httpd_t fusefs_t:dir { getattr open read search };'        \
-		    -e '$a allow httpd_t fusefs_t:file { getattr open read };'              \
-		    -e '$a allow httpd_t public_content_t:file map;'                        \
-		    -e '$a allow httpd_t tftpdir_t:dir { getattr open read search };'       \
-		    -e '$a allow httpd_t tftpdir_t:file { getattr open read };'
+		if seinfo -t | grep -q "httpd_t"; then
+			sepolicy generate --customize -d httpd_t          -n custom_httpd          --path "${_DIRS_TGET}" || true > /dev/null
+			sed -i "${_DIRS_TGET}/custom_httpd.te"                                      \
+			    -e '/type[ \t]\+httpd_t;/ {'                                            \
+			    -e 'a \  type fusefs_t;'                                                \
+			    -e 'a \  type public_content_t;'                                        \
+			    -e 'a \  type tftpdir_t;'                                               \
+			    -e 'a \  class dir { getattr open read search };'                       \
+			    -e 'a \  class file { getattr open read map };'                         \
+			    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+			    -e '}'                                                                  \
+			    -e '$a allow httpd_t fusefs_t:dir { getattr open read search };'        \
+			    -e '$a allow httpd_t fusefs_t:file { getattr open read };'              \
+			    -e '$a allow httpd_t public_content_t:file map;'                        \
+			    -e '$a allow httpd_t tftpdir_t:dir { getattr open read search };'       \
+			    -e '$a allow httpd_t tftpdir_t:file { getattr open read };'
+			"${_DIRS_TGET}/custom_httpd.sh"          || true > /dev/null
+		fi
 		# --- firewalld_t -----------------------------------------------------
-		sed -i "${_DIRS_TGET}/custom_firewalld.te"                                  \
-		    -e '/type[ \t]\+firewalld_t;/ {'                                        \
-		    -e 'a \  type firewalld_tmpfs_t;'                                       \
-		    -e 'a \  type initrc_t;'                                                \
-		    -e 'a \  type proc_t;'                                                  \
-		    -e 'a \  type sysctl_kernel_t;'                                         \
-		    -e 'a \  type unconfined_t;'                                            \
-		    -e 'a \  class capability dac_read_search;'                             \
-		    -e 'a \  class capability setpcap;'                                     \
-		    -e 'a \  class dbus send_msg;'                                          \
-		    -e 'a \  class dir search;'                                             \
-		    -e 'a \  class file execute;'                                           \
-		    -e 'a \  class file open;'                                              \
-		    -e 'a \  class file read;'                                              \
-		    -e 'a \  class filesystem getattr;'                                     \
-		    -e 'a \  class process getcap;'                                         \
-		    -e 'a \  class process setcap;'                                         \
-		    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
-		    -e '}'                                                                  \
-		    -e '$a allow firewalld_t firewalld_tmpfs_t:file execute;'               \
-		    -e '$a allow firewalld_t initrc_t:dbus send_msg;'                       \
-		    -e '$a allow firewalld_t proc_t:filesystem getattr;'                    \
-		    -e '$a allow firewalld_t self:capability dac_read_search;'              \
-		    -e '$a allow firewalld_t self:capability setpcap;'                      \
-		    -e '$a allow firewalld_t self:process getcap;'                          \
-		    -e '$a allow firewalld_t self:process setcap;'                          \
-		    -e '$a allow firewalld_t sysctl_kernel_t:dir search;'                   \
-		    -e '$a allow firewalld_t sysctl_kernel_t:file open;'                    \
-		    -e '$a allow firewalld_t sysctl_kernel_t:file read;'                    \
-		    -e '$a allow firewalld_t unconfined_t:dbus send_msg;'
+		if seinfo -t | grep -q "firewalld_t"; then
+			sepolicy generate --customize -d firewalld_t      -n custom_firewalld      --path "${_DIRS_TGET}" || true > /dev/null
+			sed -i "${_DIRS_TGET}/custom_firewalld.te"                                  \
+			    -e '/type[ \t]\+firewalld_t;/ {'                                        \
+			    -e 'a \  type firewalld_tmpfs_t;'                                       \
+			    -e 'a \  type initrc_t;'                                                \
+			    -e 'a \  type proc_t;'                                                  \
+			    -e 'a \  type sysctl_kernel_t;'                                         \
+			    -e 'a \  type unconfined_t;'                                            \
+			    -e 'a \  class capability { dac_read_search setpcap };'                 \
+			    -e 'a \  class dbus send_msg;'                                          \
+			    -e 'a \  class dir search;'                                             \
+			    -e 'a \  class file { execute open read };'                             \
+			    -e 'a \  class filesystem getattr;'                                     \
+			    -e 'a \  class process { getcap setcap };'                              \
+			    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+			    -e '}'                                                                  \
+			    -e '$a allow firewalld_t firewalld_tmpfs_t:file execute;'               \
+			    -e '$a allow firewalld_t initrc_t:dbus send_msg;'                       \
+			    -e '$a allow firewalld_t proc_t:filesystem getattr;'                    \
+			    -e '$a allow firewalld_t sysctl_kernel_t:dir search;'                   \
+			    -e '$a allow firewalld_t sysctl_kernel_t:file { open read };'           \
+			    -e '$a allow firewalld_t unconfined_t:dbus send_msg;'                   \
+			    -e '$a allow firewalld_t self:capability { dac_read_search setpcap };'  \
+			    -e '$a allow firewalld_t self:process { getcap setcap };'
+			"${_DIRS_TGET}/custom_firewalld.sh"      || true > /dev/null
+		fi
 		# --- vmware_tools_t --------------------------------------------------
-		sed -i "${_DIRS_TGET}/custom_vmware_tools.te"                               \
-		    -e '/type[ \t]\+vmware_tools_t;/ {'                                     \
-		    -e 'a \  type vmware_log_t;'                                            \
-		    -e 'a \  type vmware_vgauth_service_t;'                                 \
-		    -e 'a \  class dir { search };'                                         \
-		    -e 'a \  class file { unlink write };'                                  \
-		    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
-		    -e '}'                                                                  \
-		    -e '$a allow vmware_tools_t vmware_log_t:file unlink;'                  \
-		    -e '$a allow vmware_tools_t vmware_log_t:file write;'                   \
-		    -e '$a allow vmware_tools_t vmware_vgauth_service_t:dir search;'
+		if seinfo -t | grep -q "vmware_tools_t"; then
+			sepolicy generate --customize -d vmware_tools_t   -n custom_vmware_tools   --path "${_DIRS_TGET}" || true > /dev/null
+			sed -i "${_DIRS_TGET}/custom_vmware_tools.te"                               \
+			    -e '/type[ \t]\+vmware_tools_t;/ {'                                     \
+			    -e 'a \  type vmware_log_t;'                                            \
+			    -e 'a \  type vmware_vgauth_service_t;'                                 \
+			    -e 'a \  type NetworkManager_t;'                                        \
+			    -e 'a \  type auditd_t;'                                                \
+			    -e 'a \  type blkmapd_t;'                                               \
+			    -e 'a \  type boot_t;'                                                  \
+			    -e 'a \  type crond_t;'                                                 \
+			    -e 'a \  type dnsmasq_t;'                                               \
+			    -e 'a \  type firewalld_t;'                                             \
+			    -e 'a \  type getty_t;'                                                 \
+			    -e 'a \  type httpd_t;'                                                 \
+			    -e 'a \  type kernel_t;'                                                \
+			    -e 'a \  type modemmanager_t;'                                          \
+			    -e 'a \  type mount_t;'                                                 \
+			    -e 'a \  type nfsd_t;'                                                  \
+			    -e 'a \  type nmbd_t;'                                                  \
+			    -e 'a \  type ntpd_t;'                                                  \
+			    -e 'a \  type policykit_t;'                                             \
+			    -e 'a \  type rpcbind_t;'                                               \
+			    -e 'a \  type rpcd_t;'                                                  \
+			    -e 'a \  type smbd_t;'                                                  \
+			    -e 'a \  type sshd_t;'                                                  \
+			    -e 'a \  type syslogd_t;'                                               \
+			    -e 'a \  type system_dbusd_t;'                                          \
+			    -e 'a \  type systemd_logind_t;'                                        \
+			    -e 'a \  type systemd_resolved_runtime_t;'                              \
+			    -e 'a \  type systemd_resolved_t;'                                      \
+			    -e 'a \  type udev_t;'                                                  \
+			    -e 'a \  type unconfined_t;'                                            \
+			    -e 'a \  type urandom_device_t;'                                        \
+			    -e 'a \  type vmware_vgauth_service_t;'                                 \
+			    -e 'a \  type winbind_t;'                                               \
+			    -e 'a \  class dir { read search };'                                    \
+			    -e 'a \  class file { unlink read write };'                             \
+			    -e 'a \  class chr_file read;'                                          \
+			    -e 'a \  class capability { net_admin sys_ptrace };'                    \
+			    -e 'a \  class blk_file read;'                                          \
+			    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+			    -e '}'                                                                  \
+			    -e '$a allow vmware_tools_t vmware_log_t:file { unlink write };'        \
+			    -e '$a allow vmware_tools_t vmware_vgauth_service_t:dir search;'        \
+			    -e '$a allow vmware_tools_t NetworkManager_t:dir search;'               \
+			    -e '$a allow vmware_tools_t auditd_t:dir search;'                       \
+			    -e '$a allow vmware_tools_t blkmapd_t:dir search;'                      \
+			    -e '$a allow vmware_tools_t boot_t:dir search;'                         \
+			    -e '$a allow vmware_tools_t crond_t:dir search;'                        \
+			    -e '$a allow vmware_tools_t dnsmasq_t:dir search;'                      \
+			    -e '$a allow vmware_tools_t firewalld_t:dir search;'                    \
+			    -e '$a allow vmware_tools_t getty_t:dir search;'                        \
+			    -e '$a allow vmware_tools_t httpd_t:dir search;'                        \
+			    -e '$a allow vmware_tools_t kernel_t:dir search;'                       \
+			    -e '$a allow vmware_tools_t modemmanager_t:dir search;'                 \
+			    -e '$a allow vmware_tools_t mount_t:dir search;'                        \
+			    -e '$a allow vmware_tools_t nfsd_t:dir search;'                         \
+			    -e '$a allow vmware_tools_t nmbd_t:dir search;'                         \
+			    -e '$a allow vmware_tools_t ntpd_t:dir search;'                         \
+			    -e '$a allow vmware_tools_t policykit_t:dir search;'                    \
+			    -e '$a allow vmware_tools_t rpcbind_t:dir search;'                      \
+			    -e '$a allow vmware_tools_t rpcd_t:dir search;'                         \
+			    -e '$a allow vmware_tools_t smbd_t:dir search;'                         \
+			    -e '$a allow vmware_tools_t sshd_t:dir search;'                         \
+			    -e '$a allow vmware_tools_t syslogd_t:dir search;'                      \
+			    -e '$a allow vmware_tools_t system_dbusd_t:dir search;'                 \
+			    -e '$a allow vmware_tools_t systemd_logind_t:dir search;'               \
+			    -e '$a allow vmware_tools_t systemd_resolved_runtime_t:dir search;'     \
+			    -e '$a allow vmware_tools_t systemd_resolved_t:dir search;'             \
+			    -e '$a allow vmware_tools_t udev_t:dir search;'                         \
+			    -e '$a allow vmware_tools_t unconfined_t:dir search;'                   \
+			    -e '$a allow vmware_tools_t urandom_device_t:chr_file read;'            \
+			    -e '$a allow vmware_tools_t vmware_vgauth_service_t:file read;'         \
+			    -e '$a allow vmware_tools_t winbind_t:dir search;'                      \
+			    -e '$a allow vmware_tools_t self:capability sys_ptrace;'
+			"${_DIRS_TGET}/custom_vmware_tools.sh"   || true > /dev/null
+		fi
 		# --- systemd_logind_t ------------------------------------------------
-		sed -i "${_DIRS_TGET}/custom_systemd_logind.te"                             \
-		    -e '/type[ \t]\+systemd_logind_t;/ {'                                   \
-		    -e 'a \  type unconfined_t;'                                            \
-		    -e 'a \  class fd use;'                                                 \
-		    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
-		    -e '}'                                                                  \
-		    -e '$a allow systemd_logind_t unconfined_t:fd use;'
+		if seinfo -t | grep -q "systemd_logind_t"; then
+			sepolicy generate --customize -d systemd_logind_t -n custom_systemd_logind --path "${_DIRS_TGET}" || true > /dev/null
+			sed -i "${_DIRS_TGET}/custom_systemd_logind.te"                             \
+			    -e '/type[ \t]\+systemd_logind_t;/ {'                                   \
+			    -e 'a \  type unconfined_t;'                                            \
+			    -e 'a \  class fd use;'                                                 \
+			    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+			    -e '}'                                                                  \
+			    -e '$a allow systemd_logind_t unconfined_t:fd use;'
+			"${_DIRS_TGET}/custom_systemd_logind.sh" || true > /dev/null
+		fi
 		# --- mount_t ---------------------------------------------------------
-		sed -i "${_DIRS_TGET}/custom_mount.te"                                      \
-		    -e '/type[ \t]\+mount_t;/ {'                                            \
-		    -e 'a \  type sysctl_vm_overcommit_t;'                                  \
-		    -e 'a \  type sysctl_vm_t;'                                             \
-		    -e 'a \  class process signal;'                                         \
-		    -e 'a \  class dir { search };'                                         \
-		    -e 'a \  class file { open read };'                                     \
-		    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
-		    -e '}'                                                                  \
-		    -e '$a allow mount_t self:process signal;'                              \
-		    -e '$a allow mount_t sysctl_vm_overcommit_t:file { open read };'        \
-		    -e '$a allow mount_t sysctl_vm_t:dir search;'
+		if seinfo -t | grep -q "mount_t"; then
+			sepolicy generate --customize -d mount_t          -n custom_mount          --path "${_DIRS_TGET}" || true > /dev/null
+			sed -i "${_DIRS_TGET}/custom_mount.te"                                      \
+			    -e '/type[ \t]\+mount_t;/ {'                                            \
+			    -e 'a \  type sysctl_vm_overcommit_t;'                                  \
+			    -e 'a \  type sysctl_vm_t;'                                             \
+			    -e 'a \  class process signal;'                                         \
+			    -e 'a \  class dir { search };'                                         \
+			    -e 'a \  class file { open read };'                                     \
+			    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+			    -e '}'                                                                  \
+			    -e '$a allow mount_t self:process signal;'                              \
+			    -e '$a allow mount_t sysctl_vm_overcommit_t:file { open read };'        \
+			    -e '$a allow mount_t sysctl_vm_t:dir search;'
+			"${_DIRS_TGET}/custom_mount.sh"          || true > /dev/null
+		fi
 		# --- make rule -------------------------------------------------------
-		"${_DIRS_TGET}/custom_dnsmasq.sh"        || true > /dev/null
-		"${_DIRS_TGET}/custom_winbind.sh"        || true > /dev/null
-		"${_DIRS_TGET}/custom_httpd.sh"          || true > /dev/null
-		"${_DIRS_TGET}/custom_firewalld.sh"      || true > /dev/null
-		"${_DIRS_TGET}/custom_vmware_tools.sh"   || true > /dev/null
-		"${_DIRS_TGET}/custom_systemd_logind.sh" || true > /dev/null
-		"${_DIRS_TGET}/custom_mount.sh"          || true > /dev/null
 #		semodule -i "${_DIRS_TGET}/custom_dnsmasq.pp" || true > /dev/null
 #		semodule -i "${_DIRS_TGET}/custom_winbind.pp" || true > /dev/null
 	fi
@@ -1181,11 +1259,11 @@ funcSetupConfig_selinux() {
 			funcFile_backup "${_FILE_PATH}" "init"
 		done
 	done
-
 	# --- restore context labels ----------------------------------------------
 	printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "*** restore : start ***"
-	restorecon -RF "${DIRS_TGET:-}"/ || true
+#	restorecon -RF "${DIRS_TGET:-}"/ || true
 #	fixfiles restore "${DIRS_TGET:-}"/ || true
+	fixfiles onboot || true
 	printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "*** restore : complete ***"
 
 	# --- selinux activate ----------------------------------------------------
