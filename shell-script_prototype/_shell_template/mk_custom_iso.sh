@@ -2999,19 +2999,20 @@ function fnBoot_option_agama() {
 #		__WORK+="${__WORK:+" "}ip=dhcp"
 #		__WORK+="${__WORK:+" "}dhcp"
 	else
-		__WORK+="${__WORK:+" "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr}/${_IPV4_CIDR:-},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
+#		__WORK+="${__WORK:+" "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr}/${_IPV4_CIDR:-},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
+		__WORK+="${__WORK:+" "}ip=\${ipv4addr}::\${ipv4gway}:\${ipv4mask}:\${hostname}:\${ethrname}:none,auto6 nameserver=\${ipv4nsvr}"
 	fi
 	__BOPT+=("${__WORK}")
 	# ---  3: locale ----------------------------------------------------------
 	__WORK=""
-	__WORK+="${__WORK:+" "}lang=ja_JP language=ja_JP.UTF-8 keyboard=jp timezone=Asia/Tokyo"
+#	__WORK+="${__WORK:+" "}lang=ja_JP language=ja_JP.UTF-8 keyboard=jp timezone=Asia/Tokyo"
 	__BOPT+=("${__WORK}")
 	# ---  4: ramdisk ---------------------------------------------------------
 	__WORK=""
-	__WORK+="${__WORK:+" "}${_OPTN_RDSK[*]/root=\/dev\/ram*[0-9]/}"
+#	__WORK+="${__WORK:+" "}${_OPTN_RDSK[*]/root=\/dev\/ram*[0-9]/}"
 #	__WORK="${__WORK/load_ramdisk=[0-9]/rd.kiwi.ramdisk}"
-	__WORK="${__WORK#"${__WORK%%[!"${IFS}"]*}"}"	# ltrim
-	__WORK="${__WORK%"${__WORK##*[!"${IFS}"]}"}"	# rtrim
+#	__WORK="${__WORK#"${__WORK%%[!"${IFS}"]*}"}"	# ltrim
+#	__WORK="${__WORK%"${__WORK##*[!"${IFS}"]}"}"	# rtrim
 	__BOPT+=("${__WORK}")
 	# ---  5: isosfile --------------------------------------------------------
 	__WORK="\${extra_cmdline} \${isoboot}"
@@ -3075,7 +3076,8 @@ function fnBoot_options() {
 		* ) ;;
 	esac
 	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__RSLT}")
-	__BOPT+=("security=selinux enforcing=0")
+#	__BOPT+=("security=selinux enforcing=0")
+	__BOPT+=("")
 	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
 		__BOPT+=("fsck.mode=skip raid=noautodetect noeject")
 	else
