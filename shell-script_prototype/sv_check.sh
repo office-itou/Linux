@@ -966,7 +966,7 @@ function funcTest_service() {
 		_SRVC_RELT="$(systemctl is-active "${_SRVC_NAME}" || true)"
 		_SRVC_STAT="$(systemctl list-unit-files --type=service "${_SRVC_NAME}" | grep "${_SRVC_NAME}" || true)"
 		_SRVC_STAT="${_SRVC_STAT#* }"
-		_WORK_TEXT="$(printf "%-30s:%-8s:%-8s:%s" "${_SRVC_NAME}" "${_SRVC_RELT}" "${_SRVC_STAT% *}" "${_SRVC_STAT#* }")"
+		_WORK_TEXT="$(printf "%-30s:%-10s:%-10s:%s" "${_SRVC_NAME}" "${_SRVC_RELT}" "${_SRVC_STAT% *}" "${_SRVC_STAT#* }")"
 		case "${_SRVC_RELT}" in
 			active  ) printf "${TXT_RESET}${PROG_NAME}: ${TXT_GREEN}%s${TXT_RESET}\n" "${_WORK_TEXT}";;
 			failed  ) printf "${TXT_RESET}${PROG_NAME}: ${TXT_RED}%s${TXT_RESET}\n" "${_WORK_TEXT}";;
