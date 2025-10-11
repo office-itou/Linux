@@ -951,7 +951,7 @@ function funcTest_service() {
 
 	printf "${TXT_RESET}${PROG_NAME}: ${TXT_GREEN}%s${TXT_RESET}\n" "--- start   : [${_FUNC_NAME}] ---"
 
-	systemctl list-unit-files --type=service --no-pager \
+	for _SRVC_NAME in \
 		apparmor.service auditd.service \
 		firewalld.service clamav-freshclam.service \
 		NetworkManager.service systemd-resolved.service dnsmasq.service \
@@ -962,6 +962,32 @@ function funcTest_service() {
 		smb.service smbd.service \
 		nmb.service nmbd.service \
 		avahi-daemon.service
+	do
+		_SRVC_RELT="$(systemctl is-active "${_SRVC_NAME}" || true)"
+		_SRVC_STAT="$(systemctl list-unit-files --type=service "${_SRVC_NAME}" | grep "${_SRVC_NAME}" || true)"
+		_SRVC_STAT="${_SRVC_STAT#* }"
+		_WORK_TEXT="$(printf "%-30s:%-8s:%-8s:%s" "${_SRVC_NAME}" "${_SRVC_RELT}" "${_SRVC_STAT% *}" "${_SRVC_STAT#* }")"
+		case "${_SRVC_RELT}" in
+			active  ) printf "${TXT_RESET}${PROG_NAME}: ${TXT_GREEN}%s${TXT_RESET}\n" "${_WORK_TEXT}";;
+			failed  ) printf "${TXT_RESET}${PROG_NAME}: ${TXT_RED}%s${TXT_RESET}\n" "${_WORK_TEXT}";;
+			inactive) printf "${TXT_RESET}${PROG_NAME}: ${TXT_YELLOW}%s${TXT_RESET}\n" "${_WORK_TEXT}";;
+			*       ) printf "${TXT_RESET}${PROG_NAME}: ${TXT_MAGENTA}%s${TXT_RESET}\n" "${_WORK_TEXT}";;
+		esac
+	done
+
+#	printf "\n"
+
+#	systemctl list-unit-files --type=service --no-pager \
+#		apparmor.service auditd.service \
+#		firewalld.service clamav-freshclam.service \
+#		NetworkManager.service systemd-resolved.service dnsmasq.service \
+#		systemd-timesyncd.service chronyd.service\
+#		open-vm-tools.service vmtoolsd.service \
+#		ssh.service sshd.service \
+#		apache2.service httpd.service \
+#		smb.service smbd.service \
+#		nmb.service nmbd.service \
+#		avahi-daemon.service
 
 #	printf "\n"
 #	systemctl list-units --type=service --no-pager
