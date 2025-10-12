@@ -1,0 +1,13 @@
+policy_module(custom_low_mem_mon, 1.0.0)
+
+gen_require(`
+  type low_mem_mon_t;
+  type xdm_t;
+  class dbus send_msg;
+')
+
+########################################
+#
+# custom_low_mem_mon customized policy
+#
+allow low_mem_mon_t xdm_t:dbus send_msg;

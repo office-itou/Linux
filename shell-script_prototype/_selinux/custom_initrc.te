@@ -1,0 +1,12 @@
+policy_module(custom_initrc, 1.0.0)
+
+gen_require(`
+  type initrc_t;
+  class process execmem;
+')
+
+########################################
+#
+# custom_initrc customized policy
+#
+allow initrc_t self:process execmem;

@@ -10,6 +10,7 @@ gen_require(`
   class file { map execute };
   class capability { net_admin setgid };
   class chr_file write;
+  class unix_dgram_socket sendto;
 ')
 
 ########################################
@@ -22,3 +23,4 @@ allow winbind_t samba_log_t:file { read unlink write };
 allow winbind_t shell_exec_t:file execute;
 allow winbind_t urandom_device_t:chr_file write;
 allow winbind_t self:capability { net_admin setgid };
+allow winbind_t self:unix_dgram_socket sendto;

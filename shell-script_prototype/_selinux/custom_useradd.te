@@ -1,0 +1,12 @@
+policy_module(custom_useradd, 1.0.0)
+
+gen_require(`
+  type useradd_t;
+  class capability dac_read_search;
+')
+
+########################################
+#
+# custom_useradd customized policy
+#
+allow useradd_t self:capability dac_read_search;

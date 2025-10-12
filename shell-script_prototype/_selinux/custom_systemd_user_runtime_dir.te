@@ -1,0 +1,13 @@
+policy_module(custom_systemd_user_runtime_dir, 1.0.0)
+
+gen_require(`
+  type systemd_user_runtime_dir_t;
+  type locale_t;
+  class dir search;
+')
+
+########################################
+#
+# custom_systemd_user_runtime_dir customized policy
+#
+allow systemd_user_runtime_dir_t locale_t:dir search;

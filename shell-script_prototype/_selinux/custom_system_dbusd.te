@@ -1,0 +1,13 @@
+policy_module(custom_system_dbusd, 1.0.0)
+
+gen_require(`
+  type system_dbusd_t;
+  type var_lib_t;
+  class dir watch;
+')
+
+########################################
+#
+# custom_system_dbusd customized policy
+#
+allow system_dbusd_t var_lib_t:dir watch;

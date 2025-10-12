@@ -1,0 +1,13 @@
+policy_module(custom_xdm, 1.0.0)
+
+gen_require(`
+  type xdm_t;
+  class process execmem;
+	role xdm_r;
+')
+
+########################################
+#
+# custom_xdm customized policy
+#
+allow xdm_t self:process execmem;

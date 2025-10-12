@@ -1,0 +1,18 @@
+policy_module(custom_udev, 1.0.0)
+
+gen_require(`
+  type udev_t;
+  type init_runtime_t;
+  type initrc_runtime_t;
+  type nsfs_t;
+  class dir { getattr search };
+  class file { getattr ioctl open read };
+')
+
+########################################
+#
+# custom_udev customized policy
+#
+allow udev_t init_runtime_t:file { getattr ioctl open read };
+allow udev_t initrc_runtime_t:dir { getattr search };
+allow udev_t nsfs_t:file { getattr open read };

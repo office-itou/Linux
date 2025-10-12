@@ -1,0 +1,48 @@
+policy_module(custom_sshd, 1.0.0)
+
+gen_require(`
+  type sshd_t;
+  type lib_t;
+  type unconfined_t;
+  type user_home_dir_t;
+  type usr_t;
+  type var_lib_t;
+  type var_t;
+  type boot_t;
+  type fixed_disk_device_t;
+  type fsadm_exec_t;
+  type mount_exec_t;
+  type mount_runtime_t;
+  type var_log_t;
+  type xdg_cache_t;
+  class dir { add_name create getattr search write };
+  class file { append create execute execute_no_trans getattr ioctl map open read };
+  class capability dac_override;
+  class cap_userns sys_ptrace;
+  class sock_file getattr;
+  class key { link search };
+')
+
+########################################
+#
+# custom_sshd customized policy
+#
+allow sshd_t lib_t:dir write;
+allow sshd_t lib_t:file execute_no_trans;
+allow sshd_t unconfined_t:key { link search };
+allow sshd_t user_home_dir_t:dir { add_name create write };
+allow sshd_t user_home_dir_t:file { create getattr open write };
+allow sshd_t usr_t:file { execute execute_no_trans };
+allow sshd_t var_lib_t:dir write;
+allow sshd_t var_lib_t:file { getattr open read setattr write };
+allow sshd_t var_t:file { create getattr open read };
+allow sshd_t boot_t:dir search;
+allow sshd_t fixed_disk_device_t:blk_file { getattr ioctl open read };
+allow sshd_t fsadm_exec_t:file { execute execute_no_trans getattr map open read };
+allow sshd_t mount_exec_t:file { execute execute_no_trans getattr map open read };
+allow sshd_t mount_runtime_t:dir search;
+allow sshd_t var_log_t:dir { add_name write };
+allow sshd_t var_log_t:file { append create getattr ioctl open };
+allow sshd_t xdg_cache_t:dir search;
+allow sshd_t self:capability dac_override;
+allow sshd_t self:cap_userns sys_ptrace;

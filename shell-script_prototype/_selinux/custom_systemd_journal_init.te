@@ -1,0 +1,19 @@
+policy_module(custom_systemd_journal_init, 1.0.0)
+
+gen_require(`
+  type systemd_journal_init_t;
+  type etc_runtime_t;
+  type systemd_journal_t;
+  type var_log_t;
+  class dir search;
+  class file { getattr ioctl map open read write };
+')
+
+########################################
+#
+# custom_systemd_journal_init customized policy
+#
+allow systemd_journal_init_t etc_runtime_t:file { open read };
+allow systemd_journal_init_t systemd_journal_t:file map;
+allow systemd_journal_init_t var_log_t:dir search;
+allow systemd_journal_init_t var_log_t:file { getattr ioctl write };

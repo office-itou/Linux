@@ -1,0 +1,16 @@
+policy_module(custom_accountsd, 1.0.0)
+
+gen_require(`
+  type accountsd_t;
+  type systemd_unit_t;
+  type user_home_dir_t;
+  class lnk_file read;
+  class dir { add_name write };
+')
+
+########################################
+#
+# custom_accountsd customized policy
+#
+allow accountsd_t systemd_unit_t:lnk_file read;
+allow accountsd_t user_home_dir_t:dir { add_name write };

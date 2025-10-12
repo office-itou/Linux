@@ -1,0 +1,31 @@
+policy_module(custom_systemd_tmpfiles, 1.0.0)
+
+gen_require(`
+  type systemd_tmpfiles_t;
+  type bin_t;
+  type init_exec_t;
+  type shell_exec_t;
+  type tmpfs_t;
+  type locale_t;
+  type user_runtime_t;
+  class dir { search write };
+  class file { add_name create getattr ioctl open read setattr write };
+  class lnk_file { create getattr read };
+')
+
+########################################
+#
+# custom_systemd_tmpfiles customized policy
+#
+allow systemd_tmpfiles_t bin_t:lnk_file read;
+allow systemd_tmpfiles_t init_exec_t:file getattr;
+allow systemd_tmpfiles_t tmpfs_t:dir write;
+allow systemd_tmpfiles_t tmpfs_t:lnk_file { create getattr read };
+allow systemd_tmpfiles_t bin_t:dir search;
+allow systemd_tmpfiles_t init_exec_t:file { open read };
+allow systemd_tmpfiles_t shell_exec_t:file { getattr open read };
+allow systemd_tmpfiles_t tmpfs_t:dir { add_name create setattr };
+allow systemd_tmpfiles_t tmpfs_t:file { create getattr ioctl open setattr write };
+allow systemd_tmpfiles_t locale_t:file read;
+allow systemd_tmpfiles_t locale_t:lnk_file read;
+allow systemd_tmpfiles_t user_runtime_t:dir search;

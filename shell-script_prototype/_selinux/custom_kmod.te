@@ -1,0 +1,12 @@
+policy_module(custom_kmod, 1.0.0)
+
+gen_require(`
+  type kmod_t;
+  class capability net_admin;
+')
+
+########################################
+#
+# custom_kmod customized policy
+#
+allow kmod_t self:capability net_admin;

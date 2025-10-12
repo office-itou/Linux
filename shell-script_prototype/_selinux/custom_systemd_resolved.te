@@ -1,0 +1,18 @@
+policy_module(custom_systemd_resolved, 1.0.0)
+
+gen_require(`
+  type systemd_resolved_t;
+  type NetworkManager_t;
+  type locale_t;
+  type howl_port_t;
+  class dir search;
+  class udp_socket name_bind;
+')
+
+########################################
+#
+# custom_systemd_resolved customized policy
+#
+allow systemd_resolved_t NetworkManager_t:dir search;
+allow systemd_resolved_t locale_t:dir search;
+allow systemd_resolved_t howl_port_t:udp_socket name_bind;
