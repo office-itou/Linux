@@ -3772,7 +3772,7 @@ function fnRemastering() {
 	declare -i    __time_start=0							# start of elapsed time
 	declare -i    __time_end=0								# end of elapsed time
 	declare -i    __time_elapsed=0							# result of elapsed time
-	declare -r -a __TGET_LIST=("$@")						# target data
+	declare -a    __TGET_LIST=("$@")						# target data
 	declare -r    __DWRK="${_DIRS_TEMP}/${__TGET_LIST[2]}"	# work directory
 	declare -r    __DOVL="${__DWRK}/overlay"				# overlay
 	declare -r    __DUPR="${__DOVL}/upper"					# upperdir
@@ -3781,6 +3781,10 @@ function fnRemastering() {
 	declare -r    __DMRG="${__DOVL}/merged"					# merged
 	declare       __PATH=""									# full path
 	declare       __FEFI=""									# "         (efiboot.img)
+	declare       __DIRS=""									# directory
+	declare       __FNAM=""									# file name
+	declare       __FKNL=""									# kernel
+	declare       __FIRD=""									# initrd
 	declare       __WORK=""									# work variables
 
 	# --- start ---------------------------------------------------------------
@@ -3810,6 +3814,15 @@ function fnRemastering() {
 	# --- main processing -----------------------------------------------------
 	mount -r "${__TGET_LIST[13]}" "${__DLOW}"
 	mount -t overlay overlay -o lowerdir="${__DLOW}",upperdir="${__DUPR}",workdir="${__DWKD}" "${__DMRG}"
+	# --- search initrd / vmlinuz ---------------------------------------------
+	if [[ -n "${__TGET_LIST[22]##-}" ]]; then
+		__DIRS="${__DIRS_DEST}/${__TGET_LIST[22]#"${_DIRS_LOAD}"/*/}"
+		__DIRS="${__DIRS%/*}"
+		__FKNL="$(find "${__DIRS}" -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' -o -name linux                                                 \) | sort -Vu || true)"
+		__FIRD="$(find "${__DIRS}" -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  -o -name initrd.gz -o -name 'initramfs' -o -name 'initramfs-*' \) | sort -Vu || true)"
+		[[ -n "${__FIRD:-}" ]] && __TGET_LIST[21]="${__TGET_LIST[21]%/*}/${__FIRD##*/}"
+		[[ -n "${__FKNL:-}" ]] && __TGET_LIST[22]="${__TGET_LIST[22]%/*}/${__FKNL##*/}"
+	fi
 	# --- create boot options -------------------------------------------------
 	printf "%20.20s: %s\n" "start" "create boot options"
 #	__WORK="$(set -e; fnBoot_options "${_TYPE_ISOB:?}" "${__TGET_LIST[@]}")"
@@ -4944,6 +4957,10 @@ function fnExec_pxeboot() {
 	declare -r    __COMD_TYPE="$2"		# command type
 	declare -r -i __CONT_TABS="${3:?}"	# tabs count
 	declare -a    __TGET_LIST=("${@:4}") # target data
+	declare       __DIRS=""				# directory
+	declare       __FNAM=""				# file name
+	declare       __FKNL=""				# kernel
+	declare       __FIRD=""				# initrd
 
 	__RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
 	if [[ -n "${__TGET_LIST[13]##-}" ]] && [[ ! -s "${__TGET_LIST[13]}" ]]; then
@@ -4958,6 +4975,15 @@ function fnExec_pxeboot() {
 		update  ) ;;
 		*       ) fnFile_copy "${__TGET_LIST[13]}" "${_DIRS_IMGS}/${__TGET_LIST[2]}";;
 	esac
+	# --- search initrd / vmlinuz ---------------------------------------------
+	if [[ -n "${__TGET_LIST[22]##-}" ]]; then
+		__DIRS="${_DIRS_IMGS}/${__TGET_LIST[2]}/${__TGET_LIST[22]#"${_DIRS_LOAD}"/*/}"
+		__DIRS="${__DIRS%/*}"
+		__FKNL="$(find "${__DIRS}" -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' -o -name linux                                                 \) | sort -Vu || true)"
+		__FIRD="$(find "${__DIRS}" -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  -o -name initrd.gz -o -name 'initramfs' -o -name 'initramfs-*' \) | sort -Vu || true)"
+		[[ -n "${__FIRD:-}" ]] && __TGET_LIST[21]="${__TGET_LIST[21]%/*}/${__FIRD##*/}"
+		[[ -n "${__FKNL:-}" ]] && __TGET_LIST[22]="${__TGET_LIST[22]%/*}/${__FKNL##*/}"
+	fi
 	# --- create pxeboot menu -------------------------------------------------
 	case "${__COMD_TYPE:-}" in
 		download) ;;
@@ -5176,6 +5202,10 @@ function fnExec() {
 								__TABS=1
 							fi
 							fnExec_pxeboot "__RVAL" "${__COMD}" "${__TABS:-"0"}" "${__LIST[@]}"
+							IFS= mapfile -d $'\n' -t __ARRY < <(echo -n "${__RVAL:-}")
+							if [[ -n "${__ARRY[*]}" ]]; then
+								__LIST=("${__ARRY[@]}")
+							fi
 							case "${__LIST[1]}" in
 								m)							# (menu)
 									if [[ "${__TABS:-"0"}" -eq 0 ]]; then
