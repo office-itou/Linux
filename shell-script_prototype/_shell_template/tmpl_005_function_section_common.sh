@@ -1297,7 +1297,7 @@ function fnRemastering() {
 	mount -t overlay overlay -o lowerdir="${__DLOW}",upperdir="${__DUPR}",workdir="${__DWKD}" "${__DMRG}"
 	# --- search initrd / vmlinuz ---------------------------------------------
 	if [[ -n "${__TGET_LIST[22]##-}" ]]; then
-		__DIRS="${__DIRS_DEST}/${__TGET_LIST[22]#"${_DIRS_LOAD}"/*/}"
+		__DIRS="${__DMRG}/${__TGET_LIST[22]#"${_DIRS_LOAD}"/*/}"
 		__DIRS="${__DIRS%/*}"
 		__FKNL="$(find "${__DIRS}" -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' -o -name linux                                                 \) | sort -Vu || true)"
 		__FIRD="$(find "${__DIRS}" -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  -o -name initrd.gz -o -name 'initramfs' -o -name 'initramfs-*' \) | sort -Vu || true)"
