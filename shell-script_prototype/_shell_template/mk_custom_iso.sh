@@ -2804,14 +2804,14 @@ function fnBoot_option_kickstart() {
 	__SRVR="${_SRVR_PROT}://${_SRVR_ADDR:?}"
 	__CONF="\${srvraddr}/${_DIRS_CONF##*/}"
 	__IMGS="\${srvraddr}/${_DIRS_IMGS##*/}"
-#	__ISOS="\${srvraddr}/${_DIRS_ISOS##*/}"
+	__ISOS="\${srvraddr}/${_DIRS_ISOS##*/}"
 #	__LOAD="\${srvraddr}/${_DIRS_LOAD##*/}"
 #	__RMAK="\${srvraddr}/${_DIRS_RMAK##*/}"
 	__BOPT+=("server=${__SRVR}")
 	# ---  1: autoinstall -----------------------------------------------------
 	__WORK=""
 	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
-		__WORK="boot=live"
+		__WORK=""
 	else
 		__WORK="${__WORK:+" "}inst.ks=hd:sr0:${__TGET_LIST[23]#"${_DIRS_CONF}"}"
 		case "${__TGET_TYPE:-}" in
@@ -2842,10 +2842,14 @@ function fnBoot_option_kickstart() {
 	__BOPT+=("${__WORK}")
 	# ---  5: isosfile --------------------------------------------------------
 	__WORK=""
-	case "${__TGET_TYPE:-}" in
-		"${_TYPE_PXEB:?}") __WORK+="${__WORK:+" "}inst.repo=${__IMGS}/${__TGET_LIST[2]}";;
-		*                ) __WORK+="${__WORK:+" "}inst.stage2=hd:LABEL=${__TGET_LIST[16]}";;
-	esac
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK+="${__WORK:+" "}root=live:${__ISOS}/${__TGET_LIST[13]##*/}"
+	else
+		case "${__TGET_TYPE:-}" in
+			"${_TYPE_PXEB:?}") __WORK+="${__WORK:+" "}inst.repo=${__IMGS}/${__TGET_LIST[2]}";;
+			*                ) __WORK+="${__WORK:+" "}inst.stage2=hd:LABEL=${__TGET_LIST[16]}";;
+		esac
+	fi
 	__BOPT+=("${__WORK}")
 	# --- finish --------------------------------------------------------------
 	printf -v __RETN_VALU "%s\n" "${__BOPT[@]:-}"
