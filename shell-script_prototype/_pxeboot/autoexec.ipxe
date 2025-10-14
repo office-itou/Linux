@@ -4,7 +4,7 @@ cpuid --ext 29 && set arch amd64 || set arch x86
 
 dhcp
 
-set optn-timeout 3000
+set optn-timeout 1000
 set menu-timeout 0
 isset ${menu-default} || set menu-default exit
 
@@ -18,14 +18,14 @@ item -- debian-mini-12                          - Debian 12 ....................
 item -- debian-mini-13                          - Debian 13 ...........................................2025-09-02 08:31:23
 item -- debian-mini-14                          - Debian 14 ...........................................2025-08-03 09:51:41
 item -- debian-mini-testing                     - Debian testing ......................................2025-08-03 09:51:41
-item -- debian-mini-testing-daily               - Debian testing daily ................................2025-10-13 09:02:38
+item -- debian-mini-testing-daily               - Debian testing daily ................................2025-10-14 09:02:52
 item --gap --                                   [ Auto install Net install ]
 item -- debian-netinst-12                       - Debian 12 ...........................................2025-09-07 02:08:10
 item -- debian-netinst-13                       - Debian 13 ...........................................2025-09-06 21:34:10
-item -- debian-netinst-testing                  - Debian testing ......................................2025-10-13 12:31:57
+item -- debian-netinst-testing                  - Debian testing ......................................2025-10-14 18:41:55
 item -- fedora-netinst-42                       - Fedora Server 42 ....................................2025-04-09 20:48:26
-item -- centos-stream-netinst-9                 - CentOS Stream 9 .....................................2025-10-08 12:59:16
-item -- centos-stream-netinst-10                - CentOS Stream 10 ....................................2025-10-06 13:17:36
+item -- centos-stream-netinst-9                 - CentOS Stream 9 .....................................2025-10-13 12:56:37
+item -- centos-stream-netinst-10                - CentOS Stream 10 ....................................2025-10-13 13:19:32
 item -- almalinux-netinst-9                     - Alma Linux 9 ........................................2025-05-16 22:57:02
 item -- almalinux-netinst-10                    - Alma Linux 10 .......................................2025-05-25 16:39:32
 item -- rockylinux-netinst-9                    - Rocky Linux 9 .......................................2025-05-27 05:19:42
@@ -36,13 +36,13 @@ item -- opensuse-tumbleweed-netinst             - openSUSE Tumbleweed ..........
 item --gap --                                   [ Auto install DVD media ]
 item -- debian-12                               - Debian 12 ...........................................2025-09-07 02:09:04
 item -- debian-13                               - Debian 13 ...........................................2025-09-06 21:36:05
-item -- debian-testing                          - Debian testing ......................................2025-10-06 14:45:24
+item -- debian-testing                          - Debian testing ......................................2025-10-13 15:11:23
 item -- ubuntu-live-24.04                       - Ubuntu 24.04 Live Server ............................2025-08-06 08:54:22
 item -- ubuntu-live-25.04                       - Ubuntu 25.04 Live Server ............................2025-04-16 07:38:47
 item -- ubuntu-live-25.10                       - Ubuntu 25.10 Live Server ............................2025-10-08 04:35:49
 item -- fedora-42                               - Fedora Server 42 ....................................2025-04-09 21:01:30
-item -- centos-stream-9                         - CentOS Stream 9 .....................................2025-10-08 13:14:57
-item -- centos-stream-10                        - CentOS Stream 10 ....................................2025-10-06 13:26:34
+item -- centos-stream-9                         - CentOS Stream 9 .....................................2025-10-13 13:08:21
+item -- centos-stream-10                        - CentOS Stream 10 ....................................2025-10-13 13:28:03
 item -- almalinux-9                             - Alma Linux 9 ........................................2025-05-16 23:23:55
 item -- almalinux-10                            - Alma Linux 10 .......................................2025-05-25 16:40:41
 item -- rockylinux-9                            - Rocky Linux 9 .......................................2025-05-30 09:06:45
@@ -55,29 +55,30 @@ item -- windows-11                              - Windows 11 ...................
 item --gap --                                   [ Live media Install mode ]
 item -- debian-live-12-standard                 - Debian 12 Live standard .............................2025-09-06 20:02:45
 item -- debian-live-13-standard                 - Debian 13 Live standard .............................2025-09-06 18:42:55
-item -- debian-live-testing-standard            - Debian testing Live standard ........................2025-10-06 11:13:27
+item -- debian-live-testing-standard            - Debian testing Live standard ........................2025-10-13 11:27:11
 item -- debian-live-12-gnome                    - Debian 12 Live gnome ................................2025-09-06 20:02:45
 item -- debian-live-13-gnome                    - Debian 13 Live gnome ................................2025-09-06 18:42:55
-item -- debian-live-testing-gnome               - Debian testing Live gnome ...........................2025-10-06 11:13:27
+item -- debian-live-testing-gnome               - Debian testing Live gnome ...........................2025-10-13 11:27:11
 item -- debian-live-12-lxde                     - Debian 12 Live lxde .................................2025-09-06 20:02:45
 item -- debian-live-13-lxde                     - Debian 13 Live lxde .................................2025-09-06 18:42:55
-item -- debian-live-testing-lxde                - Debian testing Live lxde ............................2025-10-06 11:13:27
+item -- debian-live-testing-lxde                - Debian testing Live lxde ............................2025-10-13 11:27:11
 item -- ubuntu-desktop-24.04                    - Ubuntu 24.04 Desktop ................................2025-08-06 03:22:33
 item -- ubuntu-desktop-25.04                    - Ubuntu 25.04 Desktop ................................2025-04-16 03:47:56
 item -- ubuntu-desktop-25.10                    - Ubuntu 25.10 Desktop ................................2025-10-07 12:55:53
 item --gap --                                   [ Live media Live mode ]
 item -- live-debian-live-12-standard            - Debian 12 Live standard .............................2025-09-06 20:02:45
 item -- live-debian-live-13-standard            - Debian 13 Live standard .............................2025-09-06 18:42:55
-item -- live-debian-live-testing-standard       - Debian testing Live standard ........................2025-10-06 11:13:27
+item -- live-debian-live-testing-standard       - Debian testing Live standard ........................2025-10-13 11:27:11
 item -- live-debian-live-12-gnome               - Debian 12 Live gnome ................................2025-09-06 20:02:45
 item -- live-debian-live-13-gnome               - Debian 13 Live gnome ................................2025-09-06 18:42:55
-item -- live-debian-live-testing-gnome          - Debian testing Live gnome ...........................2025-10-06 11:13:27
+item -- live-debian-live-testing-gnome          - Debian testing Live gnome ...........................2025-10-13 11:27:11
 item -- live-debian-live-12-lxde                - Debian 12 Live lxde .................................2025-09-06 20:02:45
 item -- live-debian-live-13-lxde                - Debian 13 Live lxde .................................2025-09-06 18:42:55
-item -- live-debian-live-testing-lxde           - Debian testing Live lxde ............................2025-10-06 11:13:27
+item -- live-debian-live-testing-lxde           - Debian testing Live lxde ............................2025-10-13 11:27:11
 item -- live-ubuntu-desktop-24.04               - Ubuntu 24.04 Desktop ................................2025-08-06 03:22:33
 item -- live-ubuntu-desktop-25.04               - Ubuntu 25.04 Desktop ................................2025-04-16 03:47:56
 item -- live-ubuntu-desktop-25.10               - Ubuntu 25.10 Desktop ................................2025-10-07 12:55:53
+item -- live-almalinux-live-10                  - Alma Linux 10 Live ..................................2025-06-10 21:53:53
 item --gap --                                   [ System tools ]
 item -- memtest86plus                           - Memtest86+ 7.20 .....................................2024-11-11 18:15:12
 item -- winpe-x64                               - WinPE x64 ...........................................2024-10-21 21:19:39
@@ -98,42 +99,41 @@ goto ${selected}
 
 :debian-mini-12
 echo Loading Debian 12 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/mini-bookworm-amd64.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-mini-12
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -144,42 +144,41 @@ exit
 
 :debian-mini-13
 echo Loading Debian 13 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/mini-trixie-amd64.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-mini-13
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -190,42 +189,41 @@ exit
 
 :debian-mini-14
 echo Loading Debian 14 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/mini-forky-amd64.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-mini-14
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -236,42 +234,41 @@ exit
 
 :debian-mini-testing
 echo Loading Debian testing ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/mini-testing-amd64.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-mini-testing
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -282,42 +279,41 @@ exit
 
 :debian-mini-testing-daily
 echo Loading Debian testing daily ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/mini-testing-daily-amd64.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-mini-testing-daily
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -328,42 +324,41 @@ exit
 
 :debian-netinst-12
 echo Loading Debian 12 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-12.12.0-amd64-netinst.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-netinst-12
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -374,42 +369,41 @@ exit
 
 :debian-netinst-13
 echo Loading Debian 13 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-13.1.0-amd64-netinst.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-netinst-13
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -420,42 +414,41 @@ exit
 
 :debian-netinst-testing
 echo Loading Debian testing ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-testing-amd64-netinst.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-netinst-testing
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -466,42 +459,41 @@ exit
 
 :fedora-netinst-42
 echo Loading Fedora Server 42 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-fedora.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst inst.ks=${srvraddr}/conf/kickstart/ks_fedora-42_net.cfg
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile inst.repo=${srvraddr}/imgs/fedora-netinst-42
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/fedora-netinst-42
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -512,42 +504,41 @@ exit
 
 :centos-stream-netinst-9
 echo Loading CentOS Stream 9 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-centos.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst inst.ks=${srvraddr}/conf/kickstart/ks_centos-stream-9_net.cfg
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile inst.repo=${srvraddr}/imgs/centos-stream-netinst-9
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/centos-stream-netinst-9
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -558,42 +549,41 @@ exit
 
 :centos-stream-netinst-10
 echo Loading CentOS Stream 10 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-centos.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst inst.ks=${srvraddr}/conf/kickstart/ks_centos-stream-10_net.cfg
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile inst.repo=${srvraddr}/imgs/centos-stream-netinst-10
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/centos-stream-netinst-10
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -604,42 +594,41 @@ exit
 
 :almalinux-netinst-9
 echo Loading Alma Linux 9 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-almalinux.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst inst.ks=${srvraddr}/conf/kickstart/ks_almalinux-9_net.cfg
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile inst.repo=${srvraddr}/imgs/almalinux-netinst-9
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/almalinux-netinst-9
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -650,42 +639,41 @@ exit
 
 :almalinux-netinst-10
 echo Loading Alma Linux 10 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-almalinux.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst inst.ks=${srvraddr}/conf/kickstart/ks_almalinux-10_net.cfg
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile inst.repo=${srvraddr}/imgs/almalinux-netinst-10
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/almalinux-netinst-10
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -696,42 +684,41 @@ exit
 
 :rockylinux-netinst-9
 echo Loading Rocky Linux 9 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-rockylinux.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst inst.ks=${srvraddr}/conf/kickstart/ks_rockylinux-9_net.cfg
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile inst.repo=${srvraddr}/imgs/rockylinux-netinst-9
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/rockylinux-netinst-9
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -742,42 +729,41 @@ exit
 
 :rockylinux-netinst-10
 echo Loading Rocky Linux 10 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-rockylinux.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst inst.ks=${srvraddr}/conf/kickstart/ks_rockylinux-10_net.cfg
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile inst.repo=${srvraddr}/imgs/rockylinux-netinst-10
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/rockylinux-netinst-10
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -788,42 +774,41 @@ exit
 
 :miraclelinux-netinst-9
 echo Loading Miracle Linux 9 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-miraclelinux.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst inst.ks=${srvraddr}/conf/kickstart/ks_miraclelinux-9_net.cfg
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile inst.repo=${srvraddr}/imgs/miraclelinux-netinst-9
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/miraclelinux-netinst-9
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -834,42 +819,41 @@ exit
 
 :opensuse-leap-netinst-16.0
 echo Loading openSUSE Leap 16.0 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-opensuse.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst live.password=install inst.auto=${srvraddr}/conf/agama/autoinst_leap-16.0.json
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set language 
 set ramsdisk 
 set isosfile ${extra_cmdline} ${isoboot} root=live:${srvraddr}/isos/Leap-16.0-online-installer-x86_64.install.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/opensuse-leap-netinst-16.0
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -880,42 +864,41 @@ exit
 
 :opensuse-tumbleweed-netinst
 echo Loading openSUSE Tumbleweed ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-opensuse.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst autoyast=${srvraddr}/conf/autoyast/autoinst_tumbleweed_net.xml
 set networks hostname=${hostname} ifcfg=${ethrname}=${ipv4addr}/24,${ipv4gway},${ipv4nsvr},workgroup
 set language language=ja_JP
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile install=https://download.opensuse.org/tumbleweed/repo/oss/
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/opensuse-tumbleweed-netinst
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -926,42 +909,41 @@ exit
 
 :debian-12
 echo Loading Debian 12 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-12.12.0-amd64-DVD-1.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-12
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -972,42 +954,41 @@ exit
 
 :debian-13
 echo Loading Debian 13 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-13.1.0-amd64-DVD-1.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-13
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -1018,42 +999,41 @@ exit
 
 :debian-testing
 echo Loading Debian testing ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-testing-amd64-DVD-1.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-testing
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -1064,42 +1044,41 @@ exit
 
 :ubuntu-live-24.04
 echo Loading Ubuntu 24.04 Live Server ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-ubuntu.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=${srvraddr}/conf/nocloud/ubuntu_server
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}::${ethrname}:static:${ipv4nsvr} hostname=${hostname}
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile boot=casper iso-url=${srvraddr}/isos/ubuntu-24.04.3-live-server-amd64.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/ubuntu-live-24.04
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -1110,42 +1089,41 @@ exit
 
 :ubuntu-live-25.04
 echo Loading Ubuntu 25.04 Live Server ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-ubuntu.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=${srvraddr}/conf/nocloud/ubuntu_server
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}::${ethrname}:static:${ipv4nsvr} hostname=${hostname}
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile boot=casper iso-url=${srvraddr}/isos/ubuntu-25.04-live-server-amd64.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/ubuntu-live-25.04
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -1156,42 +1134,41 @@ exit
 
 :ubuntu-live-25.10
 echo Loading Ubuntu 25.10 Live Server ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-ubuntu.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=${srvraddr}/conf/nocloud/ubuntu_server
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}::${ethrname}:static:${ipv4nsvr} hostname=${hostname}
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile boot=casper iso-url=${srvraddr}/isos/ubuntu-25.10-live-server-amd64.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/ubuntu-live-25.10
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -1202,42 +1179,41 @@ exit
 
 :fedora-42
 echo Loading Fedora Server 42 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-fedora.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst inst.ks=${srvraddr}/conf/kickstart/ks_fedora-42_web.cfg
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile inst.repo=${srvraddr}/imgs/fedora-42
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/fedora-42
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -1248,42 +1224,41 @@ exit
 
 :centos-stream-9
 echo Loading CentOS Stream 9 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-centos.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst inst.ks=${srvraddr}/conf/kickstart/ks_centos-stream-9_web.cfg
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile inst.repo=${srvraddr}/imgs/centos-stream-9
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/centos-stream-9
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -1294,42 +1269,41 @@ exit
 
 :centos-stream-10
 echo Loading CentOS Stream 10 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-centos.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst inst.ks=${srvraddr}/conf/kickstart/ks_centos-stream-10_web.cfg
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile inst.repo=${srvraddr}/imgs/centos-stream-10
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/centos-stream-10
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -1340,42 +1314,41 @@ exit
 
 :almalinux-9
 echo Loading Alma Linux 9 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-almalinux.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst inst.ks=${srvraddr}/conf/kickstart/ks_almalinux-9_web.cfg
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile inst.repo=${srvraddr}/imgs/almalinux-9
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/almalinux-9
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -1386,42 +1359,41 @@ exit
 
 :almalinux-10
 echo Loading Alma Linux 10 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-almalinux.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst inst.ks=${srvraddr}/conf/kickstart/ks_almalinux-10_web.cfg
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile inst.repo=${srvraddr}/imgs/almalinux-10
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/almalinux-10
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -1432,42 +1404,41 @@ exit
 
 :rockylinux-9
 echo Loading Rocky Linux 9 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-rockylinux.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst inst.ks=${srvraddr}/conf/kickstart/ks_rockylinux-9_web.cfg
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile inst.repo=${srvraddr}/imgs/rockylinux-9
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/rockylinux-9
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -1478,42 +1449,41 @@ exit
 
 :rockylinux-10
 echo Loading Rocky Linux 10 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-rockylinux.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst inst.ks=${srvraddr}/conf/kickstart/ks_rockylinux-10_web.cfg
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile inst.repo=${srvraddr}/imgs/rockylinux-10
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/rockylinux-10
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -1524,42 +1494,41 @@ exit
 
 :miraclelinux-9
 echo Loading Miracle Linux 9 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-miraclelinux.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst inst.ks=${srvraddr}/conf/kickstart/ks_miraclelinux-9_web.cfg
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile inst.repo=${srvraddr}/imgs/miraclelinux-9
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/miraclelinux-9
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -1570,42 +1539,41 @@ exit
 
 :opensuse-leap-16.0
 echo Loading openSUSE Leap 16.0 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-opensuse.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst live.password=install inst.auto=${srvraddr}/conf/agama/autoinst_leap-16.0.json
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set language 
 set ramsdisk 
 set isosfile ${extra_cmdline} ${isoboot} root=live:${srvraddr}/isos/Leap-16.0-offline-installer-x86_64.install.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/opensuse-leap-16.0
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -1616,42 +1584,41 @@ exit
 
 :opensuse-tumbleweed
 echo Loading openSUSE Tumbleweed ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-opensuse.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst autoyast=${srvraddr}/conf/autoyast/autoinst_tumbleweed_web.xml
 set networks hostname=${hostname} ifcfg=${ethrname}=${ipv4addr}/24,${ipv4gway},${ipv4nsvr},workgroup
 set language language=ja_JP
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile install=${srvraddr}/imgs/opensuse-tumbleweed
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/opensuse-tumbleweed
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -1700,42 +1667,41 @@ exit
 
 :debian-live-12-standard
 echo Loading Debian 12 Live standard ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-live-12.12.0-amd64-standard.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-live-12-standard
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -1746,42 +1712,41 @@ exit
 
 :debian-live-13-standard
 echo Loading Debian 13 Live standard ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-live-13.1.0-amd64-standard.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-live-13-standard
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -1792,42 +1757,41 @@ exit
 
 :debian-live-testing-standard
 echo Loading Debian testing Live standard ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-live-testing-amd64-standard.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-live-testing-standard
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -1838,42 +1802,41 @@ exit
 
 :debian-live-12-gnome
 echo Loading Debian 12 Live gnome ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-live-12.12.0-amd64-gnome.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-live-12-gnome
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -1884,42 +1847,41 @@ exit
 
 :debian-live-13-gnome
 echo Loading Debian 13 Live gnome ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-live-13.1.0-amd64-gnome.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-live-13-gnome
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -1930,42 +1892,41 @@ exit
 
 :debian-live-testing-gnome
 echo Loading Debian testing Live gnome ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-live-testing-amd64-gnome.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-live-testing-gnome
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -1976,42 +1937,41 @@ exit
 
 :debian-live-12-lxde
 echo Loading Debian 12 Live lxde ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-live-12.12.0-amd64-lxde.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-live-12-lxde
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -2022,42 +1982,41 @@ exit
 
 :debian-live-13-lxde
 echo Loading Debian 13 Live lxde ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-live-13.1.0-amd64-lxde.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-live-13-lxde
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -2068,42 +2027,41 @@ exit
 
 :debian-live-testing-lxde
 echo Loading Debian testing Live lxde ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-live-testing-amd64-lxde.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-live-testing-lxde
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -2114,42 +2072,41 @@ exit
 
 :ubuntu-desktop-24.04
 echo Loading Ubuntu 24.04 Desktop ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-ubuntu.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=${srvraddr}/conf/nocloud/ubuntu_desktop
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}::${ethrname}:static:${ipv4nsvr} hostname=${hostname}
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile boot=casper iso-url=${srvraddr}/isos/ubuntu-24.04.3-desktop-amd64.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/ubuntu-desktop-24.04
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -2160,42 +2117,41 @@ exit
 
 :ubuntu-desktop-25.04
 echo Loading Ubuntu 25.04 Desktop ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-ubuntu.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=${srvraddr}/conf/nocloud/ubuntu_desktop
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}::${ethrname}:static:${ipv4nsvr} hostname=${hostname}
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile boot=casper iso-url=${srvraddr}/isos/ubuntu-25.04-desktop-amd64.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/ubuntu-desktop-25.04
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -2206,42 +2162,41 @@ exit
 
 :ubuntu-desktop-25.10
 echo Loading Ubuntu 25.10 Desktop ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-ubuntu.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect vga=791
 form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
-present ||
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
+form                                    Configure Network Options
 item ethrname                           Interface
 item ipv4addr                           IPv4 address
 item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
-present ||
+isset ${openmenu} && present ||
 set autoinst automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=${srvraddr}/conf/nocloud/ubuntu_desktop
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}::${ethrname}:static:${ipv4nsvr} hostname=${hostname}
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile boot=casper iso-url=${srvraddr}/isos/ubuntu-25.10-desktop-amd64.iso
-form                                    Configure Boot Options
+form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
 item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
-present ||
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect vga=791
-form                                    Configure Boot Options
-item selinuxs                           SELinux
-item otheropt                           Other options
-present ||
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/ubuntu-desktop-25.10
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -2252,20 +2207,41 @@ exit
 
 :live-debian-live-12-standard
 echo Loading Debian 12 Live standard ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
+form                                    Configure Network Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+isset ${openmenu} && present ||
 set autoinst boot=live
 set networks 
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-live-12.12.0-amd64-standard.iso
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Autoinstall Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-live-12-standard
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -2276,20 +2252,41 @@ exit
 
 :live-debian-live-13-standard
 echo Loading Debian 13 Live standard ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
+form                                    Configure Network Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+isset ${openmenu} && present ||
 set autoinst boot=live
 set networks 
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-live-13.1.0-amd64-standard.iso
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Autoinstall Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-live-13-standard
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -2300,20 +2297,41 @@ exit
 
 :live-debian-live-testing-standard
 echo Loading Debian testing Live standard ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
+form                                    Configure Network Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+isset ${openmenu} && present ||
 set autoinst boot=live
 set networks 
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-live-testing-amd64-standard.iso
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Autoinstall Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-live-testing-standard
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -2324,20 +2342,41 @@ exit
 
 :live-debian-live-12-gnome
 echo Loading Debian 12 Live gnome ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
+form                                    Configure Network Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+isset ${openmenu} && present ||
 set autoinst boot=live
 set networks 
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-live-12.12.0-amd64-gnome.iso
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Autoinstall Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-live-12-gnome
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -2348,20 +2387,41 @@ exit
 
 :live-debian-live-13-gnome
 echo Loading Debian 13 Live gnome ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
+form                                    Configure Network Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+isset ${openmenu} && present ||
 set autoinst boot=live
 set networks 
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-live-13.1.0-amd64-gnome.iso
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Autoinstall Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-live-13-gnome
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -2372,20 +2432,41 @@ exit
 
 :live-debian-live-testing-gnome
 echo Loading Debian testing Live gnome ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
+form                                    Configure Network Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+isset ${openmenu} && present ||
 set autoinst boot=live
 set networks 
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-live-testing-amd64-gnome.iso
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Autoinstall Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-live-testing-gnome
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -2396,20 +2477,41 @@ exit
 
 :live-debian-live-12-lxde
 echo Loading Debian 12 Live lxde ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
+form                                    Configure Network Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+isset ${openmenu} && present ||
 set autoinst boot=live
 set networks 
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-live-12.12.0-amd64-lxde.iso
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Autoinstall Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-live-12-lxde
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -2420,20 +2522,41 @@ exit
 
 :live-debian-live-13-lxde
 echo Loading Debian 13 Live lxde ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
+form                                    Configure Network Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+isset ${openmenu} && present ||
 set autoinst boot=live
 set networks 
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-live-13.1.0-amd64-lxde.iso
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Autoinstall Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-live-13-lxde
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -2444,20 +2567,41 @@ exit
 
 :live-debian-live-testing-lxde
 echo Loading Debian testing Live lxde ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-debian.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
+form                                    Configure Network Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+isset ${openmenu} && present ||
 set autoinst boot=live
 set networks 
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/isos/debian-live-testing-amd64-lxde.iso
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Autoinstall Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/debian-live-testing-lxde
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -2468,20 +2612,41 @@ exit
 
 :live-ubuntu-desktop-24.04
 echo Loading Ubuntu 24.04 Desktop ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-ubuntu.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
+form                                    Configure Network Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+isset ${openmenu} && present ||
 set autoinst boot=live
 set networks 
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile boot=casper iso-url=${srvraddr}/isos/ubuntu-24.04.3-desktop-amd64.iso
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Autoinstall Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/ubuntu-desktop-24.04
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -2492,20 +2657,41 @@ exit
 
 :live-ubuntu-desktop-25.04
 echo Loading Ubuntu 25.04 Desktop ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-ubuntu.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
+form                                    Configure Network Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+isset ${openmenu} && present ||
 set autoinst boot=live
 set networks 
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile boot=casper iso-url=${srvraddr}/isos/ubuntu-25.04-desktop-amd64.iso
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Autoinstall Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/ubuntu-desktop-25.04
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -2516,25 +2702,91 @@ exit
 
 :live-ubuntu-desktop-25.10
 echo Loading Ubuntu 25.10 Desktop ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-ubuntu.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
+form                                    Configure Network Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+isset ${openmenu} && present ||
 set autoinst boot=live
 set networks 
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile boot=casper iso-url=${srvraddr}/isos/ubuntu-25.10-desktop-amd64.iso
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Autoinstall Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/ubuntu-desktop-25.10
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
 kernel ${knladdr}/casper/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/casper/initrd || goto error
+boot || goto error
+exit
+
+:live-almalinux-live-10
+echo Loading Alma Linux 10 Live ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
+set hostname sv-almalinux.workgroup
+set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
+set ethrname ens160
+set ipv4addr 192.168.1.1
+set ipv4mask 255.255.255.0
+set ipv4gway 192.168.1.254
+set ipv4nsvr 192.168.1.254
+form                                    Configure Network Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+isset ${openmenu} && present ||
+set autoinst 
+set networks 
+set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
+set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
+set isosfile root=live:${srvraddr}/isos/AlmaLinux-10-latest-x86_64-Live-GNOME.iso
+form                                    Configure Autoinstall Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+isset ${openmenu} && present ||
+set knladdr ${srvraddr}/imgs/almalinux-live-10
+set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
+echo Loading kernel and initrd ...
+kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- quiet || goto error
+initrd ${knladdr}/images/pxeboot/initrd.img || goto error
 boot || goto error
 exit
 
@@ -2606,20 +2858,41 @@ exit
 
 :live-debian-13-trixie
 echo Loading Live Debian 13 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-live.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
+form                                    Configure Network Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+isset ${openmenu} && present ||
 set autoinst boot=live
 set networks 
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp,us keyboard-model=pc105 keyboard-variants=,
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile fetch=${srvraddr}/rmak/live-debian-13-trixie-amd64.iso
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Autoinstall Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/live-debian-13-trixie
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
@@ -2630,20 +2903,41 @@ exit
 
 :live-almalinux-10
 echo Loading Live Alma Linux 10 ...
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-live.workgroup
 set srvraddr http://192.168.1.12
+set selinuxs 
+set otheropt fsck.mode=skip raid=noautodetect noeject
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+item selinuxs                           SELinux
+item otheropt                           Other options
+isset ${openmenu} && present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-set autoinst boot=live
+form                                    Configure Network Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+isset ${openmenu} && present ||
+set autoinst 
 set networks 
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
-set isosfile inst.repo=${srvraddr}/imgs/live-almalinux-10
-set selinuxs 
-set otheropt fsck.mode=skip raid=noautodetect noeject
+set isosfile root=live:${srvraddr}/isos/live-almalinux-10-amd64.iso
+form                                    Configure Autoinstall Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+isset ${openmenu} && present ||
 set knladdr ${srvraddr}/imgs/live-almalinux-10
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} ${selinuxs} ${otheropt}
 echo Loading kernel and initrd ...
