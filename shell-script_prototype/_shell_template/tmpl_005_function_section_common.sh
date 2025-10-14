@@ -1703,7 +1703,7 @@ function fnPxeboot_ipxe() {
 
 			dhcp
 
-			set optn-timeout 3000
+			set optn-timeout 1000
 			set menu-timeout 0
 			isset \${menu-default} || set menu-default exit
 
@@ -1859,73 +1859,72 @@ _EOT_
 #					__WORK="$(set -e; fnBoot_options "${_TYPE_PXEB}" "${__TGET_LIST[@]}")"
 					fnBoot_options "__WORK" "${_TYPE_PXEB}" "${__TGET_LIST[@]}"
 					IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
-					if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+#					if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+#						__WORK="$(
+#							cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+#								:${__ENTR}
+#								echo Loading ${__TGET_LIST[3]//%20/ } ...
+#								set hostname ${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
+#								set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
+#								set ethrname ${_NICS_NAME:-ens160}
+#								set ipv4addr ${_IPV4_ADDR:-}
+#								set ipv4mask ${_IPV4_MASK:-}
+#								set ipv4gway ${_IPV4_GWAY:-}
+#								set ipv4nsvr ${_IPV4_NSVR:-}
+#								set autoinst ${__BOPT[1]:-}
+#								set networks ${__BOPT[2]:-}
+#								set language ${__BOPT[3]:-}
+#								set ramsdisk ${__BOPT[4]:-}
+#								set isosfile ${__BOPT[5]:-}
+#								set selinuxs ${__BOPT[6]:-}
+#								set otheropt ${__BOPT[7]:-}
+#
+#_EOT_
+#						)"
+#					else
 						__WORK="$(
 							cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
 								:${__ENTR}
 								echo Loading ${__TGET_LIST[3]//%20/ } ...
+								prompt --key e --timeout \${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 								set hostname ${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
 								set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
-								set ethrname ${_NICS_NAME:-ens160}
-								set ipv4addr ${_IPV4_ADDR:-}
-								set ipv4mask ${_IPV4_MASK:-}
-								set ipv4gway ${_IPV4_GWAY:-}
-								set ipv4nsvr ${_IPV4_NSVR:-}
-								set autoinst ${__BOPT[1]:-}
-								set networks ${__BOPT[2]:-}
-								set language ${__BOPT[3]:-}
-								set ramsdisk ${__BOPT[4]:-}
-								set isosfile ${__BOPT[5]:-}
 								set selinuxs ${__BOPT[6]:-}
 								set otheropt ${__BOPT[7]:-}
-
-_EOT_
-						)"
-					else
-						__WORK="$(
-							cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
-								:${__ENTR}
-								echo Loading ${__TGET_LIST[3]//%20/ } ...
-								set hostname ${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
-								set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
 								form                                    Configure Boot Options
 								item hostname                           Hostname
 								item srvraddr                           Server ip address
-								present ||
+								item selinuxs                           SELinux
+								item otheropt                           Other options
+								isset \${openmenu} && present ||
 								set ethrname ${_NICS_NAME:-ens160}
 								set ipv4addr ${_IPV4_ADDR:-}
 								set ipv4mask ${_IPV4_MASK:-}
 								set ipv4gway ${_IPV4_GWAY:-}
 								set ipv4nsvr ${_IPV4_NSVR:-}
-								form                                    Configure Boot Options
+								form                                    Configure Network Options
 								item ethrname                           Interface
 								item ipv4addr                           IPv4 address
 								item ipv4mask                           IPv4 netmask
 								item ipv4gway                           IPv4 gateway
 								item ipv4nsvr                           IPv4 nameservers
-								present ||
+								isset \${openmenu} && present ||
 								set autoinst ${__BOPT[1]:-}
 								set networks ${__BOPT[2]:-}
 								set language ${__BOPT[3]:-}
 								set ramsdisk ${__BOPT[4]:-}
 								set isosfile ${__BOPT[5]:-}
-								form                                    Configure Boot Options
+								form                                    Configure Autoinstall Options
 								item autoinst                           Auto install
 								item networks                           Network
 								item language                           Language
 								item ramsdisk                           RAM disk
 								item isosfile                           ISO file
-								present ||
-								set selinuxs ${__BOPT[6]:-}
-								set otheropt ${__BOPT[7]:-}
-								form                                    Configure Boot Options
-								item selinuxs                           SELinux
-								item otheropt                           Other options
-								present ||
+								isset \${openmenu} && present ||
 
 _EOT_
 						)"
-					fi
+#					fi
 					__WORK+="$(
 						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
 							set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}
