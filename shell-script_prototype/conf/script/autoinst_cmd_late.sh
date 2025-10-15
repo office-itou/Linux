@@ -1056,12 +1056,105 @@ funcSepolicy_accountsd() {
 	    -e "/type[ \t]\+${_TGET_TYPE};/ {"                                      \
 	    -e 'a \  type systemd_unit_t;'                                          \
 	    -e 'a \  type user_home_dir_t;'                                         \
+	    -e 'a \  type shell_exec_t;'                                            \
+	    -e 'a \  type urandom_device_t;'                                        \
+	    -e 'a \  type usr_t;'                                                   \
+	    -e 'a \  type xdg_cache_t;'                                             \
+	    -e 'a \  type xdm_t;'                                                   \
 	    -e 'a \  class lnk_file read;'                                          \
-	    -e 'a \  class dir { add_name write };'                                 \
+	    -e 'a \  class dir { add_name read search write };'                     \
+	    -e 'a \  class file { execute execute_no_trans map open read };'        \
+	    -e 'a \  class chr_file { open read };'                                 \
+	    -e 'a \  class unix_stream_socket connectto;'                           \
 	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
 	    -e '}'                                                                  \
 	    -e '$a allow accountsd_t systemd_unit_t:lnk_file read;'                 \
-	    -e '$a allow accountsd_t user_home_dir_t:dir { add_name write };'
+	    -e '$a allow accountsd_t user_home_dir_t:dir { add_name read write };'  \
+	    -e '$a allow accountsd_t shell_exec_t:file { execute execute_no_trans map open read };' \
+	    -e '$a allow accountsd_t urandom_device_t:chr_file { open read };'      \
+	    -e '$a allow accountsd_t usr_t:file { execute execute_no_trans map };'  \
+	    -e '$a allow accountsd_t xdg_cache_t:dir search;'                       \
+	    -e '$a allow accountsd_t xdm_t:unix_stream_socket connectto;'
+	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
+	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
+}
+
+# --- selinux settings: alsa_t ------------------------------------------------
+funcSepolicy_alsa() {
+	_TGET_TYPE="alsa_t"
+	if ! seinfo -t | grep -q "${_TGET_TYPE}"; then
+		return
+	fi
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    start   : ${_TGET_TYPE}"
+	sepolicy generate --customize -d "${_TGET_TYPE}" -n "custom_${_TGET_TYPE%_t}" --path "${1:?}" > /dev/null
+	sed -i "${1:?}/custom_${_TGET_TYPE%_t}.te"                                  \
+	    -e "/type[ \t]\+${_TGET_TYPE};/ {"                                      \
+	    -e 'a \  type initrc_runtime_t;'                                        \
+	    -e 'a \  class dir search;'                                             \
+	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+	    -e '}'                                                                  \
+	    -e '$a allow alsa_t initrc_runtime_t:dir search;'
+	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
+	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
+}
+
+# --- selinux settings: auditd_t ----------------------------------------------
+funcSepolicy_auditd() {
+	_TGET_TYPE="auditd_t"
+	if ! seinfo -t | grep -q "${_TGET_TYPE}"; then
+		return
+	fi
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    start   : ${_TGET_TYPE}"
+	sepolicy generate --customize -d "${_TGET_TYPE}" -n "custom_${_TGET_TYPE%_t}" --path "${1:?}" > /dev/null
+	sed -i "${1:?}/custom_${_TGET_TYPE%_t}.te"                                  \
+	    -e "/type[ \t]\+${_TGET_TYPE};/ {"                                      \
+	    -e 'a \  type xdm_t;'                                                   \
+	    -e 'a \  class unix_stream_socket connectto;'                           \
+	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+	    -e '}'                                                                  \
+	    -e '$a allow auditd_t xdm_t:unix_stream_socket connectto;'
+	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
+	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
+}
+
+# --- selinux settings: chkpwd_t ----------------------------------------------
+funcSepolicy_chkpwd() {
+	_TGET_TYPE="chkpwd_t"
+	if ! seinfo -t | grep -q "${_TGET_TYPE}"; then
+		return
+	fi
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    start   : ${_TGET_TYPE}"
+	sepolicy generate --customize -d "${_TGET_TYPE}" -n "custom_${_TGET_TYPE%_t}" --path "${1:?}" > /dev/null
+	sed -i "${1:?}/custom_${_TGET_TYPE%_t}.te"                                  \
+	    -e "/type[ \t]\+${_TGET_TYPE};/ {"                                      \
+	    -e 'a \  type xdm_t;'                                                   \
+	    -e 'a \  class unix_stream_socket connectto;'                           \
+	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+	    -e '}'                                                                  \
+	    -e '$a allow chkpwd_t xdm_t:unix_stream_socket connectto;'
+	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
+	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
+}
+
+# --- selinux settings: chronyd_t ---------------------------------------------
+funcSepolicy_chronyd() {
+	_TGET_TYPE="chronyd_t"
+	if ! seinfo -t | grep -q "${_TGET_TYPE}"; then
+		return
+	fi
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    start   : ${_TGET_TYPE}"
+	sepolicy generate --customize -d "${_TGET_TYPE}" -n "custom_${_TGET_TYPE%_t}" --path "${1:?}" > /dev/null
+	sed -i "${1:?}/custom_${_TGET_TYPE%_t}.te"                                  \
+	    -e "/type[ \t]\+${_TGET_TYPE};/ {"                                      \
+	    -e 'a \  type NetworkManager_runtime_t;'                                \
+	    -e 'a \  class dir read;'                                               \
+	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+	    -e '}'                                                                  \
+	    -e '$a allow chronyd_t NetworkManager_runtime_t:dir read;'
 	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
 	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
@@ -1078,10 +1171,39 @@ funcSepolicy_colord() {
 	sed -i "${1:?}/custom_${_TGET_TYPE%_t}.te"                                  \
 	    -e "/type[ \t]\+${_TGET_TYPE};/ {"                                      \
 	    -e 'a \  type unreserved_port_t;'                                       \
+	    -e 'a \  type default_t;'                                               \
+	    -e 'a \  type etc_runtime_t;'                                           \
+	    -e 'a \  type xdm_t;'                                                   \
 	    -e 'a \  class udp_socket name_bind;'                                   \
+	    -e 'a \  class dir search;'                                             \
+	    -e 'a \  class file { open read };'                                     \
+	    -e 'a \  class unix_stream_socket connectto;'                           \
 	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
 	    -e '}'                                                                  \
-	    -e '$a allow colord_t unreserved_port_t:udp_socket name_bind;'
+	    -e '$a allow colord_t unreserved_port_t:udp_socket name_bind;'          \
+	    -e '$a allow colord_t default_t:dir search;'                            \
+	    -e '$a allow colord_t etc_runtime_t:file { open read };'                \
+	    -e '$a allow colord_t xdm_t:unix_stream_socket connectto;'
+	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
+	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
+}
+
+# --- selinux settings: cupsd_t -----------------------------------------------
+funcSepolicy_cupsd() {
+	_TGET_TYPE="cupsd_t"
+	if ! seinfo -t | grep -q "${_TGET_TYPE}"; then
+		return
+	fi
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    start   : ${_TGET_TYPE}"
+	sepolicy generate --customize -d "${_TGET_TYPE}" -n "custom_${_TGET_TYPE%_t}" --path "${1:?}" > /dev/null
+	sed -i "${1:?}/custom_${_TGET_TYPE%_t}.te"                                  \
+	    -e "/type[ \t]\+${_TGET_TYPE};/ {"                                      \
+	    -e 'a \  type xdm_t;'                                                   \
+	    -e 'a \  class unix_stream_socket connectto;'                           \
+	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+	    -e '}'                                                                  \
+	    -e '$a allow cupsd_t xdm_t:unix_stream_socket connectto;'
 	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
 	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
@@ -1102,6 +1224,26 @@ funcSepolicy_devicekit_disk() {
 	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
 	    -e '}'                                                                  \
 	    -e '$a allow devicekit_disk_t user_home_dir_t:dir { add_name write };'
+	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
+	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
+}
+
+# --- selinux settings: devicekit_power_t -------------------------------------
+funcSepolicy_devicekit_power() {
+	_TGET_TYPE="devicekit_power_t"
+	if ! seinfo -t | grep -q "${_TGET_TYPE}"; then
+		return
+	fi
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    start   : ${_TGET_TYPE}"
+	sepolicy generate --customize -d "${_TGET_TYPE}" -n "custom_${_TGET_TYPE%_t}" --path "${1:?}" > /dev/null
+	sed -i "${1:?}/custom_${_TGET_TYPE%_t}.te"                                  \
+	    -e "/type[ \t]\+${_TGET_TYPE};/ {"                                      \
+	    -e 'a \  type usr_t;'                                                   \
+	    -e 'a \  class file map;'                                               \
+	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+	    -e '}'                                                                  \
+	    -e '$a allow devicekit_power_t usr_t:file map;'
 	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
 	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
@@ -1147,10 +1289,11 @@ funcSepolicy_firewalld() {
 	    -e 'a \  type sysctl_vm_overcommit_t;'                                  \
 	    -e 'a \  type unconfined_t;'                                            \
 	    -e 'a \  type user_home_dir_t;'                                         \
+	    -e 'a \  type usr_t;'                                                   \
 	    -e 'a \  class capability { dac_read_search setpcap };'                 \
 	    -e 'a \  class dbus send_msg;'                                          \
 	    -e 'a \  class dir search;'                                             \
-	    -e 'a \  class file { execute open read };'                             \
+	    -e 'a \  class file { execute map open read };'                         \
 	    -e 'a \  class filesystem getattr;'                                     \
 	    -e 'a \  class process { getcap setcap };'                              \
 	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
@@ -1161,11 +1304,33 @@ funcSepolicy_firewalld() {
 	    -e '$a allow firewalld_t sysctl_kernel_t:dir search;'                   \
 	    -e '$a allow firewalld_t sysctl_kernel_t:file { open read };'           \
 	    -e '$a allow firewalld_t sysctl_vm_t:dir search;'                       \
-	    -e '$a allow firewalld_t sysctl_vm_overcommit_t:file read;'             \
+	    -e '$a allow firewalld_t sysctl_vm_overcommit_t:file { read open };'    \
 	    -e '$a allow firewalld_t user_home_dir_t:dir search;'                   \
 	    -e '$a allow firewalld_t unconfined_t:dbus send_msg;'                   \
 	    -e '$a allow firewalld_t self:capability { dac_read_search setpcap };'  \
-	    -e '$a allow firewalld_t self:process { getcap setcap };'
+	    -e '$a allow firewalld_t self:process { getcap setcap };'               \
+	    -e '$a allow firewalld_t sysctl_vm_overcommit_t:file open;'             \
+	    -e '$a allow firewalld_t usr_t:file map;'
+	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
+	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
+}
+
+# --- selinux settings: fprintd_t ---------------------------------------------
+funcSepolicy_fprintd() {
+	_TGET_TYPE="fprintd_t"
+	if ! seinfo -t | grep -q "${_TGET_TYPE}"; then
+		return
+	fi
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    start   : ${_TGET_TYPE}"
+	sepolicy generate --customize -d "${_TGET_TYPE}" -n "custom_${_TGET_TYPE%_t}" --path "${1:?}" > /dev/null
+	sed -i "${1:?}/custom_${_TGET_TYPE%_t}.te"                                  \
+	    -e "/type[ \t]\+${_TGET_TYPE};/ {"                                      \
+	    -e 'a \  type usr_t;'                                                   \
+	    -e 'a \  class file map;'                                               \
+	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+	    -e '}'                                                                  \
+	    -e '$a allow fprintd_t usr_t:file map;'
 	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
 	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
@@ -1249,6 +1414,14 @@ funcSepolicy_httpd() {
 	    -e 'a \  type public_content_t;'                                        \
 	    -e 'a \  type tftpdir_t;'                                               \
 	    -e 'a \  type sshd_runtime_t;'                                          \
+	    -e 'a \  type boot_t;'                                                  \
+	    -e 'a \  type binfmt_misc_fs_t;'                                        \
+	    -e 'a \  type bpf_t;'                                                   \
+	    -e 'a \  type configfs_t;'                                              \
+	    -e 'a \  type debugfs_t;'                                               \
+	    -e 'a \  type pstore_t;'                                                \
+	    -e 'a \  type sysctl_fs_t;'                                             \
+	    -e 'a \  type tracefs_t;'                                               \
 	    -e 'a \  class dir { getattr open read search };'                       \
 	    -e 'a \  class file { getattr open read map };'                         \
 	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
@@ -1258,7 +1431,15 @@ funcSepolicy_httpd() {
 	    -e '$a allow httpd_t public_content_t:file map;'                        \
 	    -e '$a allow httpd_t tftpdir_t:dir { getattr open read search };'       \
 	    -e '$a allow httpd_t tftpdir_t:file { getattr open read };'             \
-	    -e '$a allow httpd_t sshd_runtime_t:dir search;'
+	    -e '$a allow httpd_t sshd_runtime_t:dir search;'                        \
+	    -e '$a allow httpd_t binfmt_misc_fs_t:dir getattr;'                     \
+	    -e '$a allow httpd_t boot_t:dir getattr;'                               \
+	    -e '$a allow httpd_t bpf_t:dir getattr;'                                \
+	    -e '$a allow httpd_t configfs_t:dir getattr;'                           \
+	    -e '$a allow httpd_t debugfs_t:dir getattr;'                            \
+	    -e '$a allow httpd_t pstore_t:dir getattr;'                             \
+	    -e '$a allow httpd_t sysctl_fs_t:dir search;'                           \
+	    -e '$a allow httpd_t tracefs_t:dir getattr;'
 	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
 	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
@@ -1274,10 +1455,13 @@ funcSepolicy_initrc() {
 	sepolicy generate --customize -d "${_TGET_TYPE}" -n "custom_${_TGET_TYPE%_t}" --path "${1:?}" > /dev/null
 	sed -i "${1:?}/custom_${_TGET_TYPE%_t}.te"                                  \
 	    -e "/type[ \t]\+${_TGET_TYPE};/ {"                                      \
+	    -e 'a \  type unconfined_t;'                                            \
 	    -e 'a \  class process execmem;'                                        \
+	    -e 'a \  class dbus send_msg;'                                          \
 	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
 	    -e '}'                                                                  \
-	    -e '$a allow initrc_t self:process execmem;'
+	    -e '$a allow initrc_t self:process execmem;'                            \
+	    -e '$a allow initrc_t unconfined_t:dbus send_msg;'
 	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
 	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
@@ -1322,6 +1506,26 @@ funcSepolicy_low_mem_mon() {
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
 }
 
+# --- selinux settings: modemmanager_t ----------------------------------------
+funcSepolicy_modemmanager() {
+	_TGET_TYPE="modemmanager_t"
+	if ! seinfo -t | grep -q "${_TGET_TYPE}"; then
+		return
+	fi
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    start   : ${_TGET_TYPE}"
+	sepolicy generate --customize -d "${_TGET_TYPE}" -n "custom_${_TGET_TYPE%_t}" --path "${1:?}" > /dev/null
+	sed -i "${1:?}/custom_${_TGET_TYPE%_t}.te"                                  \
+	    -e "/type[ \t]\+${_TGET_TYPE};/ {"                                      \
+	    -e 'a \  type initrc_t;'                                                \
+	    -e 'a \  class dbus send_msg;'                                          \
+	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+	    -e '}'                                                                  \
+	    -e '$a allow modemmanager_t initrc_t:dbus send_msg;'
+	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
+	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
+}
+
 # --- selinux settings: mount_t -----------------------------------------------
 funcSepolicy_mount() {
 	_TGET_TYPE="mount_t"
@@ -1335,15 +1539,80 @@ funcSepolicy_mount() {
 	    -e 'a \  type sysctl_vm_overcommit_t;'                                  \
 	    -e 'a \  type sysctl_vm_t;'                                             \
 	    -e 'a \  type tmp_t;'                                                   \
+	    -e 'a \  type usr_t;'                                                   \
+	    -e 'a \  type var_lib_t;'                                               \
 	    -e 'a \  class process signal;'                                         \
 	    -e 'a \  class dir { search };'                                         \
-	    -e 'a \  class file { open read write };'                               \
+	    -e 'a \  class file { map open read write };'                           \
 	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
 	    -e '}'                                                                  \
 	    -e '$a allow mount_t tmp_t:file { open read write };'                   \
 	    -e '$a allow mount_t self:process signal;'                              \
 	    -e '$a allow mount_t sysctl_vm_overcommit_t:file { open read };'        \
-	    -e '$a allow mount_t sysctl_vm_t:dir search;'
+	    -e '$a allow mount_t sysctl_vm_t:dir search;'                           \
+	    -e '$a allow mount_t usr_t:file map;'                                   \
+	    -e '$a allow mount_t var_lib_t:file { open read };'
+	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
+	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
+}
+# --- selinux settings: policykit_t -------------------------------------------
+funcSepolicy_policykit() {
+	_TGET_TYPE="policykit_t"
+	if ! seinfo -t | grep -q "${_TGET_TYPE}"; then
+		return
+	fi
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    start   : ${_TGET_TYPE}"
+	sepolicy generate --customize -d "${_TGET_TYPE}" -n "custom_${_TGET_TYPE%_t}" --path "${1:?}" > /dev/null
+	sed -i "${1:?}/custom_${_TGET_TYPE%_t}.te"                                  \
+	    -e "/type[ \t]\+${_TGET_TYPE};/ {"                                      \
+	    -e 'a \  type xdm_t;'                                                   \
+	    -e 'a \  class unix_stream_socket connectto;'                           \
+	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+	    -e '}'                                                                  \
+	    -e '$a allow policykit_t xdm_t:unix_stream_socket connectto;'
+	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
+	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
+}
+
+# --- selinux settings: power_profilesd_t -------------------------------------
+funcSepolicy_power_profilesd() {
+	_TGET_TYPE="power_profilesd_t"
+	if ! seinfo -t | grep -q "${_TGET_TYPE}"; then
+		return
+	fi
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    start   : ${_TGET_TYPE}"
+	sepolicy generate --customize -d "${_TGET_TYPE}" -n "custom_${_TGET_TYPE%_t}" --path "${1:?}" > /dev/null
+	sed -i "${1:?}/custom_${_TGET_TYPE%_t}.te"                                  \
+	    -e "/type[ \t]\+${_TGET_TYPE};/ {"                                      \
+	    -e 'a \  type usr_t;'                                                   \
+	    -e 'a \  class file { getattr map open read };'                         \
+	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+	    -e '}'                                                                  \
+	    -e '$a allow power_profilesd_t usr_t:file { getattr map open read };'
+	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
+	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
+}
+
+# --- selinux settings: ssh_keygen_t ------------------------------------------
+funcSepolicy_power_ssh_keygen() {
+	_TGET_TYPE="ssh_keygen_t"
+	if ! seinfo -t | grep -q "${_TGET_TYPE}"; then
+		return
+	fi
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    start   : ${_TGET_TYPE}"
+	sepolicy generate --customize -d "${_TGET_TYPE}" -n "custom_${_TGET_TYPE%_t}" --path "${1:?}" > /dev/null
+	sed -i "${1:?}/custom_${_TGET_TYPE%_t}.te"                                  \
+	    -e "/type[ \t]\+${_TGET_TYPE};/ {"                                      \
+	    -e 'a \  type tmp_t;'                                                   \
+	    -e 'a \  class dir { add_name search };'                                \
+	    -e 'a \  class file { create getattr open write };'                     \
+	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+	    -e '}'                                                                  \
+	    -e '$a allow ssh_keygen_t tmp_t:dir { add_name search };'               \
+	    -e '$a allow ssh_keygen_t tmp_t:file { create getattr open write };'
 	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
 	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
@@ -1372,28 +1641,39 @@ funcSepolicy_semanage() {
 	    -e 'a \  type semanage_store_t;'                                        \
 	    -e 'a \  type tmpfs_t;'                                                 \
 	    -e 'a \  type tracefs_t;'                                               \
+	    -e 'a \  type xdm_t;'                                                   \
+	    -e 'a \  class dir search;'                                             \
+	    -e 'a \  class file { relabelfrom };'                                   \
 	    -e 'a \  class filesystem getattr;'                                     \
-	    -e 'a \  class file relabelfrom;'                                       \
+	    -e 'a \  class unix_stream_socket connectto;'                           \
 	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
 	    -e '}'                                                                  \
 	    -e '$a allow semanage_t cgroup_t:filesystem getattr;'                   \
 	    -e '$a allow semanage_t debugfs_t:filesystem getattr;'                  \
 	    -e '$a allow semanage_t device_t:filesystem getattr;'                   \
 	    -e '$a allow semanage_t devpts_t:filesystem getattr;'                   \
-	    -e '$a allow semanage_t file_context_t:file relabelfrom;'               \
+	    -e '$a allow semanage_t file_context_t:file { relabelfrom };'           \
 	    -e '$a allow semanage_t fs_t:filesystem getattr;'                       \
 	    -e '$a allow semanage_t hugetlbfs_t:filesystem getattr;'                \
-	    -e '$a allow semanage_t policy_config_t:file relabelfrom;'              \
+	    -e '$a allow semanage_t policy_config_t:file { relabelfrom  };'         \
 	    -e '$a allow semanage_t pstore_t:filesystem getattr;'                   \
-	    -e '$a allow semanage_t selinux_config_t:file relabelfrom;'             \
-	    -e '$a allow semanage_t semanage_store_t:dir relabelfrom;'              \
-	    -e '$a allow semanage_t semanage_store_t:file relabelfrom;'             \
+	    -e '$a allow semanage_t selinux_config_t:file { relabelfrom  };'        \
+	    -e '$a allow semanage_t semanage_store_t:dir { relabelfrom  };'         \
+	    -e '$a allow semanage_t semanage_store_t:file { relabelfrom  };'        \
+	    -e '$a allow semanage_t tmpfs_t:dir search;'                            \
 	    -e '$a allow semanage_t tmpfs_t:filesystem getattr;'                    \
-	    -e '$a allow semanage_t tracefs_t:filesystem getattr;'
+	    -e '$a allow semanage_t tracefs_t:filesystem getattr;'                  \
+	    -e '$a allow semanage_t xdm_t:unix_stream_socket connectto;'
 	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
 	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
 }
+
+#allow semanage_t file_context_t:file relabelto;
+#allow semanage_t policy_config_t:file relabelto;
+#allow semanage_t selinux_config_t:file relabelto;
+#allow semanage_t semanage_store_t:dir relabelto;
+#allow semanage_t semanage_store_t:file relabelto;
 
 # --- selinux settings: smbd_t ------------------------------------------------
 funcSepolicy_smbd() {
@@ -1438,12 +1718,26 @@ funcSepolicy_sshd() {
 	    -e 'a \  type mount_runtime_t;'                                         \
 	    -e 'a \  type var_log_t;'                                               \
 	    -e 'a \  type xdg_cache_t;'                                             \
+	    -e 'a \  type binfmt_misc_fs_t;'                                        \
+	    -e 'a \  type boot_t;'                                                  \
+	    -e 'a \  type bpf_t;'                                                   \
+	    -e 'a \  type configfs_t;'                                              \
+	    -e 'a \  type debugfs_t;'                                               \
+	    -e 'a \  type fusefs_t;'                                                \
+	    -e 'a \  type hugetlbfs_t;'                                             \
+	    -e 'a \  type pstore_t;'                                                \
+	    -e 'a \  type sysctl_fs_t;'                                             \
+	    -e 'a \  type tracefs_t;'                                               \
+	    -e 'a \  type var_lock_t;'                                              \
+	    -e 'a \  type xdg_cache_t;'                                             \
+	    -e 'a \  type xdm_t;'                                                   \
 	    -e 'a \  class dir { add_name create getattr search write };'           \
 	    -e 'a \  class file { append create execute execute_no_trans getattr ioctl map open read };' \
 	    -e 'a \  class capability dac_override;'                                \
 	    -e 'a \  class cap_userns sys_ptrace;'                                  \
 	    -e 'a \  class sock_file getattr;'                                      \
 	    -e 'a \  class key { link search };'                                    \
+	    -e 'a \  class unix_stream_socket connectto;'                           \
 	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
 	    -e '}'                                                                  \
 	    -e '$a allow sshd_t lib_t:dir write;'                                   \
@@ -1464,7 +1758,20 @@ funcSepolicy_sshd() {
 	    -e '$a allow sshd_t var_log_t:file { append create getattr ioctl open };' \
 	    -e '$a allow sshd_t xdg_cache_t:dir search;'                            \
 	    -e '$a allow sshd_t self:capability dac_override;'                      \
-	    -e '$a allow sshd_t self:cap_userns sys_ptrace;'
+	    -e '$a allow sshd_t self:cap_userns sys_ptrace;'                        \
+	    -e '$a allow sshd_t binfmt_misc_fs_t:dir getattr;'                      \
+	    -e '$a allow sshd_t boot_t:dir getattr;'                                \
+	    -e '$a allow sshd_t bpf_t:dir getattr;'                                 \
+	    -e '$a allow sshd_t configfs_t:dir getattr;'                            \
+	    -e '$a allow sshd_t debugfs_t:dir getattr;'                             \
+	    -e '$a allow sshd_t fusefs_t:dir getattr;'                              \
+	    -e '$a allow sshd_t hugetlbfs_t:dir getattr;'                           \
+	    -e '$a allow sshd_t pstore_t:dir getattr;'                              \
+	    -e '$a allow sshd_t sysctl_fs_t:dir search;'                            \
+	    -e '$a allow sshd_t tracefs_t:dir getattr;'                             \
+	    -e '$a allow sshd_t var_lock_t:dir getattr;'                            \
+	    -e '$a allow sshd_t xdg_cache_t:file getattr;'                          \
+	    -e '$a allow sshd_t xdm_t:unix_stream_socket connectto;'
 	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
 	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
@@ -1480,10 +1787,15 @@ funcSepolicy_switcheroo() {
 	sepolicy generate --customize -d "${_TGET_TYPE}" -n "custom_${_TGET_TYPE%_t}" --path "${1:?}" > /dev/null
 	sed -i "${1:?}/custom_${_TGET_TYPE%_t}.te"                                  \
 	    -e "/type[ \t]\+${_TGET_TYPE};/ {"                                      \
+	    -e 'a \  type udev_runtime_t;'                                          \
+	    -e 'a \  type usr_t;'                                                   \
 	    -e 'a \  class capability sys_admin;'                                   \
+	    -e 'a \  class file { getattr map open read };'                         \
 	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
 	    -e '}'                                                                  \
-	    -e '$a allow switcheroo_t self:capability sys_admin;'
+	    -e '$a allow switcheroo_t self:capability sys_admin;'                   \
+	    -e '$a allow switcheroo_t udev_runtime_t:file { getattr open read };'   \
+	    -e '$a allow switcheroo_t usr_t:file { getattr map open read };'
 	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
 	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
@@ -1500,10 +1812,27 @@ funcSepolicy_system_dbusd() {
 	sed -i "${1:?}/custom_${_TGET_TYPE%_t}.te"                                  \
 	    -e "/type[ \t]\+${_TGET_TYPE};/ {"                                      \
 	    -e 'a \  type var_lib_t;'                                               \
-	    -e 'a \  class dir watch;'                                              \
+	    -e 'a \  type bin_t;'                                                   \
+	    -e 'a \  type dpkg_exec_t;'                                             \
+	    -e 'a \  type dpkg_var_lib_t;'                                          \
+	    -e 'a \  type sysctl_vm_overcommit_t;'                                  \
+	    -e 'a \  type sysctl_vm_t;'                                             \
+	    -e 'a \  type system_dbusd_tmpfs_t;'                                    \
+	    -e 'a \  type xdm_t;'                                                   \
+	    -e 'a \  class dir { search watch };'                                   \
+	    -e 'a \  class file { execute execute_no_trans getattr map open read };' \
+	    -e 'a \  class unix_stream_socket connectto;'                           \
 	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
 	    -e '}'                                                                  \
-	    -e '$a allow system_dbusd_t var_lib_t:dir watch;'
+	    -e '$a allow system_dbusd_t var_lib_t:dir watch;'                       \
+	    -e '$a allow system_dbusd_t bin_t:file { execute execute_no_trans getattr map open read };' \
+	    -e '$a allow system_dbusd_t dpkg_exec_t:file getattr;'                  \
+	    -e '$a allow system_dbusd_t dpkg_var_lib_t:dir search;'                 \
+	    -e '$a allow system_dbusd_t dpkg_var_lib_t:file getattr;'               \
+	    -e '$a allow system_dbusd_t sysctl_vm_overcommit_t:file { open read };' \
+	    -e '$a allow system_dbusd_t sysctl_vm_t:dir search;'                    \
+	    -e '$a allow system_dbusd_t system_dbusd_tmpfs_t:file execute;'         \
+	    -e '$a allow system_dbusd_t xdm_t:unix_stream_socket connectto;'
 	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
 	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
@@ -1578,12 +1907,18 @@ funcSepolicy_systemd_logind() {
 	    -e "/type[ \t]\+${_TGET_TYPE};/ {"                                      \
 	    -e 'a \  type unconfined_t;'                                            \
 	    -e 'a \  type fixed_disk_device_t;'                                     \
+	    -e 'a \  type cgroup_t;'                                                \
+	    -e 'a \  type xdm_t;'                                                   \
 	    -e 'a \  class fd use;'                                                 \
 	    -e 'a \  class blk_file read;'                                          \
+	    -e 'a \  class file write;'                                             \
+	    -e 'a \  class unix_stream_socket connectto;'                           \
 	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
 	    -e '}'                                                                  \
 	    -e '$a allow systemd_logind_t unconfined_t:fd use;'                     \
-	    -e '$a allow systemd_logind_t fixed_disk_device_t:blk_file read;'
+	    -e '$a allow systemd_logind_t fixed_disk_device_t:blk_file read;'       \
+	    -e '$a allow systemd_logind_t cgroup_t:file write;'                     \
+	    -e '$a allow systemd_logind_t xdm_t:unix_stream_socket connectto;'
 	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
 	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
@@ -1630,6 +1965,7 @@ funcSepolicy_systemd_tmpfiles() {
 	    -e 'a \  type tmpfs_t;'                                                 \
 	    -e 'a \  type locale_t;'                                                \
 	    -e 'a \  type user_runtime_t;'                                          \
+	    -e 'a \  type cron_spool_t;'                                            \
 	    -e 'a \  class dir { search write };'                                   \
 	    -e 'a \  class file { add_name create getattr ioctl open read setattr write };' \
 	    -e 'a \  class lnk_file { create getattr read };'                       \
@@ -1646,7 +1982,9 @@ funcSepolicy_systemd_tmpfiles() {
 	    -e '$a allow systemd_tmpfiles_t tmpfs_t:file { create getattr ioctl open setattr write };' \
 	    -e '$a allow systemd_tmpfiles_t locale_t:file read;'                    \
 	    -e '$a allow systemd_tmpfiles_t locale_t:lnk_file read;'                \
-	    -e '$a allow systemd_tmpfiles_t user_runtime_t:dir search;'
+	    -e '$a allow systemd_tmpfiles_t user_runtime_t:dir search;'             \
+	    -e '$a allow systemd_tmpfiles_t bin_t:lnk_file getattr;'                \
+	    -e '$a allow systemd_tmpfiles_t cron_spool_t:dir search;'
 	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
 	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
@@ -1663,10 +2001,25 @@ funcSepolicy_systemd_user_runtime_dir() {
 	sed -i "${1:?}/custom_${_TGET_TYPE%_t}.te"                                  \
 	    -e "/type[ \t]\+${_TGET_TYPE};/ {"                                      \
 	    -e 'a \  type locale_t;'                                                \
-	    -e 'a \  class dir search;'                                             \
+	    -e 'a \  type systemd_userdbd_runtime_t;'                               \
+	    -e 'a \  type xdm_t;'                                                   \
+	    -e 'a \  type sssd_var_lib_t;'                                          \
+	    -e 'a \  type sssd_public_t;'                                           \
+	    -e 'a \  type gconf_tmp_t;'                                             \
+	    -e 'a \  class dir { getattr open read remove_name rmdir search };'     \
+	    -e 'a \  class file unlink;'                                            \
+	    -e 'a \  class sock_file write;'                                        \
+	    -e 'a \  class unix_stream_socket connectto;'                           \
 	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
 	    -e '}'                                                                  \
-	    -e '$a allow systemd_user_runtime_dir_t locale_t:dir search;'
+	    -e '$a allow systemd_user_runtime_dir_t locale_t:dir search;'           \
+	    -e '$a allow systemd_user_runtime_dir_t systemd_userdbd_runtime_t:dir { getattr open read };' \
+	    -e '$a allow systemd_user_runtime_dir_t systemd_userdbd_runtime_t:sock_file write;' \
+	    -e '$a allow systemd_user_runtime_dir_t xdm_t:unix_stream_socket connectto;' \
+	    -e '$a allow systemd_user_runtime_dir_t sssd_var_lib_t:dir search;'     \
+	    -e '$a allow systemd_user_runtime_dir_t sssd_public_t:dir search;'      \
+	    -e '$a allow systemd_user_runtime_dir_t gconf_tmp_t:dir { getattr open read remove_name rmdir search };' \
+	    -e '$a allow systemd_user_runtime_dir_t gconf_tmp_t:file unlink;'
 	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
 	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
@@ -1685,13 +2038,23 @@ funcSepolicy_udev() {
 	    -e 'a \  type init_runtime_t;'                                          \
 	    -e 'a \  type initrc_runtime_t;'                                        \
 	    -e 'a \  type nsfs_t;'                                                  \
-	    -e 'a \  class dir { getattr search };'                                 \
-	    -e 'a \  class file { getattr ioctl open read };'                       \
+	    -e 'a \  type init_t;'                                                  \
+	    -e 'a \  type lib_t;'                                                   \
+	    -e 'a \  type var_lib_t;'                                               \
+	    -e 'a \  type var_t;'                                                   \
+	    -e 'a \  class dir { add_name getattr search };'                        \
+	    -e 'a \  class file { create execute_no_trans getattr ioctl lock open read write };' \
+	    -e 'a \  class system status;'                                          \
 	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
 	    -e '}'                                                                  \
 	    -e '$a allow udev_t init_runtime_t:file { getattr ioctl open read };'   \
 	    -e '$a allow udev_t initrc_runtime_t:dir { getattr search };'           \
-	    -e '$a allow udev_t nsfs_t:file { getattr open read };'
+	    -e '$a allow udev_t nsfs_t:file { getattr open read };'                 \
+	    -e '$a allow udev_t init_t:system status;'                              \
+	    -e '$a allow udev_t lib_t:file execute_no_trans;'                       \
+	    -e '$a allow udev_t var_lib_t:file getattr;'                            \
+	    -e '$a allow udev_t var_t:dir add_name;'                                \
+	    -e '$a allow udev_t var_t:file { create lock open write };'
 	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
 	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
@@ -1780,8 +2143,9 @@ funcSepolicy_vmware_tools() {
 	    -e 'a \  type vmware_vgauth_service_t;'                                 \
 	    -e 'a \  type winbind_t;'                                               \
 	    -e 'a \  type dosfs_t;'                                                 \
+	    -e 'a \  type usr_t;'                                                   \
 	    -e 'a \  class dir { read search };'                                    \
-	    -e 'a \  class file { getattr open unlink read write };'                \
+	    -e 'a \  class file { getattr map open unlink read write };'            \
 	    -e 'a \  class chr_file { open read };'                                 \
 	    -e 'a \  class capability { net_admin sys_ptrace };'                    \
 	    -e 'a \  class blk_file read;'                                          \
@@ -1848,7 +2212,28 @@ funcSepolicy_vmware_tools() {
 	    -e '$a allow vmware_tools_t vmware_vgauth_service_t:file { open read};' \
 	    -e '$a allow vmware_tools_t winbind_t:dir search;'                      \
 	    -e '$a allow vmware_tools_t winbind_t:file read;'                       \
-	    -e '$a allow vmware_tools_t self:capability sys_ptrace;'
+	    -e '$a allow vmware_tools_t self:capability sys_ptrace;'                \
+	    -e '$a allow vmware_tools_t usr_t:file map;'
+	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
+	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
+}
+
+# --- selinux settings: vmware_vgauth_service_t -------------------------------
+funcSepolicy_vmware_vgauth_service() {
+	_TGET_TYPE="vmware_vgauth_service_t"
+	if ! seinfo -t | grep -q "${_TGET_TYPE}"; then
+		return
+	fi
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    start   : ${_TGET_TYPE}"
+	sepolicy generate --customize -d "${_TGET_TYPE}" -n "custom_${_TGET_TYPE%_t}" --path "${1:?}" > /dev/null
+	sed -i "${1:?}/custom_${_TGET_TYPE%_t}.te"                                  \
+	    -e "/type[ \t]\+${_TGET_TYPE};/ {"                                      \
+	    -e 'a \  type usr_t;'                                                   \
+	    -e 'a \  class file map;'                                               \
+	    -e 's/^[ \t]*\([^ \t].*;\)$/  \1/g'                                     \
+	    -e '}'                                                                  \
+	    -e '$a allow vmware_vgauth_service_t usr_t:file map;'
 	: > "${1:?}/custom_${_TGET_TYPE%_t}.if"
 	funcSepolicy_compile "${1:?}" "custom_${_TGET_TYPE%_t}"
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: ${_TGET_TYPE}"
@@ -1987,17 +2372,28 @@ funcSetupConfig_selinux() {
 		# --- make rule -------------------------------------------------------
 		funcSepolicy_NetworkManager           "${_DIRS_TGET}"	# NetworkManager_t
 		funcSepolicy_accountsd                "${_DIRS_TGET}"	# accountsd_t
+		funcSepolicy_alsa                     "${_DIRS_TGET}"	# alsa_t
+		funcSepolicy_auditd                   "${_DIRS_TGET}"	# auditd_t
+		funcSepolicy_chkpwd                   "${_DIRS_TGET}"	# chkpwd_t
+		funcSepolicy_chronyd                  "${_DIRS_TGET}"	# chronyd_t
 		funcSepolicy_colord                   "${_DIRS_TGET}"	# colord_t
+		funcSepolicy_cupsd                    "${_DIRS_TGET}"	# cupsd_t
 		funcSepolicy_devicekit_disk           "${_DIRS_TGET}"	# devicekit_disk_t
+		funcSepolicy_devicekit_power          "${_DIRS_TGET}"	# devicekit_power_t
 		funcSepolicy_dnsmasq                  "${_DIRS_TGET}"	# dnsmasq_t
 		funcSepolicy_firewalld                "${_DIRS_TGET}"	# firewalld_t
+		funcSepolicy_fprintd                  "${_DIRS_TGET}"	# fprintd_t
 		funcSepolicy_fwupd                    "${_DIRS_TGET}"	# fwupd_t
 		funcSepolicy_getty                    "${_DIRS_TGET}"	# getty_t
 		funcSepolicy_httpd                    "${_DIRS_TGET}"	# httpd_t
 		funcSepolicy_initrc                   "${_DIRS_TGET}"	# initrc_t
 		funcSepolicy_kmod                     "${_DIRS_TGET}"	# kmod_t
 		funcSepolicy_low_mem_mon              "${_DIRS_TGET}"	# low_mem_mon_t
+		funcSepolicy_modemmanager             "${_DIRS_TGET}"	# modemmanager_t
 		funcSepolicy_mount                    "${_DIRS_TGET}"	# mount_t
+		funcSepolicy_policykit                "${_DIRS_TGET}"	# policykit_t
+		funcSepolicy_power_profilesd          "${_DIRS_TGET}"	# power_profilesd_t
+		funcSepolicy_power_ssh_keygen         "${_DIRS_TGET}"	# ssh_keygen_t
 		funcSepolicy_semanage                 "${_DIRS_TGET}"	# semanage_t
 		funcSepolicy_smbd                     "${_DIRS_TGET}"	# smbd_t
 		funcSepolicy_sshd                     "${_DIRS_TGET}"	# sshd_t
@@ -2013,8 +2409,10 @@ funcSetupConfig_selinux() {
 		funcSepolicy_unconfined               "${_DIRS_TGET}"	# unconfined_t
 		funcSepolicy_useradd                  "${_DIRS_TGET}"	# useradd_t
 		funcSepolicy_vmware_tools             "${_DIRS_TGET}"	# vmware_tools_t
+		funcSepolicy_vmware_vgauth_service    "${_DIRS_TGET}"	# vmware_vgauth_service_t
 		funcSepolicy_winbind                  "${_DIRS_TGET}"	# winbind_t
 		funcSepolicy_xdm                      "${_DIRS_TGET}"	# xdm_t
+
 		# --- install ---------------------------------------------------------
 		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    start   : install modules"
 		semodule -i "${_DIRS_TGET}"/*.pp
