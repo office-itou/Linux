@@ -95,6 +95,7 @@ ORDER BY
     , LPAD(SPLIT_PART(SubString(regexp_replace(distribution.version, '^[^0-9]+', ' ') FROM '[0-9.]+$'), '.', 1), 3, '0')
     , LPAD(SPLIT_PART(SubString(regexp_replace(distribution.version, '^[^0-9]+', ' ') FROM '[0-9.]+$'), '.', 2), 3, '0')
     , LPAD(SPLIT_PART(SubString(regexp_replace(distribution.version, '^[^0-9]+', ' ') FROM '[0-9.]+$'), '.', 3), 3, '0')
+    , distribution.version
 ;" || true)
 
 	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
@@ -147,5 +148,4 @@ ORDER BY
 		### Windows
 
 		* <https://ja.wikipedia.org/wiki/Microsoft_Windows_11%E3%81%AE%E3%83%90%E3%83%BC%E3%82%B8%E3%83%A7%E3%83%B3%E5%B1%A5%E6%AD%B4>
-
 _EOT_
