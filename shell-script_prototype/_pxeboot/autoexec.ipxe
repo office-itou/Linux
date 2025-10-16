@@ -18,11 +18,11 @@ item -- debian-mini-12                          - Debian 12 ....................
 item -- debian-mini-13                          - Debian 13 ...........................................2025-09-02 08:31:23
 item -- debian-mini-14                          - Debian 14 ...........................................2025-08-03 09:51:41
 item -- debian-mini-testing                     - Debian testing ......................................2025-08-03 09:51:41
-item -- debian-mini-testing-daily               - Debian testing daily ................................2025-10-14 09:02:52
+item -- debian-mini-testing-daily               - Debian testing daily ................................2025-10-16 09:02:40
 item --gap --                                   [ Auto install Net install ]
 item -- debian-netinst-12                       - Debian 12 ...........................................2025-09-07 02:08:10
 item -- debian-netinst-13                       - Debian 13 ...........................................2025-09-06 21:34:10
-item -- debian-netinst-testing                  - Debian testing ......................................2025-10-14 18:41:55
+item -- debian-netinst-testing                  - Debian testing ......................................2025-10-16 18:22:01
 item -- fedora-netinst-42                       - Fedora Server 42 ....................................2025-04-09 20:48:26
 item -- centos-stream-netinst-9                 - CentOS Stream 9 .....................................2025-10-13 12:56:37
 item -- centos-stream-netinst-10                - CentOS Stream 10 ....................................2025-10-13 13:19:32
@@ -2930,7 +2930,7 @@ set autoinst
 set networks 
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
-set isosfile root=live:${srvraddr}/isos/live-almalinux-10-amd64.iso
+set isosfile root=live:${srvraddr}/rmak/live-almalinux-10-amd64.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item networks                           Network
