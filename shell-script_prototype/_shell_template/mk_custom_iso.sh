@@ -2806,7 +2806,7 @@ function fnBoot_option_kickstart() {
 	__IMGS="\${srvraddr}/${_DIRS_IMGS##*/}"
 	__ISOS="\${srvraddr}/${_DIRS_ISOS##*/}"
 #	__LOAD="\${srvraddr}/${_DIRS_LOAD##*/}"
-#	__RMAK="\${srvraddr}/${_DIRS_RMAK##*/}"
+	__RMAK="\${srvraddr}/${_DIRS_RMAK##*/}"
 	__BOPT+=("server=${__SRVR}")
 	# ---  1: autoinstall -----------------------------------------------------
 	__WORK=""
@@ -2843,7 +2843,10 @@ function fnBoot_option_kickstart() {
 	# ---  5: isosfile --------------------------------------------------------
 	__WORK=""
 	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
-		__WORK+="${__WORK:+" "}root=live:${__ISOS}/${__TGET_LIST[13]##*/}"
+		case "${__TGET_LIST[2]}" in
+			live-*              ) __WORK+="${__WORK:+" "}root=live:${__RMAK}/${__TGET_LIST[13]##*/}";;
+			*                   ) __WORK+="${__WORK:+" "}root=live:${__ISOS}/${__TGET_LIST[13]##*/}";;
+		esac
 	else
 		case "${__TGET_TYPE:-}" in
 			"${_TYPE_PXEB:?}") __WORK+="${__WORK:+" "}inst.repo=${__IMGS}/${__TGET_LIST[2]}";;
