@@ -2365,58 +2365,63 @@ funcSetupConfig_selinux() {
 
 	# --- custom rule ---------------------------------------------------------
 	# ausearch --start today | audit2allow -a -M test_rule
+	_FLAG_PLCY=""
 	if command -v sepolicy > /dev/null 2>&1; then
 		_DIRS_TGET="${DIRS_INIT}/tmp/rule"
 		rm -rf "{_DIRS_TGET:?}"
 		mkdir -p "${_DIRS_TGET}"
 		# --- make rule -------------------------------------------------------
-		funcSepolicy_NetworkManager           "${_DIRS_TGET}"	# NetworkManager_t
-		funcSepolicy_accountsd                "${_DIRS_TGET}"	# accountsd_t
-		funcSepolicy_alsa                     "${_DIRS_TGET}"	# alsa_t
-		funcSepolicy_auditd                   "${_DIRS_TGET}"	# auditd_t
-		funcSepolicy_chkpwd                   "${_DIRS_TGET}"	# chkpwd_t
-		funcSepolicy_chronyd                  "${_DIRS_TGET}"	# chronyd_t
-		funcSepolicy_colord                   "${_DIRS_TGET}"	# colord_t
-		funcSepolicy_cupsd                    "${_DIRS_TGET}"	# cupsd_t
-		funcSepolicy_devicekit_disk           "${_DIRS_TGET}"	# devicekit_disk_t
-		funcSepolicy_devicekit_power          "${_DIRS_TGET}"	# devicekit_power_t
-		funcSepolicy_dnsmasq                  "${_DIRS_TGET}"	# dnsmasq_t
-		funcSepolicy_firewalld                "${_DIRS_TGET}"	# firewalld_t
-		funcSepolicy_fprintd                  "${_DIRS_TGET}"	# fprintd_t
-		funcSepolicy_fwupd                    "${_DIRS_TGET}"	# fwupd_t
-		funcSepolicy_getty                    "${_DIRS_TGET}"	# getty_t
-		funcSepolicy_httpd                    "${_DIRS_TGET}"	# httpd_t
-		funcSepolicy_initrc                   "${_DIRS_TGET}"	# initrc_t
-		funcSepolicy_kmod                     "${_DIRS_TGET}"	# kmod_t
-		funcSepolicy_low_mem_mon              "${_DIRS_TGET}"	# low_mem_mon_t
-		funcSepolicy_modemmanager             "${_DIRS_TGET}"	# modemmanager_t
-		funcSepolicy_mount                    "${_DIRS_TGET}"	# mount_t
-		funcSepolicy_policykit                "${_DIRS_TGET}"	# policykit_t
-		funcSepolicy_power_profilesd          "${_DIRS_TGET}"	# power_profilesd_t
-		funcSepolicy_power_ssh_keygen         "${_DIRS_TGET}"	# ssh_keygen_t
-		funcSepolicy_semanage                 "${_DIRS_TGET}"	# semanage_t
-		funcSepolicy_smbd                     "${_DIRS_TGET}"	# smbd_t
-		funcSepolicy_sshd                     "${_DIRS_TGET}"	# sshd_t
-		funcSepolicy_switcheroo               "${_DIRS_TGET}"	# switcheroo_t
-		funcSepolicy_system_dbusd             "${_DIRS_TGET}"	# system_dbusd_t
-		funcSepolicy_systemd_generator        "${_DIRS_TGET}"	# systemd_generator_t
-		funcSepolicy_systemd_journal_init     "${_DIRS_TGET}"	# systemd_journal_init_t
-		funcSepolicy_systemd_logind           "${_DIRS_TGET}"	# systemd_logind_t
-		funcSepolicy_systemd_resolved         "${_DIRS_TGET}"	# systemd_resolved_t
-		funcSepolicy_systemd_tmpfiles         "${_DIRS_TGET}"	# systemd_tmpfiles_t
-		funcSepolicy_systemd_user_runtime_dir "${_DIRS_TGET}"	# systemd_user_runtime_dir_t
-		funcSepolicy_udev                     "${_DIRS_TGET}"	# udev_t
-		funcSepolicy_unconfined               "${_DIRS_TGET}"	# unconfined_t
-		funcSepolicy_useradd                  "${_DIRS_TGET}"	# useradd_t
-		funcSepolicy_vmware_tools             "${_DIRS_TGET}"	# vmware_tools_t
-		funcSepolicy_vmware_vgauth_service    "${_DIRS_TGET}"	# vmware_vgauth_service_t
-		funcSepolicy_winbind                  "${_DIRS_TGET}"	# winbind_t
-		funcSepolicy_xdm                      "${_DIRS_TGET}"	# xdm_t
-
+		if [ -n "${_FLAG_PLCY:-}" ]; then
+			funcSepolicy_NetworkManager           "${_DIRS_TGET}"	# NetworkManager_t
+			funcSepolicy_accountsd                "${_DIRS_TGET}"	# accountsd_t
+			funcSepolicy_alsa                     "${_DIRS_TGET}"	# alsa_t
+			funcSepolicy_auditd                   "${_DIRS_TGET}"	# auditd_t
+			funcSepolicy_chkpwd                   "${_DIRS_TGET}"	# chkpwd_t
+			funcSepolicy_chronyd                  "${_DIRS_TGET}"	# chronyd_t
+			funcSepolicy_colord                   "${_DIRS_TGET}"	# colord_t
+			funcSepolicy_cupsd                    "${_DIRS_TGET}"	# cupsd_t
+			funcSepolicy_devicekit_disk           "${_DIRS_TGET}"	# devicekit_disk_t
+			funcSepolicy_devicekit_power          "${_DIRS_TGET}"	# devicekit_power_t
+			funcSepolicy_dnsmasq                  "${_DIRS_TGET}"	# dnsmasq_t
+			funcSepolicy_firewalld                "${_DIRS_TGET}"	# firewalld_t
+			funcSepolicy_fprintd                  "${_DIRS_TGET}"	# fprintd_t
+			funcSepolicy_fwupd                    "${_DIRS_TGET}"	# fwupd_t
+			funcSepolicy_getty                    "${_DIRS_TGET}"	# getty_t
+			funcSepolicy_httpd                    "${_DIRS_TGET}"	# httpd_t
+			funcSepolicy_initrc                   "${_DIRS_TGET}"	# initrc_t
+			funcSepolicy_kmod                     "${_DIRS_TGET}"	# kmod_t
+			funcSepolicy_low_mem_mon              "${_DIRS_TGET}"	# low_mem_mon_t
+			funcSepolicy_modemmanager             "${_DIRS_TGET}"	# modemmanager_t
+			funcSepolicy_mount                    "${_DIRS_TGET}"	# mount_t
+			funcSepolicy_policykit                "${_DIRS_TGET}"	# policykit_t
+			funcSepolicy_power_profilesd          "${_DIRS_TGET}"	# power_profilesd_t
+			funcSepolicy_power_ssh_keygen         "${_DIRS_TGET}"	# ssh_keygen_t
+			funcSepolicy_semanage                 "${_DIRS_TGET}"	# semanage_t
+			funcSepolicy_smbd                     "${_DIRS_TGET}"	# smbd_t
+			funcSepolicy_sshd                     "${_DIRS_TGET}"	# sshd_t
+			funcSepolicy_switcheroo               "${_DIRS_TGET}"	# switcheroo_t
+			funcSepolicy_system_dbusd             "${_DIRS_TGET}"	# system_dbusd_t
+			funcSepolicy_systemd_generator        "${_DIRS_TGET}"	# systemd_generator_t
+			funcSepolicy_systemd_journal_init     "${_DIRS_TGET}"	# systemd_journal_init_t
+			funcSepolicy_systemd_logind           "${_DIRS_TGET}"	# systemd_logind_t
+			funcSepolicy_systemd_resolved         "${_DIRS_TGET}"	# systemd_resolved_t
+			funcSepolicy_systemd_tmpfiles         "${_DIRS_TGET}"	# systemd_tmpfiles_t
+			funcSepolicy_systemd_user_runtime_dir "${_DIRS_TGET}"	# systemd_user_runtime_dir_t
+			funcSepolicy_udev                     "${_DIRS_TGET}"	# udev_t
+			funcSepolicy_unconfined               "${_DIRS_TGET}"	# unconfined_t
+			funcSepolicy_useradd                  "${_DIRS_TGET}"	# useradd_t
+			funcSepolicy_vmware_tools             "${_DIRS_TGET}"	# vmware_tools_t
+			funcSepolicy_vmware_vgauth_service    "${_DIRS_TGET}"	# vmware_vgauth_service_t
+			funcSepolicy_winbind                  "${_DIRS_TGET}"	# winbind_t
+			funcSepolicy_xdm                      "${_DIRS_TGET}"	# xdm_t
+		fi
 		# --- install ---------------------------------------------------------
-		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    start   : install modules"
-		semodule -i "${_DIRS_TGET}"/*.pp
-		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: install modules"
+		_WORK_TEXT="$(find "${_DIRS_TGET}" -name '*.pp')"
+		if [ -n "${_WORK_TEXT:-}" ]; then
+			printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    start   : install modules"
+			semodule -i "${_DIRS_TGET}"/*.pp
+			printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "    complete: install modules"
+		fi
 	fi
 
 	# --- backup initial file -------------------------------------------------
@@ -4482,28 +4487,43 @@ funcSetupConfig_grub_menu() {
 	funcFile_backup "${_FILE_PATH}"
 	mkdir -p "${_FILE_PATH%/*}"
 	if command -v getenforce > /dev/null 2>&1; then
-		printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "activating se linux"
-		sed -i "${_FILE_PATH}"                                \
-		    -e '/GRUB_CMDLINE_LINUX/                       {' \
-		    -e 's/="/=/                                     ' \
-		    -e 's/"$//                                      ' \
-		    -e 's/[ \t]*security=[[:graph:]]*//             ' \
-		    -e 's/[ \t]*selinux=[[:graph:]]*//              ' \
-		    -e 's/[ \t]*enforcing=[[:graph:]]*//            ' \
-		    -e 's/[ \t]\+/ /g                               ' \
-		    -e 's/=/="/                                     ' \
-		    -e 's/$/"/                                      ' \
-		    -e '}                                           ' \
-		    -e '/GRUB_CMDLINE_LINUX_DEFAULT/               {' \
-		    -e 's/="/=/                                     ' \
-		    -e 's/"$//                                      ' \
-		    -e 's/[ \t]*security=[[:graph:]]*//             ' \
-		    -e 's/[ \t]*selinux=[[:graph:]]*//              ' \
-		    -e 's/[ \t]*enforcing=[[:graph:]]*//            ' \
-		    -e 's/[ \t]\+/ /g                               ' \
-		    -e 's/$/ security=selinux selinux=1 enforcing=1/' \
-		    -e 's/=/="/                                     ' \
-		    -e 's/$/"/                                      ' \
+		printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "activating security"
+		# https://wiki.archlinux.jp/index.php/AppArmor
+		# https://wiki.archlinux.jp/index.php/SELinux
+		case "${DIST_NAME:-}" in
+			debian | ubuntu ) _FLAG_SLNX=0;;
+			*               ) _FLAG_SLNX=1;;
+		esac
+		if command -v aa-enabled > /dev/null 2>&1; then
+			printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "activating apparmor"
+			_OPTN_SLNX="security=apparmor apparmor=1"
+		elif command -v getenforce > /dev/null 2>&1; then
+			printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "activating se linux"
+			_OPTN_SLNX="security=selinux selinux=1 enforcing=${_FLAG_SLNX:-0}"
+		else
+			_OPTN_SLNX=""
+		fi
+		sed -i "${_FILE_PATH}"                         \
+		    -e '/GRUB_CMDLINE_LINUX/                {' \
+		    -e 's/^\([^=]\+\)="/\1=/                 ' \
+		    -e 's/"$//                               ' \
+		    -e 's/[ \t]*security=[[:graph:]]*//      ' \
+		    -e 's/[ \t]*selinux=[[:graph:]]*//       ' \
+		    -e 's/[ \t]*enforcing=[[:graph:]]*//     ' \
+		    -e 's/[ \t]\+/ /g                        ' \
+		    -e 's/^\([^=]\+\)=/\1="/                 ' \
+		    -e 's/$/"/                               ' \
+		    -e '}                                    ' \
+		    -e '/GRUB_CMDLINE_LINUX_DEFAULT/        {' \
+		    -e 's/^\([^=]\+\)="/\1=/                 ' \
+		    -e 's/"$//                               ' \
+		    -e 's/[ \t]*security=[[:graph:]]*//      ' \
+		    -e 's/[ \t]*selinux=[[:graph:]]*//       ' \
+		    -e 's/[ \t]*enforcing=[[:graph:]]*//     ' \
+		    -e 's/[ \t]\+/ /g                        ' \
+		    -e "s/\$/${_OPTN_SLNX:+ "${_OPTN_SLNX}"}/" \
+		    -e 's/^\([^=]\+\)=/\1="/                 ' \
+		    -e 's/$/"/                               ' \
 		    -e '}'
 		touch /.autorelabel
 		printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "se linux is activated.  you may need to reboot now."
