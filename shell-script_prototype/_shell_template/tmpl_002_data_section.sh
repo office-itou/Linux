@@ -110,7 +110,7 @@
 	declare -r -a _OPTN_RSYC=("--recursive" "--links" "--perms" "--times" "--group" "--owner" "--devices" "--specials" "--hard-links" "--acls" "--xattrs" "--human-readable" "--update" "--delete")
 
 	# --- ram disk parameter --------------------------------------------------
-	declare -r -a _OPTN_RDSK=("root=/dev/ram0" "load_ramdisk=1" "ramdisk_size=1024000" "overlay-size=80%")
+	declare -r -a _OPTN_RDSK=("root=/dev/ram0")
 
 	# --- boot type parameter -------------------------------------------------
 	declare -r    _TYPE_ISOB="isoboot"	# iso media boot
