@@ -193,6 +193,7 @@ autoinstall:
   - shellcheck
   - tasksel
   - snapd
+  - snap-confine
   - clamav
   - openssh-server
   - systemd-resolved
@@ -284,6 +285,7 @@ autoinstall:
           printf "\033[m\033[42m%s\033[m\n" "Running ${_PROG_NAME}";
           _time_start=$(date +%s);
           printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start";
+          snap install chromium;
           _time_end=$(date +%s);
           _time_elapsed=$((_time_end-_time_start));
           printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${_time_end}" +"%Y/%m/%d %H:%M:%S" || true) processing end";
