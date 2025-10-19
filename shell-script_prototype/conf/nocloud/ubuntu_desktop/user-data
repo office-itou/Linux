@@ -221,11 +221,12 @@ autoinstall:
   - libreoffice-l10n-ja
   - libreoffice-help-ja
   - firefox-locale-ja
-  - thunderbird
-  - thunderbird-locale-ja
   - rhythmbox
   - libavcodec-extra
   - gstreamer1.0-libav
+# -----------------------------------------------------------------------------
+# - thunderbird
+# - thunderbird-locale-ja
 # -----------------------------------------------------------------------------
 # - usrmerge
 # - tftpd-hpa
@@ -285,7 +286,16 @@ autoinstall:
           printf "\033[m\033[42m%s\033[m\n" "Running ${_PROG_NAME}";
           _time_start=$(date +%s);
           printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start";
-          snap install chromium;
+          if command -v snap > /dev/null 2>&1; then
+            snap wait system seed.loaded || true;
+            if command -v gdm3    > /dev/null 2>&1 \
+            || command -v lightdm > /dev/null 2>&1; then
+              [ ! -e /snap/bin/firefox     ] && snap install firefox     || true;
+              [ ! -e /snap/bin/thunderbird ] && snap install thunderbird || true;
+              [ ! -e /snap/bin/chromium    ] && snap install chromium    || true;
+            fi;
+          fi;
+          systemctl is-enabled sssd.service > /dev/null 2>&1 && systemctl --quiet disable sssd.service || true;
           _time_end=$(date +%s);
           _time_elapsed=$((_time_end-_time_start));
           printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${_time_end}" +"%Y/%m/%d %H:%M:%S" || true) processing end";
