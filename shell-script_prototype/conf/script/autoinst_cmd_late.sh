@@ -679,22 +679,35 @@ funcUpdate_package() {
 
 	# --- check command -------------------------------------------------------
 	  if command -v apt-get > /dev/null 2>&1; then
-		if ! apt-get --quiet update && apt-get --quiet --assume-yes upgrade; then
-			printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "package update failure"
+		if ! apt-get --quiet update; then
+			printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "apt-get update failure"
+		fi
+		if ! apt-get --quiet --assume-yes upgrade; then
+			printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "apt-get upgrade failure"
+		fi
+		if ! apt-get --quiet --assume-yes dist-upgrade; then
+			printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "apt-get dist-upgrade failure"
+		fi
+	elif command -v dnf     > /dev/null 2>&1; then
+		if ! dnf --quiet --assumeyes update; then
+			printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "dnf update failure"
 		fi
 	elif command -v yum     > /dev/null 2>&1; then
 		if ! yum --quiet --assumeyes update; then
-			printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "package update failure"
+			printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "yum update failure"
 		fi
 	elif command -v zypper  > /dev/null 2>&1; then
 		_WORK_TEXT="$(LANG=C zypper lr | awk -F '|' '$1==1&&$2~/http/ {gsub(/^[ \t]+/,"",$2); gsub(/[ \t]+$/,"",$2); print $2;}')"
 		if [ -n "${_WORK_TEXT:-}" ]; then
 			if ! zypper modifyrepo --disable "${_WORK_TEXT}"; then
-				printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "repository disable failure"
+				printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "zypper repository disable failure"
 			fi
 		fi
-		if ! zypper refresh && zypper --quiet --non-interactive update; then
-			printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "package update failure"
+		if ! zypper refresh; then
+			printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "zypper refresh failure"
+		fi
+		if ! zypper --quiet --non-interactive update; then
+			printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "zypper update failure"
 		fi
 	else
 		printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "package update failure (command not found)"
@@ -3099,8 +3112,10 @@ funcSetupNetwork_firewalld() {
 			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="0.0.0.0" service name="tftp" accept' || true
 			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="0.0.0.0" port protocol="udp" port="67-68" accept' || true
 			firewall-cmd --quiet --reload
-			[ -n "${NICS_NAME##-}" ] && firewall-cmd --get-zone-of-interface="${NICS_NAME}"
-			firewall-cmd --list-all --zone="${FWAL_ZONE}"
+			if [ -n "${DBGS_FLAG:-}" ]; then
+				[ -n "${NICS_NAME##-}" ] && firewall-cmd --get-zone-of-interface="${NICS_NAME}"
+				firewall-cmd --list-all --zone="${FWAL_ZONE}"
+			fi
 		else
 			printf "\033[m${PROG_NAME}: %s\033[m\n" "service inactive: ${_SRVC_NAME}"
 			firewall-offline-cmd --quiet --set-default-zone="${FWAL_ZONE}" || true
@@ -3123,8 +3138,10 @@ funcSetupNetwork_firewalld() {
 			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="0.0.0.0" service name="tftp" accept' || true
 			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="0.0.0.0" port protocol="udp" port="67-68" accept' || true
 #			firewall-offline-cmd --quiet --reload
-			[ -n "${NICS_NAME##-}" ] && firewall-offline-cmd --get-zone-of-interface="${NICS_NAME}"
-			firewall-offline-cmd --list-all --zone="${FWAL_ZONE}"
+			if [ -n "${DBGS_FLAG:-}" ]; then
+				[ -n "${NICS_NAME##-}" ] && firewall-offline-cmd --get-zone-of-interface="${NICS_NAME}"
+				firewall-offline-cmd --list-all --zone="${FWAL_ZONE}"
+			fi
 		fi
 
 		# --- debug out -------------------------------------------------------
