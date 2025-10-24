@@ -173,60 +173,67 @@ autoinstall:
 # updates: all
 # package_update: true
 # package_upgrade: true
-  packages:
-  - apparmor
-  - apparmor-utils
-  - selinux-basics
-  - selinux-policy-default
-  - auditd
-  - rpm
-  - sudo
-  - firewalld
-  - traceroute
-  - network-manager
-  - bash-completion
-  - build-essential
-  - curl
-  - vim
-  - bc
-  - tree
-  - shellcheck
-  - tasksel
-  - snapd
-  - snap-confine
-  - clamav
-  - openssh-server
-  - systemd-resolved
-  - dnsmasq
-  - bind9-dnsutils
-  - apache2
-  - samba
-  - smbclient
-  - cifs-utils
-  - libnss-winbind
-  - open-vm-tools
-  - open-vm-tools-desktop
-  - ubuntu-desktop
-  - ubuntu-desktop-minimal
-  - ubuntu-gnome-desktop
-  - language-pack-ja
-  - language-pack-gnome-ja
-  - fonts-noto
-  - im-config
-  - zenity
-  - ibus-mozc
-  - fcitx5-mozc
-  - mozc-utils-gui
-  - gnome-shell-extensions
-  - libreoffice-l10n-ja
-  - libreoffice-help-ja
-  - firefox-locale-ja
-  - rhythmbox
-  - libavcodec-extra
-  - gstreamer1.0-libav
+  - packages:
+  - apparmor                            # user-space parser utility for AppArmor
+  - apparmor-utils                      # utilities for controlling AppArmor
+  - selinux-basics                      # SELinux basic support
+  - selinux-policy-default              # Strict and Targeted variants of the SELinux policy
+  - auditd                              # User space tools for security auditing
+  - rpm                                 # package manager for RPM
+  - sudo                                # Provide limited super user privileges to specific users
+  - firewalld                           # dynamically managed firewall with support for network zones
+  - traceroute                          # Traces the route taken by packets over an IPv4/IPv6 network
+  - network-manager                     # network management framework (daemon and userspace tools)
+  - bash-completion                     # programmable completion for the bash shell
+  - build-essential                     # Informational list of build-essential packages
+  - curl                                # command line tool for transferring data with URL syntax
+  - vim                                 # Vi IMproved - enhanced vi editor
+  - bc                                  # GNU bc arbitrary precision calculator language
+  - tree                                # displays an indented directory tree, in color
+  - shellcheck                          # lint tool for shell scripts
+  - tasksel                             # tool for selecting tasks for installation on Debian systems
+  - snapd                               # Daemon and tooling that enable snap packages
+  - snap-confine                        # Transitional package for snapd
+  - clamav                              # anti-virus utility for Unix - command-line interface
+  - openssh-server                      # secure shell (SSH) server, for secure access from remote machines
+  - systemd-resolved                    # systemd DNS resolver
+  - dnsmasq                             # Small caching DNS proxy and DHCP/TFTP server - system daemon
+  - bind9-dnsutils                      # Clients provided with BIND 9
+  - apache2                             # Apache HTTP Server
+  - samba                               # SMB/CIFS file, print, and login server for Unix
+  - smbclient                           # command-line SMB/CIFS clients for Unix
+  - cifs-utils                          # Common Internet File System utilities
+  - libnss-winbind                      # Samba nameservice integration plugins
+  - open-vm-tools                       # Open VMware Tools for virtual machines hosted on VMware (CLI)
+  - open-vm-tools-desktop               # Open VMware Tools for virtual machines hosted on VMware (GUI)
+# - ubuntu-desktop                      # Ubuntu desktop system
+# - ubuntu-desktop-minimal              # Ubuntu desktop minimal system
+# - ubuntu-gnome-desktop                # The Ubuntu desktop system (transitional package)
+# - language-pack-ja                    # translation updates for language Japanese
+# - language-pack-gnome-ja              # GNOME translation updates for language Japanese
+# - fonts-noto                          # metapackage to pull in all Noto fonts
+# - im-config                           # Input method configuration framework
+# - zenity                              # Display graphical dialog boxes from shell scripts
+# - ibus-mozc                           # Mozc engine for IBus - Client of the Mozc input method
+# - fcitx5-mozc                         # Mozc engine for fcitx5 - Client of the Mozc input method
+# - mozc-utils-gui                      # GUI utilities of the Mozc input method
+# - gnome-shell-extensions              # Extensions to extend functionality of GNOME Shell
+# - libreoffice-l10n-ja                 # office productivity suite -- Japanese language package
+# - libreoffice-help-ja                 # office productivity suite -- Japanese help
+# - rhythmbox                           # music player and organizer for GNOME
+# - libavcodec-extra                    # FFmpeg library with extra codecs (metapackage)
+# - gstreamer1.0-libav                  # ffmpeg plugin for GStreamer
+# - pipewire-audio-client-libraries     # transitional package for pipewire-alsa and pipewire-jack
+# - bluetooth                           # Bluetooth support (metapackage)
+# - bluez                               # Bluetooth tools and daemons
+# - bluez-firmware                      # Firmware for Bluetooth devices
 # -----------------------------------------------------------------------------
-# - thunderbird
-# - thunderbird-locale-ja
+# - firefox                             # Installs Firefox snap and provides some system integration
+# - firefox-locale-ja                   # Transitional package - firefox-locale-ja -> firefox snap
+# - thunderbird                         # Transitional package - thunderbird -> thunderbird snap
+# - thunderbird-locale-ja               # Transitional package - thunderbird-locale-ja -> thunderbird snap
+# - chromium-browser                    # Transitional package - chromium-browser -> chromium snap
+# - chromium-browser-l10n               # Transitional package - chromium-browser-l10n -> chromium snap
 # -----------------------------------------------------------------------------
 # - usrmerge
 # - tftpd-hpa
