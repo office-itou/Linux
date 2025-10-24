@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#-shellcheck disable=SC2148
+# *** initialization **********************************************************
 	export LANG=C
 
 #	set -n								# Check for syntax errors
@@ -12,275 +14,78 @@
 
 	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
 
+	# === data section ========================================================
+
+	# --- debug parameter -----------------------------------------------------
+	declare       _DBGS_FLAG=""			# debug flag (empty: normal, else: debug)
+	declare       _DBGS_LOGS=""			# debug file (empty: normal, else: debug)
+	declare -a    _DBGS_FAIL=()			# debug flag (empty: success, else: failure)
+
+	# --- constant for control code -------------------------------------------
+	if [[ -z "${_CODE_ESCP+true}" ]]; then
+		declare   _CODE_ESCP=""
+		          _CODE_ESCP="$(printf '\033')"
+		readonly  _CODE_ESCP
+	fi
+
+	# --- working directory name ----------------------------------------------
 	declare -r    _PROG_PATH="$0"
-#	declare -r -a _PROG_PARM=("${@:-}")
+	declare -r -a _PROG_PARM=("${@:-}")
 	declare       _PROG_DIRS="${_PROG_PATH%/*}"
 	              _PROG_DIRS="$(realpath "${_PROG_DIRS%/}")"
 	readonly      _PROG_DIRS
 	declare -r    _PROG_NAME="${_PROG_PATH##*/}"
 	declare -r    _PROG_PROC="${_PROG_NAME}.$$"
-	              _DIRS_TEMP="$(mktemp -qtd -p "${_PROG_DIRS:-"${SUDO_HOME:-"${HOME:-"${TMPDIR:-"/tmp"}"}"}"}" "${_PROG_PROC}.XXXXXX")"
-	readonly      _DIRS_TEMP
+	declare -r    _SUDO_USER="${SUDO_USER:-}"
+	declare       _SUDO_HOME="${SUDO_HOME:-}"
+	if [[ -n "${_SUDO_USER}" ]] && [[ -z "${_SUDO_HOME}" ]]; then
+		_SUDO_HOME="$(awk -F ':' '$1=="'"${_SUDO_USER}"'" {print $6;}' /etc/passwd)"
+	fi
+	readonly      _SUDO_HOME
 
-	declare       _DIRS_BASE="live/${1:?}"
-	shift
-	declare       _FLAG_FORC=""
-	declare       _FLAG_HOLD=""
+	# --- user name -----------------------------------------------------------
+	declare       _USER_NAME="${USER:-"${LOGNAME:-"$(whoami || true)"}"}"
+
+	# --- check the execution user --------------------------------------------
+	if [[ "${_USER_NAME:?}" != "root" ]]; then
+		printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n" "run as root user."
+		printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n" "your username is ${_USER_NAME}."
+		exit 1
+	fi
+
+	# --- help ----------------------------------------------------------------
+function fnHelp() {
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+		usage: [sudo] ${_PROG_PATH:-"$0"} [command (options)]
+_EOT_
+}
+
+	if [[ -z "${_PROG_PARM[*]:-}" ]]; then
+		fnHelp
+		exit 0
+	fi
+
+	# --- get command line ----------------------------------------------------
+	set -f -- "${_PROG_PARM[@]:-}"
+	set +f
 	while [[ -n "${1:-}" ]]
 	do
-		case "${1:-}" in
-			-f|--force) _FLAG_FORC="true";;
-			-h|--hold ) _FLAG_HOLD="true";;
-			*         ) ;;
+		case "${1%%=*}" in
+			--debug | \
+			--dbg   ) shift; _DBGS_FLAG="true"; set -x;;
+			--dbgout) shift; _DBGS_FLAG="true";;
+			--dbglog) shift; _DBGS_LOGS="/tmp/${_PROG_PROC}.$(date +"%Y%m%d%H%M%S" || true).log";;
+			help    ) shift; fnHelp; exit 0;;
+			*       ) shift;;
 		esac
-		shift
 	done
-	readonly      _FLAG_FORC
-	readonly      _FLAG_HOLD
-
-	mkdir -p "${_DIRS_BASE}"
-	              _DIRS_BASE="$(realpath "${_DIRS_BASE%/}")"
-	readonly      _DIRS_BASE
-	declare -r    _DIRS_OLAY="${_DIRS_BASE}/overlay"
-	declare -r    _FILE_CONF="${_DIRS_BASE}/mkosi.conf"
-	declare       _FILE_SQFS=""
-#	declare -r    _FILE_SQFS="${_DIRS_BASE:?}/filesystem.squashfs"
-#	declare -r    _FILE_SQFS="${_DIRS_BASE:?}/minimal.squashfs"
-	declare -r    _DIRS_TGET="${_DIRS_OLAY}/merged"
-
-	if [[ -n "${_FLAG_FORC:-}" ]]; then
-		if [[ -z "${_FLAG_HOLD:-}" ]]; then
-			rm -rf "${_DIRS_BASE:?}"
-		else
-			mv "${_DIRS_BASE}" "${_DIRS_BASE}.back"
-			mkdir -p "${_DIRS_BASE}"
-			mv "${_DIRS_BASE}.back/image" "${_DIRS_BASE}"
-			rm -rf "${_DIRS_BASE:?}.back"
-		fi
+	if set -o | grep "^xtrace\s*on$"; then
+		_DBGS_FLAG="true"
+		exec 2>&1
 	fi
-	rm -rf "${_DIRS_OLAY:?}"
-	mkdir -p "${_DIRS_BASE}"/image \
-	         "${_DIRS_OLAY}"/{upper,lower,work,merged}
-	mv "${_DIRS_OLAY}"/lower "${_DIRS_OLAY}"/lower.back
-	ln -sr "${_DIRS_BASE}"/image "${_DIRS_OLAY}"/lower
-
-	declare       _FILE_INRD="${_DIRS_TGET}/initrd"
-	declare       _FILE_KENL="${_DIRS_TGET}/vmlinuz"
-
-	declare       _DIST_INFO="${_DIRS_BASE##*/}"
-	readonly      _DIST_INFO="${_DIST_INFO,,}"
-	declare       _DIST_NAME="${_DIST_INFO%%-*}"
-	              _TEXT_WRK1="${_DIST_NAME%linux}"
-	              _TEXT_WRK2="${_DIST_NAME#"${_TEXT_WRK1}"}"
-	              _DIST_NAME="${_TEXT_WRK1}"
-	readonly      _DIST_NAME
-	declare -r    _DIST_VERS="${_DIST_INFO#*-}"
-	declare       _DIRS_LIVE=""
-	case "${_DIST_INFO}" in
-		debian-*           | \
-		ubuntu-*           ) _DIRS_LIVE="live"; _FILE_SQFS="${_DIRS_BASE:?}/filesystem.squashfs";;
-		fedora-*           | \
-		centos-stream-*    | \
-		almalinux-*        | \
-		rockylinux-*       | \
-		miraclelinux-*     ) _DIRS_LIVE="LiveOS"; _FILE_SQFS="${_DIRS_BASE:?}/squashfs.img";;
-		opensuse-leap-15.* ) ;;
-		opensuse-leap-16.* ) ;;
-		opensuse-tumbleweed) ;;
-		*                  ) echo "not found: ${_DIST_INFO:-}"; exit 1;;
-	esac
-#	_DIRS_LIVE="live"
-#	_FILE_SQFS="${_DIRS_BASE:?}/filesystem.squashfs"
-	readonly      _DIRS_LIVE
-	readonly      _FILE_SQFS
-	# fedora,  debian,  kali,  ubuntu,  arch,  opensuse, mageia, centos, rhel, rhel-ubi, openmandriva, rocky, alma, azure or custom
-	case "${_DIST_INFO}" in
-		debian-11          ) sed -e '/^Release/ s/=.*$/=bullseye/' /srv/user/share/conf/_template/mkosi.debian.conf > "${_FILE_CONF}";;
-		debian-12          ) sed -e '/^Release/ s/=.*$/=bookworm/' /srv/user/share/conf/_template/mkosi.debian.conf > "${_FILE_CONF}";;
-		debian-13          ) sed -e '/^Release/ s/=.*$/=trixie/'   /srv/user/share/conf/_template/mkosi.debian.conf > "${_FILE_CONF}";;
-		debian-14          ) sed -e '/^Release/ s/=.*$/=forky/'    /srv/user/share/conf/_template/mkosi.debian.conf > "${_FILE_CONF}";;
-		debian-15          ) sed -e '/^Release/ s/=.*$/=duke/'     /srv/user/share/conf/_template/mkosi.debian.conf > "${_FILE_CONF}";;
-		debian-testing     ) sed -e '/^Release/ s/=.*$/=testing/'  /srv/user/share/conf/_template/mkosi.debian.conf > "${_FILE_CONF}";;
-		debian-sid         ) sed -e '/^Release/ s/=.*$/=sid/'      /srv/user/share/conf/_template/mkosi.debian.conf > "${_FILE_CONF}";;
-		ubuntu-22.04       ) sed -e '/^Release/ s/=.*$/=jammy/'    /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
-		ubuntu-22.10       ) sed -e '/^Release/ s/=.*$/=kinetic/'  /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
-		ubuntu-23.04       ) sed -e '/^Release/ s/=.*$/=lunar/'    /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
-		ubuntu-23.10       ) sed -e '/^Release/ s/=.*$/=mantic/'   /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
-		ubuntu-24.04       ) sed -e '/^Release/ s/=.*$/=noble/'    /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
-		ubuntu-24.10       ) sed -e '/^Release/ s/=.*$/=oracular/' /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
-		ubuntu-25.04       ) sed -e '/^Release/ s/=.*$/=plucky/'   /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
-		ubuntu-25.10       ) sed -e '/^Release/ s/=.*$/=questing/' /srv/user/share/conf/_template/mkosi.ubuntu.conf > "${_FILE_CONF}";;
-		fedora-*           | \
-		centos-stream-*    | \
-		almalinux-*        | \
-		rockylinux-*       | \
-		miraclelinux-*     )
-			sed -e '/^Distribution/ s/=.*$/='"${_DIST_NAME}"'/'         \
-			    -e '/^Release/      s/=.*$/='"${_DIST_VERS}"'/'         \
-				  /srv/user/share/conf/_template/mkosi.rhel-series.conf \
-				> "${_FILE_CONF}"
-			;;
-		opensuse-leap-15.* ) ;;
-		opensuse-leap-16.* ) ;;
-		opensuse-tumbleweed) ;;
-		*                  ) echo "not found: ${_DIST_INFO:-}"; exit 1;;
-	esac
-	declare       _FILE_SPLS=""
-	case "${_DIST_INFO}" in
-		debian-6           ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/spacefun-theme/grub/grub-16x9.png       ;;
-		debian-7           ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/joy-theme/grub/grub-16x9.png            ;;
-		debian-8           ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/lines-theme/grub/grub-16x9.png          ;;
-		debian-9           ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/softwaves-theme/grub/grub-16x9.png      ;;
-#		debian-10          ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/moonlight-theme/grub/grub-16x9.png      ;;
-		debian-10          ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/futureprototype-theme/grub/grub-16x9.png;;
-		debian-11          ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/homeworld-theme/grub/grub-16x9.png      ;;
-		debian-12          ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/emerald-theme/grub/grub-16x9.png        ;;
-		debian-13          ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/ceratopsian-theme/grub/grub-16x9.png    ;;
-#		debian-13          ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/desktop-base/ceratopsian-theme/grub/grub-16x9.png    ;;
-		debian-14          ) ;;
-		debian-15          ) ;;
-		debian-testing     ) ;;
-		debian-sid         ) ;;
-		ubuntu-16.04       ) ;;
-		ubuntu-18.04       ) ;;
-		ubuntu-20.04       ) ;;
-		ubuntu-22.04       ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/backgrounds/warty-final-ubuntu.png;;
-		ubuntu-24.04       ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/backgrounds/warty-final-ubuntu.png;;
-		ubuntu-24.10       ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/backgrounds/warty-final-ubuntu.png;;
-		ubuntu-25.04       ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/backgrounds/warty-final-ubuntu.png;;
-		ubuntu-25.10       ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/backgrounds/warty-final-ubuntu.png;;
-		fedora-42          ) ;;
-		fedora-43          ) ;;
-		centos-stream-9    ) ;;
-		centos-stream-10   ) ;;
-		almalinux-9        ) ;;
-		almalinux-10       ) _FILE_SPLS="${_DIRS_TGET}"/usr/share/backgrounds/almalinux-day.jpg;;
-		rockylinux-9       ) ;;
-		rockylinux-10      ) ;;
-		miraclelinux-9     ) ;;
-		miraclelinux-10    ) ;;
-		opensuse-leap-15   ) ;;
-		opensuse-leap-16   ) ;;
-		opensuse-tumbleweed) ;;
-		*                  ) echo "not found: ${_DIST_INFO:-}"; exit 1;;
-	esac
-	readonly      _FILE_SPLS
-
-#	declare -r    _VIDE_MODE="1280x720"
-	declare -r    _VIDE_MODE="854x480"	# 16:9
-#	declare -r    _VIDE_MODE="1024x768"	# 4:3
-
-	declare       _TGET_DIST=""
-	              _TGET_DIST="$(sed -ne '/^\[Distribution\]$/,/\(^$\|^\[.*\]$\)/ {/^Distribution=/ s/^.*=//p}' "${_FILE_CONF:?}")"
-	readonly      _TGET_DIST="${_TGET_DIST,,}"
-	declare       _TGET_SUIT=""
-	              _TGET_SUIT="$(sed -ne '/^\[Distribution\]$/,/\(^$\|^\[.*\]$\)/ {/^Release=/ s/^.*=//p}'      "${_FILE_CONF:?}")"
-	readonly      _TGET_SUIT="${_TGET_SUIT,,}"
-
-	declare -r    _FILE_ISOS="/srv/user/share/rmak/live-${_DIST_INFO%"-${_TGET_SUIT}"}-${_TGET_SUIT}-amd64.iso"
-	declare -r    _FILE_VLID="${_DIST_INFO^}-Live-Media"
-#	declare -r    _FILE_VLID="LiveOS_rootfs"
-
-	declare -r    _DIRS_MNTP="${_DIRS_BASE}/mnt"
-	declare -r    _DIRS_CDFS="${_DIRS_BASE}/cdfs"
-	declare       _FILE_WORK=""
-	              _FILE_WORK="${_DIRS_BASE}/${_FILE_ISOS##*/}.work"
-	readonly      _FILE_WORK
-	declare -r    _FILE_UEFI="${_DIRS_BASE}/efi.img"
-	declare -r    _FILE_BIOS="${_DIRS_BASE}/boot.img"
-#	declare -r    _PATH_ETRI="/usr/lib/grub/i386-pc/eltorito.img"
-	declare -r    _PATH_ETRI="/srv/user/private/work/efiboot.img"
-	if [[ -e "${_PATH_ETRI}" ]]; then
-		declare -r    _FILE_BCAT="boot/grub/boot.catalog"
-		declare -r    _FILE_ETRI="boot/grub/i386-pc/${_PATH_ETRI##*/}"
-	else
-		declare -r    _FILE_BCAT="isolinux/boot.catalog"
-		declare -r    _FILE_ETRI="isolinux/isolinux.bin"
-	fi
-	declare -r    _MENU_SLNX="${_DIRS_CDFS}/isolinux/isolinux.cfg"
-	declare -r    _MENU_GRUB="${_DIRS_CDFS}/boot/grub/grub.cfg"
-	declare -r    _MENU_FTHM="${_DIRS_CDFS}/boot/grub/theme.txt"
-	declare       _MENU_DIST=""
-
-	declare -r -a _BOOT_DEBS=(\
-		"boot=${_DIRS_LIVE}" \
-		"nonetworking" \
-		"dhcp" \
-		"components" \
-		"overlay-size=90%" \
-		"hooks=medium" \
-		"utc=yes" \
-		"locales=ja_JP.UTF-8" \
-		"timezone=Asia/Tokyo" \
-		"keyboard-layouts=jp,us" \
-		"keyboard-model=pc105" \
-		"keyboard-variants=," \
-		"---" \
-		"quiet" \
-		"splash" \
-		"fsck.mode=skip" \
-		"raid=noautodetect" \
-		"vga=791" \
-		"security=selinux" \
-	)
-
-	declare -r -a _BOOT_RHEL=(\
-		"ip=dhcp" \
-		"root=live:LABEL=${_FILE_VLID}" \
-		"rd.locale.LANG=ja_JP.utf8" \
-		"rd.vconsole.keymap=jp" \
-		"rd.live.image=1" \
-		"vga=791" \
-		"security=selinux" \
-	)
-#		"language=ja" \
-#		"country=JP" \
-#		"timezone=Asia/Tokyo" \
-#		"keyboard-configuration/xkb-keymap=jp" \
-#		"keyboard-configuration/variant=Japanese" \
-#		"rd.live.overlay.overlayfs=1" \
-#		"rd.live.overlay=/dev/sr0:auto" \
-#		"rd.live.dir=/${_DIRS_LIVE}" \
-#		"rd.locale.LANG=ja_JP.UTF-8" \
-#		"rd.locale.LC_ALL=ja_JP.UTF-8" \
-#		"rd.vconsole.keymap=jp" \
-#		"rd.vconsole.font=default8x16" \
-#		"rd.live.ram=1" \
-#		"rd.info" \
-#		"rd.debug" \
-#		"rd.shell" \
-#		"rd.live.debug=1" \
-#	declare -r -a _BOOT_RHEL=(\
-#		"ip=dhcp" \
-#		"boot=${_DIRS_LIVE}" \
-#		"iso-scan/filename=${_FILE_ISOS##*/}" \
-#		"root=live:LABEL=${_FILE_VLID}" \
-#		"rd.live.image" \
-#		"rd.live.overlay.overlayfs=1" \
-#	)
-
-	declare -r -a _OPTN_XORR=(\
-		-quiet -rational-rock \
-		${_FILE_VLID:+-volid "${_FILE_VLID}"} \
-		-joliet -joliet-long \
-		-full-iso9660-filenames -iso-level 3 \
-		-partition_offset 16 \
-		${_FILE_BIOS:+--grub2-mbr "${_FILE_BIOS}"} \
-		--mbr-force-bootable \
-		${_FILE_UEFI:+-append_partition 2 0xEF "${_FILE_UEFI}"} \
-		-appended_part_as_gpt \
-		${_FILE_BCAT:+-eltorito-catalog "${_FILE_BCAT}"} \
-		${_FILE_ETRI:+-eltorito-boot "${_FILE_ETRI}"} \
-		-no-emul-boot \
-		-boot-load-size 4 -boot-info-table \
-		--grub2-boot-info \
-		-eltorito-alt-boot -e '--interval:appended_partition_2:all::' \
-		-no-emul-boot
-	)
 
 	# --- trap ----------------------------------------------------------------
 	declare -a    _LIST_RMOV=()			# list remove directory / file
-	              _LIST_RMOV+=("${_DIRS_TEMP:?}")
 
 # -----------------------------------------------------------------------------
 # descript: trap
@@ -289,706 +94,490 @@
 #   return:        : unused
 # shellcheck disable=SC2317,SC2329
 function fnTrap() {
-	echo "fnTrap"
+	declare -r    __FUNC_NAME="fnTrap"
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+
 	declare       __PATH=""				# full path
+	declare       __MPNT=""				# mount point
 	declare -i    I=0
-	# --- unmount -------------------------------------------------------------
+
+	printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n" "failed."
+	printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n" "Working files will be deleted when this shell exits."
+	read -r -p "Press any key to exit..."
+
 	for I in $(printf "%s\n" "${!_LIST_RMOV[@]}" | sort -rV)
 	do
 		__PATH="${_LIST_RMOV[I]}"
-		if [[ -e "${__PATH}" ]] && mountpoint --quiet "${__PATH}"; then
-			printf "[%s]: umount \"%s\"\n" "${I}" "${__PATH}" 1>&2
-			umount --quiet         --recursive "${__PATH}" > /dev/null 2>&1 || \
-			umount --quiet --force --recursive "${__PATH}" > /dev/null 2>&1 || \
-			umount --quiet --lazy  --recursive "${__PATH}" || true
+		if [[ ! -e "${__PATH}" ]]; then
+			continue
 		fi
-	done
-	# --- remove temporary ----------------------------------------------------
-	if [[ -e "${_DIRS_TEMP:?}" ]]; then
-		printf "%s: \"%s\"\n" "remove" "${_DIRS_TEMP}" 1>&2
-		while read -r __PATH
-		do
-			printf "[%s]: umount \"%s\"\n" "-" "${__PATH}" 1>&2
+#		if [[ -n "${_DBGS_FAIL[*]}" ]] && [[ "${__PATH}" != "${_DIRS_TEMP:-}" ]]; then
+#			continue
+#		fi
+		if mountpoint --quiet "${__PATH}"; then
+			printf "\033[m${_PROG_NAME}: \033[93m%s\033[m\n" "    umount  : ${__PATH}" 1>&2
 			umount --quiet         --recursive "${__PATH}" > /dev/null 2>&1 || \
 			umount --quiet --force --recursive "${__PATH}" > /dev/null 2>&1 || \
-			umount --quiet --lazy  --recursive "${__PATH}" || true
-		done < <(grep "${_DIRS_TEMP:?}" /proc/mounts | cut -d ' ' -f 2 | sort -rV || true)
-		rm -rf "${_DIRS_TEMP:?}"
-	fi
+			umount --quiet --lazy  --recursive "${__PATH}"
+		fi
+		case "${__PATH}" in
+			"${_DIRS_TEMP:?}" | \
+			"${_DIRS_WDIR:?}" )
+				printf "\033[m${_PROG_NAME}: \033[93m%s\033[m\n" "    remove  : ${__PATH}" 1>&2
+				rm -rf "${__PATH:?}"
+				;;
+			*) ;;
+		esac
+	done
+
+	# --- complete ------------------------------------------------------------
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
 }
 
 	trap fnTrap EXIT
 
+	# --- temporary directory -------------------------------------------------
+	declare       _DIRS_TEMP="${_PROG_DIRS:-"${SUDO_HOME:-"${HOME:-"${TMPDIR:-"/tmp"}"}"}"}"
+	mkdir -p   "${_DIRS_TEMP}"
+	              _DIRS_TEMP="$(mktemp -qtd -p "${_DIRS_TEMP}" "${_PROG_PROC}.XXXXXX")"
+	readonly      _DIRS_TEMP
+	              _LIST_RMOV+=("${_DIRS_TEMP:?}")			# temporary
+
+	# --- working directory ---------------------------------------------------
+	declare       _DIRS_WDIR="${SUDO_HOME:-"${HOME:-"${TMPDIR:-"/tmp"}"}"}/.workdirs"
+	mkdir -p   "${_DIRS_WDIR}"
+	              _DIRS_WDIR="$(mktemp -qtd -p "${_DIRS_WDIR}" "${_PROG_PROC}.XXXXXX")"
+	readonly      _DIRS_WDIR
+	              _LIST_RMOV+=("${_DIRS_WDIR:?}")			# working
+
+	# --- shared directory parameter ------------------------------------------
+	declare -r    _DIRS_TOPS="/srv"							# top of shared directory
+#	declare -r    _DIRS_HGFS="${_DIRS_TOPS}/hgfs"			# vmware shared
+#	declare -r    _DIRS_HTML="${_DIRS_TOPS}/http/html"		# html contents#
+#	declare -r    _DIRS_SAMB="${_DIRS_TOPS}/samba"			# samba shared
+#	declare -r    _DIRS_TFTP="${_DIRS_TOPS}/tftp"			# tftp contents
+	declare -r    _DIRS_USER="${_DIRS_TOPS}/user"			# user file
+
+	# --- shared of user file -------------------------------------------------
+	declare -r    _DIRS_SHAR="${_DIRS_USER}/share"			# shared of user file
+	declare -r    _DIRS_CONF="${_DIRS_SHAR}/conf"			# configuration file
+#	declare -r    _DIRS_DATA="${_DIRS_CONF}/_data"			# data file
+#	declare -r    _DIRS_KEYS="${_DIRS_CONF}/_keyring"		# keyring file
+	declare -r    _DIRS_TMPL="${_DIRS_CONF}/_template"		# templates for various configuration files
+	declare -r    _DIRS_SHEL="${_DIRS_CONF}/script"			# shell script file
+#	declare -r    _DIRS_IMGS="${_DIRS_SHAR}/imgs"			# iso file extraction destination
+#	declare -r    _DIRS_ISOS="${_DIRS_SHAR}/isos"			# iso file
+#	declare -r    _DIRS_LOAD="${_DIRS_SHAR}/load"			# load module
+	declare -r    _DIRS_RMAK="${_DIRS_SHAR}/rmak"			# remake file
+#	declare -r    _DIRS_CHRT="${_DIRS_SHAR}/chroot"			# container file
+	declare -r    _DIRS_CTNR="${_DIRS_SHAR}/containers"		# container file
+
+	# --- shell script --------------------------------------------------------
+#	declare -r    _SHEL_ERLY="${_DIRS_SHEL}/autoinst_cmd_early.sh"				# shell commands to run early
+	declare -r    _SHEL_LATE="${_DIRS_SHEL}/autoinst_cmd_late.sh"				# shell commands to run late
+#	declare -r    _SHEL_PART="${_DIRS_SHEL}/autoinst_cmd_part.sh"				# shell commands to run after partition
+#	declare -r    _SHEL_RUNS="${_DIRS_SHEL}/autoinst_cmd_run.sh"				# shell commands to run preseed/run
+
+	# === mkosi ver. 25.3 for debian ==========================================
+
+	# --- mkosi target distribution -------------------------------------------
+#	declare -r    _TGET_DIST="fedora"
+#	declare -r    _TGET_DIST="debian"
+#	declare -r    _TGET_DIST="kali"
+#	declare -r    _TGET_DIST="ubuntu"
+#	declare -r    _TGET_DIST="arch"
+#	declare -r    _TGET_DIST="opensuse"
+#	declare -r    _TGET_DIST="mageia"
+#	declare -r    _TGET_DIST="centos"
+#	declare -r    _TGET_DIST="rhel"
+#	declare -r    _TGET_DIST="rhel-ubi"
+#	declare -r    _TGET_DIST="openmandriva"
+#	declare -r    _TGET_DIST="rocky"
+#	declare -r    _TGET_DIST="alma"
+#	declare -r    _TGET_DIST="azure"
+
+	# --- mkosi output image format type --------------------------------------
+#	declare -r    _TGET_MDIA="directory"
+#	declare -r    _TGET_MDIA="tar"
+#	declare -r    _TGET_MDIA="cpio"
+	declare -r    _TGET_MDIA="disk"
+#	declare -r    _TGET_MDIA="uki"
+#	declare -r    _TGET_MDIA="esp"
+#	declare -r    _TGET_MDIA="oci"
+#	declare -r    _TGET_MDIA="sysext"
+#	declare -r    _TGET_MDIA="confext"
+#	declare -r    _TGET_MDIA="portable"
+#	declare -r    _TGET_MDIA="addon"
+#	declare -r    _TGET_MDIA="none"
+
+	# --- menu parameter ------------------------------------------------------
+	declare -r    _MENU_TOUT="5"		# timeout (sec)
+	declare -r    _MENU_RESO="854x480"	# resolution (widht x hight)
+#	declare -r    _MENU_DPTH=""			# colors
+#	declare -r    _MENU_MODE=""			# screen mode (vga=nnn)
+	declare       _MENU_SPLS=""			# splash file
+
 # -----------------------------------------------------------------------------
-# descript: create filesystem image
-#   input :        : unused
+# descript: exec mkosi
+#   input :   $1   : target configuration file
+#   input :   $2   : target media type (directory, tar, cpio, disk, uki, esp, oci, sysext, confext, portable, addon, none)
+#   input :   $3   : target distribution (fedora,  debian,  kali, ubuntu,  arch,  opensuse, mageia, centos, rhel, rhel-ubi, openmandriva, rocky, alma, azure)
+#   input :   $4   : target release version
+#   input :   $5   : work directory
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317,SC2329
-function fnCreate_fsimage() {
-	echo "fnCreate_fsimage"
-#	rm -rf "${_DIRS_TGET:?}"
-	if ! nice -n 19 mkosi \
+#-shellcheck disable=SC2317,SC2329
+function fnExec_mkosi() {
+	_DBGS_FAIL+=("fail")
+	declare -r    __FUNC_NAME="fnExec_mkosi"
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+
+	declare -r    __TGET_INCL="${1:-}"	# target include configuration file
+	declare -r    __TGET_MDIA="${2:-}"	# target media type (directory, tar, cpio, disk, uki, esp, oci, sysext, confext, portable, addon, none)
+	declare -r    __TGET_DIST="${3:-}"	# target distribution (fedora,  debian,  kali, ubuntu,  arch,  opensuse, mageia, centos, rhel, rhel-ubi, openmandriva, rocky, alma, azure)
+	declare -r    __TGET_VERS="${4:-}"	# target release version
+	declare -r    __DIRS_WDIR="${5:-}"	# work directory
+	declare -i    __RTCD=0				# return code
+	declare -r -a __OPTN=(\
 		--force \
 		--wipe-build-dir \
-		${_DIRS_TEMP:+--workspace-directory="${_DIRS_TEMP}"/.cache} \
-		--selinux-relabel=no \
-		--remove-files=/.cache,/.viminfo,/.autorelabel \
-		${_TGET_SUIT:+--release ${_TGET_SUIT}} \
-		--directory="${_DIRS_BASE}" \
-		--architecture=x86-64 \
-		; then
-		exit "$?"
+		--bootable=no \
+		--selinux-relabel=yes \
+		--with-network=yes \
+		${__TGET_PROF:+--include="${__TGET_PROF%/*}"} \
+		${__TGET_MDIA:+--format="${__TGET_MDIA}"} \
+		${__TGET_DIST:+--distribution="${__TGET_DIST%%-*}"} \
+		${__TGET_VERS:+--release="${__TGET_VERS}"} \
+		${__DIRS_WDIR:+--workspace-directory="${__DIRS_WDIR}/workspace"} \
+		${__DIRS_WDIR:+--directory="${__DIRS_WDIR}/source"} \
+		${__DIRS_WDIR:+--output-directory="${__DIRS_WDIR}"} \
+	)
+
+	if [[ -e "${_SHEL_LATE:-}" ]]; then
+		cp --preserve=timestamps "${_SHEL_LATE}" "${__DIRS_WDIR}/source"
+		chmod +x "${__DIRS_WDIR}/source/${_SHEL_LATE##*/}"
 	fi
-	if command -v setfiles > /dev/null 2>&1; then
-		_DIRS_ROOT="${_DIRS_BASE}/image"
-		find "${_DIRS_ROOT}/etc/selinux/" -name file_contexts | while read -r _FILE_CTXT
-		do
-			_FILE_PLCY="${_FILE_CTXT%/contexts/*}/policy/policy.34"
-			setfiles -F \
-				-mFr "${_DIRS_ROOT:-}" \
-				-T0 -c "${_FILE_PLCY}" \
-				"${_FILE_CTXT}" \
-				"${_DIRS_ROOT}"
-		done
+	if ! nice -n 0 mkosi "${__OPTN[@]}" 2>&1 | tee "${PWD}/mkosi.debuglog"; then
+		__RTCD="$?"
+		printf "%s %s\n" "mkosi" "${__OPTN[*]}" > "${PWD}/mkosi.debugout"
+		printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n" "mkosi failed."
+		printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n" "Working files will be deleted when this shell exits."
+		read -r -p "Press any key to exit..."
+		exit "${__RTCD}"
 	fi
-# https://github.com/systemd/mkosi/blob/main/mkosi/resources/man/mkosi.1.md
+
+	# --- complete ------------------------------------------------------------
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 }
 
 # -----------------------------------------------------------------------------
-# descript: create initramfs
-#   input :        : unused
+# descript: create squashfs file
+#   input :   $1   : work directory
+#   input :   $2   : menu target name
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317,SC2329
-function fnCreate_initrd() {
-	echo "fnCreate_initrd"
-	_SHEL_NAME="/tmp/create_initrd.sh"
-	_FILE_PATH="${_DIRS_TGET}${_SHEL_NAME}"
-	mkdir -p "${_FILE_PATH%/*}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-		#!/bin/bash
-		set -eu
-		declare -r -a _INST_PAKG=(\\
-		)
-		declare -r -a _MODU_ADDS=(\\
-		 	"bash" \\
-		 	"shell-interpreter" \\
-		 	"systemd" \\
-		 	"fips" \\
-		 	"fips-crypto-policies" \\
-		 	"systemd-ask-password" \\
-		 	"systemd-cryptsetup" \\
-		 	"systemd-initrd" \\
-		 	"systemd-journald" \\
-		 	"systemd-modules-load" \\
-		 	"systemd-pcrphase" \\
-		 	"systemd-sysctl" \\
-		 	"systemd-sysusers" \\
-		 	"systemd-tmpfiles" \\
-		 	"systemd-udevd" \\
-		 	"modsign" \\
-		 	"nss-softokn" \\
-		 	"dbus-broker" \\
-		 	"dbus" \\
-		 	"i18n" \\
-		 	"convertfs" \\
-		 	"network-manager" \\
-		 	"network" \\
-		 	"net-lib" \\
-		 	"url-lib" \\
-		 	"drm" \\
-		 	"plymouth" \\
-		 	"prefixdevname" \\
-		 	"crypt" \\
-		 	"dm" \\
-		 	"dmsquash-live" \\
-		 	"kernel-modules" \\
-		 	"kernel-modules-extra" \\
-		 	"kernel-network-modules" \\
-		 	"livenet" \\
-		 	"lvm" \\
-		 	"mdraid" \\
-		 	"multipath" \\
-		 	"nvdimm" \\
-		 	"overlayfs" \\
-		 	"qemu" \\
-		 	"qemu-net" \\
-		 	"fido2" \\
-		 	"pkcs11" \\
-		 	"tpm2-tss" \\
-		 	"cifs" \\
-		 	"hwdb" \\
-		 	"iscsi" \\
-		 	"lunmask" \\
-		 	"nfs" \\
-		 	"nvmf" \\
-		 	"resume" \\
-		 	"rootfs-block" \\
-		 	"terminfo" \\
-		 	"udev-rules" \\
-		 	"virtfs" \\
-		 	"virtiofs" \\
-		 	"dracut-systemd" \\
-		 	"pollcdrom" \\
-		 	"usrmount" \\
-		 	"base" \\
-		 	"fs-lib" \\
-		 	"img-lib" \\
-		 	"memstrack" \\
-		 	"microcode_ctl-fw_dir_override" \\
-		 	"openssl" \\
-		 	"shutdown" \\
-		 	"busybox" \\
-		 	"rescue" \\
-		)
-		declare -r -a _MODU_OMIT=(\\
-		)
-		# -----------------------------------------------------------------------------
-		_KRNL_INFO="\$(ls /usr/lib/modules/)"
-		_ARCH_TYPE="\${_KRNL_INFO##*[-.]}"
-		_KRNL_VERS="\${_KRNL_INFO%[-.]\${_ARCH_TYPE}}"
-		cp -a "/usr/lib/modules/\${_KRNL_INFO}/vmlinuz" "/boot/vmlinuz-\${_KRNL_INFO}"
-		dracut \\
-		 	--stdlog 3 \\
-		 	--force \\
-		 	--no-hostonly \\
-		 	--no-early-microcode \\
-		 	--nomdadmconf \\
-		 	--nolvmconf \\
-		 	--xz \\
-		 	\${_KRNL_INFO:+--kver "\${_KRNL_INFO}"} \\
-		 	\${_MODU_ADDS[*]:+--add "\${_MODU_ADDS[*]}"} \\
-		 	\${_MODU_OMIT[*]:+--omit "\${_MODU_OMIT[*]}"} \\
-		 	--filesystems "ext4 fat exfat isofs squashfs udf xfs"
-		exit 0
-_EOT_
+#-shellcheck disable=SC2317,SC2329
+function fnCreate_squashfs() {
+	_DBGS_FAIL+=("fail")
+	declare -r    __FUNC_NAME="fnCreate_squashfs"
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
 
-	chmod +x "${_FILE_PATH}"
-	chroot "${_DIRS_TGET}" "${_SHEL_NAME}" || exit $?
-	rm -f "${_FILE_PATH:?}"
-# https://wiki.archlinux.jp/index.php/Dracut
-}
+	declare -r    __DIRS_WDIR="${1:-}"	# work directory
+	declare -r    __TGET_NAME="${2:-}"	# menu target name
+	declare -r    __DIRS_MNTP="${__DIRS_WDIR}/mnt"
+	declare -r    __PATH_SRCS="${__DIRS_WDIR}/image.raw"
+	declare -r    __PATH_SQFS="${__DIRS_WDIR}/filesystem.squashfs"
+	declare       __PATH=""				# full path
+	declare -a    __ARRY=()				# array
+	declare -i    __SECT=0				# sector size
+	declare -i    __STRT=0				# start sector
 
-# -----------------------------------------------------------------------------
-# descript: configure filesystem image
-#   input :        : unused
-#   output: stdout : unused
-#   return:        : unused
-# shellcheck disable=SC2317,SC2329
-function fnConfig_fsimage() {
-	echo "fnConfig_fsimage"
-	mount --rbind /dev/                  "${_DIRS_TGET}/dev/"  && mount --make-rslave "${_DIRS_TGET}/dev/" && _LIST_RMOV+=("${_DIRS_TGET}/dev/"  )
-	mount -t proc /proc/                 "${_DIRS_TGET}/proc/"                                             && _LIST_RMOV+=("${_DIRS_TGET}/proc/" )
-	mount --rbind /sys/                  "${_DIRS_TGET}/sys/"  && mount --make-rslave "${_DIRS_TGET}/sys/" && _LIST_RMOV+=("${_DIRS_TGET}/sys/"  )
-	mount  --bind /run/                  "${_DIRS_TGET}/run/"                                              && _LIST_RMOV+=("${_DIRS_TGET}/run/"  )
-	mount --rbind /tmp/                  "${_DIRS_TGET}/tmp/"  && mount --make-rslave "${_DIRS_TGET}/tmp/" && _LIST_RMOV+=("${_DIRS_TGET}/tmp/"  )
-	# -------------------------------------------------------------------------
-	_SHEL_NAME="/usr/local/bin/zz-all-ethernet.sh"
-	_EXEC_TGET="${_DIRS_TGET:?}${_SHEL_NAME}"
-	mkdir -p "${_EXEC_TGET%/*}"
-	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_EXEC_TGET}"
-		#!/bin/sh
+	# --- directory initializing ----------------------------------------------
+	rm -rf "${__DIRS_MNTP:?}"
+	mkdir -p "${__DIRS_MNTP}"
 
-		/usr/bin/nmcli connection up zz-all-en  2> /dev/null || true
-		/usr/bin/nmcli connection up zz-all-eth 2> /dev/null || true
+	# --- get offset sector ---------------------------------------------------
+	__ARRY=("$(fdisk -l "${__PATH_SRCS}")")
+	__SECT="$(printf "%s\n" "${__ARRY[@]}" | sed -ne '/Sector size/ s/^.*:[ \t]*\([0-9,]\+\)[ \t]*.*$/\1/p')"
+	__STRT="$(printf "%s\n" "${__ARRY[@]}" | sed -ne '/'"${__PATH_SRCS##*/}"'1/ s/^[^ \t]\+[ \t]\+\([0-9,]\+\)[ \t]\+.*$/\1/p')"
 
-		exit 0
-_EOT_
-	chmod +x "${_EXEC_TGET}"
-	# -------------------------------------------------------------------------
-	_FILE_PATH="${_DIRS_TGET:?}/etc/systemd/system/zz-all-ethernet.service"
-	mkdir -p "${_FILE_PATH%/*}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-		[Unit]
-		Description=Up zz-all-ethernet
-		After=NetworkManager.service
+	# --- mount ---------------------------------------------------------------
+	mount -t ext4 -o loop,ro,offset=$((__SECT*__STRT)) "${__PATH_SRCS}" "${__DIRS_MNTP}" && _LIST_RMOV+=("${__DIRS_MNTP:?}")
 
-		[Service]
-		ExecStart=${_SHEL_NAME}
-		Type=oneshot
+	# --- copy initrd/vmlinux -------------------------------------------------
+	find "${__DIRS_MNTP}/boot" -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' -o -name linux                                                 \) -exec cp --preserve=timestamps '{}' "${__DIRS_WDIR}" \;
+	find "${__DIRS_MNTP}/boot" -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  -o -name initrd.gz -o -name 'initramfs' -o -name 'initramfs-*' \) -exec cp --preserve=timestamps '{}' "${__DIRS_WDIR}" \;
 
-		[Install]
-		WantedBy=default.target
-_EOT_
-	chroot "${_DIRS_TGET}" systemctl enable "${_FILE_PATH##*/}"
-	# --- LANG=ja=JP.UTF-8 ----------------------------------------------------
-	_FILE_PATH="${_DIRS_TGET:?}/etc/locale.conf"
-#	if [[ ! -e "${_FILE_PATH}" ]]; then
-		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-			LANG=ja_JP.UTF-8
-_EOT_
-#	else
-#		sed -i "${_FILE_PATH}"                  \
-#		    -e '/^LANG=/ s/=.*$/=ja_JP\.UTF-8/'
-#	fi
-	# --- keyboard ------------------------------------------------------------
-	_FILE_PATH="${_DIRS_TGET:?}/etc/vconsole.conf"
-#	if [[ ! -e "${_FILE_PATH}" ]]; then
-		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-			XKBMODEL="pc105"
-			XKBLAYOUT="jp"
-			XKBVARIANT=""
-			XKBOPTIONS=""
-			BACKSPACE="guess"
-_EOT_
-#	fi
-	# --- timezone ------------------------------------------------------------
-	_FILE_PATH="${_DIRS_TGET:?}/etc/localtime"
-	rm -f "${_FILE_PATH}"
-	ln -s ../usr/share/zoneinfo/Asia/Tokyo "${_FILE_PATH}"
-	# -------------------------------------------------------------------------
-	case "${_DIST_INFO}" in
-		debian-*           | \
-		ubuntu-*           ) ;;
-		fedora-*           | \
-		centos-stream-*    | \
-		almalinux-*        | \
-		rockylinux-*       | \
-		miraclelinux-*     )
-			fnCreate_initrd
-			_FILE_PATH="${_DIRS_TGET:?}/etc/systemd/system-preset/00-user-custom.preset"
-			mkdir -p "${_FILE_PATH%/*}"
-			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-				enable sshd.service
-				#enable sshd.socket
-				enable systemd-resolved.service
-				enable dnsmasq.service
-				enable smb.service
-				enable nmb.service
-				enable httpd.service
-				#enable httpd.socket
-				enable firewalld.service
-_EOT_
-#			chroot "${_DIRS_TGET}" restorecon -R -v -F /
-#			chroot "${_DIRS_TGET}" systemctl set-default graphical.target
-#			chroot "${_DIRS_TGET}" systemctl enable sshd.service systemd-resolved.service dnsmasq.service smb.service nmb.service httpd.service firewalld.service
-#			chroot "${_DIRS_TGET}" useradd --create-home --user-group --groups audio,cdrom,floppy,video,wheel --comment "${_DIST_INFO%%-[0-9]*} Live user" --password '$y$j9T$ke439aNLCgDVj6bFX9yO//$61x.uzoS5y.XV.dx31D0fwQgvV0bFLuhfi.xiDzT1P8' "master"
-#			chroot "${_DIRS_TGET}" timedatectl set-timezone Asia/Tokyo
-#			chroot "${_DIRS_TGET}" localectl set-locale LANG=ja_JP.UTF-8
-#			chroot "${_DIRS_TGET}" localectl set-keymap jp
-			# echo "master" | mkpasswd -s
-			;;
-		opensuse-leap-*    | \
-		opensuse-tumbleweed) ;;
-		*                  ) echo "not found: ${_DIST_INFO:-}"; exit 1;;
-	esac
-	# -------------------------------------------------------------------------
-#	_SHEL_NAME="/srv/user/share/conf/script/autoinst_cmd_late.sh"
-#	if [[ -e "${_SHEL_NAME}" ]]; then
-#		_EXEC_TGET="/tmp/${_SHEL_NAME##*/}"
-#		cp -a "${_SHEL_NAME}" "${_DIRS_TGET}${_EXEC_TGET%/*}"
-#		chmod +x "${_DIRS_TGET}${_EXEC_TGET:?}"
-#		chroot "${_DIRS_TGET}" "${_EXEC_TGET:?}" \
-#			ip=192.168.1.0::192.168.1.254:255.255.255.0:${_TGET_DIST:+"live-${_TGET_DIST}.workgroup"}:-:192.168.1.254
-#		rm -f "${_DIRS_TGET:?}${_EXEC_TGET:?}"
-#	fi
-	[[ -e "${_DIRS_TGET:?}/usr/lib/systemd/user/orca.service"        ]] && chroot "${_DIRS_TGET}" systemctl --global disable orca.service
-	# -------------------------------------------------------------------------
-	umount --recursive     "${_DIRS_TGET}/tmp/"
-	umount                 "${_DIRS_TGET}/run/"
-	umount --recursive     "${_DIRS_TGET}/sys/"
-	umount                 "${_DIRS_TGET}/proc/"
-	umount --recursive     "${_DIRS_TGET}/dev/"
-	# -------------------------------------------------------------------------
-	rm -f "${_DIRS_BASE:?}"/{initrd*,initramfs*,vmlinuz*,linux*splash.png,os-release}
-	_FILE_INRD="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  -o -name 'initramfs' -o -name 'initramfs-*' \) | sort -Vu || true)"
-	_FILE_KENL="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*'                                             \) | sort -Vu || true)"
-	[[ -e "${_FILE_KENL:-}"                ]] && cp -aL "${_FILE_KENL}"                  "${_DIRS_BASE}"
-	[[ -e "${_FILE_INRD:-}"                ]] && cp -aL "${_FILE_INRD}"                  "${_DIRS_BASE}"
-#	[[ -e "${_FILE_SPLS:-}"                ]] && cp -aL "${_FILE_SPLS}"                  "${_DIRS_BASE}/splash.png"
-	[[ -e "${_DIRS_TGET:-}/etc/os-release" ]] && cp -aL "${_DIRS_TGET:-}/etc/os-release" "${_DIRS_BASE}"
-	[[ -e "${_FILE_SPLS:-}"                ]] && command -v convert > /dev/null 2>&1 && convert "${_FILE_SPLS}" -format "png" -resize "${_VIDE_MODE}" "${_DIRS_BASE}/splash.png" || true
-
-	# -------------------------------------------------------------------------
-#	_PATH_INRD="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  \) | sort -Vu)"
-#	_PATH_KENL="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' \) | sort -Vu)"
-#	_FILE_INRD="${_PATH_INRD##*/}"
-#	_FILE_KENL="${_PATH_KENL##*/}"
-#	for _FILE_PATH in "${_DIRS_TGET}"/{"${_FILE_INRD%%-*}"{,.old},"${_FILE_KENL%%-*}"{,.old}}
-#	do
-#		if [[ -e "${_FILE_PATH}" ]]; then
-#			continue
-#		fi
-#		case "${_FILE_PATH##*/}" in
-#			initrd* ) ln -s "${_PATH_INRD#"${_DIRS_TGET}"/}" "${_FILE_PATH}";;
-#			vmlinuz*) ln -s "${_PATH_KENL#"${_DIRS_TGET}"/}" "${_FILE_PATH}";;
-#			*       ) ;;
-#		esac
-#	done
-}
-
-# -----------------------------------------------------------------------------
-# descript: create config file
-#   input :        : unused
-#   output: stdout : unused
-#   return:        : unused
-# shellcheck disable=SC2317,SC2329
-function fnCreate_config() {
-	echo "fnCreate_config"
-	_PATH_CONF="${_DIRS_TGET}/etc/${_DIRS_LIVE}/config.conf.d/user.conf"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_PATH_CONF}"
-		 	export LIVE_HOSTNAME="live-${_TGET_DIST}"
-		 	export LIVE_USERNAME="master"
-		 	export LIVE_USER_PASSWORD="master"
-		 	export LIVE_USER_FULLNAME="${_TGET_DIST^} Live user"
-		 	export LIVE_USER_DEFAULT_GROUPS="audio cdrom dip floppy video plugdev netdev powerdev scanner bluetooth debian-tor"
-
-		 	for _PARAMETER in \${LIVE_CONFIG_CMDLINE:-}
-		 	do
-		 		case "\${_PARAMETER}" in
-		 			live-config.user-password=*|user-password=*            ) LIVE_USER_PASSWORD="\${_PARAMETER#*user-password=}";;
-		 			live-config.user-default-groups=*|user-default-groups=*) LIVE_USER_DEFAULT_GROUPS="\${_PARAMETER#*user-default-groups=}";;
-		 			live-config.user-fullname=*|user-fullname=*            ) LIVE_USER_FULLNAME="\${_PARAMETER#*user-fullname=}";;
-		 			live-config.username=*|username=*                      ) LIVE_USERNAME="\${_PARAMETER#*username=}";;
-		 			*) ;;
-		 		esac
-		 	done
-_EOT_
-	# -------------------------------------------------------------------------
-	_PATH_CONF="${_DIRS_TGET}/usr/lib/${_DIRS_LIVE}/config/0000-early-user-settings"
-	_FILE_NAME="${_PATH_CONF##*/}"
-	_FILE_NAME="${_FILE_NAME#[0-9]*-}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_PATH_CONF}"
-		#!/bin/sh
-
-		 	[ -n "\${LIVE_BOOT_DEBUG:-}" ] && set -x
-
-		Cmdline ()
-		{
-		 	for _PARAMETER in \${LIVE_CONFIG_CMDLINE:-}
-		 	do
-		 		case "\${_PARAMETER}" in
-		 			live-config.user-password=*|user-password=*            ) LIVE_USER_PASSWORD="\${_PARAMETER#*user-password=}";;
-		 			live-config.user-default-groups=*|user-default-groups=*) LIVE_USER_DEFAULT_GROUPS="\${_PARAMETER#*user-default-groups=}";;
-		 			live-config.user-fullname=*|user-fullname=*            ) LIVE_USER_FULLNAME="\${_PARAMETER#*user-fullname=}";;
-		 			live-config.username=*|username=*                      ) LIVE_USERNAME="\${_PARAMETER#*username=}";;
-		 			*) ;;
-		 		esac
-		 	done
-		}
-
-		Init ()
-		{
-		 	printf "%s\n" " ${_FILE_NAME}"
-		}
-
-		Config ()
-		{
-		 	# Creating state file
-		 	touch "/var/lib/${_DIRS_LIVE}/config/${_FILE_NAME}"
-		}
-
-		 	Cmdline
-		 	Init
-		 	Config
-
-_EOT_
-	chmod 755 "${_PATH_CONF}"
-	# -------------------------------------------------------------------------
-	_PATH_CONF="${_DIRS_TGET}/usr/lib/${_DIRS_LIVE}/config/9999-late-user-settings"
-	_FILE_NAME="${_PATH_CONF##*/}"
-	_FILE_NAME="${_FILE_NAME#[0-9]*-}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_PATH_CONF}"
-		#!/bin/sh
-
-		 	[ -n "\${LIVE_BOOT_DEBUG:-}" ] && set -x
-
-		Cmdline ()
-		{
-		 	for _PARAMETER in \${LIVE_CONFIG_CMDLINE:-}
-		 	do
-		 		case "\${_PARAMETER}" in
-		 			live-config.user-password=*|user-password=*            ) LIVE_USER_PASSWORD="\${_PARAMETER#*user-password=}";;
-		 			live-config.user-default-groups=*|user-default-groups=*) LIVE_USER_DEFAULT_GROUPS="\${_PARAMETER#*user-default-groups=}";;
-		 			live-config.user-fullname=*|user-fullname=*            ) LIVE_USER_FULLNAME="\${_PARAMETER#*user-fullname=}";;
-		 			live-config.username=*|username=*                      ) LIVE_USERNAME="\${_PARAMETER#*username=}";;
-		 			*) ;;
-		 		esac
-		 	done
-		}
-
-		Init ()
-		{
-		 	printf "%s\n" " ${_FILE_NAME}"
-		}
-
-		Config ()
-		{
-		 	# Setup user
-		 	_PASSWORD="\$(echo "\${LIVE_USER_PASSWORD}" | mkpasswd -s)"
-		 	if id "\${LIVE_USERNAME}" > /dev/null 2>&1; then
-		 		usermod --password "\${_PASSWORD:?}" "\${LIVE_USERNAME}"
-		 	else
-		 		useradd --create-home --user-group --groups "\${LIVE_USER_DEFAULT_GROUPS}" --comment "\${LIVE_USER_FULLNAME}" --password "\${_PASSWORD:?}" "\${LIVE_USERNAME}"
-		 	fi
-
-		 	# Setup samba user
-		 	printf "%s\n%s\n" "\${LIVE_USER_PASSWORD}" "\${LIVE_USER_PASSWORD}" | smbpasswd -a -s "\${LIVE_USERNAME}"
-
-		 	# Creating state file
-		 	touch "/var/lib/${_DIRS_LIVE}/config/${_FILE_NAME}"
-		}
-
-		 	Cmdline
-		 	Init
-		 	Config
-
-_EOT_
-	chmod 755 "${_PATH_CONF}"
-
-		 	# Setup network
-		 	#find /run/NetworkManager/system-connections/ /etc/NetworkManager/system-connections/ -type f \( ! -name 'lo*' -a ! -name 'netplan-*' \) | while read -r _COMM_NAME
-		 	#do
-		 	#	nmcli connection down filename "\${_COMM_NAME}" || true
-		 	#done
-
-		 	#find /sys/devices/ -name net -exec ls -1 '{}' \; | while read -r _NICS_NAME
-		 	#do
-		 	#	if [ "\${_NICS_NAME}" = "lo" ]; then
-		 	#		continue
-		 	#	fi
-		 	#	ip link set "\${_NICS_NAME}" down || true
-		 	#done
-
-}
-
-function funcMount_overlay() {
-	echo "funcMount_overlay"
-	# shellcheck disable=SC2140
-	mount -t overlay overlay -o lowerdir="${1:?}",upperdir="${2:?}",workdir="${3:?}" "${4:?}" && _LIST_RMOV+=("${4:?}")
-}
-
-# === mkosi ===================================================================
-	if [[ -n "${_FLAG_FORC:-}" ]] || [[ ! -e "${_FILE_SQFS:?}" ]]; then
-		if [[ -z "${_FLAG_HOLD:-}" ]]; then
-			_SHEL_NAME="/srv/user/share/conf/script/autoinst_cmd_late.sh"
-			if [[ -e "${_SHEL_NAME}" ]]; then
-				cp -a "${_SHEL_NAME}" "${_FILE_CONF%/*}"
-#				_FILE_PATH="${_FILE_CONF%/*}/mkosi.configure"	# (ConfigureScripts=)        exists, it is executed before building the image. This script may be used to dynamically modify the configuration. It receives the configuration serialized as JSON on stdin and should output the modified configuration serialized as JSON on stdout. Note that this script only runs when building or booting the image (build, vm, boot and shell verbs). If a default tools tree is configured, it will be built before running the configure scripts and the configure scripts will run with the tools tree available. This also means that the modifications made by configure scripts will not be visible in the summary output.
-#				_FILE_PATH="${_FILE_CONF%/*}/mkosi.sync"		# (SyncScripts=)             exists, it is executed before the image is built. This script may be used to update various sources that are used to build the image. One use case is to run git pull on various source repositories before building the image. Specifically, the BuildSourcesEphemeral= setting does not apply to sync scripts, which means sync scripts can be used to update build sources even if BuildSourcesEphemeral= is enabled.
-				_FILE_PATH="${_FILE_CONF%/*}/mkosi.prepare"		# (PrepareScripts=)          exists, it is first called with the final argument, right after the software packages are installed. It is called a second time with the build command line parameter, right after the build packages are installed and the build overlay mounted on top of the image’s root directory . This script has network access and may be used to install packages from other sources than the distro’s package manager (e.g. pip, npm, ...), after all software packages are installed but before the image is cached (if incremental mode is enabled). In contrast to a general purpose installation, it is safe to install packages to the system (pip install, npm install -g) instead of in $SRCDIR itself because the build image is only used for a single project and can easily be thrown away and rebuilt so there’s no risk of conflicting dependencies and no risk of polluting the host system.
-#				_FILE_PATH="${_FILE_CONF%/*}/mkosi.build"		# (BuildScripts=)            exists, it is executed with the build overlay mounted on top of the image’s root directory. When running the build script, $DESTDIR points to a directory where the script should place any files generated it would like to end up in the image. Note that make-, automake-, and meson-based build systems generally honor $DESTDIR, thus making it very natural to build source trees from the build script. After running the build script, the contents of $DESTDIR are copied into the image.
-#				_FILE_PATH="${_FILE_CONF%/*}/mkosi.postinst"	# (PostInstallationScripts=) exists, it is executed after the (optional) build tree and extra trees have been installed. This script may be used to alter the images without any restrictions, after all software packages and built sources have been installed.
-#				_FILE_PATH="${_FILE_CONF%/*}/mkosi.finalize"	# (FinalizeScripts=)         exists, it is executed as the last step of preparing an image.
-#				_FILE_PATH="${_FILE_CONF%/*}/mkosi.postoutput"	# (PostOutputScripts=)       exists, it is executed right after all the output files have been generated, before they are finally moved into the output directory. This can be used to generate additional or alternative outputs, e.g. SHA256FILES or SBOM manifests.
-#				_FILE_PATH="${_FILE_CONF%/*}/mkosi.clean"		# (CleanScripts=)            exists, it is executed right after the outputs of a previous build have been cleaned up. A clean script can clean up any outputs that mkosi does not know about (e.g. artifacts from SplitArtifacts=partitions or RPMs built in a build script). Note that this script does not use the tools tree even if one is configured.
-#				_FILE_PATH="${_FILE_CONF%/*}/mkosi.version"		#                            exists and is executable, it is run during configuration parsing and populates ImageVersion= with the output on stdout. This can be used for external version tracking, e.g. with git describe or date '+%Y-%m-%d'. Note that this script is executed on the host system without any sandboxing.
-#				_FILE_PATH="${_FILE_CONF%/*}/mkosi.rootpw"		#                            exists and is executable, it is run during configuration parsing and populates RootPassword= with the output on stdout. This can be used to randomly generate a password and can be remembered by outputting it to stderr or by reading $MKOSI_CONFIG in another script (e.g. mkosi.postoutput). Note that this script is executed on the host system without any sandboxing.
-				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-					#!/bin/sh
-					if [ "\$container" != "mkosi" ]; then
-						exec mkosi-chroot "\$CHROOT_SCRIPT" "\$@"
-					fi
-					if ! ./${_SHEL_NAME##*/} ip=192.168.1.0::192.168.1.254:255.255.255.0:live-\$DISTRIBUTION-\$RELEASE.workgroup:-:192.168.1.254; then
-						/bin/bash
-						exit -1
-					fi
-_EOT_
-				chmod 755 "${_FILE_PATH}"
-			fi
-			fnCreate_fsimage
-		fi
-	fi
-	funcMount_overlay "${_DIRS_OLAY:?}/lower" "${_DIRS_OLAY:?}/upper" "${_DIRS_OLAY:?}/work" "${_DIRS_OLAY:?}/merged"
-	if [[ -n "${_FLAG_FORC:-}" ]] || [[ ! -e "${_FILE_SQFS:?}" ]]; then
-		fnConfig_fsimage
-		case "${_DIST_INFO}" in
-			debian-*           | \
-			ubuntu-*           ) fnCreate_config;;
-			fedora-*           | \
-			centos-stream-*    | \
-			almalinux-*        | \
-			rockylinux-*       | \
-			miraclelinux-*     ) ;;
-			opensuse-leap-*    | \
+	if command -v convert > /dev/null 2>&1; then
+		case "${__TGET_NAME}" in
+			debian-6.0         ) __PATH="${__DIRS_MNTP}"/usr/share/desktop-base/spacefun-theme/grub/grub-16x9.png       ;;
+			debian-7.0         ) __PATH="${__DIRS_MNTP}"/usr/share/desktop-base/joy-theme/grub/grub-16x9.png            ;;
+			debian-8.0         ) __PATH="${__DIRS_MNTP}"/usr/share/desktop-base/lines-theme/grub/grub-16x9.png          ;;
+			debian-9.0         ) __PATH="${__DIRS_MNTP}"/usr/share/desktop-base/softwaves-theme/grub/grub-16x9.png      ;;
+			debian-10.0        ) __PATH="${__DIRS_MNTP}"/usr/share/desktop-base/futureprototype-theme/grub/grub-16x9.png;;
+			debian-11.0        ) __PATH="${__DIRS_MNTP}"/usr/share/desktop-base/homeworld-theme/grub/grub-16x9.png      ;;
+			debian-12.0        ) __PATH="${__DIRS_MNTP}"/usr/share/desktop-base/emerald-theme/grub/grub-16x9.png        ;;
+			debian-13.0        ) __PATH="${__DIRS_MNTP}"/usr/share/desktop-base/ceratopsian-theme/grub/grub-16x9.png    ;;
+			debian-14.0        ) ;;
+			debian-15.0        ) ;;
+			debian-testing     ) ;;
+			debian-sid         ) ;;
+			ubuntu-16.04       ) ;;
+			ubuntu-18.04       ) ;;
+			ubuntu-20.04       ) ;;
+			ubuntu-22.04       ) __PATH="${__DIRS_MNTP}"/usr/share/backgrounds/warty-final-ubuntu.png;;
+			ubuntu-24.04       ) __PATH="${__DIRS_MNTP}"/usr/share/backgrounds/warty-final-ubuntu.png;;
+			ubuntu-24.10       ) __PATH="${__DIRS_MNTP}"/usr/share/backgrounds/warty-final-ubuntu.png;;
+			ubuntu-25.04       ) __PATH="${__DIRS_MNTP}"/usr/share/backgrounds/warty-final-ubuntu.png;;
+			ubuntu-25.10       ) __PATH="${__DIRS_MNTP}"/usr/share/backgrounds/warty-final-ubuntu.png;;
+			fedora-42          ) ;;
+			fedora-43          ) ;;
+			centos-9           ) ;;
+			centos-10          ) ;;
+			alma-9             ) ;;
+			alma-10            ) __PATH="${__DIRS_MNTP}"/usr/share/backgrounds/almalinux-day.jpg;;
+			rocky-9            ) ;;
+			rocky-10           ) ;;
+#			miraclelinux-9     ) ;;
+#			miraclelinux-10    ) ;;
+			opensuse-leap-15   ) ;;
+			opensuse-leap-16   ) ;;
 			opensuse-tumbleweed) ;;
-			*                  ) echo "not found: ${_DIST_INFO:-}"; exit 1;;
+#			kali-*             ) ;;
+#			arch-*             ) ;;
+#			mageia-*           ) ;;
+#			rhel-ubi-*         ) ;;
+#			rhel-*             ) ;;
+#			openmandriva-*     ) ;;
+#			azure-*            ) ;;
+#			custom-*           ) ;;
+			*                  ) echo "not found: ${__TGET_NAME:-}"; exit 1;;
 		esac
-# === filesystem ==============================================================
-		rm -f "${_FILE_SQFS:?}"
-		if ! nice -n 19 mksquashfs "${_DIRS_TGET:?}" "${_FILE_SQFS:?}"; then
-			exit "$?"
+		# --- convert splash file ---------------------------------------------
+		if [[ -n "${__PATH:-}" ]] && [[ -e "${__PATH}" ]]; then
+			_MENU_SPLS="${__DIRS_WDIR}/splash.png"
+			convert "${__PATH}" -format "png" -resize "${_MENU_RESO}" "${_MENU_SPLS}" || true
 		fi
-#		rm -rf "${_DIRS_TGET:?}"
 	fi
 
-# === iso image ===============================================================
-	__DIST="debian"
-#	__DIST="${_DIST_NAME}"
-	rm -rf "${_DIRS_CDFS:?}"
-#	mkdir -p "${_DIRS_CDFS}/"{.disk,EFI/boot,boot/grub/{live-theme,i386-pc,x86_64-efi},isolinux,live/{boot,config.conf.d,config-hooks,config-preseed}}
-	mkdir -p "${_DIRS_CDFS}/"{.disk,EFI/boot,boot/grub,isolinux,${_DIRS_LIVE}/{boot,config.conf.d,config-hooks,config-preseed}}
-	: > "${_DIRS_CDFS}/.disk/info"
-	rm -f "${_FILE_UEFI:?}"
-	dd if=/dev/zero of="${_FILE_UEFI:?}" bs=1M count=100
-	_DEVS_LOOP="$(losetup --find --show "${_FILE_UEFI}")"
-	sfdisk "${_FILE_UEFI}" << _EOT_
+	# --- create squashfs file ------------------------------------------------
+	mksquashfs "${__DIRS_MNTP}" "${__PATH_SQFS}" -noappend
+
+	# --- unmount -------------------------------------------------------------
+	umount "${__DIRS_MNTP}"
+
+	# --- complete ------------------------------------------------------------
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+}
+
+# -----------------------------------------------------------------------------
+# descript: create uefi/biso image
+#   input :   $1   : work directory
+#   output: stdout : unused
+#   return:        : unused
+#-shellcheck disable=SC2317,SC2329
+function fnCreate_ueif_bios_image() {
+	_DBGS_FAIL+=("fail")
+	declare -r    __FUNC_NAME="fnCreate_ueif_bios_image"
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+
+	declare -r    __DIRS_WDIR="${1:-}"	# work directory
+	declare -r    __DIRS_MNTP="${__DIRS_WDIR}/mnt"
+	declare -r    __PATH_UEFI="${__DIRS_WDIR}/uefi.img"
+	declare -a    __ARRY=()				# array
+	declare -i    __SECT=0				# sector size
+	declare -i    __STRT=0				# start sector
+	declare       __LOOP=""				# loop device
+
+	# --- directory initializing ----------------------------------------------
+	rm -rf "${__DIRS_MNTP:?}"
+	mkdir -p "${__DIRS_MNTP}"
+
+	# --- create dummy image --------------------------------------------------
+	dd if=/dev/zero of="${__PATH_UEFI}" bs=1M count=100
+	__LOOP="$(losetup --find --show "${__PATH_UEFI}")"
+	sfdisk "${__LOOP}" <<- _EOT_
 		,,U,
 _EOT_
-	partprobe "${_DEVS_LOOP}"
-	_DEVS_ARRY=()
-	while read -r _DEVS_NAME DEVS_NODE
-	do
-		_DEVS_PART="/dev/${_DEVS_NAME}"
-		if [[ ! -e "${_DEVS_PART}" ]]; then
-			mknod "${_DEVS_PART}" b "${DEVS_NODE%%:*}" "${DEVS_NODE#*:}"
-			_DEVS_ARRY+=("${_DEVS_PART}")
-		fi
-	done < <(lsblk --raw --output "NAME,MAJ:MIN" --noheadings "${_DEVS_LOOP}" | tail -n +2)
-	if [[ -n "${_DEVS_PART[*]:-}" ]]; then
-		rm -rf "${_DIRS_MNTP:?}"
-		mkdir -p "${_DIRS_MNTP}"
-		mkfs.vfat -F 32 "${_DEVS_LOOP}p1"
-		mount "${_DEVS_LOOP}p1" "${_DIRS_MNTP}" && _LIST_RMOV+=("${_DIRS_MNTP}")
-		if command -v grub-install > /dev/null 2>&1; then
-			grub-install \
-				--target=x86_64-efi \
-				--efi-directory="${_DIRS_MNTP}/" \
-				--boot-directory="${_DIRS_MNTP}/boot/" \
-				--removable
-			grub-install \
-				--target=i386-pc \
-				--boot-directory="${_DIRS_MNTP}/boot/" \
-				"${_DEVS_LOOP}"
-		else
-			grub2-install \
-				--force \
-				--target=x86_64-efi \
-				--efi-directory="${_DIRS_MNTP}/" \
-				--boot-directory="${_DIRS_MNTP}/boot/" \
-				--removable
-			grub2-install \
-				--target=i386-pc \
-				--boot-directory="${_DIRS_MNTP}/boot/" \
-				"${_DEVS_LOOP}"
-		fi
-		# --- file copy -------------------------------------------------------
-		mkdir -p "${_DIRS_CDFS}/EFI/${__DIST}/"
-		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_DIRS_CDFS}/EFI/${__DIST}/grub.cfg" || true
-			search --file --set=root /.disk/info
-			set prefix=($root)/boot/grub
-			source $prefix/grub.cfg
+	partprobe "${__LOOP}"
+	mkfs.vfat -F 32 "${__LOOP}"p1
+
+	# --- install grub module -------------------------------------------------
+	rm -rf "${__DIRS_MNTP:?}"
+	mkdir -p "${__DIRS_MNTP}"
+	mount "${__LOOP}"p1 "${__DIRS_MNTP}" && _LIST_RMOV+=("${__DIRS_MNTP:?}")
+	grub-install \
+		--target=x86_64-efi \
+		--efi-directory="${__DIRS_MNTP}" \
+		--boot-directory="${__DIRS_MNTP}/boot" \
+		--removable
+	grub-install \
+		--target=i386-pc \
+		--boot-directory="${__DIRS_MNTP}/boot" \
+		"${__LOOP}"
+	cp --preserve=timestamps --recursive "${__DIRS_MNTP}/." "${__DIRS_WDIR}"
+	umount "${__DIRS_MNTP}"
+	losetup --detach "${__LOOP}"
+
+	# --- create uefi/bios image ----------------------------------------------
+	__ARRY=("$(fdisk -l "${__PATH_UEFI}")")
+	__SECT="$(printf "%s\n" "${__ARRY[@]}" | sed -ne '/Sector size/ s/^.*:[ \t]*\([0-9,]\+\)[ \t]*.*$/\1/p')"
+	__STRT="$(printf "%s\n" "${__ARRY[@]}" | sed -ne '/'"${__PATH_UEFI##*/}"'1/ s/^[^ \t]\+[ \t]\+\([0-9,]\+\)[ \t]\+.*$/\1/p')"
+	__CONT="$(printf "%s\n" "${__ARRY[@]}" | sed -ne '/'"${__PATH_UEFI##*/}"'1/ s/^[^ \t]\+[ \t]\+[0-9,]\+[ \t]\+[0-9,]\+[ \t]\+\([0-9,]\+\)[ \t]\+.*$/\1/p')"
+	dd if="${__PATH_UEFI}" of="${__DIRS_WDIR}/efi.img" bs="${__SECT}" skip="${__STRT}" count="${__CONT}"
+	dd if="${__PATH_UEFI}" of="${__DIRS_WDIR}/bios.img" bs=1 count=446
+
+	# --- complete ------------------------------------------------------------
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+}
+
+# -----------------------------------------------------------------------------
+# descript: create cdfs directory
+#   input :   $1   : work directory
+#   output: stdout : unused
+#   return:        : unused
+#-shellcheck disable=SC2317,SC2329
+function fnCreate_cdfs() {
+	_DBGS_FAIL+=("fail")
+	declare -r    __FUNC_NAME="fnCreate_cdfs"
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+
+	declare -r    __DIRS_WDIR="${1:-}"	# work directory
+	declare -r    __DIRS_MNTP="${__DIRS_WDIR}/mnt"
+	declare -r    __DIRS_CDFS="${__DIRS_WDIR}/cdfs"
+	declare -r    __PATH_UEFI="${__DIRS_WDIR}/uefi.img"
+	declare -a    __ARRY=()				# array
+	declare -i    __SECT=0				# sector size
+	declare -i    __STRT=0				# start sector
+	declare       __LOOP=""				# loop device
+
+	# --- directory initializing ----------------------------------------------
+	rm -rf "${__DIRS_CDFS:?}"
+	mkdir -p "${__DIRS_CDFS}"/{.disk,EFI/{boot,"${__TGET_DIST%%-*}"},boot/grub,isolinux,live/{boot,config.conf.d,config-hooks,config-preseed}}
+
+	# --- create cdfs image ---------------------------------------------------
+	touch "${__DIRS_CDFS}/.disk/info"
+	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__DIRS_CDFS}/EFI/${__TGET_DIST%%-*}/grub.cfg" || true
+		search --file --set=root /.disk/info
+		set prefix=($root)/boot/grub
+		source $prefix/grub.cfg
 _EOT_
-		[[ -e "${_DIRS_MNTP}/EFI/BOOT/BOOTX64.EFI" ]] && cp -a "${_DIRS_MNTP}/EFI/BOOT/BOOTX64.EFI"  "${_DIRS_CDFS}/EFI/boot/bootx64.efi"
-		[[ -e "${_DIRS_MNTP}/EFI/BOOT/grubx64.efi" ]] && cp -a "${_DIRS_MNTP}/EFI/BOOT/grubx64.efi"  "${_DIRS_CDFS}/EFI/boot/grubx64.efi"
-		[[ -e "${_DIRS_MNTP}/EFI/BOOT/mmx64.efi"   ]] && cp -a "${_DIRS_MNTP}/EFI/BOOT/mmx64.efi"    "${_DIRS_CDFS}/EFI/boot/mmx64.efi"
-		[[ -e "${_DIRS_MNTP}/boot/".               ]] && cp -a "${_DIRS_MNTP}/boot/"                 "${_DIRS_CDFS}/"
-#		rm -f "${_DIRS_CDFS}/boot/grub/x86_64-efi/load.cfg"
-		# --- unmount efi partition -------------------------------------------
-		umount "${_DIRS_MNTP}"
-		[[ -n "${_DEVS_ARRY[*]:-}" ]] && rm -f "${_DEVS_ARRY[@]:?}"
-		# --- extract the mbr template ----------------------------------------
-		dd if="${_FILE_UEFI}" bs=1 count=446 of="${_FILE_BIOS}" > /dev/null 2>&1
-		# --- extract efi partition image -------------------------------------
-		__SKIP=$(fdisk -l "${_FILE_UEFI}" | awk '/.img1/ {print $2;}' || true)
-		__SIZE=$(fdisk -l "${_FILE_UEFI}" | awk '/.img1/ {print $4;}' || true)
-		dd if="${_FILE_UEFI}" bs=512 skip="${__SKIP}" count="${__SIZE}" of="${_FILE_UEFI}1" > /dev/null 2>&1
-		mv -f "${_FILE_UEFI}1" "${_FILE_UEFI}"
-	fi
-	losetup --detach "${_DEVS_LOOP}"
-	# --- file copy -----------------------------------------------------------
-	echo "file copy ..."
-#	_FILE_INRD="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  \) | sort -Vu)"
-#	_FILE_KENL="$(find "${_DIRS_TGET}"/{,boot} -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' \) | sort -Vu)"
-	_FILE_INRD="$(find "${_DIRS_BASE}"         -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  -o -name 'initramfs' -o -name 'initramfs-*' \) | sort -Vu)"
-	_FILE_KENL="$(find "${_DIRS_BASE}"         -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*'                                             \) | sort -Vu)"
-#	[[ -e /usr/lib/grub/i386-pc/boot.img                     ]] && nice -n 19 cp -a /usr/lib/grub/i386-pc/boot.img                  "${_FILE_BIOS}"
-#	[[ -e /usr/lib/grub/i386-pc/.                            ]] && nice -n 19 cp -a /usr/lib/grub/i386-pc/                          "${_DIRS_CDFS}/boot/grub/"
-#	[[ -e /usr/lib/grub/x86_64-efi/.                         ]] && nice -n 19 cp -a /usr/lib/grub/x86_64-efi/                       "${_DIRS_CDFS}/boot/grub/"
-#	[[ -e /usr/lib/grub/x86_64-efi/monolithic/grubnetx64.efi ]] && nice -n 19 cp -a /usr/lib/grub/x86_64-efi/monolithic/grubx64.efi "${_DIRS_CDFS}/EFI/boot/"
-#	[[ -e /usr/lib/shim/mmx64.efi                            ]] && nice -n 19 cp -a /usr/lib/shim/mmx64.efi                         "${_DIRS_CDFS}/EFI/boot/"
-	[[ -e "${_PATH_ETRI:-}"                                  ]] && nice -n 19 cp -a  "${_PATH_ETRI}"                                "${_DIRS_CDFS}/boot/grub/i386-pc/"
-	[[ -e "${_FILE_UEFI:-}"                                  ]] && nice -n 19 cp -a  "${_FILE_UEFI}"                                "${_DIRS_CDFS}/boot/grub/${_FILE_UEFI##*/}"
-	[[ -e "${_FILE_SQFS:-}"                                  ]] && nice -n 19 cp -a  "${_FILE_SQFS}"                                "${_DIRS_CDFS}/${_DIRS_LIVE}/"
-	[[ -e "${_FILE_KENL:-}"                                  ]] && nice -n 19 cp -aL "${_FILE_KENL}"                                "${_DIRS_CDFS}/${_DIRS_LIVE}/" && ln -sr "${_DIRS_CDFS}/${_DIRS_LIVE}/${_FILE_KENL##*/}" "${_DIRS_CDFS}/${_DIRS_LIVE}/vmlinuz"
-	[[ -e "${_FILE_INRD:-}"                                  ]] && nice -n 19 cp -aL "${_FILE_INRD}"                                "${_DIRS_CDFS}/${_DIRS_LIVE}/" && ln -sr "${_DIRS_CDFS}/${_DIRS_LIVE}/${_FILE_INRD##*/}" "${_DIRS_CDFS}/${_DIRS_LIVE}/initrd.img"
-	[[ -e "${_DIRS_BASE}/splash.png"                         ]] && nice -n 19 cp -aL "${_DIRS_BASE}/splash.png"                     "${_DIRS_CDFS}/isolinux/splash.png"
-	if [[ -e /usr/lib/ISOLINUX/isolinux.bin ]]; then
-		cp -a /usr/lib/syslinux/modules/bios/* "${_DIRS_CDFS}/isolinux/"
-		cp -a /usr/lib/ISOLINUX/isolinux.bin   "${_DIRS_CDFS}/isolinux/"
-	elif [[ -e /usr/share/syslinux/isolinux.bin ]]; then
-		cp -a /usr/share/syslinux/*            "${_DIRS_CDFS}/isolinux/"
-	fi
-#	if [[ -e "${_DIRS_BASE}/splash.png" ]]; then
-#		convert "${_DIRS_BASE}/splash.png" -resize "${_VIDE_MODE}" "${_DIRS_CDFS}"/isolinux/splash.png
-#	fi
-	# --- create efi image file -----------------------------------------------
-	rm -f "${_FILE_UEFI:?}"
-	dd if=/dev/zero of="${_FILE_UEFI:?}" bs=1M count=5
-	mkfs.fat -F 12 -n "ESP" "${_FILE_UEFI}"
-	rm -rf "${_DIRS_MNTP:?}"
-	mkdir -p "${_DIRS_MNTP}"
-	mount "${_FILE_UEFI}" "${_DIRS_MNTP}" && _LIST_RMOV+=("${_DIRS_MNTP}")
-	[[ -e "${_DIRS_CDFS}/EFI/".  ]] && cp -a "${_DIRS_CDFS}/EFI/" "${_DIRS_MNTP}/"
-	umount "${_DIRS_MNTP}"
-	# --- get distribution information ----------------------------------------
-	_MENU_DIST="$(awk -F '=' '$1=="PRETTY_NAME" {print $2;}' "${_DIRS_BASE:?}/os-release")"
-	_MENU_DIST="${_MENU_DIST#"${_MENU_DIST%%[!\"]*}"}"
-	_MENU_DIST="${_MENU_DIST%"${_MENU_DIST##*[!\"]}"}"
-	# --- set boot options ----------------------------------------------------
-	case "${_DIST_INFO}" in
-		debian-*           | \
-		ubuntu-*           ) _BOOT_OPTN=("${_BOOT_DEBS[@]}");;
-		fedora-*           | \
-		centos-stream-*    | \
-		almalinux-*        | \
-		rockylinux-*       | \
-		miraclelinux-*     ) _BOOT_OPTN=("${_BOOT_RHEL[@]}");;
-		opensuse-leap-*    | \
-		opensuse-tumbleweed) _BOOT_OPTN=();;
-		*                  ) echo "not found: ${_DIST_INFO:-}"; exit 1;;
-	esac
+
+	find "${__DIRS_WDIR}" -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' -o -name linux                                                 \) -exec cp --preserve=timestamps '{}' "${__DIRS_CDFS}/live"            \;
+	find "${__DIRS_WDIR}" -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  -o -name initrd.gz -o -name 'initramfs' -o -name 'initramfs-*' \) -exec cp --preserve=timestamps '{}' "${__DIRS_CDFS}/live"            \;
+	find "${__DIRS_WDIR}" -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' -o -name linux                                                 \) -exec cp --preserve=timestamps '{}' "${__DIRS_CDFS}/live/vmlinuz"    \;
+	find "${__DIRS_WDIR}" -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  -o -name initrd.gz -o -name 'initramfs' -o -name 'initramfs-*' \) -exec cp --preserve=timestamps '{}' "${__DIRS_CDFS}/live/initrd.img" \;
+	[[ -e "${__DIRS_WDIR}/filesystem.squashfs" ]] && cp --preserve=timestamps             "${__DIRS_WDIR}/filesystem.squashfs" "${__DIRS_CDFS}/live/"
+	[[ -e "${__DIRS_WDIR}/efi.img"             ]] && cp --preserve=timestamps             "${__DIRS_WDIR}/efi.img"             "${__DIRS_CDFS}/boot/grub/"
+	[[ -e /usr/lib/grub/i386-pc/.              ]] && cp --preserve=timestamps --recursive /usr/lib/grub/i386-pc/*              "${__DIRS_CDFS}/boot/grub/i386-pc/"
+	[[ -e /usr/lib/grub/x86_64-efi/.           ]] && cp --preserve=timestamps --recursive /usr/lib/grub/x86_64-efi/*           "${__DIRS_CDFS}/boot/grub/x86_64-efi/"
+	[[ -e /usr/lib/syslinux/modules/bios/.     ]] && cp --preserve=timestamps --recursive /usr/lib/syslinux/modules/bios/*     "${__DIRS_CDFS}/isolinux/"
+	[[ -e /usr/lib/ISOLINUX/isolinux.bin       ]] && cp --preserve=timestamps             /usr/lib/ISOLINUX/isolinux.bin       "${__DIRS_CDFS}/isolinux/"
+	[[ -e "${_MENU_SPLS:-}"                    ]] && cp --preserve=timestamps             "${_MENU_SPLS}"                      "${__DIRS_CDFS}/isolinux/"
+
+	# --- complete ------------------------------------------------------------
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+}
+
+# -----------------------------------------------------------------------------
+# descript: create menu isolinux.cfg
+#   input :   $1   : work directory
+#   input :   $2   : menu target name
+#   input :   $3   : boot parameter
+#   output: stdout : unused
+#   return:        : unused
+#-shellcheck disable=SC2317,SC2329
+function fnCreate_menu_isolinux() {
+	_DBGS_FAIL+=("fail")
+	declare -r    __FUNC_NAME="fnCreate_menu_isolinux"
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+
+	declare -r    __DIRS_WDIR="${1:-}"	# work directory
+	declare -r    __TGET_NAME="${2:-}"	# menu target name
+	declare -r    __OPTN_BOOT="${3:-}"	# boot parameter
+	declare -r    __DIRS_CDFS="${__DIRS_WDIR}/cdfs"
+
 	# --- create isolinux.cfg -------------------------------------------------
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_MENU_SLNX}" || true
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__DIRS_CDFS}/isolinux/isolinux.cfg" || true
 		path
 
-		default vesamenu.c32
+		default             vesamenu.c32
 
-		menu resolution ${_VIDE_MODE//x/ }
-		menu title Boot Menu: ${_MENU_DIST:-}
-		menu background splash.png
-		menu color title        * #FFFFFFFF *
-		menu color border       * #00000000 #00000000 none
-		menu color sel          * #ffffffff #76a1d0ff *
-		menu color hotsel       1;7;37;40 #ffffffff #76a1d0ff *
-		menu color tabmsg       * #ffffffff #00000000 *
-		menu color help         37;40 #ffdddd00 #00000000 none
-		menu vshift 8
-		menu rows 12
-		menu helpmsgrow 14
-		menu cmdlinerow 16
-		menu timeoutrow 16
-		menu tabmsgrow 18
-		menu tabmsg Press ENTER to boot or TAB to edit a menu entry
+		menu resolution     ${_MENU_RESO//x/ }
+		menu title          Boot Menu: Live media
+		menu background     ${_MENU_SPLS##*/}
+		menu color title    * #FFFFFFFF *
+		menu color border   * #00000000 #00000000 none
+		menu color sel      * #ffffffff #76a1d0ff *
+		menu color hotsel   1;7;37;40 #ffffffff #76a1d0ff *
+		menu color tabmsg   * #ffffffff #00000000 *
+		menu color help     37;40 #ffdddd00 #00000000 none
+		menu vshift         8
+		menu rows           12
+		menu helpmsgrow     14
+		menu cmdlinerow     16
+		menu timeoutrow     16
+		menu tabmsgrow      18
+		menu tabmsg         Press ENTER to boot or TAB to edit a menu entry
 
 		label live
-		  menu label ^${_MENU_DIST//%20/ }
+		  menu label ^${__TGET_NAME}
 		  menu default
-		  linux  /${_DIRS_LIVE}/${_FILE_KENL##*/}
-		  initrd /${_DIRS_LIVE}/${_FILE_INRD##*/}
-		  append ${_BOOT_OPTN[@]}
+		  linux  /live/vmlinuz
+		  initrd /live/initrd.img
+		  append ${__OPTN_BOOT}
 
 		label poweroff
 		  menu label ^System shutdown
 		  com32 poweroff.c32
-		
+
 		label reboot
 		  menu label ^System restart
 		  com32 reboot.c32
 
 		prompt 0
-		timeout 50
+		timeout ${_MENU_TOUT}0
 _EOT_
-	# --- create theme.cfg ----------------------------------------------------
-#	: > "${_MENU_FTHM%.*}.cfg"
+
+	# --- complete ------------------------------------------------------------
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+}
+
+# -----------------------------------------------------------------------------
+# descript: create menu theme.txt
+#   input :   $1   : work directory
+#   input :   $2   : menu target name
+#   input :   $3   : boot parameter
+#   output: stdout : unused
+#   return:        : unused
+#-shellcheck disable=SC2317,SC2329
+function fnCreate_menu_theme() {
+	_DBGS_FAIL+=("fail")
+	declare -r    __FUNC_NAME="fnCreate_menu_theme"
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+
+	declare -r    __DIRS_WDIR="${1:-}"	# work directory
+	declare -r    __TGET_NAME="${2:-}"	# menu target name
+	declare -r    __OPTN_BOOT="${3:-}"	# boot parameter
+	declare -r    __DIRS_CDFS="${__DIRS_WDIR}/cdfs"
+
 	# --- create theme.txt ----------------------------------------------------
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_MENU_FTHM}" || true
-		desktop-image: "/isolinux/splash.png"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__DIRS_CDFS}/boot/grub/theme.txt" || true
+		desktop-image: "/isolinux/${_MENU_SPLS##*/}"
 		desktop-color: "#000000"
 		title-color: "#ffffff"
 		title-font: "Unifont Regular 16"
-		title-text: "Boot Menu: ${_MENU_DIST:-}"
+		title-text: "Boot Menu: Live media
 		message-font: "Unifont Regular 16"
 		terminal-font: "Unifont Regular 16"
 		terminal-border: "0"
@@ -1038,8 +627,33 @@ _EOT_
 		  text = "@TIMEOUT_NOTIFICATION_LONG@"
 		}
 _EOT_
-	# --- create grub.cfg -----------------------------------------------------
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_MENU_GRUB}" || true
+
+	# --- complete ------------------------------------------------------------
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+}
+
+# -----------------------------------------------------------------------------
+# descript: create menu grub.cfg
+#   input :   $1   : work directory
+#   input :   $2   : menu target name
+#   input :   $3   : boot parameter
+#   output: stdout : unused
+#   return:        : unused
+#-shellcheck disable=SC2317,SC2329
+function fnCreate_menu_grub() {
+	_DBGS_FAIL+=("fail")
+	declare -r    __FUNC_NAME="fnCreate_menu_grub"
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+
+	declare -r    __DIRS_WDIR="${1:-}"	# work directory
+	declare -r    __TGET_NAME="${2:-}"	# menu target name
+	declare -r    __OPTN_BOOT="${3:-}"	# boot parameter
+	declare -r    __DIRS_CDFS="${__DIRS_WDIR}/cdfs"
+
+	# --- create theme.txt ----------------------------------------------------
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__DIRS_CDFS}/boot/grub/grub.cfg" || true
 		if [ x\$feature_default_font_path = xy ] ; then
 		  font=unicode
 		else
@@ -1048,7 +662,7 @@ _EOT_
 
 		if loadfont \$font ; then
 		  set gfxpayload=keep
-		  set gfxmode=${_VIDE_MODE}
+		  set gfxmode=${_MENU_RESO}
 		  insmod efi_gop
 		  insmod efi_uga
 		  insmod video_bochs
@@ -1060,10 +674,10 @@ _EOT_
 		  terminal_output gfxterm
 		fi
 
-		if background_image /isolinux/splash.png 2> /dev/null; then
+		if background_image /isolinux/${_MENU_SPLS##*/}; then
 		  set color_normal=light-gray/black
 		  set color_highlight=white/black
-		elif background_image /splash.png 2> /dev/null; then
+		elif background_image /${_MENU_SPLS##*/}; then
 		  set color_normal=light-gray/black
 		  set color_highlight=white/black
 		else
@@ -1088,16 +702,16 @@ _EOT_
 		insmod ext2
 		insmod chain
 
-		menuentry 'Live mode' {
-		  echo '${_MENU_DIST:-} ...'
+		menuentry '${__TGET_NAME}' {
+		  echo '${__TGET_NAME} ...'
 		  set gfxpayload=keep
 		  set background_color=black
-		  set options="${_BOOT_OPTN[@]}"
+		  set options="${__OPTN_BOOT}"
 		  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 		  echo 'Loading linux ...'
-		  linux  /${_DIRS_LIVE}/${_FILE_KENL##*/} \${options}
+		  linux  /live/vmlinuz \${options}
 		  echo 'Loading initrd ...'
-		  initrd /${_DIRS_LIVE}/${_FILE_INRD##*/}
+		  initrd /live/initrd.img
 		}
 
 		menuentry 'System shutdown' {
@@ -1120,36 +734,245 @@ _EOT_
 		  }
 		fi
 _EOT_
+
+	# --- complete ------------------------------------------------------------
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+}
+
+# -----------------------------------------------------------------------------
+# descript: create iso image
+#   input :   $1   : work directory
+#   input :   $2   : menu target name
+#   input :   $3   : target file
+#   output: stdout : unused
+#   return:        : unused
+#-shellcheck disable=SC2317,SC2329
+function fnCreate_iso_image() {
+	_DBGS_FAIL+=("fail")
+	declare -r    __FUNC_NAME="fnCreate_iso_image"
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+
+	declare -r    __DIRS_WDIR="${1:-}"	# work directory
+	declare -r    __TGET_NAME="${2:-}"	# menu target name
+	declare -r    __TGET_PATH="${3:-}"	# target file
+	declare -r    __DIRS_CDFS="${__DIRS_WDIR}/cdfs"
+	declare -i    __RTCD=0				# return code
+	declare       __PATH=""				# full path
+	              __PATH="$(mktemp -q -p "${__DIRS_WDIR}" "${__TGET_PATH##*/}.XXXXXX")"
+	readonly      __PATH
+	declare -r -a __OPTN=(\
+		-rational-rock \
+		-volid "${__TGET_NAME^}-Live-Media" \
+		-joliet -joliet-long \
+		-full-iso9660-filenames -iso-level 3 \
+		-partition_offset 16 \
+		--grub2-mbr ../bios.img \
+		--mbr-force-bootable \
+		-append_partition 2 0xEF boot/grub/efi.img \
+		-appended_part_as_gpt \
+		-eltorito-catalog isolinux/boot.catalog \
+		-eltorito-boot isolinux/isolinux.bin \
+		-no-emul-boot \
+		-boot-load-size 4 -boot-info-table \
+		--grub2-boot-info \
+		-eltorito-alt-boot -e '--interval:appended_partition_2:all::' \
+		-no-emul-boot \
+		-output "${__PATH}" \
+		.
+	)
+
 	# --- create iso image ----------------------------------------------------
-	echo "create iso image file ..."
-	pushd "${_DIRS_CDFS:?}" > /dev/null || exit
-		if ! nice -n 19 xorrisofs "${_OPTN_XORR[@]}" -output "${_FILE_WORK}" .; then
-			printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [xorriso]" "${_FILE_ISOS##*/}" 1>&2
+	pushd "${__DIRS_CDFS}" > /dev/null || exit
+		if ! nice -n -0 xorrisofs "${__OPTN[@]}"  . > /dev/null 2>&1; then
+			__RTCD="$?"
+			printf "%s %s\n" "xorrisofs" "${__OPTN[*]}" > "${PWD}/xorrisofs.debugout"
+			printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n"     "xorr  failed: ${__TGET_PATH##*/}"
+			printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n" "Working files will be deleted when this shell exits."
+			read -r -p "Press any key to exit..."
+			exit "${__RTCD}"
 		else
-			if ! cp --preserve=timestamps "${_FILE_WORK}" "${_FILE_ISOS}"; then
-				printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [cp]" "${_FILE_ISOS##*/}" 1>&2
+			if ! cp --preserve=timestamps "${__PATH}" "${__TGET_PATH}"; then
+				printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n" "  cp failed.: ${__TGET_PATH##*/}"
+				printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n" "Working files will be deleted when this shell exits."
+				read -r -p "Press any key to exit..."
+				exit "${__RTCD}"
 			else
-				ls -lh "${_FILE_ISOS}"
-				printf "\033[m\033[42m%20.20s: %s\033[m\n" "complete" "${_FILE_ISOS}" 1>&2
+				printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "     success: ${__TGET_PATH##*/}" 1>&2
+				ls -lLh --time-style="+%Y-%m-%d %H:%M:%S" "${__TGET_PATH}" || true
 			fi
 		fi
-		rm -f "${_FILE_WORK:?}"
-	popd > /dev/null || exit
-	umount "${_DIRS_OLAY:?}/merged"
-	rm -rf "${_DIRS_TEMP:?}" "${_DIRS_OLAY:?}"
+		rm -f "${__PATH:?}"
+	popd > /dev/null
 
-# debian / ubuntu
-# mkosi
-# squashfs-tools
-# graphicsmagick-imagemagick-compat
-# xorriso
+	# --- complete ------------------------------------------------------------
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+}
 
-# rhel
-# https://github.com/systemd/mkosi
-# squashfs-tools
-# ImageMagick
-# xorriso
-# grub2-efi-x64-cdboot
-# grub2-efi-x64-modules
-# grub2-pc-modules
-# syslinux
+function fnCreate_media() {
+	_DBGS_FAIL+=("fail")
+	declare -r    __FUNC_NAME="fnCreate_media"
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+
+	declare -r    __TGET_PROF="${1:-}"	# target configuration file
+	declare -r    __TGET_MDIA="${2:-}"	# target media type (directory, tar, cpio, disk, uki, esp, oci, sysext, confext, portable, addon, none)
+	declare -r    __TGET_DIST="${3:-}"	# target distribution (fedora, debian, kali, ubuntu, arch, opensuse, mageia, centos, rhel, rhel-ubi, openmandriva, rocky, alma, azure)-version
+	declare -r    __TGET_VERS="${4:-}"	# target release version
+	declare -r    __DIRS_WDIR="${_DIRS_WDIR}/${__TGET_DIST}"
+	declare -r    __OPTN_BOOT="boot=live nonetworking dhcp components overlay-size=90% hooks=medium utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp,us keyboard-model=pc105 keyboard-variants=, --- quiet splash fsck.mode=skip raid=noautodetect vga=791"
+
+	rm -rf "${__DIRS_WDIR:?}"
+	mkdir -p "${__DIRS_WDIR}"/{workspace,source}
+
+	fnExec_mkosi "${__TGET_PROF:-}" "${__TGET_MDIA:-}" "${__TGET_DIST:-}" "${__TGET_VERS:-}" "${__DIRS_WDIR:-}"
+	fnCreate_squashfs        "${__DIRS_WDIR:-}" "${__TGET_DIST}"
+	fnCreate_ueif_bios_image "${__DIRS_WDIR:-}"
+	fnCreate_cdfs            "${__DIRS_WDIR:-}"
+	fnCreate_menu_isolinux   "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${__OPTN_BOOT}"
+	fnCreate_menu_theme      "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${__OPTN_BOOT}"
+	fnCreate_menu_grub       "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${__OPTN_BOOT}"
+	fnCreate_iso_image       "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${_DIRS_RMAK}/live-${__TGET_DIST}-${__TGET_VERS:-}.iso"
+
+	rm -rf "${__DIRS_WDIR:?}"
+
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+}
+
+function fnMain() {
+	_DBGS_FAIL+=("fail")
+	declare -i    __time_start=0		# start of elapsed time
+	declare -i    __time_end=0			# end of elapsed time
+	declare -i    __time_elapsed=0		# result of elapsed time
+	declare -a    __OPTN=()
+	declare       __DIST=""
+	declare       __VERS=""
+	declare       __CODE=""
+
+	# --- start ---------------------------------------------------------------
+	__time_start=$(date +%s)
+	printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
+
+	set -f -- "${_PROG_PARM[@]:-}"
+	set +f
+	while [[ -n "${1:-}" ]]
+	do
+		__OPTN=()
+		case "${1:-}" in
+			fedora-*       | \
+			debian-*       | \
+			kali-*         | \
+			ubuntu-*       | \
+			arch-*         | \
+			opensuse-*     | \
+			mageia-*       | \
+			centos-*       | \
+			rhel-ubi-*     | \
+			rhel-*         | \
+			openmandriva-* | \
+			rocky-*        | \
+			alma-*         | \
+			azure-*        )
+				__DIST="${1,,}"
+				[[ "${__DIST%.*}" = "debian-${__DIST#*-}" ]] && __DIST="${__DIST}.0"
+				__VERS="${__DIST#*-}"
+				case "${__DIST}" in
+					debian-1.1         ) __CODE="buzz"     ;;
+					debian-1.2         ) __CODE="rex"      ;;
+					debian-1.3         ) __CODE="bo"       ;;
+					debian-2.0         ) __CODE="hamm"     ;;
+					debian-2.1         ) __CODE="slink"    ;;
+					debian-2.2         ) __CODE="potato"   ;;
+					debian-3.0         ) __CODE="woody"    ;;
+					debian-3.1         ) __CODE="sarge"    ;;
+					debian-4.0         ) __CODE="etch"     ;;
+					debian-5.0         ) __CODE="lenny"    ;;
+					debian-6.0         ) __CODE="squeeze"  ;;
+					debian-7.0         ) __CODE="wheezy"   ;;
+					debian-8.0         ) __CODE="jessie"   ;;
+					debian-9.0         ) __CODE="stretch"  ;;
+					debian-10.0        ) __CODE="buster"   ;;
+					debian-11.0        ) __CODE="bullseye" ;;
+					debian-12.0        ) __CODE="bookworm" ;;
+					debian-13.0        ) __CODE="trixie"   ;;
+					debian-14.0        ) __CODE="forky"    ;;
+					debian-15.0        ) __CODE="duke"     ;;
+					debian-testing     ) __CODE="testing"  ;;
+					debian-sid         ) __CODE="sid"      ;;
+					ubuntu-4.10        ) __CODE="warty"    ;;
+					ubuntu-5.04        ) __CODE="hoary"    ;;
+					ubuntu-5.10        ) __CODE="breezy"   ;;
+					ubuntu-6.06        ) __CODE="dapper"   ;;
+					ubuntu-6.10        ) __CODE="edgy"     ;;
+					ubuntu-7.04        ) __CODE="feisty"   ;;
+					ubuntu-7.10        ) __CODE="gutsy"    ;;
+					ubuntu-8.04        ) __CODE="hardy"    ;;
+					ubuntu-8.10        ) __CODE="intrepid" ;;
+					ubuntu-9.04        ) __CODE="jaunty"   ;;
+					ubuntu-9.10        ) __CODE="karmic"   ;;
+					ubuntu-10.04       ) __CODE="lucid"    ;;
+					ubuntu-10.10       ) __CODE="maverick" ;;
+					ubuntu-11.04       ) __CODE="natty"    ;;
+					ubuntu-11.10       ) __CODE="oneiric"  ;;
+					ubuntu-12.04       ) __CODE="precise"  ;;
+					ubuntu-12.10       ) __CODE="quantal"  ;;
+					ubuntu-13.04       ) __CODE="raring"   ;;
+					ubuntu-13.10       ) __CODE="saucy"    ;;
+					ubuntu-14.04       ) __CODE="trusty"   ;;
+					ubuntu-14.10       ) __CODE="utopic"   ;;
+					ubuntu-15.04       ) __CODE="vivid"    ;;
+					ubuntu-15.10       ) __CODE="wily"     ;;
+					ubuntu-16.04       ) __CODE="xenial"   ;;
+					ubuntu-16.10       ) __CODE="yakkety"  ;;
+					ubuntu-17.04       ) __CODE="zesty"    ;;
+					ubuntu-17.10       ) __CODE="artful"   ;;
+					ubuntu-18.04       ) __CODE="bionic"   ;;
+					ubuntu-18.10       ) __CODE="cosmic"   ;;
+					ubuntu-19.04       ) __CODE="disco"    ;;
+					ubuntu-19.10       ) __CODE="eoan"     ;;
+					ubuntu-20.04       ) __CODE="focal"    ;;
+					ubuntu-20.10       ) __CODE="groovy"   ;;
+					ubuntu-21.04       ) __CODE="hirsute"  ;;
+					ubuntu-21.10       ) __CODE="impish"   ;;
+					ubuntu-22.04       ) __CODE="jammy"    ;;
+					ubuntu-22.10       ) __CODE="kinetic"  ;;
+					ubuntu-23.04       ) __CODE="lunar"    ;;
+					ubuntu-23.10       ) __CODE="mantic"   ;;
+					ubuntu-24.04       ) __CODE="noble"    ;;
+					ubuntu-24.10       ) __CODE="oracular" ;;
+					ubuntu-25.04       ) __CODE="plucky"   ;;
+					ubuntu-25.10       ) __CODE="questing" ;;
+					*                  ) __CODE="${1#*-}";;
+				esac
+				[[ -n "${__DIST:-}" ]] && fnCreate_media "${_DIRS_TMPL}/_template" "${_TGET_MDIA}" "${__DIST}" "${__CODE:-}"
+				;;
+			help    ) shift; fnHelp; break;;
+#			debug   ) shift; fnDebug_parameter; break;;
+			*       ) ;;
+		esac
+		shift
+#		__OPTN=("${@:-}")
+#		set -f -- "${__OPTN[@]}"
+#		set +f
+	done
+
+	# --- complete ------------------------------------------------------------
+	__time_end=$(date +%s)
+	__time_elapsed=$((__time_end-__time_start))
+
+	printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true) processing end"
+	printf "elapsed time: %dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60))
+	unset '_DBGS_FAIL[${#_DBGS_FAIL}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+}
+
+# *** main processing section *************************************************
+	fnMain "${_PROG_PARM[@]:-}"
+	read -r -p "Press any key to exit..."
+	exit 0
+
+### eof #######################################################################
