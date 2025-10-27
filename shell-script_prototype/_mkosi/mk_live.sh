@@ -19,6 +19,7 @@
 	# --- debug parameter -----------------------------------------------------
 	declare       _DBGS_FLAG=""			# debug flag (empty: normal, else: debug)
 	declare       _DBGS_LOGS=""			# debug file (empty: normal, else: debug)
+	declare       _DBGS_SIMU=""			# debug flag (empty: normal, else: simulation)
 	declare -a    _DBGS_FAIL=()			# debug flag (empty: success, else: failure)
 
 	# --- constant for control code -------------------------------------------
@@ -75,6 +76,7 @@ _EOT_
 			--dbg   ) shift; _DBGS_FLAG="true"; set -x;;
 			--dbgout) shift; _DBGS_FLAG="true";;
 			--dbglog) shift; _DBGS_LOGS="/tmp/${_PROG_PROC}.$(date +"%Y%m%d%H%M%S" || true).log";;
+			--simu  ) shift; _DBGS_SIMU="true";;
 			help    ) shift; fnHelp; exit 0;;
 			*       ) shift;;
 		esac
@@ -101,9 +103,12 @@ function fnTrap() {
 	declare       __MPNT=""				# mount point
 	declare -i    I=0
 
-	printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n" "failed."
-	printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n" "Working files will be deleted when this shell exits."
-	read -r -p "Press any key to exit..."
+	if [[ "${#_DBGS_FAIL[@]}" -gt 0 ]]; then
+		printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n" "failed."
+		printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n" "function: ${_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]}"
+		printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n" "Working files will be deleted when this shell exits."
+		read -r -p "Press any key to exit..."
+	fi
 
 	for I in $(printf "%s\n" "${!_LIST_RMOV[@]}" | sort -rV)
 	do
@@ -163,6 +168,7 @@ function fnTrap() {
 	declare -r    _DIRS_CONF="${_DIRS_SHAR}/conf"			# configuration file
 #	declare -r    _DIRS_DATA="${_DIRS_CONF}/_data"			# data file
 #	declare -r    _DIRS_KEYS="${_DIRS_CONF}/_keyring"		# keyring file
+	declare -r    _DIRS_MKOS="${_DIRS_CONF}/_mkosi"			# mkosi configuration files
 	declare -r    _DIRS_TMPL="${_DIRS_CONF}/_template"		# templates for various configuration files
 	declare -r    _DIRS_SHEL="${_DIRS_CONF}/script"			# shell script file
 #	declare -r    _DIRS_IMGS="${_DIRS_SHAR}/imgs"			# iso file extraction destination
@@ -197,10 +203,10 @@ function fnTrap() {
 #	declare -r    _TGET_DIST="azure"
 
 	# --- mkosi output image format type --------------------------------------
-#	declare -r    _TGET_MDIA="directory"
+	declare -r    _TGET_MDIA="directory"
 #	declare -r    _TGET_MDIA="tar"
 #	declare -r    _TGET_MDIA="cpio"
-	declare -r    _TGET_MDIA="disk"
+#	declare -r    _TGET_MDIA="disk"
 #	declare -r    _TGET_MDIA="uki"
 #	declare -r    _TGET_MDIA="esp"
 #	declare -r    _TGET_MDIA="oci"
@@ -212,7 +218,9 @@ function fnTrap() {
 
 	# --- menu parameter ------------------------------------------------------
 	declare -r    _MENU_TOUT="5"		# timeout (sec)
-	declare -r    _MENU_RESO="854x480"	# resolution (widht x hight)
+#	declare -r    _MENU_RESO="1280x720"	# resolution (widht x hight): 16:9
+	declare -r    _MENU_RESO="854x480"	# "                         : 16:9
+#	declare -r    _MENU_RESO="1024x768"	# "                         :  4:3
 #	declare -r    _MENU_DPTH=""			# colors
 #	declare -r    _MENU_MODE=""			# screen mode (vga=nnn)
 	declare       _MENU_SPLS=""			# splash file
@@ -228,8 +236,9 @@ function fnTrap() {
 #   return:        : unused
 #-shellcheck disable=SC2317,SC2329
 function fnExec_mkosi() {
-	_DBGS_FAIL+=("fail")
+#	_DBGS_FAIL+=("fail")
 	declare -r    __FUNC_NAME="fnExec_mkosi"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
 
 	declare -r    __TGET_INCL="${1:-}"	# target include configuration file
@@ -237,6 +246,7 @@ function fnExec_mkosi() {
 	declare -r    __TGET_DIST="${3:-}"	# target distribution (fedora,  debian,  kali, ubuntu,  arch,  opensuse, mageia, centos, rhel, rhel-ubi, openmandriva, rocky, alma, azure)
 	declare -r    __TGET_VERS="${4:-}"	# target release version
 	declare -r    __DIRS_WDIR="${5:-}"	# work directory
+	declare -r    __COMD_MKOS="${6:-}"	# mkosi command
 	declare -i    __RTCD=0				# return code
 	declare -r -a __OPTN=(\
 		--force \
@@ -244,18 +254,23 @@ function fnExec_mkosi() {
 		--bootable=no \
 		--selinux-relabel=yes \
 		--with-network=yes \
-		${__TGET_PROF:+--include="${__TGET_PROF%/*}"} \
+		${__TGET_INCL:+--include="${__TGET_INCL}"} \
 		${__TGET_MDIA:+--format="${__TGET_MDIA}"} \
 		${__TGET_DIST:+--distribution="${__TGET_DIST%%-*}"} \
 		${__TGET_VERS:+--release="${__TGET_VERS}"} \
 		${__DIRS_WDIR:+--workspace-directory="${__DIRS_WDIR}/workspace"} \
 		${__DIRS_WDIR:+--directory="${__DIRS_WDIR}/source"} \
 		${__DIRS_WDIR:+--output-directory="${__DIRS_WDIR}"} \
+		${__COMD_MKOS:+"${__COMD_MKOS}"} \
 	)
 
 	if [[ -e "${_SHEL_LATE:-}" ]]; then
 		cp --preserve=timestamps "${_SHEL_LATE}" "${__DIRS_WDIR}/source"
 		chmod +x "${__DIRS_WDIR}/source/${_SHEL_LATE##*/}"
+	fi
+	if [[ -n "${_DBGS_SIMU:-}" ]]; then
+		printf "%s %s\n" "mkosi" "${__OPTN[*]}" > "${PWD}/mkosi.debugout"
+		cp -a "${__DIRS_WDIR}/source/${_SHEL_LATE##*/}" "${PWD}"
 	fi
 	if ! nice -n 0 mkosi "${__OPTN[@]}" 2>&1 | tee "${PWD}/mkosi.debuglog"; then
 		__RTCD="$?"
@@ -268,7 +283,7 @@ function fnExec_mkosi() {
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
-	unset '_DBGS_FAIL[${#_DBGS_FAIL}-1]'
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 }
 
@@ -280,13 +295,14 @@ function fnExec_mkosi() {
 #   return:        : unused
 #-shellcheck disable=SC2317,SC2329
 function fnCreate_squashfs() {
-	_DBGS_FAIL+=("fail")
+#	_DBGS_FAIL+=("fail")
 	declare -r    __FUNC_NAME="fnCreate_squashfs"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
 
 	declare -r    __DIRS_WDIR="${1:-}"	# work directory
 	declare -r    __TGET_NAME="${2:-}"	# menu target name
-	declare -r    __DIRS_MNTP="${__DIRS_WDIR}/mnt"
+	declare -r    __DIRS_MNTP="${__DIRS_WDIR}/image"
 	declare -r    __PATH_SRCS="${__DIRS_WDIR}/image.raw"
 	declare -r    __PATH_SQFS="${__DIRS_WDIR}/filesystem.squashfs"
 	declare       __PATH=""				# full path
@@ -294,17 +310,22 @@ function fnCreate_squashfs() {
 	declare -i    __SECT=0				# sector size
 	declare -i    __STRT=0				# start sector
 
-	# --- directory initializing ----------------------------------------------
-	rm -rf "${__DIRS_MNTP:?}"
-	mkdir -p "${__DIRS_MNTP}"
+	printf "\033[m${_PROG_NAME}: \033[42m%s\033[m\n" " create mode: ${__TGET_MDIA:-"default"}"
 
-	# --- get offset sector ---------------------------------------------------
-	__ARRY=("$(fdisk -l "${__PATH_SRCS}")")
-	__SECT="$(printf "%s\n" "${__ARRY[@]}" | sed -ne '/Sector size/ s/^.*:[ \t]*\([0-9,]\+\)[ \t]*.*$/\1/p')"
-	__STRT="$(printf "%s\n" "${__ARRY[@]}" | sed -ne '/'"${__PATH_SRCS##*/}"'1/ s/^[^ \t]\+[ \t]\+\([0-9,]\+\)[ \t]\+.*$/\1/p')"
+	# --- if the image format type is disk ------------------------------------
+	if [[ -e "${__PATH_SRCS}" ]]; then
+		# --- directory initializing ------------------------------------------
+		rm -rf "${__DIRS_MNTP:?}"
+		mkdir -p "${__DIRS_MNTP}"
 
-	# --- mount ---------------------------------------------------------------
-	mount -t ext4 -o loop,ro,offset=$((__SECT*__STRT)) "${__PATH_SRCS}" "${__DIRS_MNTP}" && _LIST_RMOV+=("${__DIRS_MNTP:?}")
+		# --- get offset sector -----------------------------------------------
+		__ARRY=("$(fdisk -l "${__PATH_SRCS}")")
+		__SECT="$(printf "%s\n" "${__ARRY[@]}" | sed -ne '/Sector size/ s/^.*:[ \t]*\([0-9,]\+\)[ \t]*.*$/\1/p')"
+		__STRT="$(printf "%s\n" "${__ARRY[@]}" | sed -ne '/'"${__PATH_SRCS##*/}"'1/ s/^[^ \t]\+[ \t]\+\([0-9,]\+\)[ \t]\+.*$/\1/p')"
+
+		# --- mount -----------------------------------------------------------
+		mount -t ext4 -o loop,ro,offset=$((__SECT*__STRT)) "${__PATH_SRCS}" "${__DIRS_MNTP}" && _LIST_RMOV+=("${__DIRS_MNTP:?}")
+	fi
 
 	# --- copy initrd/vmlinux -------------------------------------------------
 	find "${__DIRS_MNTP}/boot" -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' -o -name linux                                                 \) -exec cp --preserve=timestamps '{}' "${__DIRS_WDIR}" \;
@@ -362,15 +383,20 @@ function fnCreate_squashfs() {
 		fi
 	fi
 
+	# --- clean up ------------------------------------------------------------
+	rm -rf "${__DIRS_MNTP}"/{.autorelabel,.cache,work}
+
 	# --- create squashfs file ------------------------------------------------
 	mksquashfs "${__DIRS_MNTP}" "${__PATH_SQFS}" -noappend
 
 	# --- unmount -------------------------------------------------------------
-	umount "${__DIRS_MNTP}"
+	if [[ -e "${__PATH_SRCS}" ]]; then
+		umount "${__DIRS_MNTP}"
+	fi
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
-	unset '_DBGS_FAIL[${#_DBGS_FAIL}-1]'
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 }
 
@@ -381,11 +407,13 @@ function fnCreate_squashfs() {
 #   return:        : unused
 #-shellcheck disable=SC2317,SC2329
 function fnCreate_ueif_bios_image() {
-	_DBGS_FAIL+=("fail")
+#	_DBGS_FAIL+=("fail")
 	declare -r    __FUNC_NAME="fnCreate_ueif_bios_image"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
 
 	declare -r    __DIRS_WDIR="${1:-}"	# work directory
+	declare -r    __TGET_DIST="${2:-}"	# target distribution (fedora,  debian,  kali, ubuntu,  arch,  opensuse, mageia, centos, rhel, rhel-ubi, openmandriva, rocky, alma, azure)
 	declare -r    __DIRS_MNTP="${__DIRS_WDIR}/mnt"
 	declare -r    __PATH_UEFI="${__DIRS_WDIR}/uefi.img"
 	declare -a    __ARRY=()				# array
@@ -414,6 +442,7 @@ _EOT_
 		--target=x86_64-efi \
 		--efi-directory="${__DIRS_MNTP}" \
 		--boot-directory="${__DIRS_MNTP}/boot" \
+		--bootloader-id="${__TGET_DIST%%-*}" \
 		--removable
 	grub-install \
 		--target=i386-pc \
@@ -433,7 +462,7 @@ _EOT_
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
-	unset '_DBGS_FAIL[${#_DBGS_FAIL}-1]'
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 }
 
@@ -444,11 +473,13 @@ _EOT_
 #   return:        : unused
 #-shellcheck disable=SC2317,SC2329
 function fnCreate_cdfs() {
-	_DBGS_FAIL+=("fail")
+#	_DBGS_FAIL+=("fail")
 	declare -r    __FUNC_NAME="fnCreate_cdfs"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
 
 	declare -r    __DIRS_WDIR="${1:-}"	# work directory
+	declare -r    __TGET_DIST="${2:-}"	# target distribution (fedora,  debian,  kali, ubuntu,  arch,  opensuse, mageia, centos, rhel, rhel-ubi, openmandriva, rocky, alma, azure)
 	declare -r    __DIRS_MNTP="${__DIRS_WDIR}/mnt"
 	declare -r    __DIRS_CDFS="${__DIRS_WDIR}/cdfs"
 	declare -r    __PATH_UEFI="${__DIRS_WDIR}/uefi.img"
@@ -459,7 +490,7 @@ function fnCreate_cdfs() {
 
 	# --- directory initializing ----------------------------------------------
 	rm -rf "${__DIRS_CDFS:?}"
-	mkdir -p "${__DIRS_CDFS}"/{.disk,EFI/{boot,"${__TGET_DIST%%-*}"},boot/grub,isolinux,live/{boot,config.conf.d,config-hooks,config-preseed}}
+	mkdir -p "${__DIRS_CDFS}"/{.disk,EFI/{boot,"${__TGET_DIST%%-*}"},boot/grub/{i386-pc,x86_64-efi},isolinux,live/{boot,config.conf.d,config-hooks,config-preseed}}
 
 	# --- create cdfs image ---------------------------------------------------
 	touch "${__DIRS_CDFS}/.disk/info"
@@ -483,7 +514,7 @@ _EOT_
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
-	unset '_DBGS_FAIL[${#_DBGS_FAIL}-1]'
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 }
 
@@ -496,8 +527,9 @@ _EOT_
 #   return:        : unused
 #-shellcheck disable=SC2317,SC2329
 function fnCreate_menu_isolinux() {
-	_DBGS_FAIL+=("fail")
+#	_DBGS_FAIL+=("fail")
 	declare -r    __FUNC_NAME="fnCreate_menu_isolinux"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
 
 	declare -r    __DIRS_WDIR="${1:-}"	# work directory
@@ -549,7 +581,7 @@ _EOT_
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
-	unset '_DBGS_FAIL[${#_DBGS_FAIL}-1]'
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 }
 
@@ -562,8 +594,9 @@ _EOT_
 #   return:        : unused
 #-shellcheck disable=SC2317,SC2329
 function fnCreate_menu_theme() {
-	_DBGS_FAIL+=("fail")
+#	_DBGS_FAIL+=("fail")
 	declare -r    __FUNC_NAME="fnCreate_menu_theme"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
 
 	declare -r    __DIRS_WDIR="${1:-}"	# work directory
@@ -577,7 +610,7 @@ function fnCreate_menu_theme() {
 		desktop-color: "#000000"
 		title-color: "#ffffff"
 		title-font: "Unifont Regular 16"
-		title-text: "Boot Menu: Live media
+		title-text: "Boot Menu: Live media"
 		message-font: "Unifont Regular 16"
 		terminal-font: "Unifont Regular 16"
 		terminal-border: "0"
@@ -630,7 +663,7 @@ _EOT_
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
-	unset '_DBGS_FAIL[${#_DBGS_FAIL}-1]'
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 }
 
@@ -643,8 +676,9 @@ _EOT_
 #   return:        : unused
 #-shellcheck disable=SC2317,SC2329
 function fnCreate_menu_grub() {
-	_DBGS_FAIL+=("fail")
+#	_DBGS_FAIL+=("fail")
 	declare -r    __FUNC_NAME="fnCreate_menu_grub"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
 
 	declare -r    __DIRS_WDIR="${1:-}"	# work directory
@@ -653,45 +687,48 @@ function fnCreate_menu_grub() {
 	declare -r    __DIRS_CDFS="${__DIRS_WDIR}/cdfs"
 
 	# --- create theme.txt ----------------------------------------------------
+	# https://www.gnu.org/software/grub/
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__DIRS_CDFS}/boot/grub/grub.cfg" || true
-		if [ x\$feature_default_font_path = xy ] ; then
-		  font=unicode
-		else
-		  font=\$prefix/font.pf2
+		set font="\${prefix}/font.pf2"
+		if [ "\${feature_default_font_path}" = "y" ]; then
+		  set font="unicode"
 		fi
 
-		if loadfont \$font ; then
-		  set gfxpayload=keep
-		  set gfxmode=${_MENU_RESO}
-		  insmod efi_gop
-		  insmod efi_uga
-		  insmod video_bochs
-		  insmod video_cirrus
-		  insmod all_video
-		  load_video
-		  insmod gfxterm
-		  insmod png
-		  terminal_output gfxterm
-		fi
+		loadfont "\${font}"
+		set gfxpayload="keep"
+		set gfxmode="${_MENU_RESO}"
+		insmod efi_gop
+		insmod efi_uga
+		insmod video_bochs
+		insmod video_cirrus
+		insmod all_video
+		insmod gfxterm
+		insmod png
+		terminal_output gfxterm
 
-		if background_image /isolinux/${_MENU_SPLS##*/}; then
-		  set color_normal=light-gray/black
-		  set color_highlight=white/black
-		elif background_image /${_MENU_SPLS##*/}; then
-		  set color_normal=light-gray/black
-		  set color_highlight=white/black
-		else
-		  set menu_color_normal=cyan/blue
-		  set menu_color_highlight=white/blue
+		set menu_color_normal="cyan/blue"
+		set menu_color_highlight="white/blue"
+
+		set wall=""
+		if [ -e "/isolinux/${_MENU_SPLS##*/}" ]; then
+		  wall="/isolinux/${_MENU_SPLS##*/}"
+		elif [ -e "/${_MENU_SPLS##*/}" ]; then
+		  wall="/${_MENU_SPLS##*/}"
+		fi
+		if [ -n "\${wall}" ]; then
+		  if background_image --mode stretch "\${wall}"; then
+		    set color_normal="light-gray/black"
+		    set color_highlight="white/black"
+		  fi
 		fi
 
 		insmod play
 		play 960 440 1 0 4 440 1
 
-		set default=0
-		set timeout=5
-		set timeout_style=menu
-		set theme=/boot/grub/theme.txt
+		set default="0"
+		set timeout="5"
+		set timeout_style="menu"
+		set theme="/boot/grub/theme.txt"
 		export theme
 
 		insmod net
@@ -704,8 +741,8 @@ function fnCreate_menu_grub() {
 
 		menuentry '${__TGET_NAME}' {
 		  echo '${__TGET_NAME} ...'
-		  set gfxpayload=keep
-		  set background_color=black
+		  set gfxpayload="keep"
+		  set background_color="black"
 		  set options="${__OPTN_BOOT}"
 		  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 		  echo 'Loading linux ...'
@@ -715,16 +752,16 @@ function fnCreate_menu_grub() {
 		}
 
 		menuentry 'System shutdown' {
-		  echo System shutting down ...
+		  echo 'System shutting down ...'
 		  halt
 		}
 
 		menuentry 'System restart' {
-		  echo System rebooting ...
+		  echo 'System rebooting ...'
 		  reboot
 		}
 
-		if [ x\$grub_platform = xefi ]; then
+		if [ "\${grub_platform}" = "efi" ]; then
 		  menuentry 'Boot from next volume' {
 		    exit 1
 		  }
@@ -737,7 +774,7 @@ _EOT_
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
-	unset '_DBGS_FAIL[${#_DBGS_FAIL}-1]'
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 }
 
@@ -750,8 +787,9 @@ _EOT_
 #   return:        : unused
 #-shellcheck disable=SC2317,SC2329
 function fnCreate_iso_image() {
-	_DBGS_FAIL+=("fail")
+#	_DBGS_FAIL+=("fail")
 	declare -r    __FUNC_NAME="fnCreate_iso_image"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
 
 	declare -r    __DIRS_WDIR="${1:-}"	# work directory
@@ -808,43 +846,87 @@ function fnCreate_iso_image() {
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
-	unset '_DBGS_FAIL[${#_DBGS_FAIL}-1]'
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 }
 
 function fnCreate_media() {
-	_DBGS_FAIL+=("fail")
+#	_DBGS_FAIL+=("fail")
 	declare -r    __FUNC_NAME="fnCreate_media"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
 
-	declare -r    __TGET_PROF="${1:-}"	# target configuration file
+	declare -r    __TGET_INCL="${1:-}"	# target configuration file
 	declare -r    __TGET_MDIA="${2:-}"	# target media type (directory, tar, cpio, disk, uki, esp, oci, sysext, confext, portable, addon, none)
 	declare -r    __TGET_DIST="${3:-}"	# target distribution (fedora, debian, kali, ubuntu, arch, opensuse, mageia, centos, rhel, rhel-ubi, openmandriva, rocky, alma, azure)-version
 	declare -r    __TGET_VERS="${4:-}"	# target release version
 	declare -r    __DIRS_WDIR="${_DIRS_WDIR}/${__TGET_DIST}"
-	declare -r    __OPTN_BOOT="boot=live nonetworking dhcp components overlay-size=90% hooks=medium utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp,us keyboard-model=pc105 keyboard-variants=, --- quiet splash fsck.mode=skip raid=noautodetect vga=791"
+	declare -r    __DIRS_MNTP="${__DIRS_WDIR}/image"
+	declare -a    __OPTN_BOOT=(
+		"boot=live" \
+		"nonetworking" \
+		"dhcp" \
+		"components" \
+		"overlay-size=90%" \
+		"hooks=medium" \
+		"utc=yes" \
+		"locales=ja_JP.UTF-8" \
+		"timezone=Asia/Tokyo" \
+		"keyboard-layouts=jp,us" \
+		"keyboard-model=pc105" \
+		"keyboard-variants=," \
+		"---" \
+		"quiet" \
+		"splash" \
+		"fsck.mode=skip" \
+		"raid=noautodetect" \
+		"${_MENU_MODE:+"vga=${_MENU_MODE}"}" \
+	)
+	declare -i    __SLNX=0				# selinux 0:disable/1:enable
 
 	rm -rf "${__DIRS_WDIR:?}"
 	mkdir -p "${__DIRS_WDIR}"/{workspace,source}
 
-	fnExec_mkosi "${__TGET_PROF:-}" "${__TGET_MDIA:-}" "${__TGET_DIST:-}" "${__TGET_VERS:-}" "${__DIRS_WDIR:-}"
-	fnCreate_squashfs        "${__DIRS_WDIR:-}" "${__TGET_DIST}"
-	fnCreate_ueif_bios_image "${__DIRS_WDIR:-}"
-	fnCreate_cdfs            "${__DIRS_WDIR:-}"
-	fnCreate_menu_isolinux   "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${__OPTN_BOOT}"
-	fnCreate_menu_theme      "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${__OPTN_BOOT}"
-	fnCreate_menu_grub       "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${__OPTN_BOOT}"
-	fnCreate_iso_image       "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${_DIRS_RMAK}/live-${__TGET_DIST}-${__TGET_VERS:-}.iso"
+	fnExec_mkosi "${__TGET_INCL:-}" "${__TGET_MDIA:-}" "${__TGET_DIST:-}" "${__TGET_VERS:-}" "${__DIRS_WDIR:-}" "${_DBGS_SIMU:+"summary"}"
+
+	# --- apparmor/selinux ----------------------------------------------------
+	case "${__TGET_DIST%%-*}" in
+		debian | ubuntu ) __SLNX=0;;
+		*               ) __SLNX=1;;
+	esac
+	if [[ -e "${__DIRS_MNTP:-}"/usr/bin/aa-enabled ]]; then
+		printf "\033[m${_PROG_NAME}: \033[93m%s\033[m\n" "activating apparmor"
+		__OPTN_BOOT+=("security=apparmor apparmor=1")
+	elif [[ -e "${__DIRS_MNTP:-}"/usr/bin/getenforce  ]] \
+	||   [[ -e "${__DIRS_MNTP:-}"/usr/sbin/getenforce ]]; then
+		printf "\033[m${_PROG_NAME}: \033[93m%s\033[m\n" "activating se linux"
+		__OPTN_BOOT+=("security=selinux selinux=1 enforcing=${__SLNX:-0}")
+	fi
+
+	# --- create media file ---------------------------------------------------
+	if [[ -z "${_DBGS_SIMU:-}" ]]; then
+		fnCreate_squashfs        "${__DIRS_WDIR:-}" "${__TGET_DIST}"
+		fnCreate_ueif_bios_image "${__DIRS_WDIR:-}" "${__TGET_DIST}"
+		fnCreate_cdfs            "${__DIRS_WDIR:-}" "${__TGET_DIST}"
+		fnCreate_menu_isolinux   "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${__OPTN_BOOT[*]}"
+		fnCreate_menu_theme      "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${__OPTN_BOOT[*]}"
+		fnCreate_menu_grub       "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${__OPTN_BOOT[*]}"
+		fnCreate_iso_image       "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${_DIRS_RMAK}/live-${__TGET_DIST}-${__TGET_VERS:-}.iso"
+	fi
 
 	rm -rf "${__DIRS_WDIR:?}"
 
 	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
-	unset '_DBGS_FAIL[${#_DBGS_FAIL}-1]'
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 }
 
 function fnMain() {
-	_DBGS_FAIL+=("fail")
+#	_DBGS_FAIL+=("fail")
+	declare -r    __FUNC_NAME="fnMain"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+
 	declare -i    __time_start=0		# start of elapsed time
 	declare -i    __time_end=0			# end of elapsed time
 	declare -i    __time_elapsed=0		# result of elapsed time
@@ -948,7 +1030,7 @@ function fnMain() {
 					ubuntu-25.10       ) __CODE="questing" ;;
 					*                  ) __CODE="${1#*-}";;
 				esac
-				[[ -n "${__DIST:-}" ]] && fnCreate_media "${_DIRS_TMPL}/_template" "${_TGET_MDIA}" "${__DIST}" "${__CODE:-}"
+				[[ -n "${__DIST:-}" ]] && fnCreate_media "${_DIRS_MKOS}" "${_TGET_MDIA}" "${__DIST}" "${__CODE:-}"
 				;;
 			help    ) shift; fnHelp; break;;
 #			debug   ) shift; fnDebug_parameter; break;;
@@ -966,13 +1048,15 @@ function fnMain() {
 
 	printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true) processing end"
 	printf "elapsed time: %dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60))
-	unset '_DBGS_FAIL[${#_DBGS_FAIL}-1]'
+
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 }
 
 # *** main processing section *************************************************
 	fnMain "${_PROG_PARM[@]:-}"
-	read -r -p "Press any key to exit..."
+#	read -r -p "Press any key to exit..."
 	exit 0
 
 ### eof #######################################################################
