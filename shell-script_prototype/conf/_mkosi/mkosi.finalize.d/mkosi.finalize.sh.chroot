@@ -19,6 +19,6 @@ if [[ -e ./autoinst_cmd_late.sh ]]; then
 	fi
 fi
 
-rm -rf /.autorelabel /.cache /work
+#rm -rf /.autorelabel /.cache /work
 
 printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${_FUNC_NAME}] ---"
