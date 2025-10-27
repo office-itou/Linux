@@ -38,5 +38,9 @@ _EOT_
   exportfs -ar
   exportfs -v
 '
+# === client ==================================================================
+# /etc/fstab
+#   sv-server:/     /srv            nfs              nofail,defaults 0 0
+sudo mount sv-server:/ /srv
 
 # === eof =====================================================================
