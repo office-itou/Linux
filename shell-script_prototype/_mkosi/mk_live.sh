@@ -725,6 +725,8 @@ function fnCreate_menu_grub() {
 		fi
 		if [ -n "\${wall}" ]; then
 		  if background_image --mode stretch "\${wall}"; then
+		    unset menu_color_normal
+		    unset menu_color_highlight
 		    set color_normal="light-gray/black"
 		    set color_highlight="white/black"
 		  fi
@@ -871,7 +873,8 @@ function fnCreate_media() {
 	declare -r    __DIRS_WDIR="${_DIRS_WDIR}/${__TGET_DIST}"
 	declare -r    __DIRS_CACH="${_DIRS_CACH}/${__TGET_DIST}"
 	declare -r    __DIRS_MNTP="${__DIRS_WDIR}/image"
-	declare -a    __OPTN_BOOT=(
+	declare -a    __OPTN_BOOT=()
+	declare -r -a _BOOT_DEBS=(\
 		"boot=${_DIRS_LIVE}" \
 		"nonetworking" \
 		"dhcp" \
@@ -891,12 +894,34 @@ function fnCreate_media() {
 		"raid=noautodetect" \
 		"${_MENU_MODE:+"vga=${_MENU_MODE}"}" \
 	)
+	declare -r -a _BOOT_RHEL=(\
+		"ip=dhcp" \
+		"root=live:LABEL=${__TGET_DIST^}-Live-Media" \
+		"rd.locale.LANG=ja_JP.utf8" \
+		"rd.vconsole.keymap=jp" \
+		"rd.live.image=1" \
+		"${_MENU_MODE:+"vga=${_MENU_MODE}"}" \
+	)
+	declare -r -a _BOOT_SUSE=(\
+	)
 	declare -i    __SLNX=0				# selinux 0:disable/1:enable
 
 	rm -rf "${__DIRS_WDIR:?}"
 	mkdir -p "${__DIRS_WDIR}"/{workspace,source}
 
 	fnExec_mkosi "${__TGET_INCL:-}" "${__TGET_MDIA:-}" "${__TGET_DIST:-}" "${__TGET_VERS:-}" "${__DIRS_WDIR:-}" "${__DIRS_CACH:-}" "${_DBGS_SIMU:+"summary"}"
+
+	# --- boot parameter ------------------------------------------------------
+	case "${__TGET_DIST%%-*}" in
+		debian         | \
+		ubuntu         ) __OPTN_BOOT=("${_BOOT_DEBS[@]}");;
+		fedora         | \
+		centos         | \
+		alma           | \
+		rocky          ) __OPTN_BOOT=("${_BOOT_RHEL[@]}");;
+		opensuse       ) __OPTN_BOOT=("${_BOOT_SUSE[@]}");;
+		*              ) ;;
+	esac
 
 	# --- apparmor/selinux ----------------------------------------------------
 	case "${__TGET_DIST%%-*}" in
@@ -969,7 +994,7 @@ function fnMain() {
 			alma-*         | \
 			azure-*        )
 				__DIST="${1,,}"
-				[[ "${__DIST%.*}" = "debian-${__DIST#*-}" ]] && __DIST="${__DIST}.0"
+#				[[ "${__DIST%.*}" = "debian-${__DIST#*-}" ]] && __DIST="${__DIST}.0"
 				__VERS="${__DIST#*-}"
 				case "${__DIST}" in
 					debian-1.1         ) __CODE="buzz"     ;;
