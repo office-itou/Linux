@@ -1,0 +1,140 @@
+#!/bin/bash
+
+set -eu
+
+declare -r    _PROG_NAME="${0##*/}"
+declare -r    _FUNC_NAME="main"
+printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${_FUNC_NAME}] ---"
+printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "distribution: ${DISTRIBUTION:-}"
+
+if command -v systemd-detect-virt > /dev/null 2>&1; then
+	__VERT="$(systemd-detect-virt || true)"
+	printf "\033[m${_PROG_NAME}: \033[43m%s\033[m\n" " virtualized: ${__VERT:-}"
+fi
+
+#if [ "${container:-}" != "mkosi" ]; then
+#	exec mkosi-chroot "${CHROOT_SCRIPT:-}" "$@"
+#fi
+
+function fnCreate_initrd() {
+	declare -r -a __ADDS=(\
+		"bash" \
+		"shell-interpreter" \
+		"systemd" \
+		"fips" \
+		"fips-crypto-policies" \
+		"systemd-ask-password" \
+		"systemd-cryptsetup" \
+		"systemd-initrd" \
+		"systemd-journald" \
+		"systemd-modules-load" \
+		"systemd-pcrphase" \
+		"systemd-sysctl" \
+		"systemd-sysusers" \
+		"systemd-tmpfiles" \
+		"systemd-udevd" \
+		"modsign" \
+		"nss-softokn" \
+		"dbus-broker" \
+		"dbus" \
+		"i18n" \
+		"convertfs" \
+		"network-manager" \
+		"network" \
+		"net-lib" \
+		"url-lib" \
+		"drm" \
+		"plymouth" \
+		"prefixdevname" \
+		"crypt" \
+		"dm" \
+		"dmsquash-live" \
+		"kernel-modules" \
+		"kernel-modules-extra" \
+		"kernel-network-modules" \
+		"livenet" \
+		"lvm" \
+		"mdraid" \
+		"multipath" \
+		"nvdimm" \
+		"overlayfs" \
+		"qemu" \
+		"qemu-net" \
+		"fido2" \
+		"pkcs11" \
+		"tpm2-tss" \
+		"cifs" \
+		"hwdb" \
+		"iscsi" \
+		"lunmask" \
+		"nfs" \
+		"nvmf" \
+		"resume" \
+		"rootfs-block" \
+		"terminfo" \
+		"udev-rules" \
+		"virtfs" \
+		"virtiofs" \
+		"dracut-systemd" \
+		"pollcdrom" \
+		"usrmount" \
+		"base" \
+		"fs-lib" \
+		"img-lib" \
+		"memstrack" \
+		"microcode_ctl-fw_dir_override" \
+		"openssl" \
+		"shutdown" \
+		"busybox" \
+		"rescue" \
+	)
+	declare -r -a __OMIT=()
+	declare -r    __KRNL="$(ls /usr/lib/modules/)"
+	declare -r    __ARCH="${__KRNL##*[-.]}"
+	declare -r    __VERS="${__KRNL%[-.]"${__ARCH}"}"
+	declare -r -a __OPTN=(\
+		--stdlog 3 \
+		--force \
+		--no-hostonly \
+		--no-early-microcode \
+		--nomdadmconf \
+		--nolvmconf \
+		--xz \
+		${__KRNL:+--kver "${__KRNL}"} \
+		${__ADDS[*]:+--add "${__ADDS[*]}"} \
+		${__OMIT[*]:+--omit "${__OMIT[*]}"} \
+		--filesystems "ext4 fat exfat isofs squashfs udf xfs" \
+	)
+	declare -i    __RTCD=0				# return code
+
+	cp -a "/usr/lib/modules/${__KRNL}/vmlinuz" "/boot/vmlinuz-${__KRNL}"
+
+	if command -v dracut > /dev/null 2>&1; then
+		if ! dracut "${__OPTN[@]}"; then
+			/bin/bash
+			exit 1
+		fi
+	fi
+}
+
+case "${DISTRIBUTION:-}" in
+	debian      | \
+	ubuntu      ) ;;
+	fedora      | \
+	centos      | \
+	alma        | \
+	rocky       | \
+	miracle     ) fnCreate_initrd;;
+	opensuse    ) ;;
+#	kali        ) ;;
+#	arch        ) ;;
+#	mageia      ) ;;
+#	rhel-ubi    ) ;;
+#	rhel        ) ;;
+#	openmandriva) ;;
+#	azure       ) ;;
+#	custom      ) ;;
+	*           ) echo "not found: ${__TGET_NAME:-}"; exit 1;;
+esac
+
+printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${_FUNC_NAME}] ---"

@@ -5,6 +5,12 @@ set -eu
 declare -r    _PROG_NAME="${0##*/}"
 declare -r    _FUNC_NAME="main"
 printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${_FUNC_NAME}] ---"
+printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "distribution: ${DISTRIBUTION:-}"
+
+if command -v systemd-detect-virt > /dev/null 2>&1; then
+	__VERT="$(systemd-detect-virt || true)"
+	printf "\033[m${_PROG_NAME}: \033[43m%s\033[m\n" " virtualized: ${__VERT:-}"
+fi
 
 #if [ "${container:-}" != "mkosi" ]; then
 #	exec mkosi-chroot "${CHROOT_SCRIPT:-}" "$@"
@@ -12,8 +18,12 @@ printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${_FUNC_NAME}] 
 
 systemctl -q is-enabled speech-dispatcher.service && systemctl disable speech-dispatcher.service || true
 
+declare -r -a __OPTN=(\
+	"ip=192.168.1.0::192.168.1.254:255.255.255.0:live-${DISTRIBUTION:-}.workgroup:-:192.168.1.254"
+)
+
 if [[ -e ./autoinst_cmd_late.sh ]]; then
-	if ! ./autoinst_cmd_late.sh "ip=192.168.1.0::192.168.1.254:255.255.255.0:live-${DISTRIBUTION:-}.workgroup:-:192.168.1.254"; then
+	if ! ./autoinst_cmd_late.sh "${__OPTN[@]}"; then
 		/bin/bash
 		exit 1
 	fi
