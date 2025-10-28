@@ -100,3 +100,17 @@ _EOT_
   mount -a
 '
 ```
+
+## **Result**
+
+``` bash:
+mount | grep srv | sort | cut -c -120
+```
+
+``` bash:
+sv-server:/srv/http on /srv/http type nfs (rw,relatime,vers=3,rsize=1048576,wsize=1048576,namlen=255,hard,proto=tcp,time
+sv-server:/srv/samba on /srv/samba type nfs (rw,relatime,vers=3,rsize=1048576,wsize=1048576,namlen=255,hard,proto=tcp,ti
+sv-server:/srv/tftp on /srv/tftp type nfs (rw,relatime,vers=3,rsize=1048576,wsize=1048576,namlen=255,hard,proto=tcp,time
+sv-server:/srv/user on /srv/user type nfs (rw,relatime,vers=3,rsize=1048576,wsize=1048576,namlen=255,hard,proto=tcp,time
+vmhgfs-fuse on /srv/hgfs type fuse.vmhgfs-fuse (rw,relatime,user_id=0,group_id=0,allow_other)
+```
