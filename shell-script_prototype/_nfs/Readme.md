@@ -88,12 +88,12 @@ sudo bash -c '
   cp -a /etc/fstab.back /etc/fstab
   sed -i /etc/fstab -e '\''\%^.host:/% s/^/#/'\''
   cat <<- _EOT_ >> /etc/fstab
-#sv-server:/         /srv        nfs4             nofail,defaultsbg 0 0
-#sv-server:/hgfs     /srv/hgfs   nfs              nofail,defaultsbg 0 0
-sv-server:/srv/http  /srv/http   nfs              nofail,defaultsbg 0 0
-sv-server:/srv/samba /srv/samba  nfs              nofail,defaultsbg 0 0
-sv-server:/srv/tftp  /srv/tftp   nfs              nofail,defaultsbg 0 0
-sv-server:/srv/user  /srv/user   nfs              nofail,defaultsbg 0 0
+#sv-server:/         /srv        nfs4             nofail,defaults,bg 0 0
+#sv-server:/hgfs     /srv/hgfs   nfs              nofail,defaults,bg 0 0
+sv-server:/srv/http  /srv/http   nfs              nofail,defaults,bg 0 0
+sv-server:/srv/samba /srv/samba  nfs              nofail,defaults,bg 0 0
+sv-server:/srv/tftp  /srv/tftp   nfs              nofail,defaults,bg 0 0
+sv-server:/srv/user  /srv/user   nfs              nofail,defaults,bg 0 0
 .host:/              /srv/hgfs   fuse.vmhgfs-fuse nofail,allow_other,defaults 0 0
 _EOT_
   systemctl daemon-reload
