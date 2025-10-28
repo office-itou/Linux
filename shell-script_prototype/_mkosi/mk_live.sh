@@ -177,6 +177,7 @@ function fnTrap() {
 	declare -r    _DIRS_RMAK="${_DIRS_SHAR}/rmak"			# remake file
 #	declare -r    _DIRS_CHRT="${_DIRS_SHAR}/chroot"			# container file
 	declare -r    _DIRS_CTNR="${_DIRS_SHAR}/containers"		# container file
+	declare -r    _DIRS_CACH="${_DIRS_SHAR}/cache"			# cache file
 
 	# --- shell script --------------------------------------------------------
 #	declare -r    _SHEL_ERLY="${_DIRS_SHEL}/autoinst_cmd_early.sh"				# shell commands to run early
@@ -216,6 +217,10 @@ function fnTrap() {
 #	declare -r    _TGET_MDIA="addon"
 #	declare -r    _TGET_MDIA="none"
 
+	# --- live media parameter ------------------------------------------------
+	declare       _DIRS_LIVE=""			# live / LiveOS
+	declare       _FILE_LIVE=""			# filesystem.squashfs / squashfs.img
+
 	# --- menu parameter ------------------------------------------------------
 	declare -r    _MENU_TOUT="5"		# timeout (sec)
 #	declare -r    _MENU_RESO="1280x720"	# resolution (widht x hight): 16:9
@@ -246,7 +251,8 @@ function fnExec_mkosi() {
 	declare -r    __TGET_DIST="${3:-}"	# target distribution (fedora,  debian,  kali, ubuntu,  arch,  opensuse, mageia, centos, rhel, rhel-ubi, openmandriva, rocky, alma, azure)
 	declare -r    __TGET_VERS="${4:-}"	# target release version
 	declare -r    __DIRS_WDIR="${5:-}"	# work directory
-	declare -r    __COMD_MKOS="${6:-}"	# mkosi command
+	declare -r    __DIRS_CACH="${6:-}"	# cache directory
+	declare -r    __COMD_MKOS="${7:-}"	# mkosi command
 	declare -i    __RTCD=0				# return code
 	declare -r -a __OPTN=(\
 		--force \
@@ -259,6 +265,8 @@ function fnExec_mkosi() {
 		${__TGET_DIST:+--distribution="${__TGET_DIST%%-*}"} \
 		${__TGET_VERS:+--release="${__TGET_VERS}"} \
 		${__DIRS_WDIR:+--workspace-directory="${__DIRS_WDIR}/workspace"} \
+		${__DIRS_CACH:+--cache-directory="${__DIRS_CACH}"} \
+		${__DIRS_CACH:+--package-cache-dir="${__DIRS_CACH}"} \
 		${__DIRS_WDIR:+--directory="${__DIRS_WDIR}/source"} \
 		${__DIRS_WDIR:+--output-directory="${__DIRS_WDIR}"} \
 		${__COMD_MKOS:+"${__COMD_MKOS}"} \
@@ -304,7 +312,7 @@ function fnCreate_squashfs() {
 	declare -r    __TGET_NAME="${2:-}"	# menu target name
 	declare -r    __DIRS_MNTP="${__DIRS_WDIR}/image"
 	declare -r    __PATH_SRCS="${__DIRS_WDIR}/image.raw"
-	declare -r    __PATH_SQFS="${__DIRS_WDIR}/filesystem.squashfs"
+	declare -r    __PATH_SQFS="${__DIRS_WDIR}/${_FILE_LIVE}"
 	declare       __PATH=""				# full path
 	declare -a    __ARRY=()				# array
 	declare -i    __SECT=0				# sector size
@@ -490,27 +498,27 @@ function fnCreate_cdfs() {
 
 	# --- directory initializing ----------------------------------------------
 	rm -rf "${__DIRS_CDFS:?}"
-	mkdir -p "${__DIRS_CDFS}"/{.disk,EFI/{boot,"${__TGET_DIST%%-*}"},boot/grub/{i386-pc,x86_64-efi},isolinux,live/{boot,config.conf.d,config-hooks,config-preseed}}
+	mkdir -p "${__DIRS_CDFS}"/{.disk,EFI/{BOOT,"${__TGET_DIST%%-*}"},boot/grub/{i386-pc,x86_64-efi},isolinux,${_DIRS_LIVE}/{boot,config.conf.d,config-hooks,config-preseed}}
 
 	# --- create cdfs image ---------------------------------------------------
 	touch "${__DIRS_CDFS}/.disk/info"
-	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__DIRS_CDFS}/EFI/${__TGET_DIST%%-*}/grub.cfg" || true
+	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__DIRS_CDFS}/EFI/BOOT/grub.cfg" || true
 		search --file --set=root /.disk/info
 		set prefix=($root)/boot/grub
 		source $prefix/grub.cfg
 _EOT_
 
-	find "${__DIRS_WDIR}" -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' -o -name linux                                                 \) -exec cp --preserve=timestamps '{}' "${__DIRS_CDFS}/live"            \;
-	find "${__DIRS_WDIR}" -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  -o -name initrd.gz -o -name 'initramfs' -o -name 'initramfs-*' \) -exec cp --preserve=timestamps '{}' "${__DIRS_CDFS}/live"            \;
-	find "${__DIRS_WDIR}" -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' -o -name linux                                                 \) -exec cp --preserve=timestamps '{}' "${__DIRS_CDFS}/live/vmlinuz"    \;
-	find "${__DIRS_WDIR}" -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  -o -name initrd.gz -o -name 'initramfs' -o -name 'initramfs-*' \) -exec cp --preserve=timestamps '{}' "${__DIRS_CDFS}/live/initrd.img" \;
-	[[ -e "${__DIRS_WDIR}/filesystem.squashfs" ]] && cp --preserve=timestamps             "${__DIRS_WDIR}/filesystem.squashfs" "${__DIRS_CDFS}/live/"
-	[[ -e "${__DIRS_WDIR}/efi.img"             ]] && cp --preserve=timestamps             "${__DIRS_WDIR}/efi.img"             "${__DIRS_CDFS}/boot/grub/"
-	[[ -e /usr/lib/grub/i386-pc/.              ]] && cp --preserve=timestamps --recursive /usr/lib/grub/i386-pc/*              "${__DIRS_CDFS}/boot/grub/i386-pc/"
-	[[ -e /usr/lib/grub/x86_64-efi/.           ]] && cp --preserve=timestamps --recursive /usr/lib/grub/x86_64-efi/*           "${__DIRS_CDFS}/boot/grub/x86_64-efi/"
-	[[ -e /usr/lib/syslinux/modules/bios/.     ]] && cp --preserve=timestamps --recursive /usr/lib/syslinux/modules/bios/*     "${__DIRS_CDFS}/isolinux/"
-	[[ -e /usr/lib/ISOLINUX/isolinux.bin       ]] && cp --preserve=timestamps             /usr/lib/ISOLINUX/isolinux.bin       "${__DIRS_CDFS}/isolinux/"
-	[[ -e "${_MENU_SPLS:-}"                    ]] && cp --preserve=timestamps             "${_MENU_SPLS}"                      "${__DIRS_CDFS}/isolinux/"
+	find "${__DIRS_WDIR}" -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' -o -name linux                                                 \) -exec cp --preserve=timestamps '{}' "${__DIRS_CDFS}/${_DIRS_LIVE}"            \;
+	find "${__DIRS_WDIR}" -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  -o -name initrd.gz -o -name 'initramfs' -o -name 'initramfs-*' \) -exec cp --preserve=timestamps '{}' "${__DIRS_CDFS}/${_DIRS_LIVE}"            \;
+	find "${__DIRS_WDIR}" -maxdepth 1 -type f \( -name 'vmlinuz' -o -name 'vmlinuz.img' -o -name 'vmlinuz.img-*' -o -name 'vmlinuz-*' -o -name linux                                                 \) -exec cp --preserve=timestamps '{}' "${__DIRS_CDFS}/${_DIRS_LIVE}/vmlinuz"    \;
+	find "${__DIRS_WDIR}" -maxdepth 1 -type f \( -name 'initrd'  -o -name 'initrd.img'  -o -name 'initrd.img-*'  -o -name 'initrd-*'  -o -name initrd.gz -o -name 'initramfs' -o -name 'initramfs-*' \) -exec cp --preserve=timestamps '{}' "${__DIRS_CDFS}/${_DIRS_LIVE}/initrd.img" \;
+	[[ -e "${__DIRS_WDIR}/${_FILE_LIVE}"   ]] && cp --preserve=timestamps             "${__DIRS_WDIR}/${_FILE_LIVE}"   "${__DIRS_CDFS}/${_DIRS_LIVE}/"
+	[[ -e "${__DIRS_WDIR}/efi.img"         ]] && cp --preserve=timestamps             "${__DIRS_WDIR}/efi.img"         "${__DIRS_CDFS}/boot/grub/"
+	[[ -e /usr/lib/grub/i386-pc/.          ]] && cp --preserve=timestamps --recursive /usr/lib/grub/i386-pc/*          "${__DIRS_CDFS}/boot/grub/i386-pc/"
+	[[ -e /usr/lib/grub/x86_64-efi/.       ]] && cp --preserve=timestamps --recursive /usr/lib/grub/x86_64-efi/*       "${__DIRS_CDFS}/boot/grub/x86_64-efi/"
+	[[ -e /usr/lib/syslinux/modules/bios/. ]] && cp --preserve=timestamps --recursive /usr/lib/syslinux/modules/bios/* "${__DIRS_CDFS}/isolinux/"
+	[[ -e /usr/lib/ISOLINUX/isolinux.bin   ]] && cp --preserve=timestamps             /usr/lib/ISOLINUX/isolinux.bin   "${__DIRS_CDFS}/isolinux/"
+	[[ -e "${_MENU_SPLS:-}"                ]] && cp --preserve=timestamps             "${_MENU_SPLS}"                  "${__DIRS_CDFS}/isolinux/"
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
@@ -563,8 +571,8 @@ function fnCreate_menu_isolinux() {
 		label live
 		  menu label ^${__TGET_NAME}
 		  menu default
-		  linux  /live/vmlinuz
-		  initrd /live/initrd.img
+		  linux  /${_DIRS_LIVE}/vmlinuz
+		  initrd /${_DIRS_LIVE}/initrd.img
 		  append ${__OPTN_BOOT}
 
 		label poweroff
@@ -746,9 +754,9 @@ function fnCreate_menu_grub() {
 		  set options="${__OPTN_BOOT}"
 		  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 		  echo 'Loading linux ...'
-		  linux  /live/vmlinuz \${options}
+		  linux  /${_DIRS_LIVE}/vmlinuz \${options}
 		  echo 'Loading initrd ...'
-		  initrd /live/initrd.img
+		  initrd /${_DIRS_LIVE}/initrd.img
 		}
 
 		menuentry 'System shutdown' {
@@ -861,9 +869,10 @@ function fnCreate_media() {
 	declare -r    __TGET_DIST="${3:-}"	# target distribution (fedora, debian, kali, ubuntu, arch, opensuse, mageia, centos, rhel, rhel-ubi, openmandriva, rocky, alma, azure)-version
 	declare -r    __TGET_VERS="${4:-}"	# target release version
 	declare -r    __DIRS_WDIR="${_DIRS_WDIR}/${__TGET_DIST}"
+	declare -r    __DIRS_CACH="${_DIRS_CACH}/${__TGET_DIST}"
 	declare -r    __DIRS_MNTP="${__DIRS_WDIR}/image"
 	declare -a    __OPTN_BOOT=(
-		"boot=live" \
+		"boot=${_DIRS_LIVE}" \
 		"nonetworking" \
 		"dhcp" \
 		"components" \
@@ -887,7 +896,7 @@ function fnCreate_media() {
 	rm -rf "${__DIRS_WDIR:?}"
 	mkdir -p "${__DIRS_WDIR}"/{workspace,source}
 
-	fnExec_mkosi "${__TGET_INCL:-}" "${__TGET_MDIA:-}" "${__TGET_DIST:-}" "${__TGET_VERS:-}" "${__DIRS_WDIR:-}" "${_DBGS_SIMU:+"summary"}"
+	fnExec_mkosi "${__TGET_INCL:-}" "${__TGET_MDIA:-}" "${__TGET_DIST:-}" "${__TGET_VERS:-}" "${__DIRS_WDIR:-}" "${__DIRS_CACH:-}" "${_DBGS_SIMU:+"summary"}"
 
 	# --- apparmor/selinux ----------------------------------------------------
 	case "${__TGET_DIST%%-*}" in
@@ -911,7 +920,7 @@ function fnCreate_media() {
 		fnCreate_menu_isolinux   "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${__OPTN_BOOT[*]}"
 		fnCreate_menu_theme      "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${__OPTN_BOOT[*]}"
 		fnCreate_menu_grub       "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${__OPTN_BOOT[*]}"
-		fnCreate_iso_image       "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${_DIRS_RMAK}/live-${__TGET_DIST}-${__TGET_VERS:-}.iso"
+		fnCreate_iso_image       "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${_DIRS_RMAK}/live-${__TGET_DIST}.iso"
 	fi
 
 	rm -rf "${__DIRS_WDIR:?}"
@@ -1030,7 +1039,19 @@ function fnMain() {
 					ubuntu-25.10       ) __CODE="questing" ;;
 					*                  ) __CODE="${1#*-}";;
 				esac
-				[[ -n "${__DIST:-}" ]] && fnCreate_media "${_DIRS_MKOS}" "${_TGET_MDIA}" "${__DIST}" "${__CODE:-}"
+				case "${__DIST:-}" in
+					debian-*       | \
+					ubuntu-*       ) _DIRS_LIVE="live"; _FILE_LIVE="filesystem.squashfs";;
+					fedora-*       | \
+					centos-*       | \
+					alma-*         | \
+					rocky-*        ) _DIRS_LIVE="LiveOS"; _FILE_LIVE="squashfs.img";;
+					opensuse-*     ) _DIRS_LIVE="LiveOS"; _FILE_LIVE="squashfs.img";;
+					*              ) ;;
+				esac
+				if [[ -n "${__DIST:-}" ]] && [[ -n "${_DIRS_LIVE:-}" ]] && [[ -n "${_FILE_LIVE:-}" ]]; then
+					fnCreate_media "${_DIRS_MKOS}" "${_TGET_MDIA}" "${__DIST}" "${__CODE:-}"
+				fi
 				;;
 			help    ) shift; fnHelp; break;;
 #			debug   ) shift; fnDebug_parameter; break;;
