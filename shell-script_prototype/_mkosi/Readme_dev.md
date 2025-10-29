@@ -1,6 +1,6 @@
 # mkosi develop
 
-|          Variable          |   configure  |     clean    |     sync     |    prepare   | build-script |   postinst   |   finalize   |  postoutput  |      example      |
+|          Variable          |   conf-igure  |     clean    |     sync     |    pre-pare   | build-script |   post-inst   |   fina-lize   |  post-output  |      example      |
 | :------------------------- | :----------: | :----------: | :----------: | :----------: | :----------: | :----------: | :----------: | :----------: | :---------------- |
 | ARCHITECTURE               |      ✓      |      ✓      |      ✓      |      ✓      |      ✓      |      ✓      |      ✓      |      ✓      | x86-64            |
 | ARTIFACTDIR                |              |              |              |      ✓      |      ✓      |      ✓      |      ✓      |              | /work/artifacts   |
