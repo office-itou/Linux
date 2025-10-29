@@ -227,7 +227,7 @@ function fnTrap() {
 	declare -r    _MENU_RESO="854x480"	# "                         : 16:9
 #	declare -r    _MENU_RESO="1024x768"	# "                         :  4:3
 #	declare -r    _MENU_DPTH=""			# colors
-#	declare -r    _MENU_MODE=""			# screen mode (vga=nnn)
+#	declare -r    _MENU_MODE="791"		# screen mode (vga=nnn)
 	declare       _MENU_SPLS=""			# splash file
 
 # -----------------------------------------------------------------------------
@@ -272,6 +272,8 @@ function fnExec_mkosi() {
 		${__COMD_MKOS:+"${__COMD_MKOS}"} \
 	)
 
+	mkdir -p "${__DIRS_WDIR}/source/run"
+	mount  --bind /run/    "${__DIRS_WDIR}/source/run/"  && _LIST_RMOV+=("${__DIRS_WDIR}/source/run/")
 	if [[ -e "${_SHEL_LATE:-}" ]]; then
 		cp --preserve=timestamps "${_SHEL_LATE}" "${__DIRS_WDIR}/source"
 		chmod +x "${__DIRS_WDIR}/source/${_SHEL_LATE##*/}"
@@ -283,11 +285,12 @@ function fnExec_mkosi() {
 	if ! nice -n 0 mkosi "${__OPTN[@]}" 2>&1 | tee "${PWD}/mkosi.debuglog"; then
 		__RTCD="$?"
 		printf "%s %s\n" "mkosi" "${__OPTN[*]}" > "${PWD}/mkosi.debugout"
-		printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n" "mkosi failed."
+		printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n" "mkosi failed. (${__TGET_DIST})"
 		printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n" "Working files will be deleted when this shell exits."
 		read -r -p "Press any key to exit..."
 		exit "${__RTCD}"
 	fi
+	umount                 "${__DIRS_WDIR}/source/run/"
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
@@ -542,7 +545,8 @@ function fnCreate_menu_isolinux() {
 
 	declare -r    __DIRS_WDIR="${1:-}"	# work directory
 	declare -r    __TGET_NAME="${2:-}"	# menu target name
-	declare -r    __OPTN_BOOT="${3:-}"	# boot parameter
+	shift 2
+	declare -r -a __OPTN_BOOT=("${@:-}") # boot parameter
 	declare -r    __DIRS_CDFS="${__DIRS_WDIR}/cdfs"
 
 	# --- create isolinux.cfg -------------------------------------------------
@@ -573,7 +577,7 @@ function fnCreate_menu_isolinux() {
 		  menu default
 		  linux  /${_DIRS_LIVE}/vmlinuz
 		  initrd /${_DIRS_LIVE}/initrd.img
-		  append ${__OPTN_BOOT}
+		  append ${__OPTN_BOOT[*]}
 
 		label poweroff
 		  menu label ^System shutdown
@@ -609,7 +613,8 @@ function fnCreate_menu_theme() {
 
 	declare -r    __DIRS_WDIR="${1:-}"	# work directory
 	declare -r    __TGET_NAME="${2:-}"	# menu target name
-	declare -r    __OPTN_BOOT="${3:-}"	# boot parameter
+	shift 2
+	declare -r -a __OPTN_BOOT=("${@:-}") # boot parameter
 	declare -r    __DIRS_CDFS="${__DIRS_WDIR}/cdfs"
 
 	# --- create theme.txt ----------------------------------------------------
@@ -691,7 +696,8 @@ function fnCreate_menu_grub() {
 
 	declare -r    __DIRS_WDIR="${1:-}"	# work directory
 	declare -r    __TGET_NAME="${2:-}"	# menu target name
-	declare -r    __OPTN_BOOT="${3:-}"	# boot parameter
+	shift 2
+	declare -r -a __OPTN_BOOT=("${@:-}") # boot parameter
 	declare -r    __DIRS_CDFS="${__DIRS_WDIR}/cdfs"
 
 	# --- create theme.txt ----------------------------------------------------
@@ -704,7 +710,7 @@ function fnCreate_menu_grub() {
 
 		loadfont "\${font}"
 		set gfxpayload="keep"
-		set gfxmode="${_MENU_RESO}"
+		set gfxmode="${_MENU_RESO:+"${_MENU_RESO}x32,"}auto"
 		insmod efi_gop
 		insmod efi_uga
 		insmod video_bochs
@@ -753,7 +759,7 @@ function fnCreate_menu_grub() {
 		  echo '${__TGET_NAME} ...'
 		  set gfxpayload="keep"
 		  set background_color="black"
-		  set options="${__OPTN_BOOT}"
+		  set options="${__OPTN_BOOT[*]}"
 		  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 		  echo 'Loading linux ...'
 		  linux  /${_DIRS_LIVE}/vmlinuz \${options}
@@ -833,7 +839,7 @@ function fnCreate_iso_image() {
 
 	# --- create iso image ----------------------------------------------------
 	pushd "${__DIRS_CDFS}" > /dev/null || exit
-		if ! nice -n -0 xorrisofs "${__OPTN[@]}"  . > /dev/null 2>&1; then
+		if ! nice -n -0 xorrisofs "${__OPTN[@]}"; then
 			__RTCD="$?"
 			printf "%s %s\n" "xorrisofs" "${__OPTN[*]}" > "${PWD}/xorrisofs.debugout"
 			printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n"     "xorr  failed: ${__TGET_PATH##*/}"
@@ -873,34 +879,44 @@ function fnCreate_media() {
 	declare -r    __DIRS_WDIR="${_DIRS_WDIR}/${__TGET_DIST}"
 	declare -r    __DIRS_CACH="${_DIRS_CACH}/${__TGET_DIST}"
 	declare -r    __DIRS_MNTP="${__DIRS_WDIR}/image"
+	declare -r    __DIST_NAME="${__TGET_DIST%%-*}"
+	declare -r    __DIST_VERS="${__TGET_DIST#*-}"
 	declare -a    __OPTN_BOOT=()
 	declare -r -a _BOOT_DEBS=(\
-		"boot=${_DIRS_LIVE}" \
-		"nonetworking" \
-		"dhcp" \
-		"components" \
-		"overlay-size=90%" \
-		"hooks=medium" \
-		"utc=yes" \
-		"locales=ja_JP.UTF-8" \
-		"timezone=Asia/Tokyo" \
-		"keyboard-layouts=jp,us" \
-		"keyboard-model=pc105" \
-		"keyboard-variants=," \
-		"---" \
-		"quiet" \
-		"splash" \
-		"fsck.mode=skip" \
-		"raid=noautodetect" \
-		"${_MENU_MODE:+"vga=${_MENU_MODE}"}" \
+		boot="${_DIRS_LIVE}" \
+		nonetworking \
+		dhcp \
+		components \
+		overlay-size='90%' \
+		hooks='medium' \
+		utc='yes' \
+		locales='ja_JP.UTF-8' \
+		timezone='Asia/Tokyo' \
+		keyboard-layouts='jp,us' \
+		keyboard-model='pc105' \
+		keyboard-variants=',' \
+		--- \
+		quiet \
+		splash \
+		fsck.mode='skip' \
+		raid='noautodetect' \
+		${_MENU_MODE:+vga="${_MENU_MODE}"} \
+		live-config.hostname="live-${__DIST_NAME}.workgroup" \
+		live-config.user-fullname="${__DIST_NAME^}\ Live\ user" \
+		live-config.username='master' \
+		live-config.user-password='master' \
+		live-config.user-default-groups='audio\ cdrom\ dip\ floppy\ video\ plugdev\ netdev\ powerdev\ scanner\ bluetooth\ debian-tor' \
 	)
 	declare -r -a _BOOT_RHEL=(\
-		"ip=dhcp" \
-		"root=live:LABEL=${__TGET_DIST^}-Live-Media" \
-		"rd.locale.LANG=ja_JP.utf8" \
-		"rd.vconsole.keymap=jp" \
-		"rd.live.image=1" \
-		"${_MENU_MODE:+"vga=${_MENU_MODE}"}" \
+		ip='dhcp' \
+		root="live:LABEL=${__TGET_DIST^}-Live-Media" \
+		rd.locale.LANG='ja_JP.utf8' \
+		rd.vconsole.keymap='jp' \
+		rd.live.image='1' \
+		--- \
+		quiet \
+		splash \
+		${_MENU_MODE:+vga="${_MENU_MODE}"} \
 	)
 	declare -r -a _BOOT_SUSE=(\
 	)
@@ -924,27 +940,30 @@ function fnCreate_media() {
 	esac
 
 	# --- apparmor/selinux ----------------------------------------------------
-	case "${__TGET_DIST%%-*}" in
-		debian | ubuntu ) __SLNX=0;;
-		*               ) __SLNX=1;;
-	esac
+#	case "${__TGET_DIST%%-*}" in
+#		debian | ubuntu ) __SLNX=0;;
+#		*               ) __SLNX=1;;
+#	esac
 	if [[ -e "${__DIRS_MNTP:-}"/usr/bin/aa-enabled ]]; then
 		printf "\033[m${_PROG_NAME}: \033[93m%s\033[m\n" "activating apparmor"
-		__OPTN_BOOT+=("security=apparmor apparmor=1")
+		__OPTN_BOOT+=(security="apparmor" apparmor="1")
 	elif [[ -e "${__DIRS_MNTP:-}"/usr/bin/getenforce  ]] \
 	||   [[ -e "${__DIRS_MNTP:-}"/usr/sbin/getenforce ]]; then
 		printf "\033[m${_PROG_NAME}: \033[93m%s\033[m\n" "activating se linux"
-		__OPTN_BOOT+=("security=selinux selinux=1 enforcing=${__SLNX:-0}")
+		__OPTN_BOOT+=(security="selinux" selinux="1" enforcing="${__SLNX:-0}")
 	fi
+
+	# --- convert -------------------------------------------------------------
+	IFS= mapfile -d $'\n' -t __OPTN_BOOT < <(printf "%s\n" "${__OPTN_BOOT[@]}")
 
 	# --- create media file ---------------------------------------------------
 	if [[ -z "${_DBGS_SIMU:-}" ]]; then
 		fnCreate_squashfs        "${__DIRS_WDIR:-}" "${__TGET_DIST}"
 		fnCreate_ueif_bios_image "${__DIRS_WDIR:-}" "${__TGET_DIST}"
 		fnCreate_cdfs            "${__DIRS_WDIR:-}" "${__TGET_DIST}"
-		fnCreate_menu_isolinux   "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${__OPTN_BOOT[*]}"
-		fnCreate_menu_theme      "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${__OPTN_BOOT[*]}"
-		fnCreate_menu_grub       "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${__OPTN_BOOT[*]}"
+		fnCreate_menu_isolinux   "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${__OPTN_BOOT[@]}"
+		fnCreate_menu_theme      "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${__OPTN_BOOT[@]}"
+		fnCreate_menu_grub       "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${__OPTN_BOOT[@]}"
 		fnCreate_iso_image       "${__DIRS_WDIR:-}" "${__TGET_DIST^}" "${_DIRS_RMAK}/live-${__TGET_DIST}.iso"
 	fi
 
