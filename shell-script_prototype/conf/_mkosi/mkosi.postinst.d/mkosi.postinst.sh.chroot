@@ -134,7 +134,43 @@ case "${DISTRIBUTION:-}" in
 #	openmandriva) ;;
 #	azure       ) ;;
 #	custom      ) ;;
-	*           ) echo "not found: ${__TGET_NAME:-}"; exit 1;;
+	*           ) echo "not found: ${DISTRIBUTION:-}"; exit 1;;
 esac
 
 printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${_FUNC_NAME}] ---"
+
+exit 0
+
+# === memo ====================================================================
+
+# text color: \033[xxm
+#	|   color    | bright | reverse|  dark  |
+#	| black      |   90   |   40   |   30   |
+#	| red        |   91   |   41   |   31   |
+#	| green      |   92   |   42   |   32   |
+#	| yellow     |   93   |   43   |   33   |
+#	| blue       |   94   |   44   |   34   |
+#	| purple     |   95   |   45   |   35   |
+#	| light blue |   96   |   46   |   36   |
+#	| white      |   97   |   47   |   37   |
+# text attribute
+#	| reset            | \033[m   | reset all attributes  |
+#	| bold             | \033[1m  |                       |
+#	| faint            | \033[2m  |                       |
+#	| italic           | \033[3m  |                       |
+#	| underline        | \033[4m  | set underline         |
+#	| blink            | \033[5m  |                       |
+#	| fast blink       | \033[6m  |                       |
+#	| reverse          | \033[7m  | set reverse display   |
+#	| conceal          | \033[8m  |                       |
+#	| strike           | \033[9m  |                       |
+#	| gothic           | \033[20m |                       |
+#	| double underline | \033[21m |                       |
+#	| normal           | \033[22m |                       |
+#	| no italic        | \033[23m | reset underline       |
+#	| no underline     | \033[24m |                       |
+#	| no blink         | \033[25m |                       |
+#	| no reverse       | \033[27m | reset reverse display |
+# source: https://qiita.com/ko1nksm/items/095bdb8f0eca6d327233
+
+### eof #######################################################################
