@@ -50,6 +50,10 @@
       qemu
     ```
 
+  * Example of creating mkosi.conf
+
+    * [mkosi.ubuntu-25.10.conf](./mkosi.ubuntu-25.10.conf)
+
 ## **reference**
 
 * [ArchWiki](https://wiki.archlinux.jp)
