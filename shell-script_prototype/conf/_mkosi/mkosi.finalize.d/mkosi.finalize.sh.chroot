@@ -12,10 +12,17 @@ if command -v systemd-detect-virt > /dev/null 2>&1; then
 	printf "\033[m${_PROG_NAME}: \033[43m%s\033[m\n" " virtualized: ${__VERT:-}"
 fi
 
+if [ "${container:-}" != "mkosi" ] && command -v mkosi-chroot > /dev/null 2>&1; then
+	mkosi-chroot "${CHROOT_SCRIPT:-}" "$@"
+fi
+
 declare -a    _LIST_RMOV=()				# list remove directory / file
 
 # shellcheck disable=SC2317,SC2329
 function funcTrap() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+
 	declare       _PATH=""
 	declare -i    I=0
 	for I in $(printf "%s\n" "${!_LIST_RMOV[@]}" | sort -Vr)
@@ -28,20 +35,20 @@ function funcTrap() {
 			umount --quiet --lazy  --recursive "${_PATH}" || true
 		fi
 	done
+
+	# --- complete ------------------------------------------------------------
+	printf "\033[m${_PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
 }
 
 trap funcTrap EXIT
-
-if [ "${container:-}" != "mkosi" ] && command -v mkosi-chroot > /dev/null 2>&1; then
-	mkosi-chroot "${CHROOT_SCRIPT:-}" "$@"
-fi
 
 # --- common external script execution ----------------------------------------
 function fnExec_common_script() {
 	declare       __PATH=""
 	declare -a    __OPTN=()
+	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "   execution: ${FUNCNAME[0]}"
 
-	__PATH="./autoinst_cmd_late.sh"
+	__PATH="${SRCDIR:-}/autoinst_cmd_late.sh"
 	if [[ -e "${__PATH:-}" ]]; then
 		printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "   execution: ${__PATH}"
 		__OPTN=("ip=192.168.1.0::192.168.1.254:255.255.255.0:live-${DISTRIBUTION:-}.workgroup:-:192.168.1.254")
@@ -52,12 +59,15 @@ function fnExec_common_script() {
 		fi
 		printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "    complete: ${__PATH}"
 	fi
+
+	# --- complete ------------------------------------------------------------
+	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "    complete: ${FUNCNAME[0]}"
 }
 
 # --- location settings -------------------------------------------------------
 function fnConfig_location() {
 	declare       __PATH=""
-	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "   execution: location"
+	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "   execution: ${FUNCNAME[0]}"
 
 	# --- LANG=ja=JP.UTF-8 ----------------------------------------------------
 	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "   execution: LANG"
@@ -84,33 +94,36 @@ function fnConfig_location() {
 	ln -s /usr/share/zoneinfo/Asia/Tokyo "${__PATH}"
 
 	# --- complete ------------------------------------------------------------
-	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "    complete: location"
+	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "    complete: ${FUNCNAME[0]}"
 }
 
 # --- service settings --------------------------------------------------------
 function fnConfig_service() {
-	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "   execution: service"
+	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "   execution: ${FUNCNAME[0]}"
 	systemctl -q is-enabled speech-dispatcher.service && systemctl disable speech-dispatcher.service || true
-	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "    complete: service"
+	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "    complete: ${FUNCNAME[0]}"
 }
 
 # --- settings for each distribution ------------------------------------------
-function fnConfig_ubuntu() {
-	if systemctl --quiet is-system-running \
-	&& systemctl --quiet is-active snapd.socket; then
-		printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "   execution: snap"
-		if ! snap install firefox thunderbird chromium; then
-			printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n" "        fail: snap"
-			return
-		fi
-		printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "    complete: snap"
-	fi
-}
+#function fnConfig_ubuntu() {
+#	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "   execution: ${FUNCNAME[0]}"
+#	if systemctl --quiet is-system-running \
+#	&& systemctl --quiet is-active snapd.socket; then
+#	if systemctl --quiet is-enabled snapd.service; then
+#		printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "   execution: snap"
+#		if ! snap install firefox thunderbird chromium; then
+#			printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n" "        fail: snap"
+#			return
+#		fi
+#		printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "    complete: snap"
+#	fi
+#	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "    complete: ${FUNCNAME[0]}"
+#}
 
 function fnConfig_rhel_common() {
 	declare       __PATH=""
 
-	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "   execution: system-preset"
+	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "   execution: ${FUNCNAME[0]}"
 	__PATH="/etc/systemd/system-preset/00-user-custom.preset"
 	mkdir -p "${__PATH%/*}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
@@ -128,142 +141,142 @@ function fnConfig_rhel_common() {
 _EOT_
 
 	# --- complete ------------------------------------------------------------
-	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "    complete: system-preset"
+	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "    complete: ${FUNCNAME[0]}"
 }
 
-function fnConfig_live() {
-	declare       __PATH=""
-
-	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "   execution: live settings"
-	# --- user.conf -----------------------------------------------------------
-	__PATH="/etc/live/config.conf.d/user.conf"
-	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "      create: ${__PATH}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
-		export LIVE_HOSTNAME="live-${DISTRIBUTION:-}.workgroup"
-		export LIVE_USERNAME="master"
-		export LIVE_USER_PASSWORD="master"
-		export LIVE_USER_FULLNAME="${DISTRIBUTION^} Live user"
-		export LIVE_USER_DEFAULT_GROUPS="audio cdrom dip floppy video plugdev netdev powerdev scanner bluetooth debian-tor"
-
-		for __PARAMETER in \${LIVE_CONFIG_CMDLINE:-}
-		do
-			case "\${__PARAMETER}" in
-				live-config.user-password=*|user-password=*            ) LIVE_USER_PASSWORD="\${__PARAMETER#*user-password=}";;
-				live-config.user-default-groups=*|user-default-groups=*) LIVE_USER_DEFAULT_GROUPS="\${__PARAMETER#*user-default-groups=}";;
-				live-config.user-fullname=*|user-fullname=*            ) LIVE_USER_FULLNAME="\${__PARAMETER#*user-fullname=}";;
-				live-config.username=*|username=*                      ) LIVE_USERNAME="\${__PARAMETER#*username=}";;
-				*) ;;
-			esac
-		done
-_EOT_
-
-	# --- 0000-early-user-settings --------------------------------------------
-	__PATH="/usr/lib/live/config/0000-early-user-settings"
-	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "      create: ${__PATH}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
-		#!/bin/sh
-
-		 	[ -n "\${LIVE_BOOT_DEBUG:-}" ] && set -x
-
-		Cmdline ()
-		{
-		 	for __PARAMETER in \${LIVE_CONFIG_CMDLINE:-}
-		 	do
-		 		case "\${__PARAMETER}" in
-		 			live-config.user-password=*|user-password=*            ) LIVE_USER_PASSWORD="\${__PARAMETER#*user-password=}";;
-		 			live-config.user-default-groups=*|user-default-groups=*) LIVE_USER_DEFAULT_GROUPS="\${__PARAMETER#*user-default-groups=}";;
-		 			live-config.user-fullname=*|user-fullname=*            ) LIVE_USER_FULLNAME="\${__PARAMETER#*user-fullname=}";;
-		 			live-config.username=*|username=*                      ) LIVE_USERNAME="\${__PARAMETER#*username=}";;
-		 			*) ;;
-		 		esac
-		 	done
-		}
-
-		Init ()
-		{
-		 	printf "%s\n" " ${__PATH}"
-		}
-
-		Config ()
-		{
-		 	# Creating state file
-		 	touch "/var/lib/live/config/${__PATH##*/}"
-		}
-
-		 	Cmdline
-		 	Init
-		 	Config
-
-_EOT_
-	chmod 755 "${__PATH}"
-
-	# --- 9999-late-user-settings ---------------------------------------------
-	__PATH="/usr/lib/live/config/9999-late-user-settings"
-	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "      create: ${__PATH}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
-		#!/bin/sh
-
-		 	[ -n "\${LIVE_BOOT_DEBUG:-}" ] && set -x
-
-		Cmdline ()
-		{
-		 	for __PARAMETER in \${LIVE_CONFIG_CMDLINE:-}
-		 	do
-		 		case "\${__PARAMETER}" in
-		 			live-config.user-password=*|user-password=*            ) LIVE_USER_PASSWORD="\${__PARAMETER#*user-password=}";;
-		 			live-config.user-default-groups=*|user-default-groups=*) LIVE_USER_DEFAULT_GROUPS="\${__PARAMETER#*user-default-groups=}";;
-		 			live-config.user-fullname=*|user-fullname=*            ) LIVE_USER_FULLNAME="\${__PARAMETER#*user-fullname=}";;
-		 			live-config.username=*|username=*                      ) LIVE_USERNAME="\${__PARAMETER#*username=}";;
-		 			*) ;;
-		 		esac
-		 	done
-		}
-
-		Init ()
-		{
-		 	printf "%s\n" " ${__PATH}"
-		}
-
-		Config ()
-		{
-		 	# Setup user
-		 	__PASSWORD="\$(echo "\${LIVE_USER_PASSWORD}" | mkpasswd -s)"
-		 	if id "\${LIVE_USERNAME}" > /dev/null 2>&1; then
-		 		usermod --password "\${__PASSWORD:?}" "\${LIVE_USERNAME}"
-		 	else
-		 		useradd --create-home --user-group --groups "\${LIVE_USER_DEFAULT_GROUPS}" --comment "\${LIVE_USER_FULLNAME}" --password "\${__PASSWORD:?}" "\${LIVE_USERNAME}"
-		 	fi
-
-		 	# Setup samba user
-		 	printf "%s\n%s\n" "\${LIVE_USER_PASSWORD}" "\${LIVE_USER_PASSWORD}" | smbpasswd -a -s "\${LIVE_USERNAME}"
-
-		 	# Creating state file
-		 	touch "/var/lib/live/config/${__PATH##*/}"
-		}
-
-		 	Cmdline
-		 	Init
-		 	Config
-
-_EOT_
-	chmod 755 "${__PATH}"
-
-	# --- complete ------------------------------------------------------------
-	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "    complete: live settings"
-}
+#function fnConfig_live() {
+#	declare       __PATH=""
+#
+#	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "   execution: ${FUNCNAME[0]}"
+#	# --- user.conf -----------------------------------------------------------
+#	__PATH="/etc/live/config.conf.d/user.conf"
+#	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "      create: ${__PATH}"
+#	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
+#		export LIVE_HOSTNAME="live-${DISTRIBUTION:-}.workgroup"
+#		export LIVE_USERNAME="master"
+#		export LIVE_USER_PASSWORD="master"
+#		export LIVE_USER_FULLNAME="${DISTRIBUTION^} Live user"
+#		export LIVE_USER_DEFAULT_GROUPS="audio cdrom dip floppy video plugdev netdev powerdev scanner bluetooth debian-tor"
+#
+#		for __PARAMETER in \${LIVE_CONFIG_CMDLINE:-}
+#		do
+#			case "\${__PARAMETER}" in
+#				live-config.user-password=*|user-password=*            ) LIVE_USER_PASSWORD="\${__PARAMETER#*user-password=}";;
+#				live-config.user-default-groups=*|user-default-groups=*) LIVE_USER_DEFAULT_GROUPS="\${__PARAMETER#*user-default-groups=}";;
+#				live-config.user-fullname=*|user-fullname=*            ) LIVE_USER_FULLNAME="\${__PARAMETER#*user-fullname=}";;
+#				live-config.username=*|username=*                      ) LIVE_USERNAME="\${__PARAMETER#*username=}";;
+#				*) ;;
+#			esac
+#		done
+#_EOT_
+#
+#	# --- 0000-early-user-settings --------------------------------------------
+#	__PATH="/usr/lib/live/config/0000-early-user-settings"
+#	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "      create: ${__PATH}"
+#	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
+#		#!/bin/sh
+#
+#		 	[ -n "\${LIVE_BOOT_DEBUG:-}" ] && set -x
+#
+#		Cmdline ()
+#		{
+#		 	for __PARAMETER in \${LIVE_CONFIG_CMDLINE:-}
+#		 	do
+#		 		case "\${__PARAMETER}" in
+#		 			live-config.user-password=*|user-password=*            ) LIVE_USER_PASSWORD="\${__PARAMETER#*user-password=}";;
+#		 			live-config.user-default-groups=*|user-default-groups=*) LIVE_USER_DEFAULT_GROUPS="\${__PARAMETER#*user-default-groups=}";;
+#		 			live-config.user-fullname=*|user-fullname=*            ) LIVE_USER_FULLNAME="\${__PARAMETER#*user-fullname=}";;
+#		 			live-config.username=*|username=*                      ) LIVE_USERNAME="\${__PARAMETER#*username=}";;
+#		 			*) ;;
+#		 		esac
+#		 	done
+#		}
+#
+#		Init ()
+#		{
+#		 	printf "%s\n" " ${__PATH}"
+#		}
+#
+#		Config ()
+#		{
+#		 	# Creating state file
+#		 	touch "/var/lib/live/config/${__PATH##*/}"
+#		}
+#
+#		 	Cmdline
+#		 	Init
+#		 	Config
+#
+#_EOT_
+#	chmod 755 "${__PATH}"
+#
+#	# --- 9999-late-user-settings ---------------------------------------------
+#	__PATH="/usr/lib/live/config/9999-late-user-settings"
+#	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "      create: ${__PATH}"
+#	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
+#		#!/bin/sh
+#
+#		 	[ -n "\${LIVE_BOOT_DEBUG:-}" ] && set -x
+#
+#		Cmdline ()
+#		{
+#		 	for __PARAMETER in \${LIVE_CONFIG_CMDLINE:-}
+#		 	do
+#		 		case "\${__PARAMETER}" in
+#		 			live-config.user-password=*|user-password=*            ) LIVE_USER_PASSWORD="\${__PARAMETER#*user-password=}";;
+#		 			live-config.user-default-groups=*|user-default-groups=*) LIVE_USER_DEFAULT_GROUPS="\${__PARAMETER#*user-default-groups=}";;
+#		 			live-config.user-fullname=*|user-fullname=*            ) LIVE_USER_FULLNAME="\${__PARAMETER#*user-fullname=}";;
+#		 			live-config.username=*|username=*                      ) LIVE_USERNAME="\${__PARAMETER#*username=}";;
+#		 			*) ;;
+#		 		esac
+#		 	done
+#		}
+#
+#		Init ()
+#		{
+#		 	printf "%s\n" " ${__PATH}"
+#		}
+#
+#		Config ()
+#		{
+#		 	# Setup user
+#		 	__PASSWORD="\$(echo "\${LIVE_USER_PASSWORD}" | mkpasswd -s)"
+#		 	if id "\${LIVE_USERNAME}" > /dev/null 2>&1; then
+#		 		usermod --password "\${__PASSWORD:?}" "\${LIVE_USERNAME}"
+#		 	else
+#		 		useradd --create-home --user-group --groups "\${LIVE_USER_DEFAULT_GROUPS}" --comment "\${LIVE_USER_FULLNAME}" --password "\${__PASSWORD:?}" "\${LIVE_USERNAME}"
+#		 	fi
+#
+#		 	# Setup samba user
+#		 	printf "%s\n%s\n" "\${LIVE_USER_PASSWORD}" "\${LIVE_USER_PASSWORD}" | smbpasswd -a -s "\${LIVE_USERNAME}"
+#
+#		 	# Creating state file
+#		 	touch "/var/lib/live/config/${__PATH##*/}"
+#		}
+#
+#		 	Cmdline
+#		 	Init
+#		 	Config
+#
+#_EOT_
+#	chmod 755 "${__PATH}"
+#
+#	# --- complete ------------------------------------------------------------
+#	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "    complete: ${FUNCNAME[0]}"
+#}
 
 # === main ====================================================================
 function fnMain() {
 	declare       __PATH=""
 
-	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "   execution: main"
+	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "   execution: ${FUNCNAME[0]}"
 
 	# --- mount bind ----------------------------------------------------------
-	__PATH="./run/."
-	if [[ -e "${__PATH:-}" ]]; then
-		printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "  mount bind: ${__PATH}"
-		mount  --bind "${__PATH}" /run/ && _LIST_RMOV+=("/run/")
-	fi
+#	__PATH="${SRCDIR:-}/run/."
+#	if [[ -e "${__PATH:-}" ]]; then
+#		printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "  mount bind: ${__PATH}"
+#		mount  --bind "${__PATH}" /run/ && _LIST_RMOV+=("/run/")
+#	fi
 
 	# --- common settings -----------------------------------------------------
 	fnExec_common_script				# common external script execution
@@ -272,8 +285,10 @@ function fnMain() {
 
 	# ----allocation of each distribution -------------------------------------
 	case "${DISTRIBUTION:-}" in
-		debian      ) fnConfig_live;;
-		ubuntu      ) fnConfig_live; fnConfig_ubuntu;;
+#		debian      ) fnConfig_live;;
+#		ubuntu      ) fnConfig_live; fnConfig_ubuntu;;
+		debian      | \
+		ubuntu      | \
 		fedora      | \
 		centos      | \
 		alma        | \
@@ -292,14 +307,14 @@ function fnMain() {
 	esac
 
 	# --- unmount bind --------------------------------------------------------
-	__PATH="./run/."
-	if [[ -e "${__PATH:-}" ]]; then
-		printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "unmount bind: ${__PATH}"
-		umount /run/
-	fi
+#	__PATH="${SRCDIR:-}/run/."
+#	if [[ -e "${__PATH:-}" ]]; then
+#		printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "unmount bind: ${__PATH}"
+#		umount /run/
+#	fi
 
 	# --- complete ------------------------------------------------------------
-	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "    complete: main"
+	printf "\033[m${_PROG_NAME}: \033[94m%s\033[m\n" "    complete: ${FUNCNAME[0]}"
 }
 
 fnMain									# main
