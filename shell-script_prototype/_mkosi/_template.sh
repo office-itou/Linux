@@ -35,13 +35,12 @@
 	declare       _DBGS_LOGS=""			# debug file (empty: normal, else: debug)
 	declare       _DBGS_PARM=""			# debug file (empty: normal, else: debug)
 	declare       _DBGS_SIMU=""			# debug flag (empty: normal, else: simulation)
+	declare       _DBGS_WRAP=""			# debug flag (empty: cut to screen width, else: wrap display)
 	declare -a    _DBGS_FAIL=()			# debug flag (empty: success, else: failure)
 
 	# --- working directory ---------------------------------------------------
 	declare -r    _PROG_PATH="$0"
-	declare -a    _PROG_PARM=()
-	read -r -a _PROG_PARM < <(printf "%s\n" "${@:-}")
-	readonly      _PROG_PARM
+	declare -r -a  _PROG_PARM=("${@:-}")
 	declare       _PROG_DIRS="${_PROG_PATH%/*}"
 	              _PROG_DIRS="$(realpath "${_PROG_DIRS%/}")"
 	readonly      _PROG_DIRS
@@ -120,23 +119,15 @@
 	declare       _DIRS_CTNR="${_DIRS_SHAR}/containers"		# container file
 	declare       _DIRS_CHRT="${_DIRS_SHAR}/chroot"			# container file (chroot)
 
-	# --- common data file (prefer non-empty current file) --------------------
-	declare       _FILE_CONF="common.cfg"					# common configuration file
+	# --- common data file ----------------------------------------------------
+	declare       _FILE_CONF="common.cfg"					# common configuration file (prefer non-empty current file)
 	declare       _FILE_DIST="distribution.dat"				# distribution data file
 	declare       _FILE_MDIA="media.dat"					# media data file
 	declare       _FILE_DSTP="debstrap.dat"					# debstrap data file
-	declare       _PATH_CONF=""								# common configuration file
-	              _PATH_CONF="$(find "${_DIRS_CURR}" "${_SUDO_HOME}" "${_DIRS_DATA}" -maxdepth 1 -name "${_FILE_CONF:?}" -size +0 -print -quit)"
-	readonly      _PATH_CONF
-	declare       _PATH_DIST=""								# distribution data file
-	              _PATH_DIST="$(find "${_DIRS_CURR}" "${_SUDO_HOME}" "${_DIRS_DATA}" -maxdepth 1 -name "${_FILE_DIST:?}" -size +0 -print -quit)"
-	readonly      _PATH_DIST
-	declare       _PATH_MDIA=""								# media data file
-	              _PATH_MDIA="$(find "${_DIRS_CURR}" "${_SUDO_HOME}" "${_DIRS_DATA}" -maxdepth 1 -name "${_FILE_MDIA:?}" -size +0 -print -quit)"
-	readonly      _PATH_MDIA
-	declare       _PATH_DSTP=""								# debstrap data file
-	              _PATH_DSTP="$(find "${_DIRS_CURR}" "${_SUDO_HOME}" "${_DIRS_DATA}" -maxdepth 1 -name "${_FILE_DSTP:?}" -size +0 -print -quit)"
-	readonly      _PATH_DSTP
+	declare       _PATH_CONF="${_DIRS_DATA}/${_FILE_CONF}"	# common configuration file
+	declare       _PATH_DIST="${_DIRS_DATA}/${_FILE_DIST}"	# distribution data file
+	declare       _PATH_MDIA="${_DIRS_DATA}/${_FILE_MDIA}"	# media data file
+	declare       _PATH_DSTP="${_DIRS_DATA}/${_FILE_DSTP}"	# debstrap data file
 
 	# --- pre-configuration file templates ------------------------------------
 	declare       _FILE_KICK="kickstart_rhel.cfg"			# for rhel
@@ -145,42 +136,22 @@
 	declare       _FILE_SEDU="preseed_ubuntu.cfg"			# for ubuntu
 	declare       _FILE_YAST="yast_opensuse.xml"			# for opensuse
 	declare       _FILE_AGMA="agama_opensuse.json"			# for opensuse
-	declare       _CONF_KICK=""								# for rhel
-	              _CONF_KICK="$(find "${_DIRS_CURR}" "${_SUDO_HOME}" "${_DIRS_TMPL}" -maxdepth 1 -name "${_FILE_KICK:?}" -size +0 -print -quit)"
-	readonly      _CONF_KICK
-	declare       _CONF_CLUD=""								# for ubuntu cloud-init
-	              _CONF_CLUD="$(find "${_DIRS_CURR}" "${_SUDO_HOME}" "${_DIRS_TMPL}" -maxdepth 1 -name "${_FILE_CLUD:?}" -size +0 -print -quit)"
-	readonly      _CONF_CLUD
-	declare       _CONF_SEDD=""								# for debian
-	              _CONF_SEDD="$(find "${_DIRS_CURR}" "${_SUDO_HOME}" "${_DIRS_TMPL}" -maxdepth 1 -name "${_FILE_SEDD:?}" -size +0 -print -quit)"
-	readonly      _CONF_SEDD
-	declare       _CONF_SEDU=""								# for ubuntu
-	              _CONF_SEDU="$(find "${_DIRS_CURR}" "${_SUDO_HOME}" "${_DIRS_TMPL}" -maxdepth 1 -name "${_FILE_SEDU:?}" -size +0 -print -quit)"
-	readonly      _CONF_SEDU
-	declare       _CONF_YAST=""								# for opensuse
-	              _CONF_YAST="$(find "${_DIRS_CURR}" "${_SUDO_HOME}" "${_DIRS_TMPL}" -maxdepth 1 -name "${_FILE_YAST:?}" -size +0 -print -quit)"
-	readonly      _CONF_YAST
-	declare       _CONF_AGMA=""								# for opensuse
-	              _CONF_AGMA="$(find "${_DIRS_CURR}" "${_SUDO_HOME}" "${_DIRS_TMPL}" -maxdepth 1 -name "${_FILE_AGMA:?}" -size +0 -print -quit)"
-	readonly      _CONF_AGMA
+	declare       _CONF_KICK="${_DIRS_TMPL}/${_FILE_KICK}"	# for rhel
+	declare       _CONF_CLUD="${_DIRS_TMPL}/${_FILE_CLUD}"	# for ubuntu cloud-init
+	declare       _CONF_SEDD="${_DIRS_TMPL}/${_FILE_SEDD}"	# for debian
+	declare       _CONF_SEDU="${_DIRS_TMPL}/${_FILE_SEDU}"	# for ubuntu
+	declare       _CONF_YAST="${_DIRS_TMPL}/${_FILE_YAST}"	# for opensuse
+	declare       _CONF_AGMA="${_DIRS_TMPL}/${_FILE_AGMA}"	# for opensuse
 
 	# --- shell script --------------------------------------------------------
 	declare       _FILE_ERLY="autoinst_cmd_early.sh"		# shell commands to run early
 	declare       _FILE_LATE="autoinst_cmd_late.sh"			# "              to run late
 	declare       _FILE_PART="autoinst_cmd_part.sh"			# "              to run after partition
 	declare       _FILE_RUNS="autoinst_cmd_run.sh"			# "              to run preseed/run
-	declare       _SHEL_ERLY=""								# shell commands to run early
-	              _SHEL_ERLY="$(find "${_DIRS_CURR}" "${_SUDO_HOME}" "${_DIRS_TMPL}" -maxdepth 1 -name "${_FILE_ERLY:?}" -size +0 -print -quit)"
-	readonly      _SHEL_ERLY
-	declare       _SHEL_LATE=""								# "              to run late
-	              _SHEL_LATE="$(find "${_DIRS_CURR}" "${_SUDO_HOME}" "${_DIRS_TMPL}" -maxdepth 1 -name "${_FILE_LATE:?}" -size +0 -print -quit)"
-	readonly      _SHEL_LATE
-	declare       _SHEL_PART=""								# "              to run after partition
-	              _SHEL_PART="$(find "${_DIRS_CURR}" "${_SUDO_HOME}" "${_DIRS_TMPL}" -maxdepth 1 -name "${_FILE_PART:?}" -size +0 -print -quit)"
-	readonly      _SHEL_PART
-	declare       _SHEL_RUNS=""								# "              to run preseed/run
-	              _SHEL_RUNS="$(find "${_DIRS_CURR}" "${_SUDO_HOME}" "${_DIRS_TMPL}" -maxdepth 1 -name "${_FILE_RUNS:?}" -size +0 -print -quit)"
-	readonly      _SHEL_RUNS
+	declare       _SHEL_ERLY="${_DIRS_TMPL}/${_FILE_ERLY}"	# shell commands to run early
+	declare       _SHEL_LATE="${_DIRS_TMPL}/${_FILE_LATE}"	# "              to run late
+	declare       _SHEL_PART="${_DIRS_TMPL}/${_FILE_PART}"	# "              to run after partition
+	declare       _SHEL_RUNS="${_DIRS_TMPL}/${_FILE_RUNS}"	# "              to run preseed/run
 
 	# --- tftp / web server network parameter ---------------------------------
 	declare       _SRVR_HTTP="http"		# server connection protocol (http or https)
@@ -241,6 +212,7 @@
 #	declare       _MENU_UEFI=""			# uefi x86_64
 
 	# --- list data -----------------------------------------------------------
+	declare -a    _LIST_CONF=()			# configuration information
 	declare -a    _LIST_DIST=()			# distribution information
 	declare -a    _LIST_MDIA=()			# media information
 	declare -a    _LIST_DSTP=()			# debstrap information
@@ -314,11 +286,16 @@ function fnDebugout_parameters() {
 #   output:   stderr   : output
 #   return:            : unused
 #   g-var : _DBGS_FLAG : read
+#   g-var : _DBGS_WRAP : read
 #   g-var : _SIZE_COLS : read
 # shellcheck disable=SC2317,SC2329
 function fnDebugout_list() {
 	[[ -z "${_DBGS_FLAG:-}" ]] && return
-	printf "[%-.$((_SIZE_COLS-2))s]\n" "${@:-}" 1>&2
+	if [[ -z "${_DBGS_WRAP:-}" ]]; then
+		printf "[%-.$((_SIZE_COLS-2))s]\n" "${@:-}" 1>&2
+	else
+		printf "[%s]\n" "${@:-}" 1>&2
+	fi
 }
 
 # -----------------------------------------------------------------------------
@@ -329,10 +306,10 @@ function fnDebugout_list() {
 #   g-var :            : unused
 #   memo  : https://qiita.com/t_nakayama0714/items/80b4c94de43643f4be51#%E5%AD%A6%E3%81%B3%E3%81%AE%E6%88%90%E6%9E%9C%E3%82%92%E6%84%9F%E3%81%98%E3%82%8B%E3%83%AF%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%8A%E3%83%BC
 # shellcheck disable=SC2317,SC2329
-function fnDebug_allparameter() {
+function fnDebug_allparameters() {
 	declare       __CHAR=""				# variable initial letter
-	declare       __NAME=""				#          name
-	declare       __VALU=""				#          value
+	declare       __NAME=""				# "        name
+	declare       __VALU=""				# "        value
 	for __CHAR in {A..Z} {a..z} "_" "__"
 	do
 		for __NAME in $(eval printf "%q\\\n" \$\{\!"${__CHAR}"\@\})
@@ -375,7 +352,7 @@ function fnMsgout() {
 # descript: executing the convert
 #   input :     $@     : option parameter
 #   output:   stdout   : unused
-#   return:            : unused
+#   return:            : status
 #   g-var :            : unused
 # shellcheck disable=SC2317,SC2329
 function fnExec_convert() {
@@ -394,7 +371,7 @@ function fnExec_convert() {
 # descript: executing the mkosi
 #   input :     $@     : option parameter
 #   output:   stdout   : unused
-#   return:            : unused
+#   return:            : status
 #   g-var :            : unused
 # shellcheck disable=SC2317,SC2329
 function fnExec_mkosi() {
@@ -422,8 +399,6 @@ function fnExec_mkosi() {
 #   g-var : _LIST_CONF : write
 # shellcheck disable=SC2317,SC2329
 function fnGet_conf_data() {
-	declare -r    __SIZE="$((_SIZE_COLS-2))"
-	# --- list data -----------------------------------------------------------
 	if [[ -z "${_PATH_CONF}" ]]; then
 		fnMsgout "failed" "not found: [${_FILE_CONF}]"
 		exit 1
@@ -449,8 +424,6 @@ function fnGet_conf_data() {
 #   g-var : _LIST_DIST : write
 # shellcheck disable=SC2317,SC2329
 function fnGet_dist_data() {
-	declare -r    __SIZE="$((_SIZE_COLS-2))"
-	# --- list data -----------------------------------------------------------
 	if [[ -z "${_PATH_DIST}" ]]; then
 		fnMsgout "failed" "not found: [${_FILE_DIST}]"
 		exit 1
@@ -463,6 +436,143 @@ function fnGet_dist_data() {
 	fi
 	fnDebugout_list "${_LIST_DIST[@]}"
 	fnDebugout_parameters
+}
+
+# -----------------------------------------------------------------------------
+# descript: get media data
+#   input :            : unused
+#   output:   stdout   : unused
+#   return:            : unused
+#   g-var : _DBGS_FLAG : read
+#   g-var : _PATH_MDIA : read
+#   g-var : _FILE_MDIA : read
+#   g-var : _LIST_MDIA : write
+# shellcheck disable=SC2317,SC2329
+function fnGet_media_data() {
+	if [[ -z "${_PATH_MDIA}" ]]; then
+		fnMsgout "failed" "not found: [${_FILE_MDIA}]"
+		exit 1
+	fi
+	_LIST_MDIA=()
+	IFS= mapfile -d $'\n' -t _LIST_MDIA < <(expand -t 4 "${_PATH_MDIA}" || true)
+	if [[ "${#_LIST_MDIA[@]}" -le 0 ]]; then
+		fnMsgout "failed" "no data: [${_PATH_MDIA}]"
+		exit 1
+	fi
+	fnDebugout_list "${_LIST_MDIA[@]}"
+	fnDebugout_parameters
+}
+
+# -----------------------------------------------------------------------------
+# descript: set common configuration data
+#   input :            : unused
+#   output:   stdout   : unused
+#   return:            : unused
+#   g-var : _LIST_CONF : read
+# shellcheck disable=SC2317,SC2329
+function fnSet_conf_data() {
+	declare       __NAME=""				# variable name
+	declare       __VALU=""				# "        value
+	declare       __LINE=""				# work variable
+	declare       __WORK=""				# work variables
+	declare -i    I=0
+
+	for I in "${!_LIST_CONF[@]}"
+	do
+		__LINE="${_LIST_CONF[I]}"
+		__LINE="${__LINE%%#*}"
+		__LINE="${__LINE//["${IFS}"]/ }"
+		__LINE="${__LINE#"${__LINE%%[!"${IFS}"]*}"}"	# ltrim
+		__LINE="${__LINE%"${__LINE##*[!"${IFS}"]}"}"	# rtrim
+		__NAME="${__LINE%%=*}"
+		case "${__NAME:-}" in
+			"" ) continue;;
+			\#*) continue;;
+			*  ) ;;
+		esac
+		__VALU="${__LINE#*=}"
+		__VALU="${__VALU#\"}"
+		__VALU="${__VALU%\"}"
+		[[ -z "${__VALU:-}" ]] && continue
+		while true
+		do
+			__WORK="${__VALU%%_:*}"
+			__WORK="${__WORK##*:_}"
+			case "${__WORK:-}" in
+				DIRS_*) ;;
+				FILE_*) ;;
+				*     ) break;;
+			esac
+			__VALU="${__VALU/:_${__WORK}_:/\$\{_${__WORK}\}}"
+		done
+		read -r "_${__NAME}" < <(eval echo "${__VALU}" || true)
+	done
+	for __NAME in $(eval printf "%q\\\n" \$\{\!_\@\})
+	do
+		__NAME="${__NAME#\'}"
+		__NAME="${__NAME%\'}"
+		[[ -z "${__NAME:-}" ]] && continue
+		case "${__NAME}" in
+			_DBGS_FAIL) continue;;
+			_LIST_*   ) continue;;
+			_[A-Za-z]*) ;;
+			*         ) continue;;
+		esac
+		eval readonly "${__NAME}"
+	done
+
+#	_CONF_AGMA,_CONF_CLUD,_CONF_KICK,_CONF_SEDD,_CONF_SEDU,_CONF_YAST
+#	_DBGS_FAIL,_DBGS_FLAG,_DBGS_LOGS,_DBGS_PARM,_DBGS_SIMU
+#	_DIRS_CACH,_DIRS_CHRT,_DIRS_CONF,_DIRS_CTNR,_DIRS_CURR,_DIRS_DATA,_DIRS_HGFS,_DIRS_HTML,_DIRS_IMGS,_DIRS_ISOS,_DIRS_KEYS,_DIRS_LOAD,_DIRS_MKOS,_DIRS_RMAK,_DIRS_SAMB,_DIRS_SHAR,_DIRS_SHEL,_DIRS_TEMP,_DIRS_TFTP,_DIRS_TMPL,_DIRS_TOPS,_DIRS_USER,_DIRS_WTOP
+#	_FILE_AGMA,_FILE_CLUD,_FILE_CONF,_FILE_DIST,_FILE_DSTP,_FILE_ERLY,_FILE_KICK,_FILE_LATE,_FILE_MDIA,_FILE_PART,_FILE_RUNS,_FILE_SEDD,_FILE_SEDU,_FILE_YAST
+#	_IPV4_ADDR,_IPV4_CIDR,_IPV4_GWAY,_IPV4_MASK,_IPV4_NSVR,_IPV4_UADR
+#	_LIST_CONF,_LIST_DIST,_LIST_DSTP,_LIST_MDIA,_LIST_RMOV
+#	_MENU_DPTH,_MENU_MODE,_MENU_RESO,_MENU_SPLS,_MENU_TOUT
+#	_NICS_MADR,_NICS_NAME,
+#	_NMAN_NAME
+#	_NTPS_ADDR,_NTPS_IPV4
+#	_NWRK_HOST,_NWRK_WGRP
+#	_PATH_CONF,_PATH_DIST,_PATH_DSTP,_PATH_MDIA
+#	_PROG_DIRS,_PROG_NAME,_PROG_PARM,_PROG_PATH,_PROG_PROC
+#	_SHEL_ERLY,_SHEL_LATE,_SHEL_PART,_SHEL_RUNS
+#	_SIZE_COLS,_SIZE_ROWS
+#	_SRVR_ADDR,_SRVR_CIDR,_SRVR_GWAY,_SRVR_HTTP,_SRVR_MADR,_SRVR_MASK,_SRVR_NICS,_SRVR_NSVR,_SRVR_PROT,_SRVR_UADR
+#	_SUDO_HOME,_SUDO_USER
+#	_TEXT_GAP1,_TEXT_GAP2,_TEXT_SPCE
+#	_USER_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: set common media data
+#   input :            : unused
+#   output:   stdout   : unused
+#   return:            : unused
+#   g-var : _LIST_MDIA : read
+# shellcheck disable=SC2317,SC2329
+function fnSet_media_data() {
+	declare       __LINE=""				# work variable
+	declare -a    __LIST=()				# work variable
+	declare       __WORK=""				# work variables
+	declare -i    I=0
+
+	for I in "${!_LIST_MDIA[@]}"
+	do
+		__LINE="${_LIST_MDIA[I]}"
+		while true
+		do
+			__WORK="${__LINE%%_:*}"
+			__WORK="${__WORK##*:_}"
+			case "${__WORK:-}" in
+				DIRS_*) ;;
+				FILE_*) ;;
+				*     ) break;;
+			esac
+			__LINE="${__LINE/:_${__WORK}_:/\$\{_${__WORK}\}}"
+		done
+		read -r -a __LIST < <(eval echo "${__LINE}" || true)
+		_LIST_MDIA[I]="${__LIST[*]}"
+	done
+	fnDebugout_list "${_LIST_MDIA[@]}"
 }
 
 # *** main section ************************************************************
@@ -480,8 +590,12 @@ function fnInitialize() {
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "start" "[${__FUNC_NAME}]"
 
+	_PATH_CONF="$(find "${_DIRS_CURR:-"${PWD}"}" "${_SUDO_HOME:-"${SUDO_HOME:-"${HOME:-}"}"}" "${_DIRS_DATA:-/srv/user/share/conf/_data}" -maxdepth 1 -name "${_FILE_CONF:-common.cfg}" -size +0 -print -quit)"
 	fnGet_conf_data						# get common configuration data
+	fnSet_conf_data						# set common configuration data
 	fnGet_dist_data						# get distribution data
+	fnGet_media_data					# get media data
+	fnSet_media_data					# set common media data
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "complete" "[${__FUNC_NAME}]"
@@ -675,13 +789,12 @@ function fnMain() {
 
 	[[ "${#_PROG_PARM[@]}" -le 0 ]] && fnHelp
 
-	# --- get command line ----------------------------------------------------
+	# --- get options ---------------------------------------------------------
 	set -f -- "${_PROG_PARM[@]:-}"
 	set +f
 	while [[ -n "${1:-}" ]]
 	do
 		case "${1%%=*}" in
-			--testparm ) shift; fnDebug_allparameter; exit 0;;
 			--debug    | \
 			--dbg      ) shift; _DBGS_FLAG="true"; set -x;;
 			--debugout | \
@@ -690,6 +803,7 @@ function fnMain() {
 			--debugparm| \
 			--dbgparm  ) shift; _DBGS_PARM="true";;
 			--simu     ) shift; _DBGS_SIMU="true";;
+			--wrap     ) shift; _DBGS_WRAP="true";;
 			help       ) shift; fnHelp;;
 			*          ) shift;;
 		esac
@@ -711,8 +825,16 @@ function fnMain() {
 	printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
 
 	# --- main ----------------------------------------------------------------
-	fnMain
-	fnDebugout_parameters
+	# --- get command ---------------------------------------------------------
+	set -f -- "${_PROG_PARM[@]:-}"
+	set +f
+	while [[ -n "${1:-}" ]]
+	do
+		case "${1%%=*}" in
+			--testparm ) shift; fnInitialize; fnDebug_allparameters; exit 0;;
+			*          ) shift; fnMain;;
+		esac
+	done
 
 	# --- complete ------------------------------------------------------------
 	__time_end=$(date +%s)
