@@ -69,6 +69,8 @@
 	readonly      _DIRS_TEMP
 
 	# --- trap list -----------------------------------------------------------
+	trap fnTrap EXIT
+
 	declare -a    _LIST_RMOV=()			# list remove directory / file
 	              _LIST_RMOV+=("${_DIRS_TEMP:?}")			# temporary
 
@@ -813,8 +815,6 @@ function fnMain() {
 		_DBGS_FLAG="true"
 		exec 2>&1
 	fi
-
-	trap fnTrap EXIT
 
 	declare -i    __time_start=0		# elapsed time: start
 	declare -i    __time_end=0			# "           : end
