@@ -40,12 +40,14 @@
 
 	# --- working directory ---------------------------------------------------
 	declare -r    _PROG_PATH="$0"
-	declare -r -a  _PROG_PARM=("${@:-}")
+	declare -a    _PROG_PARM=()
+	IFS= mapfile -d $'\n' -t _PROG_PARM < <(printf "%s\n" "${@:-}" || true)
+	readonly      _PROG_PARM
 	declare       _PROG_DIRS="${_PROG_PATH%/*}"
 	              _PROG_DIRS="$(realpath "${_PROG_DIRS%/}")"
 	readonly      _PROG_DIRS
 	declare -r    _PROG_NAME="${_PROG_PATH##*/}"
-	declare -r    _PROG_PROC="${_PROG_NAME}.$$"
+#	declare -r    _PROG_PROC="${_PROG_NAME}.$$"
 
 	# --- user data -----------------------------------------------------------
 	declare -r    _USER_NAME="${USER:-"${LOGNAME:-"$(whoami || true)"}"}"		# execution user name
@@ -65,7 +67,7 @@
 
 	# --- temporary directory -------------------------------------------------
 	declare       _DIRS_TEMP="${_DIRS_WTOP}"
-	              _DIRS_TEMP="$(mktemp -qtd -p "${_DIRS_TEMP}" "${_PROG_PROC}.XXXXXX")"
+	              _DIRS_TEMP="$(mktemp -qtd -p "${_DIRS_TEMP}" "${_PROG_NAME}.XXXXXX")"
 	readonly      _DIRS_TEMP
 
 	# --- trap list -----------------------------------------------------------
@@ -96,6 +98,13 @@
 
 	# --- working directory parameter -----------------------------------------
 	declare -r    _DIRS_CURR="${PWD}"						# current directory
+
+	# --- debug out parameter -------------------------------------------------
+	declare -r    _DIRS_DBGS="${_DIRS_WTOP}/${_PROG_NAME}.dbg" # debug out directory
+	declare       _DBGS_OUTS=""								# debug out log file name
+	              _DBGS_OUTS="${_DIRS_DBGS}/:_COMMAND_:.$(date +"%Y%m%d%H%M%S" || echo "yyyymmddhhmmss").log"
+	readonly      _DBGS_OUTS
+	mkdir -p   "${_DIRS_DBGS}"
 
 	# --- shared directory parameter ------------------------------------------
 	declare       _DIRS_TOPS="/srv"							# top of shared directory
@@ -278,8 +287,25 @@ function fnDebugout() {
 #   g-var :  FUNCNAME  : read
 # shellcheck disable=SC2317,SC2329
 function fnDebugout_parameters() {
+#	declare       __CHAR=""				# variable initial letter
+	declare       __NAME=""				# "        name
+	declare       __VALU=""				# "        value
 	[[ -z "${_DBGS_PARM:-}" ]] && return
-	printf "${FUNCNAME[1]}: %q\n" "${!__@}" 1>&2
+#	printf "${FUNCNAME[1]}: %q\n" "${!__@}" 1>&2
+	for __NAME in $(printf "%q\n" "${!__@}")
+	do
+		__NAME="${__NAME#\'}"
+		__NAME="${__NAME%\'}"
+		[[ -z "${__NAME:-}" ]] && continue
+		case "${__NAME}" in
+			__CHAR | \
+			__NAME | \
+			__VALU ) continue;;
+			*) ;;
+		esac
+		__VALU="$(eval printf "%q" \$\{"${__NAME}":-\})"
+		printf "${FUNCNAME[1]}: %s=[%s]\n" "${__NAME}" "${__VALU/#\'\'/}"
+	done
 }
 
 # -----------------------------------------------------------------------------
@@ -314,7 +340,7 @@ function fnDebug_allparameters() {
 	declare       __VALU=""				# "        value
 	for __CHAR in {A..Z} {a..z} "_" "__"
 	do
-		for __NAME in $(eval printf "%q\\\n" \$\{\!"${__CHAR}"\@\})
+		for __NAME in $(eval printf "%q\\\n" "\${!${__CHAR}@}")
 		do
 			__NAME="${__NAME#\'}"
 			__NAME="${__NAME%\'}"
@@ -325,7 +351,7 @@ function fnDebug_allparameters() {
 				__VALU ) continue;;
 				*) ;;
 			esac
-			__VALU="$(eval printf "%q" \$\{"${__NAME}":-\})"
+			__VALU="$(eval printf "%q" "\${${__NAME}:-}")"
 			printf "%s=[%s]\n" "${__NAME}" "${__VALU/#\'\'/}"
 		done
 	done
@@ -342,13 +368,23 @@ function fnDebug_allparameters() {
 function fnMsgout() {
 	{
 		case "${1:-}" in
-			start    | complete) printf "\033[m${_PROG_NAME}: \033[92m--- %-8.8s: %s ---\033[m\n" "$1" "$2";;
-			remove   | umount  ) printf "\033[m${_PROG_NAME}: \033[93m    %-8.8s: %s\033[m\n"     "$1" "$2";;
-			failed             ) printf "\033[m${_PROG_NAME}: \033[91m    %-8.8s: %s\033[m\n"     "$1" "$2";;
-			*                  ) printf "\033[m${_PROG_NAME}: \033[37m%12.12s: %s\033[m\n"        "$1" "$2";;
+			start    | complete) printf "\033[m${_PROG_NAME}: \033[92m--- %-8.8s: %s ---\033[m\n" "$1" "$2";; # info
+			remove   | umount  ) printf "\033[m${_PROG_NAME}: \033[93m    %-8.8s: %s\033[m\n"     "$1" "$2";; # warn
+			success            ) printf "\033[m${_PROG_NAME}: \033[92m    %-8.8s: %s\033[m\n"     "$1" "$2";; # info
+			failed             ) printf "\033[m${_PROG_NAME}: \033[91m    %-8.8s: %s\033[m\n"     "$1" "$2";; # alert
+			*                  ) printf "\033[m${_PROG_NAME}: \033[37m%12.12s: %s\033[m\n"        "$1" "$2";; # normal
 		esac
-	} 1>&2
+	} | tee -a ${3:+"$3"} 1>&2
 }
+#	|   color    | bright | reverse|  dark  |
+#	| black      |   90   |   40   |   30   |
+#	| red        |   91   |   41   |   31   |
+#	| green      |   92   |   42   |   32   |
+#	| yellow     |   93   |   43   |   33   |
+#	| blue       |   94   |   44   |   34   |
+#	| purple     |   95   |   45   |   35   |
+#	| light blue |   96   |   46   |   36   |
+#	| white      |   97   |   47   |   37   |
 
 # -----------------------------------------------------------------------------
 # descript: executing the convert
@@ -361,11 +397,12 @@ function fnExec_convert() {
 	declare -r -a __TGET_OPTN=("$@")	# option parameter
 	declare -i    __RTCD=0				# return code
 	# --- executing command ---------------------------------------------------
-	if ! convert "${__TGET_OPTN[@]}"; then
+	convert "${__TGET_OPTN[@]}" || \
+	{
 		__RTCD="$?"
-		fnMsgout "failed" "convert (${__RTCD})"
-		fnMsgout "failed" "convert ${__TGET_OPTN[*]}"
-	fi
+		fnMsgout "failed" "convert (${__RTCD})"       "${_DBGS_OUTS//:_COMMAND_:/convert}"
+		fnMsgout "failed" "convert ${__TGET_OPTN[*]}" "${_DBGS_OUTS//:_COMMAND_:/convert}"
+	}
 	return "${__RTCD}"
 }
 
@@ -380,11 +417,78 @@ function fnExec_mkosi() {
 	declare -r -a __TGET_OPTN=("$@")	# option parameter
 	declare -i    __RTCD=0				# return code
 	# --- executing command ---------------------------------------------------
-	if ! mkosi "${__TGET_OPTN[@]}"; then
+	mkosi "${__TGET_OPTN[@]}" || \
+	{
 		__RTCD="$?"
-		fnMsgout "failed" "mkosi (${__RTCD})"
-		fnMsgout "failed" "mkosi ${__TGET_OPTN[*]}"
-	fi
+		fnMsgout "failed" "mkosi (${__RTCD})"       "${_DBGS_OUTS//:_COMMAND_:/mkosi}"
+		fnMsgout "failed" "mkosi ${__TGET_OPTN[*]}" "${_DBGS_OUTS//:_COMMAND_:/mkosi}"
+	}
+	return "${__RTCD}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: executing the mksquashfs
+#   input :     $@     : option parameter
+#   output:   stdout   : unused
+#   return:            : status
+#   g-var :            : unused
+# shellcheck disable=SC2317,SC2329
+function fnExec_mksquashfs() {
+	declare -r -a __TGET_OPTN=("$@")	# option parameter
+	declare -i    __RTCD=0				# return code
+	# --- executing command ---------------------------------------------------
+	mksquashfs "${__TGET_OPTN[@]}" || \
+	{
+		__RTCD="$?"
+		fnMsgout "failed" "mksquashfs (${__RTCD})"       "${_DBGS_OUTS//:_COMMAND_:/mksquashfs}"
+		fnMsgout "failed" "mksquashfs ${__TGET_OPTN[*]}" "${_DBGS_OUTS//:_COMMAND_:/mksquashfs}"
+	}
+	return "${__RTCD}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: executing the xorrisofs
+#   input :     $@     : option parameter
+#   output:   stdout   : unused
+#   return:            : status
+#   g-var :            : unused
+# shellcheck disable=SC2317,SC2329
+function fnExec_xorrisofs() {
+	declare -r -a __TGET_OPTN=("$@")	# option parameter
+	declare -i    __RTCD=0				# return code
+	# --- executing command ---------------------------------------------------
+	xorrisofs "${__TGET_OPTN[@]}" || \
+	{
+		__RTCD="$?"
+		fnMsgout "failed" "xorrisofs (${__RTCD})"       "${_DBGS_OUTS//:_COMMAND_:/xorrisofs}"
+		fnMsgout "failed" "xorrisofs ${__TGET_OPTN[*]}" "${_DBGS_OUTS//:_COMMAND_:/xorrisofs}"
+	}
+	return "${__RTCD}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: executing the copy
+#   input :     $@     : option parameter
+#   output:   stdout   : unused
+#   return:            : status
+#   g-var :            : unused
+# shellcheck disable=SC2317,SC2329
+function fnExec_copy() {
+	declare -r -a __TGET_OPTN=("$@")	# option parameter
+	declare -i    __RTCD=0				# return code
+	declare -r    __TGET="${__TGET_OPTN[${#__TGET_OPTN[@]}-1]:-noname}"
+	# --- executing command ---------------------------------------------------
+	cp "${__TGET_OPTN[@]}" || \
+	{
+		__RTCD="$?"
+		fnMsgout "failed" "cp (${__RTCD})"       "${_DBGS_OUTS//:_COMMAND_:/cp}"
+		fnMsgout "failed" "cp ${__TGET_OPTN[*]}" "${_DBGS_OUTS//:_COMMAND_:/cp}"
+	}
+	"${__RTCD:-}" -eq 0 && \
+	{
+		fnMsgout "success" "${__TGET##*/}"
+		ls -lLh --time-style="+%Y-%m-%d %H:%M:%S" "${__TGET}" || true
+	}
 	return "${__RTCD}"
 }
 
@@ -509,7 +613,7 @@ function fnSet_conf_data() {
 		done
 		read -r "_${__NAME}" < <(eval echo "${__VALU}" || true)
 	done
-	for __NAME in $(eval printf "%q\\\n" \$\{\!_\@\})
+	for __NAME in $(eval printf "%q\n" "${!_@}")
 	do
 		__NAME="${__NAME#\'}"
 		__NAME="${__NAME%\'}"
@@ -695,6 +799,72 @@ function fnCdfs() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "start" "[${__FUNC_NAME}]"
+	declare -r    __CDFS=""				#
+	declare -r    __ISOS=""				# 
+	declare       __TEMP=""				# 
+	              __TEMP="$(mktemp -q -p "${_DIRS_TEMP}" "${__ISOS##*/}.XXXXXX")"
+	readonly      __TEMP
+#	declare -r    __VLID="${__TGET_NAME^}-Live-Media"
+	declare -r -a __HBRD=(\
+		-quiet -rational-rock \
+		${__VLID:+-volid "${__VLID}"} \
+		-joliet -joliet-long \
+		-cache-inodes \
+		${__FHBR:+-isohybrid-mbr "${__FHBR}"} \
+		${__FBIN:+-eltorito-boot "${__FBIN}"} \
+		${__FCAT:+-eltorito-catalog "${__FCAT}"} \
+		-boot-load-size 4 -boot-info-table \
+		-no-emul-boot \
+		-eltorito-alt-boot ${__FEFI:+-e "${__FEFI}"} \
+		-no-emul-boot \
+		-isohybrid-gpt-basdat -isohybrid-apm-hfsplus
+	)
+	declare -r -a __GRUB=(\
+		-quiet -rational-rock \
+		${__VLID:+-volid "${__VLID}"} \
+		-joliet -joliet-long \
+		-full-iso9660-filenames -iso-level 3 \
+		-partition_offset 16 \
+		${__FMBR:+--grub2-mbr "${__FMBR}"} \
+		--mbr-force-bootable \
+		${__FEFI:+-append_partition 2 0xEF "${__FEFI}"} \
+		-appended_part_as_gpt \
+		${__FCAT:+-eltorito-catalog "${__FCAT}"} \
+		${__FBIN:+-eltorito-boot "${__FBIN}"} \
+		-no-emul-boot \
+		-boot-load-size 4 -boot-info-table \
+		--grub2-boot-info \
+		-eltorito-alt-boot -e '--interval:appended_partition_2:all::' \
+		-no-emul-boot
+	)
+
+	declare -r -a __OPTN=(\
+		-rational-rock \
+		${__VLID:+-volid "${__VLID}"} \
+		-joliet -joliet-long \
+		-full-iso9660-filenames -iso-level 3 \
+		-partition_offset 16 \
+		--grub2-mbr ../bios.img \
+		--mbr-force-bootable \
+		-append_partition 2 0xEF boot/grub/efi.img \
+		-appended_part_as_gpt \
+		-eltorito-catalog isolinux/boot.catalog \
+		-eltorito-boot isolinux/isolinux.bin \
+		-no-emul-boot \
+		-boot-load-size 4 -boot-info-table \
+		--grub2-boot-info \
+		-eltorito-alt-boot -e '--interval:appended_partition_2:all::' \
+		-no-emul-boot \
+		-output "${__TEMP:?}" \
+		"${__CDFS:-.}"
+
+
+	)
+	# --- create --------------------------------------------------------------
+	fnExec_xorrisofs "${__OPTN[@]:-}"
+	fnExec_copy "${__TEMP:?}" "${__ISOS:?}"
+	fnMsgout "success" "${__ISOS##*/}"
+	ls -lLh --time-style="+%Y-%m-%d %H:%M:%S" "${__ISOS}" || true
 	# --- complete ------------------------------------------------------------
 	fnMsgout "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
@@ -757,65 +927,43 @@ function fnTrap() {
 
 	# === help ================================================================
 
+# -----------------------------------------------------------------------------
+# descript: help
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+#   g-var : _PROG_PATH : read
+# shellcheck disable=SC2317,SC2329
 function fnHelp() {
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' 1>&2
+
 		usage: [sudo] ${_PROG_PATH:-"$0"} [command (options)]
+
+		  options:
+		    --debug     | --dbg     : debug output with code
+		    --debugout  | --dbgout  : debug output without code
+		    --debuglog  | --dbglog  : debug output to a log file
+		    --debugparm | --dbgparm : debug output for variables in functions
+		    --simu                  : (unused)
+		    --wrap                  : debug output wrapping
+
+		  commands:
+		    help                    : this message output
+		    testparm                : debug output of all variables in list format
+
 _EOT_
-	exit 0
 }
 
 	# === main ================================================================
 
 # -----------------------------------------------------------------------------
 # descript: main
-#   input :            : unused
-#   output:   stdout   : unused
+#   n-ref :     $1     : return value : serialized target data
+#   input :     $@     : option parameter
+#   output:   stdout   : message
 #   return:            : unused
-#   g-var : _DBGS_FAIL : unused
+#   g-var : _DBGS_FAIL : read
 function fnMain() {
-	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
-	_DBGS_FAIL+=("${__FUNC_NAME:-}")
-	fnMsgout "start" "[${__FUNC_NAME}]"
-
-	fnInitialize
-	fnRootfs
-	fnContainer
-	fnSquashfs
-	fnCdfs
-
-	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]"
-	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
-	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
-}
-
-	[[ "${#_PROG_PARM[@]}" -le 0 ]] && fnHelp
-
-	# --- get options ---------------------------------------------------------
-	set -f -- "${_PROG_PARM[@]:-}"
-	set +f
-	while [[ -n "${1:-}" ]]
-	do
-		case "${1%%=*}" in
-			--debug    | \
-			--dbg      ) shift; _DBGS_FLAG="true"; set -x;;
-			--debugout | \
-			--dbgout   ) shift; _DBGS_FLAG="true";;
-			--dbglog   ) shift; _DBGS_LOGS="/tmp/${_PROG_PROC}.$(date +"%Y%m%d%H%M%S" || true).log";;
-			--debugparm| \
-			--dbgparm  ) shift; _DBGS_PARM="true";;
-			--simu     ) shift; _DBGS_SIMU="true";;
-			--wrap     ) shift; _DBGS_WRAP="true";;
-			help       ) shift; fnHelp;;
-			*          ) shift;;
-		esac
-	done
-
-	if set -o | grep -qE "^xtrace\s*on$"; then
-		_DBGS_FLAG="true"
-		exec 2>&1
-	fi
-
 	declare -i    __time_start=0		# elapsed time: start
 	declare -i    __time_end=0			# "           : end
 	declare -i    __time_elapsed=0		# "           : result
@@ -824,23 +972,138 @@ function fnMain() {
 	__time_start=$(date +%s)
 	printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
 
-	# --- main ----------------------------------------------------------------
-	# --- get command ---------------------------------------------------------
-	set -f -- "${_PROG_PARM[@]:-}"
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
+	fnMsgout "start" "[${__FUNC_NAME}]"
+
+	declare -n    __REFR="${1:-}"		# name reference
+	shift
+	declare -a    __OPTN=("${@:-}")		# options
+	declare       __ORET=""				# ""      return
+	declare -a    __ARRY=()				# work variables
+
+	set -f -- "${__OPTN[@]:-}"
 	set +f
+	__OPTN=()
 	while [[ -n "${1:-}" ]]
 	do
-		case "${1%%=*}" in
-			--testparm ) shift; fnInitialize; fnDebug_allparameters; exit 0;;
-			*          ) shift; fnMain;;
+		case "$1" in
+			clean    )
+				fnMsgout "remove" "${_DIRS_WTOP:?} (y or n) ?"
+				rm -rI "${_DIRS_WTOP:?}"
+				break
+				;;
+			help     )
+				fnHelp
+				break
+				;;
+			testparm )
+				fnInitialize
+				fnDebug_allparameters
+				break
+				;;
+			create   )
+				fnInitialize
+				fnRootfs
+				fnContainer
+				fnSquashfs
+				fnCdfs
+				if [[ -n "${__ORET:-}" ]]; then
+					read -r -a __ARRY < <(echo "${__ORET}")
+					__OPTN+=("${__ARRY[@]:-}")
+				fi
+				;;
+			pxeboot  ) ;;
+			list     ) ;;
+			update   ) ;;
+			download ) ;;
+			link     ) ;;
+			conf     ) ;;
+			preconf  ) ;;
+			*        )
+				__OPTN+=("${1:-}")
+				;;
 		esac
+		shift
 	done
+	__REFR="${__OPTN[*]:-}"
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "complete" "[${__FUNC_NAME}]"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 
 	# --- complete ------------------------------------------------------------
 	__time_end=$(date +%s)
 	__time_elapsed=$((__time_end - __time_start))
 	printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true) processing end"
 	printf "elapsed time: %dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60))
+	fnDebugout_parameters
+}
+
+# -----------------------------------------------------------------------------
+# descript: main
+#   input :            : unused
+#   output:   stdout   : unused
+#   return:            : unused
+#   g-var : _PROG_PARM : read
+#   g-var : _DIRS_TEMP : read
+#   g-var : _DBGS_FLAG : write
+#   g-var : _DBGS_LOGS : write
+#   g-var : _DBGS_PARM : write
+#   g-var : _DBGS_SIMU : write
+#   g-var : _DBGS_WRAP : write
+
+	declare -a    __OPTN=("${_PROG_PARM[@]:-}")
+	declare       __RSLT=""
+	declare -r    __SOUT="${_DIRS_TEMP}/.stdout_pipe"
+	declare -r    __SERR="${_DIRS_TEMP}/.stderr_pipe"
+
+	# --- get options ---------------------------------------------------------
+	set -f -- "${_PROG_PARM[@]:-}"
+	set +f
+	__OPTN=()
+	while [[ -n "${1:-}" ]]
+	do
+		case "$1" in
+			--debug     | --dbg       ) _DBGS_FLAG="true"; set -x;;
+			--debugout  | --dbgout    ) _DBGS_FLAG="true";;
+			--debuglog  | --dbglog    ) _DBGS_LOGS="/tmp/${_PROG_NAME}.log/$(date +"%Y%m%d%H%M%S" || true).log";;
+			--debugparm | --dbgparm   ) _DBGS_PARM="true";;
+			--simu                    ) _DBGS_SIMU="true";;
+			--wrap                    ) _DBGS_WRAP="true";;
+			*                         ) __OPTN+=("${1:-}");;
+		esac
+		shift
+	done
+
+	# --- help ----------------------------------------------------------------
+	if [[ "${#__OPTN[@]}" -le 0 ]]; then
+		fnHelp
+		exit 0
+	fi
+
+	# --- debug settings ------------------------------------------------------
+	if set -o | grep -qE "^xtrace\s*on$"; then
+		_DBGS_FLAG="true"
+		exec 2>&1
+	fi
+
+	# --- debug log settings --------------------------------------------------
+	if [[ -n "${_DBGS_LOGS:-}" ]] \
+	&& command -v mkfifo > /dev/null 2>&1; then
+		fnMsgout "debuglog" "[${_DBGS_LOGS}]"
+		mkdir -p "${_DBGS_LOGS%/*}"
+		mkfifo "${__SOUT}" "${__SERR}"
+		tee -a "${_DBGS_LOGS}" < "${__SOUT}" &
+		tee -a "${_DBGS_LOGS}" < "${__SERR}" >&2 &
+		exec > "${__SOUT}" 2> "${__SERR}"
+	fi
+
+	# --- main execution ------------------------------------------------------
+	fnMain "__RSLT" "${__OPTN[@]}"
+	read -r -a __OPTN < <(echo "${__RSLT}")
+	fnDebugout_parameters
 
 	exit 0
 
