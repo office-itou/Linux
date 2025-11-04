@@ -283,7 +283,7 @@ function fnDebugout() {
 #   input :            : unused
 #   output:   stderr   : output
 #   return:            : unused
-#   g-var : _DBGS_FLAG : read
+#   g-var : _DBGS_PARM : read
 #   g-var :  FUNCNAME  : read
 # shellcheck disable=SC2317,SC2329
 function fnDebugout_parameters() {
@@ -361,7 +361,8 @@ function fnDebug_allparameters() {
 # descript: message output
 #   input :     $1     : section (start, complete, remove, umount, failed, ...)
 #   input :     $2     : message
-#   output:   stdout   : unused
+#   input :     $3     : log file name (optional)
+#   output:   stdout   : message
 #   return:            : unused
 #   g-var : _PROG_NAME : read
 # shellcheck disable=SC2317,SC2329
@@ -389,7 +390,7 @@ function fnMsgout() {
 # -----------------------------------------------------------------------------
 # descript: executing the convert
 #   input :     $@     : option parameter
-#   output:   stdout   : unused
+#   output:   stdout   : message
 #   return:            : status
 #   g-var :            : unused
 # shellcheck disable=SC2317,SC2329
@@ -409,7 +410,7 @@ function fnExec_convert() {
 # -----------------------------------------------------------------------------
 # descript: executing the mkosi
 #   input :     $@     : option parameter
-#   output:   stdout   : unused
+#   output:   stdout   : message
 #   return:            : status
 #   g-var :            : unused
 # shellcheck disable=SC2317,SC2329
@@ -429,7 +430,7 @@ function fnExec_mkosi() {
 # -----------------------------------------------------------------------------
 # descript: executing the mksquashfs
 #   input :     $@     : option parameter
-#   output:   stdout   : unused
+#   output:   stdout   : message
 #   return:            : status
 #   g-var :            : unused
 # shellcheck disable=SC2317,SC2329
@@ -449,7 +450,7 @@ function fnExec_mksquashfs() {
 # -----------------------------------------------------------------------------
 # descript: executing the xorrisofs
 #   input :     $@     : option parameter
-#   output:   stdout   : unused
+#   output:   stdout   : message
 #   return:            : status
 #   g-var :            : unused
 # shellcheck disable=SC2317,SC2329
@@ -469,7 +470,7 @@ function fnExec_xorrisofs() {
 # -----------------------------------------------------------------------------
 # descript: executing the copy
 #   input :     $@     : option parameter
-#   output:   stdout   : unused
+#   output:   stdout   : message
 #   return:            : status
 #   g-var :            : unused
 # shellcheck disable=SC2317,SC2329
@@ -497,7 +498,7 @@ function fnExec_copy() {
 # -----------------------------------------------------------------------------
 # descript: get common configuration data
 #   input :            : unused
-#   output:   stdout   : unused
+#   output:   stdout   : message
 #   return:            : unused
 #   g-var : _DBGS_FLAG : read
 #   g-var : _PATH_CONF : read
@@ -522,7 +523,7 @@ function fnGet_conf_data() {
 # -----------------------------------------------------------------------------
 # descript: get distribution data
 #   input :            : unused
-#   output:   stdout   : unused
+#   output:   stdout   : message
 #   return:            : unused
 #   g-var : _DBGS_FLAG : read
 #   g-var : _PATH_DIST : read
@@ -547,7 +548,7 @@ function fnGet_dist_data() {
 # -----------------------------------------------------------------------------
 # descript: get media data
 #   input :            : unused
-#   output:   stdout   : unused
+#   output:   stdout   : message
 #   return:            : unused
 #   g-var : _DBGS_FLAG : read
 #   g-var : _PATH_MDIA : read
@@ -572,7 +573,7 @@ function fnGet_media_data() {
 # -----------------------------------------------------------------------------
 # descript: set common configuration data
 #   input :            : unused
-#   output:   stdout   : unused
+#   output:   stdout   : message
 #   return:            : unused
 #   g-var : _LIST_CONF : read
 # shellcheck disable=SC2317,SC2329
@@ -651,7 +652,7 @@ function fnSet_conf_data() {
 # -----------------------------------------------------------------------------
 # descript: set common media data
 #   input :            : unused
-#   output:   stdout   : unused
+#   output:   stdout   : message
 #   return:            : unused
 #   g-var : _LIST_MDIA : read
 # shellcheck disable=SC2317,SC2329
@@ -688,9 +689,10 @@ function fnSet_media_data() {
 # -----------------------------------------------------------------------------
 # descript: initialize
 #   input :            : unused
-#   output:   stdout   : unused
+#   output:   stdout   : message
 #   return:            : unused
-#   g-var : _DBGS_FAIL : unused
+#   g-var :  FUNCNAME  : read
+#   g-var : _DBGS_FAIL : write
 function fnInitialize() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
@@ -717,7 +719,8 @@ function fnInitialize() {
 #   input :            : unused
 #   output:   stdout   : unused
 #   return:            : unused
-#   g-var : _DBGS_FAIL : unused
+#   g-var :  FUNCNAME  : read
+#   g-var : _DBGS_FAIL : write
 function fnRootfs() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
@@ -756,7 +759,8 @@ function fnRootfs() {
 #   input :            : unused
 #   output:   stdout   : unused
 #   return:            : unused
-#   g-var : _DBGS_FAIL : unused
+#   g-var :  FUNCNAME  : read
+#   g-var : _DBGS_FAIL : write
 function fnContainer() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
@@ -775,7 +779,8 @@ function fnContainer() {
 #   input :            : unused
 #   output:   stdout   : unused
 #   return:            : unused
-#   g-var : _DBGS_FAIL : unused
+#   g-var :  FUNCNAME  : read
+#   g-var : _DBGS_FAIL : write
 function fnSquashfs() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
@@ -794,7 +799,8 @@ function fnSquashfs() {
 #   input :            : unused
 #   output:   stdout   : unused
 #   return:            : unused
-#   g-var : _DBGS_FAIL : unused
+#   g-var :  FUNCNAME  : read
+#   g-var : _DBGS_FAIL : write
 function fnCdfs() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
@@ -877,8 +883,9 @@ function fnCdfs() {
 # -----------------------------------------------------------------------------
 # descript: trap
 #   input :            : unused
-#   output:   stdout   : unused
+#   output:   stdout   : message
 #   return:            : unused
+#   g-var :  FUNCNAME  : read
 #   g-var : _DBGS_FAIL : read
 #   g-var : _LIST_RMOV : read
 #   g-var : _DIRS_TEMP : read
@@ -962,7 +969,9 @@ _EOT_
 #   input :     $@     : option parameter
 #   output:   stdout   : message
 #   return:            : unused
-#   g-var : _DBGS_FAIL : read
+#   g-var :  FUNCNAME  : read
+#   g-var : _DBGS_FAIL : write
+#   g-var : _DIRS_WTOP : read
 function fnMain() {
 	declare -i    __time_start=0		# elapsed time: start
 	declare -i    __time_end=0			# "           : end
