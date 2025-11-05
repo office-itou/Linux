@@ -159,10 +159,10 @@
 	declare       _FILE_LATE="autoinst_cmd_late.sh"			# "              to run late
 	declare       _FILE_PART="autoinst_cmd_part.sh"			# "              to run after partition
 	declare       _FILE_RUNS="autoinst_cmd_run.sh"			# "              to run preseed/run
-	declare       _SHEL_ERLY="${_DIRS_TMPL}/${_FILE_ERLY}"	# shell commands to run early
-	declare       _SHEL_LATE="${_DIRS_TMPL}/${_FILE_LATE}"	# "              to run late
-	declare       _SHEL_PART="${_DIRS_TMPL}/${_FILE_PART}"	# "              to run after partition
-	declare       _SHEL_RUNS="${_DIRS_TMPL}/${_FILE_RUNS}"	# "              to run preseed/run
+	declare       _SHEL_ERLY="${_DIRS_SHEL}/${_FILE_ERLY}"	# shell commands to run early
+	declare       _SHEL_LATE="${_DIRS_SHEL}/${_FILE_LATE}"	# "              to run late
+	declare       _SHEL_PART="${_DIRS_SHEL}/${_FILE_PART}"	# "              to run after partition
+	declare       _SHEL_RUNS="${_DIRS_SHEL}/${_FILE_RUNS}"	# "              to run preseed/run
 
 	# --- tftp / web server network parameter ---------------------------------
 	declare       _SRVR_HTTP="http"		# server connection protocol (http or https)
@@ -196,8 +196,8 @@
 #	declare       _MENU_RESO="1280x720"	# resolution (widht x hight): 16:9
 	declare       _MENU_RESO="854x480"	# "                         : 16:9 (for vmware)
 #	declare       _MENU_RESO="1024x768"	# "                         :  4:3
-	declare       _MENU_DPTH=""			# colors
-	declare       _MENU_MODE="791"		# screen mode (vga=nnn)
+	declare       _MENU_DPTH="16"		# colors
+	declare       _MENU_MODE="864"		# screen mode (vga=nnn)
 	declare       _MENU_SPLS="splash.png" # splash file
 
 	# --- directory list ------------------------------------------------------
@@ -207,20 +207,20 @@
 #	declare -a    _LIST_LINK=()
 
 	# --- autoinstall configuration file --------------------------------------
-#	declare       _AUTO_INST=""
+	declare       _AUTO_INST="autoinst.cfg"
 
 	# --- initial ram disk of mini.iso including preseed ----------------------
-#	declare       _MINI_IRAM=""
+	declare       _MINI_IRAM="initps.gz"
 
 	# --- ipxe menu file ------------------------------------------------------
-#	declare       _MENU_IPXE=""
+	declare       _MENU_IPXE="${_DIRS_TFTP}/autoexec.ipxe"
 
 	# --- grub menu file ------------------------------------------------------
-#	declare       _MENU_GRUB=""
+	declare       _MENU_GRUB="${_DIRS_TFTP}/boot/grub/grub.cfg"
 
 	# --- syslinux menu file --------------------------------------------------
-#	declare       _MENU_SLNX=""			# bios
-#	declare       _MENU_UEFI=""			# uefi x86_64
+	declare       _MENU_SLNX="${_DIRS_TFTP}/menu-bios/syslinux.cfg"		# bios
+	declare       _MENU_UEFI="${_DIRS_TFTP}/menu-efi64/syslinux.cfg"	# uefi x86_64
 
 	# --- list data -----------------------------------------------------------
 	declare -a    _LIST_CONF=()			# configuration information
@@ -229,26 +229,26 @@
 	declare -a    _LIST_DSTP=()			# debstrap information
 
 	# --- curl / wget parameter -----------------------------------------------
-#	declare       _COMD_CURL=""
-#	declare       _COMD_WGET=""
-#	declare -r -a _OPTN_CURL=("--location" "--http1.1" "--no-progress-bar" "--remote-time" "--show-error" "--fail" "--retry-max-time" "3" "--retry" "3" "--connect-timeout" "60")
-#	declare -r -a _OPTN_WGET=("--tries=3" "--timeout=60" "--quiet")
-#	if command -v curl  > /dev/null 2>&1; then _COMD_CURL="true"; fi
-#	if command -v wget  > /dev/null 2>&1; then _COMD_WGET="true"; fi
-#	if command -v wget2 > /dev/null 2>&1; then _COMD_WGET="ver2"; fi
-#	readonly      _COMD_CURL
-#	readonly      _COMD_WGET
+	declare       _COMD_CURL=""
+	declare       _COMD_WGET=""
+	if command -v curl  > /dev/null 2>&1; then _COMD_CURL="true"; fi
+	if command -v wget  > /dev/null 2>&1; then _COMD_WGET="true"; fi
+	if command -v wget2 > /dev/null 2>&1; then _COMD_WGET="ver2"; fi
+	readonly      _COMD_CURL
+	readonly      _COMD_WGET
+	declare -r -a _OPTN_CURL=("--location" "--http1.1" "--no-progress-bar" "--remote-time" "--show-error" "--fail" "--retry-max-time" "3" "--retry" "3" "--connect-timeout" "60")
+	declare -r -a _OPTN_WGET=("--tries=3" "--timeout=60" "--quiet")
 
 	# --- rsync parameter -----------------------------------------------------
-#	declare -r -a _OPTN_RSYC=("--recursive" "--links" "--perms" "--times" "--group" "--owner" "--devices" "--specials" "--hard-links" "--acls" "--xattrs" "--human-readable" "--update" "--delete")
+	declare -r -a _OPTN_RSYC=("--recursive" "--links" "--perms" "--times" "--group" "--owner" "--devices" "--specials" "--hard-links" "--acls" "--xattrs" "--human-readable" "--update" "--delete")
 
 	# --- ram disk parameter --------------------------------------------------
-#	declare -r -a _OPTN_RDSK=("root=/dev/ram0")
+	declare -r -a _OPTN_RDSK=("root=/dev/ram0")
 
 	# --- boot type parameter -------------------------------------------------
-#	declare -r    _TYPE_ISOB="isoboot"	# iso media boot
-#	declare -r    _TYPE_PXEB="pxeboot"	# pxe boot
-#	declare -r    _TYPE_USBB="usbboot"	# usb stick boot
+	declare -r    _TYPE_ISOB="isoboot"	# iso media boot
+	declare -r    _TYPE_PXEB="pxeboot"	# pxe boot
+	declare -r    _TYPE_USBB="usbboot"	# usb stick boot
 
 	# --- mkosi target distribution -------------------------------------------
 	declare       _TGET_DIST=""			# distribution (fedora, debian, kali, ubuntu, arch, opensuse, mageia, centos, rhel, rhel-ubi, openmandriva, rocky, alma, azure)
@@ -358,6 +358,61 @@ function fnDebug_allparameters() {
 }
 
 # -----------------------------------------------------------------------------
+# descript: IPv4 netmask conversion (netmask and cidr conversion)
+#   input :     $1     : input vale
+#   output:   stdout   : output
+#   return:            : unused
+#   g-var :            : unused
+# shellcheck disable=SC2317,SC2329
+function fnIPv4GetNetmask() {
+	declare -a    __OCTS=()				# octets
+	declare -i    __LOOP=0				# work variables
+	declare -i    __CALC=0				# "
+	case "${1:-}" in
+		[0-9].[0-9].[0-9].[0-9])		# netmask -> cidr
+			IFS= mapfile -d '.' -t __OCTS < <(echo -n "${1:?}.")
+			__CALC=0
+			while read -r __LOOP
+			do
+				case "${__LOOP}" in
+					0) ((__CALC+=0));;
+					128) ((__CALC+=1));;
+					192) ((__CALC+=2));;
+					224) ((__CALC+=3));;
+					240) ((__CALC+=4));;
+					248) ((__CALC+=5));;
+					252) ((__CALC+=6));;
+					254) ((__CALC+=7));;
+					255) ((__CALC+=8));;
+					*  )              ;;
+				esac
+			done < <(printf "%s\n" "${__OCTS[@]}")
+			printf '%d' "${__CALC}"
+			;;
+		*)								# cidr -> netmask
+			__LOOP=$((32-${1:?}))
+			__CALC=1
+			while [[ "${__LOOP}" -gt 0 ]]
+			do
+				__LOOP=$((__LOOP-1))
+				__CALC=$((__CALC*2))
+			done
+			__CALC="$((0xFFFFFFFF ^ (__CALC-1)))"
+			printf '%d.%d.%d.%d'           \
+				$(( __CALC >> 24        )) \
+				$(((__CALC >> 16) & 0xFF)) \
+				$(((__CALC >>  8) & 0xFF)) \
+				$(( __CALC        & 0xFF))
+			;;
+	esac
+}
+# --- private ip address ------------------------------------------------------
+# class | ipv4 address range            | subnet mask range
+#   a   | 10.0.0.0    - 10.255.255.255  | 255.0.0.0     - 255.255.255.255 (up to 16,777,214 devices can be connected)
+#   b   | 172.16.0.0  - 172.31.255.255  | 255.255.0.0   - 255.255.255.255 (up to     65,534 devices can be connected)
+#   c   | 192.168.0.0 - 192.168.255.255 | 255.255.255.0 - 255.255.255.255 (up to        254 devices can be connected)
+
+# -----------------------------------------------------------------------------
 # descript: message output
 #   input :     $1     : section (start, complete, remove, umount, failed, ...)
 #   input :     $2     : message
@@ -377,15 +432,6 @@ function fnMsgout() {
 		esac
 	} | tee -a ${3:+"$3"} 1>&2
 }
-#	|   color    | bright | reverse|  dark  |
-#	| black      |   90   |   40   |   30   |
-#	| red        |   91   |   41   |   31   |
-#	| green      |   92   |   42   |   32   |
-#	| yellow     |   93   |   43   |   33   |
-#	| blue       |   94   |   44   |   34   |
-#	| purple     |   95   |   45   |   35   |
-#	| light blue |   96   |   46   |   36   |
-#	| white      |   97   |   47   |   37   |
 
 # -----------------------------------------------------------------------------
 # descript: executing the convert
@@ -493,6 +539,34 @@ function fnExec_copy() {
 	return "${__RTCD}"
 }
 
+# -----------------------------------------------------------------------------
+# descript: executing the backup (3 generation)
+#   input :     $1     : target file name
+#   output:   stdout   : message
+#   return:            : status
+#   g-var :            : unused
+# shellcheck disable=SC2317,SC2329
+function fnExec_backup() {
+	declare       __TGET_PATH="${1:?}"	# target path
+	declare       __RNAM=""				# rename path
+	declare       __PATH=""				# full path
+	declare -i    __RTCD=0				# return code
+	# --- check file exists ---------------------------------------------------
+	if [[ -f "${__TGET_PATH:?}" ]]; then
+		__RNAM="${__TGET_PATH}.$(TZ=UTC find "${__TGET_PATH}" -printf '%TY%Tm%Td%TH%TM%.2TS')"
+		fnMsgout "backup" "${__RNAM}"
+		mv "${__TGET_PATH}" "${__RNAM}"
+	fi
+	# --- delete old files ----------------------------------------------------
+	while read -r __PATH
+	do
+		fnMsgout "remove" "${__PATH}"
+		rm -f "${__PATH:?}"
+	done < <(find "${__TGET_PATH%/*}" -name "${__TGET_PATH##*/}.[0-9]*" | sort -r | tail -n +3  || true)
+	# --- complete ------------------------------------------------------------
+	return "${__RTCD}"
+}
+
 # *** function section (subroutine functions) *********************************
 
 # -----------------------------------------------------------------------------
@@ -518,6 +592,150 @@ function fnGet_conf_data() {
 	fi
 	fnDebugout_list "${_LIST_CONF[@]}"
 	fnDebugout_parameters
+}
+
+# -----------------------------------------------------------------------------
+# descript: put common configuration data
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+#   g-var : _DBGS_FLAG : read
+#   g-var : _PATH_DIST : read
+#   g-var : _FILE_DIST : read
+#   g-var : _LIST_DIST : write
+# shellcheck disable=SC2317,SC2329
+function fnPut_conf_data() {
+	declare -r    __DATE="$(date +"%Y/%m/%d" || true)"
+	# --- exporting files -----------------------------------------------------
+	fnExec_backup "${_PATH_CONF:?}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_PATH_CONF:?}" || true
+		###############################################################################
+		#
+		#	common configuration file
+		#
+		#	developer   : J.Itou
+		#	release     : 2025/11/01
+		#
+		#	history     :
+		#	   data    version    developer    point
+		#	---------- -------- -------------- ----------------------------------------
+		#	2025/11/01 000.0000 J.Itou         first release
+		#	${__DATE:-yyyy/mm/dd} 000.0000 J.Itou         application output
+		#
+		###############################################################################
+
+		# === for server environments =================================================
+
+		# --- shared directory parameter ----------------------------------------------
+		DIRS_TOPS="${_DIRS_TOPS:?}"						# top of shared directory
+		DIRS_HGFS="${_DIRS_HGFS/${_DIRS_TOPS}/:_DIRS_TOPS_:}"			# vmware shared
+		DIRS_HTML="${_DIRS_HTML/${_DIRS_TOPS}/:_DIRS_TOPS_:}"		# html contents#
+		DIRS_SAMB="${_DIRS_SAMB/${_DIRS_TOPS}/:_DIRS_TOPS_:}"			# samba shared
+		DIRS_TFTP="${_DIRS_TFTP/${_DIRS_TOPS}/:_DIRS_TOPS_:}"			# tftp contents
+		DIRS_USER="${_DIRS_USER/${_DIRS_TOPS}/:_DIRS_TOPS_:}"			# user file
+
+		# --- shared of user file -----------------------------------------------------
+		DIRS_SHAR="${_DIRS_SHAR/${_DIRS_USER}/:_DIRS_USER_:}"			# shared of user file
+		DIRS_CONF="${_DIRS_CONF/${_DIRS_SHAR}/:_DIRS_SHAR_:}"			# configuration file
+		DIRS_DATA="${_DIRS_DATA/${_DIRS_CONF}/:_DIRS_CONF_:}"			# data file
+		DIRS_KEYS="${_DIRS_KEYS/${_DIRS_CONF}/:_DIRS_CONF_:}"		# keyring file
+		DIRS_MKOS="${_DIRS_MKOS/${_DIRS_CONF}/:_DIRS_CONF_:}"		# mkosi configuration files
+		DIRS_TMPL="${_DIRS_TMPL/${_DIRS_CONF}/:_DIRS_CONF_:}"		# templates for various configuration files
+		DIRS_SHEL="${_DIRS_SHEL/${_DIRS_CONF}/:_DIRS_CONF_:}"		# shell script file
+		DIRS_IMGS="${_DIRS_IMGS/${_DIRS_SHAR}/:_DIRS_SHAR_:}"			# iso file extraction destination
+		DIRS_ISOS="${_DIRS_ISOS/${_DIRS_SHAR}/:_DIRS_SHAR_:}"			# iso file
+		DIRS_LOAD="${_DIRS_LOAD/${_DIRS_SHAR}/:_DIRS_SHAR_:}"			# load module
+		DIRS_RMAK="${_DIRS_RMAK/${_DIRS_SHAR}/:_DIRS_SHAR_:}"			# remake file
+		DIRS_CACH="${_DIRS_CACH/${_DIRS_SHAR}/:_DIRS_SHAR_:}"			# cache file
+		DIRS_CTNR="${_DIRS_CTNR/${_DIRS_SHAR}/:_DIRS_SHAR_:}"	# container file
+		DIRS_CHRT="${_DIRS_CHRT/${_DIRS_SHAR}/:_DIRS_SHAR_:}"		# container file (chroot)
+
+		# --- common data file (prefer non-empty current file) ------------------------
+		FILE_CONF="${_PATH_CONF##*/}"					# common configuration file
+		FILE_DIST="${_PATH_DIST##*/}"			# distribution data file
+		FILE_MDIA="${_PATH_MDIA##*/}"					# media data file
+		FILE_DSTP="${_PATH_DSTP##*/}"				# debstrap data file
+		PATH_CONF="${_PATH_CONF/${_DIRS_DATA}\/*/:_DIRS_DATA_:\/:_FILE_CONF_:}"	# common configuration file
+		PATH_DIST="${_PATH_DIST/${_DIRS_DATA}\/*/:_DIRS_DATA_:\/:_FILE_DIST_:}"	# distribution data file
+		PATH_MDIA="${_PATH_MDIA/${_DIRS_DATA}\/*/:_DIRS_DATA_:\/:_FILE_MDIA_:}"	# media data file
+		PATH_DSTP="${_PATH_DSTP/${_DIRS_DATA}\/*/:_DIRS_DATA_:\/:_FILE_DSTP_:}"	# debstrap data file
+
+		# --- pre-configuration file templates ----------------------------------------
+		FILE_KICK="${_CONF_KICK##*/}"			# for rhel
+		FILE_CLUD="${_CONF_CLUD##*/}"			# for ubuntu cloud-init
+		FILE_SEDD="${_CONF_SEDD##*/}"			# for debian
+		FILE_SEDU="${_CONF_SEDU##*/}"			# for ubuntu
+		FILE_YAST="${_CONF_YAST##*/}"			# for opensuse
+		FILE_AGMA="${_CONF_AGMA##*/}"			# for opensuse
+		CONF_KICK="${_CONF_KICK/${_DIRS_TMPL}\/*/:_DIRS_TMPL_:\/:_FILE_KICK_:}"	# for rhel
+		CONF_CLUD="${_CONF_CLUD/${_DIRS_TMPL}\/*/:_DIRS_TMPL_:\/:_FILE_CLUD_:}"	# for ubuntu cloud-init
+		CONF_SEDD="${_CONF_SEDD/${_DIRS_TMPL}\/*/:_DIRS_TMPL_:\/:_FILE_SEDD_:}"	# for debian
+		CONF_SEDU="${_CONF_SEDU/${_DIRS_TMPL}\/*/:_DIRS_TMPL_:\/:_FILE_SEDU_:}"	# for ubuntu
+		CONF_YAST="${_CONF_YAST/${_DIRS_TMPL}\/*/:_DIRS_TMPL_:\/:_FILE_YAST_:}"	# for opensuse
+		CONF_AGMA="${_CONF_AGMA/${_DIRS_TMPL}\/*/:_DIRS_TMPL_:\/:_FILE_AGMA_:}"	# for opensuse
+
+		# --- shell script ------------------------------------------------------------
+		FILE_ERLY="${_SHEL_ERLY##*/}"		# shell commands to run early
+		FILE_LATE="${_SHEL_LATE##*/}"		# "              to run late
+		FILE_PART="${_SHEL_PART##*/}"		# "              to run after partition
+		FILE_RUNS="${_SHEL_RUNS##*/}"			# "              to run preseed/run
+		SHEL_ERLY="${_SHEL_ERLY/${_DIRS_SHEL}\/*/:_DIRS_SHEL_:\/:_FILE_ERLY_:}"	# shell commands to run early
+		SHEL_LATE="${_SHEL_LATE/${_DIRS_SHEL}\/*/:_DIRS_SHEL_:\/:_FILE_LATE_:}"	# "              to run late
+		SHEL_PART="${_SHEL_PART/${_DIRS_SHEL}\/*/:_DIRS_SHEL_:\/:_FILE_PART_:}"	# "              to run after partition
+		SHEL_RUNS="${_SHEL_RUNS/${_DIRS_SHEL}\/*/:_DIRS_SHEL_:\/:_FILE_RUNS_:}"	# "              to run preseed/run
+
+		# --- tftp / web server network parameter -------------------------------------
+		SRVR_HTTP="${_SRVR_HTTP:-}"						# server connection protocol (http or https)
+		SRVR_PROT="${_SRVR_PROT:-}"						# server connection protocol (http or tftp)
+		SRVR_NICS="${_SRVR_NICS:-}"						# network device name   (ex. ens160)            (Set execution server setting to empty variable.)
+		SRVR_MADR="${_SRVR_MADR//[!:]/0}"			#                mac    (ex. 00:00:00:00:00:00)
+		SRVR_ADDR="${_SRVR_ADDR:-}"				# IPv4 address          (ex. 192.168.1.11)
+		SRVR_CIDR="${_SRVR_CIDR:-}"							# IPv4 cidr             (ex. 24)
+		SRVR_MASK="${_SRVR_MASK:-}"				# IPv4 subnetmask       (ex. 255.255.255.0)
+		SRVR_GWAY="${_SRVR_GWAY:-}"				# IPv4 gateway          (ex. 192.168.1.254)
+		SRVR_NSVR="${_SRVR_NSVR:-}"				# IPv4 nameserver       (ex. 192.168.1.254)
+		SRVR_UADR="${_SRVR_UADR:-}"					# IPv4 address up       (ex. 192.168.1)
+
+		# === for creations ===========================================================
+
+		# --- network parameter -------------------------------------------------------
+		NWRK_HOST="${_NWRK_HOST:-"sv-:_DISTRO_:"}"				# hostname              (ex. sv-server)
+		NWRK_WGRP="${_NWRK_WGRP:-"workgroup"}"					# domain                (ex. workgroup)
+		NICS_NAME="${_NICS_NAME:-"ens160"}"						# network device name   (ex. ens160)
+		NICS_MADR="${_NICS_MADR:-}"							#                mac    (ex. 00:00:00:00:00:00)
+		IPV4_ADDR="${_IPV4_ADDR:-"192.168.1.1"}"					# IPv4 address          (ex. 192.168.1.1)   (empty to dhcp)
+		IPV4_CIDR="${_IPV4_CIDR:-"24"}"							# IPv4 cidr             (ex. 24)            (empty to ipv4 subnetmask, if both to 24)
+		IPV4_MASK="${_IPV4_MASK:-"255.255.255.0"}"				# IPv4 subnetmask       (ex. 255.255.255.0) (empty to ipv4 cidr)
+		IPV4_GWAY="${_IPV4_GWAY:-"192.168.1.254"}"				# IPv4 gateway          (ex. 192.168.1.254)
+		IPV4_NSVR="${_IPV4_NSVR:-"192.168.1.254"}"				# IPv4 nameserver       (ex. 192.168.1.254)
+		IPV4_UADR="${_IPV4_UADR:-}"							# IPv4 address up       (ex. 192.168.1)
+		NMAN_NAME="${_NMAN_NAME:-}"							# network manager name  (nm_config, ifupdown, loopback)
+		NTPS_ADDR="${_NTPS_ADDR:-"ntp.nict.jp"}"					# ntp server address    (ntp.nict.jp)
+		NTPS_IPV4="${_NTPS_IPV4:-"61.205.120.130"}"				# ntp server ipv4 addr  (61.205.120.130)
+
+		# --- menu parameter ----------------------------------------------------------
+		MENU_TOUT="${_MENU_TOUT:-}"							# timeout (sec)
+		MENU_RESO="${_MENU_RESO:-}"						# resolution (widht x hight)
+		MENU_DPTH="${_MENU_DPTH:-}"							# colors
+		MENU_MODE="${_MENU_MODE:-}"							# screen mode (vga=nnn)
+		MENU_SPLS="${_MENU_SPLS##*/}"					# splash file
+		#MENU_RESO="1280x720"					# resolution (widht x hight): 16:9
+		#MENU_RESO="854x480"					# "                         : 16:9 (for vmware)
+		#MENU_RESO="1024x768"					# "                         :  4:3
+		#MENU_DPTH="16"							# colors
+		#MENU_MODE="864"						# screen mode (vga=nnn)
+
+		# === for mkosi ===============================================================
+
+		# --- mkosi output image format type --------------------------------------
+		TGET_MDIA="${_TGET_MDIA:-}"					# format type (directory, tar, cpio, disk, uki, esp, oci, sysext, confext, portable, addon, none)
+
+		# --- live media parameter ------------------------------------------------
+		DIRS_LIVE="${_DIRS_LIVE:-}"						# live / LiveOS
+		FILE_LIVE="${_FILE_LIVE##*/}"				# filesystem.squashfs / squashfs.img
+
+		### eof #######################################################################
+_EOT_
 }
 
 # -----------------------------------------------------------------------------
@@ -682,6 +900,58 @@ function fnSet_media_data() {
 	fnDebugout_list "${_LIST_MDIA[@]}"
 }
 
+# -----------------------------------------------------------------------------
+# descript: set server data
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+#   g-var : _SRVR_NICS : write
+#   g-var : _SRVR_MADR : write
+#   g-var : _SRVR_ADDR : write
+#   g-var : _SRVR_CIDR : write
+#   g-var : _SRVR_MASK : write
+#   g-var : _SRVR_GWAY : write
+#   g-var : _SRVR_NSVR : write
+#   g-var : _SRVR_UADR : write
+# shellcheck disable=SC2317,SC2329
+function fnSet_srvr_data() {
+	declare       __VALU=""				# value
+	declare       __DEVS=""				# device name
+
+	if [[ -z "${_SRVR_NICS:-}" ]]; then
+		_SRVR_NICS=""					# network device name   (ex. ens160)
+		_SRVR_MADR=""					#                mac    (ex. 00:00:00:00:00:00)
+		_SRVR_ADDR=""					# IPv4 address          (ex. 192.168.1.11)
+		_SRVR_CIDR=""					# IPv4 cidr             (ex. 24)
+		_SRVR_MASK=""					# IPv4 subnetmask       (ex. 255.255.255.0)
+		_SRVR_GWAY=""					# IPv4 gateway          (ex. 192.168.1.254)
+		_SRVR_NSVR=""					# IPv4 nameserver       (ex. 192.168.1.254)
+		_SRVR_UADR=""					# IPv4 address up       (ex. 192.168.1)
+		for __DEVS in /sys/class/net/{b*,e*,w}
+		do
+			[[ ! -e "${__DEVS}" ]] && continue
+			__VALU="$(LANG=C ip -4 -brief address show dev "${__DEVS##*/}" | awk '{print $3;}')"
+			[[ -z "${__VALU:-}" ]] && continue
+			_SRVR_NICS="${__DEVS##*/}"
+			_SRVR_MADR="$(LANG=C ip -0 -brief address show dev "${_SRVR_NICS}" | awk '{print $3;}')"
+			_SRVR_ADDR="${__VALU%/*}"
+			_SRVR_CIDR="${__VALU##*/}"
+			_SRVR_MASK="$(fnIPv4GetNetmask "${_SRVR_CIDR}")"
+			_SRVR_GWAY="$(LANG=C ip -4 -brief route list match default | awk '{print $3;}')"
+			break
+		done
+	fi
+	if command -v resolvectl > /dev/null 2>&1; then
+		_SRVR_NSVR="${_SRVR_NSVR:-"$(resolvectl dns | sed -ne '/^Global:/             s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' || true)"}"
+		_SRVR_NSVR="${_SRVR_NSVR:-"$(resolvectl dns | sed -ne '/('"${_SRVR_NICS}"'):/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' || true)"}"
+	fi
+	_SRVR_NSVR="${_SRVR_NSVR:-"$(sed -ne '/^nameserver/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' /etc/resolv.conf)"}"
+	if [[ "${_SRVR_NSVR:-}" = "127.0.0.53" ]]; then
+		_SRVR_NSVR="$(sed -ne '/^nameserver/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' /run/systemd/resolve/resolv.conf)"
+	fi
+	_SRVR_UADR="${_SRVR_ADDR%.*}"
+}
+
 # *** main section ************************************************************
 
 	# === initialize ==========================================================
@@ -698,12 +968,160 @@ function fnInitialize() {
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "start" "[${__FUNC_NAME}]"
 
+	# --- get data file -------------------------------------------------------
 	_PATH_CONF="$(find "${_DIRS_CURR:-"${PWD}"}" "${_SUDO_HOME:-"${SUDO_HOME:-"${HOME:-}"}"}" "${_DIRS_DATA:-/srv/user/share/conf/_data}" -maxdepth 1 -name "${_FILE_CONF:-common.cfg}" -size +0 -print -quit)"
 	fnGet_conf_data						# get common configuration data
 	fnSet_conf_data						# set common configuration data
 	fnGet_dist_data						# get distribution data
 	fnGet_media_data					# get media data
 	fnSet_media_data					# set common media data
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "complete" "[${__FUNC_NAME}]"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+	fnDebugout_parameters
+}
+
+# -----------------------------------------------------------------------------
+# descript: create directory
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+#   g-var :  FUNCNAME  : read
+#   g-var : _DBGS_FAIL : write
+#   g-var : _DIRS_TOPS : read
+#   g-var : _DIRS_HGFS : read
+#   g-var : _DIRS_HTML : read
+#   g-var : _DIRS_SAMB : read
+#   g-var : _DIRS_TFTP : read
+#   g-var : _DIRS_USER : read
+#   g-var : _DIRS_SHAR : read
+#   g-var : _DIRS_CONF : read
+#   g-var : _DIRS_DATA : read
+#   g-var : _DIRS_KEYS : read
+#   g-var : _DIRS_TMPL : read
+#   g-var : _DIRS_SHEL : read
+#   g-var : _DIRS_IMGS : read
+#   g-var : _DIRS_ISOS : read
+#   g-var : _DIRS_LOAD : read
+#   g-var : _DIRS_RMAK : read
+#   g-var : _DIRS_CACH : read
+#   g-var : _DIRS_CTNR : read
+#   g-var : _DIRS_CHRT : read
+function fnMKdirectory() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
+	fnMsgout "start" "[${__FUNC_NAME}]"
+
+	declare       __RTIV=""				# add/relative flag
+	declare       __TGET=""				# taget path
+	declare       __SLNK=""				# symlink path
+	declare       __RNAM=""				# rename path
+	declare -a    __LIST=()				# work variable
+	declare -i    I=0
+	# --- directory list ------------------------------------------------------
+	declare -r -a __DIRS=(                                                                                                                                                              \
+		"${_DIRS_TOPS:?}"                                                                                                                                                               \
+		"${_DIRS_HGFS:?}"                                                                                                                                                               \
+		"${_DIRS_HTML:?}"                                                                                                                                                               \
+		"${_DIRS_SAMB:?}"/{adm/{commands,profiles},pub/{contents/{disc,dlna/{movies,others,photos,sounds}},resource/{image/{linux,windows},source/git},software,hardware,_license},usr} \
+		"${_DIRS_TFTP:?}"/{boot/grub/{fonts,i386-{efi,pc},locale,x86_64-efi},ipxe,menu-{bios,efi64}/pxelinux.cfg}                                                                       \
+		"${_DIRS_USER:?}"/private                                                                                                                                                       \
+		"${_DIRS_SHAR:?}"                                                                                                                                                               \
+		"${_DIRS_CONF:?}"/{_fixed_address,_repository,agama,autoyast,kickstart,nocloud,preseed,windows}                                                                                 \
+		"${_DIRS_DATA:?}"                                                                                                                                                               \
+		"${_DIRS_KEYS:?}"                                                                                                                                                               \
+		"${_DIRS_TMPL:?}"                                                                                                                                                               \
+		"${_DIRS_SHEL:?}"                                                                                                                                                               \
+		"${_DIRS_IMGS:?}"                                                                                                                                                               \
+		"${_DIRS_ISOS:?}"                                                                                                                                                               \
+		"${_DIRS_LOAD:?}"                                                                                                                                                               \
+		"${_DIRS_RMAK:?}"                                                                                                                                                               \
+		"${_DIRS_CACH:?}"                                                                                                                                                               \
+		"${_DIRS_CTNR:?}"                                                                                                                                                               \
+		"${_DIRS_CHRT:?}"                                                                                                                                                               \
+	)
+	# --- symbolic link list --------------------------------------------------
+	# 0: a:add, r:relative
+	# 1: target
+	# 2: symlink
+	declare -r -a __LINK=(                                                                                                                                                              \
+		"a  ${_DIRS_CONF:?}                                     ${_DIRS_HTML:?}/"                                                                                                       \
+		"a  ${_DIRS_IMGS:?}                                     ${_DIRS_HTML:?}/"                                                                                                       \
+		"a  ${_DIRS_ISOS:?}                                     ${_DIRS_HTML:?}/"                                                                                                       \
+		"a  ${_DIRS_LOAD:?}                                     ${_DIRS_HTML:?}/"                                                                                                       \
+		"a  ${_DIRS_RMAK:?}                                     ${_DIRS_HTML:?}/"                                                                                                       \
+		"a  ${_DIRS_TFTP:?}                                     ${_DIRS_HTML:?}/"                                                                                                       \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_CONF##*/}                   ${_DIRS_TFTP:?}/menu-bios/"                                                                                             \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_IMGS##*/}                   ${_DIRS_TFTP:?}/menu-bios/"                                                                                             \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_ISOS##*/}                   ${_DIRS_TFTP:?}/menu-bios/"                                                                                             \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_LOAD##*/}                   ${_DIRS_TFTP:?}/menu-bios/"                                                                                             \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_RMAK##*/}                   ${_DIRS_TFTP:?}/menu-bios/"                                                                                             \
+		"r  ${_DIRS_TFTP:?}/menu-bios/syslinux.cfg              ${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"                                                                         \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_CONF##*/}                   ${_DIRS_TFTP:?}/menu-efi64/"                                                                                            \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_IMGS##*/}                   ${_DIRS_TFTP:?}/menu-efi64/"                                                                                            \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_ISOS##*/}                   ${_DIRS_TFTP:?}/menu-efi64/"                                                                                            \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_LOAD##*/}                   ${_DIRS_TFTP:?}/menu-efi64/"                                                                                            \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_RMAK##*/}                   ${_DIRS_TFTP:?}/menu-efi64/"                                                                                            \
+		"r  ${_DIRS_TFTP:?}/menu-efi64/syslinux.cfg             ${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default"                                                                        \
+		"a  ${_DIRS_CONF:?}                                     ${_DIRS_TFTP:?}/"                                                                                                       \
+		"a  ${_DIRS_IMGS:?}                                     ${_DIRS_TFTP:?}/"                                                                                                       \
+		"a  ${_DIRS_ISOS:?}                                     ${_DIRS_TFTP:?}/"                                                                                                       \
+		"a  ${_DIRS_LOAD:?}                                     ${_DIRS_TFTP:?}/"                                                                                                       \
+		"a  ${_DIRS_RMAK:?}                                     ${_DIRS_TFTP:?}/"                                                                                                       \
+	)
+
+	# tree --charset=C --filesfirst  -a /srv/
+
+	# --- create directory ----------------------------------------------------
+	mkdir -p "${__DIRS[@]:?}"
+
+	# --- create symbolic link ------------------------------------------------
+	for I in "${!__LINK[@]}"
+	do
+		read -r -a __LIST < <(echo "${__LINK[I]}")
+		__RTIV="${__LIST[0]:-}"			# a:add, r:relative
+		__TGET="${__LIST[1]:-}"			# target
+		__SLNK="${__LIST[2]:-}"			# symlink
+		case "${__RTIV:-}" in
+			a) ;;
+			r) ;;
+			*) continue;;
+		esac
+		# --- check target file path ------------------------------------------
+		if [[ -z "${__SLNK##*/}" ]]; then
+			__SLNK="${__SLNK%/}/${__TGET##*/}"
+		fi
+		# --- check symbolic link ---------------------------------------------
+		if [[ -h "${__SLNK}" ]]; then
+			fnMsgout "exist" "  symlink: [${__SLNK}]"
+			continue
+		fi
+		# --- check directory -------------------------------------------------
+		if [[ -d "${__SLNK}/." ]]; then
+			__RNAM="${__SLNK}.$(TZ=UTC find "${__SLNK}" -printf '%TY%Tm%Td%TH%TM%.2TS')"
+			fnMsgout "exist"  "directory: [${__SLNK}]"
+			fnMsgout "backup" "directory: [${__RNAM}]"
+			mv "${__SLNK}" "${__RNAM}"
+		fi
+		# --- check target directory ------------------------------------------
+		if [[ -z "${__TGET##*/}" ]] && [[ ! -e "${__TGET%%/}"/. ]]; then
+			fnMsgout "create" "directory: [${__TGET%%/}]"
+			mkdir -p "${__TGET%%/}"
+		fi
+		# --- create destination directory ------------------------------------
+		if [[ ! -e "${__SLNK%/*}/." ]]; then
+			fnMsgout "create" "directory: [${__SLNK%/*}]"
+			mkdir -p "${__SLNK%/*}"
+		fi
+		# --- create symbolic link --------------------------------------------
+		fnMsgout "create" "  symlink: [${__TGET}] -> [${__SLNK}]"
+		case "${__RTIV}" in
+			r) ln -sr "${__TGET}" "${__SLNK}";;
+			*) ln -s  "${__TGET}" "${__SLNK}";;
+		esac
+	done
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "complete" "[${__FUNC_NAME}]"
@@ -805,6 +1223,7 @@ function fnCdfs() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "start" "[${__FUNC_NAME}]"
+
 	declare -r    __CDFS=""				#
 	declare -r    __ISOS=""				# 
 	declare       __TEMP=""				# 
@@ -985,13 +1404,13 @@ function fnMain() {
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "start" "[${__FUNC_NAME}]"
 
-	declare -n    __REFR="${1:-}"		# name reference
+	declare -n    __NAME_REFR="${1:-}"	# name reference
 	shift
-	declare -a    __OPTN=("${@:-}")		# options
-	declare       __ORET=""				# ""      return
+	declare -a    __OPTN=()				# options
+	declare       __ORET=""				# "       return
 	declare -a    __ARRY=()				# work variables
 
-	set -f -- "${__OPTN[@]:-}"
+	set -f -- "${@:-}"
 	set +f
 	__OPTN=()
 	while [[ -n "${1:-}" ]]
@@ -1017,25 +1436,29 @@ function fnMain() {
 				fnContainer
 				fnSquashfs
 				fnCdfs
-				if [[ -n "${__ORET:-}" ]]; then
-					read -r -a __ARRY < <(echo "${__ORET}")
-					__OPTN+=("${__ARRY[@]:-}")
-				fi
 				;;
 			pxeboot  ) ;;
 			list     ) ;;
 			update   ) ;;
 			download ) ;;
-			link     ) ;;
+			link     )
+				fnMKdirectory
+				break
+				;;
 			conf     ) ;;
 			preconf  ) ;;
+			initial  )
+				fnSet_srvr_data
+				fnPut_conf_data
+				break
+				;;
 			*        )
 				__OPTN+=("${1:-}")
 				;;
 		esac
 		shift
 	done
-	__REFR="${__OPTN[*]:-}"
+	__NAME_REFR="${__OPTN[*]:-}"
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "complete" "[${__FUNC_NAME}]"
@@ -1063,7 +1486,7 @@ function fnMain() {
 #   g-var : _DBGS_SIMU : write
 #   g-var : _DBGS_WRAP : write
 
-	declare -a    __OPTN=("${_PROG_PARM[@]:-}")
+	declare -a    __OPTN=()
 	declare       __RSLT=""
 	declare -r    __SOUT="${_DIRS_TEMP}/.stdout_pipe"
 	declare -r    __SERR="${_DIRS_TEMP}/.stderr_pipe"
