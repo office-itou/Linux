@@ -180,8 +180,9 @@ tree --charset C -n --filesfirst -d /srv/
 |   |   |-- imgs -> ../imgs
 |   |   |-- isos -> ../isos
 |   |   |-- load -> ../load
-|   |   `-- pxelinux.cfg
-|   |       `-- default -> ../syslinux.cfg
+|   |   |-- pxelinux.cfg
+|   |   |   `-- default -> ../syslinux.cfg
+|   |   `-- rmak -> ../rmak
 |   |-- menu-efi64
 |   |   |-- syslinux.cfg -------------- syslinux configuration for uefi(x86_64) environment
 |   |   |-- syslinux.efi -------------- bootloader (x86_64-efi)
@@ -189,9 +190,31 @@ tree --charset C -n --filesfirst -d /srv/
 |   |   |-- imgs -> ../imgs
 |   |   |-- isos -> ../isos
 |   |   |-- load -> ../load
-|   |   `-- pxelinux.cfg
-|   |       `-- default -> ../syslinux.cfg
+|   |   |-- pxelinux.cfg
+|   |   |   `-- default -> ../syslinux.cfg
+|   |   `-- rmak -> ../rmak
 |   `-- rmak -> /srv/user/share/rmak
+`-- user
+    |-- private
+    `-- share
+        |-- cache
+        |-- chroot
+        |-- conf
+        |   |-- _data
+        |   |-- _keyring
+        |   |-- _template
+        |   |-- agama
+        |   |-- autoyast
+        |   |-- kickstart
+        |   |-- nocloud
+        |   |-- preseed
+        |   |-- script
+        |   `-- windows
+        |-- containers
+        |-- imgs
+        |-- isos
+        |-- load
+        `-- rmak
 `-- user ------------------------------ user file
     |-- private ----------------------- personal use
     `-- share ------------------------- shared
