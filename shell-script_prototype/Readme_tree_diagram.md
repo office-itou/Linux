@@ -194,27 +194,6 @@ tree --charset C -n --filesfirst -d /srv/
 |   |   |   `-- default -> ../syslinux.cfg
 |   |   `-- rmak -> ../rmak
 |   `-- rmak -> /srv/user/share/rmak
-`-- user
-    |-- private
-    `-- share
-        |-- cache
-        |-- chroot
-        |-- conf
-        |   |-- _data
-        |   |-- _keyring
-        |   |-- _template
-        |   |-- agama
-        |   |-- autoyast
-        |   |-- kickstart
-        |   |-- nocloud
-        |   |-- preseed
-        |   |-- script
-        |   `-- windows
-        |-- containers
-        |-- imgs
-        |-- isos
-        |-- load
-        `-- rmak
 `-- user ------------------------------ user file
     |-- private ----------------------- personal use
     `-- share ------------------------- shared
