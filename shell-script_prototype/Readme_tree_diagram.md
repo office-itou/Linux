@@ -43,7 +43,7 @@ tree --charset C -n --filesfirst -d /srv/
 |   `-- zones
 |       `-- home_use.xml
 |-- postgresql ------------------------ postgresql
-|   `-- 17
+|   `-- 18
 |       `-- main
 |           |-- pg_hba.conf     ------- client authentication configuration file
 |           `-- postgresql.conf ------- postgresql configuration file
@@ -76,7 +76,8 @@ tree --charset C -n --filesfirst -d /srv/
     |-- .bashrc
     |-- .curlrc
     |-- .pgpass
-    `-- .vimrc
+    |-- .vimrc
+    `-- .workdirs
 ```
 
 ## **/lib/**
@@ -121,7 +122,8 @@ tree --charset C -n --filesfirst -d /srv/
 |       |-- imgs -> /srv/user/share/imgs
 |       |-- isos -> /srv/user/share/isos
 |       |-- load -> /srv/user/share/load
-|       `-- rmak -> /srv/user/share/rmak
+|       |-- rmak -> /srv/user/share/rmak
+|       `-- tftp -> /srv/tftp
 |-- samba ----------------------------- samba shared directory
 |   |-- adm
 |   |   |-- commands
@@ -178,9 +180,8 @@ tree --charset C -n --filesfirst -d /srv/
 |   |   |-- imgs -> ../imgs
 |   |   |-- isos -> ../isos
 |   |   |-- load -> ../load
-|   |   |-- pxelinux.cfg
-|   |   |   `-- default -> ../syslinux.cfg
-|   |   `-- rmak -> ../rmak
+|   |   `-- pxelinux.cfg
+|   |       `-- default -> ../syslinux.cfg
 |   |-- menu-efi64
 |   |   |-- syslinux.cfg -------------- syslinux configuration for uefi(x86_64) environment
 |   |   |-- syslinux.efi -------------- bootloader (x86_64-efi)
@@ -188,13 +189,13 @@ tree --charset C -n --filesfirst -d /srv/
 |   |   |-- imgs -> ../imgs
 |   |   |-- isos -> ../isos
 |   |   |-- load -> ../load
-|   |   |-- pxelinux.cfg
-|   |   |   `-- default -> ../syslinux.cfg
-|   |   `-- rmak -> ../rmak
+|   |   `-- pxelinux.cfg
+|   |       `-- default -> ../syslinux.cfg
 |   `-- rmak -> /srv/user/share/rmak
 `-- user ------------------------------ user file
     |-- private ----------------------- personal use
     `-- share ------------------------- shared
+        |-- cache
         |-- chroot -------------------- change route directory
         |-- conf ---------------------- configuration file
         |   |-- _data ----------------- common data files
@@ -244,6 +245,7 @@ tree --charset C -n --filesfirst -d /srv/
         |       |-- startnet.cmd -------------- startup command for winpe
         |       |-- unattend.xml -------------- auto-installation configuration file for windows 10/11
         |       `-- winpeshl.ini --------------
+        |-- containers
         |-- imgs ---------------------- iso file extraction destination
         |-- isos ---------------------- iso file
         |-- load ---------------------- load module
