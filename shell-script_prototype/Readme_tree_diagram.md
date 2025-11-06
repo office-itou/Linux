@@ -202,6 +202,7 @@ tree --charset C -n --filesfirst -d /srv/
         |-- conf ---------------------- configuration file
         |   |-- _data ----------------- common data files
         |   |   |-- common.cfg ---------------- configuration file of common
+        |   |   |-- distribution.dat ---------- data file of distribution
         |   |   `-- media.dat ----------------- data file of media
         |   |-- _fixed_address
         |   |   |-- autoinst.xml
