@@ -139,6 +139,10 @@
 	declare       _PATH_DIST="${_DIRS_DATA}/${_FILE_DIST}"	# distribution data file
 	declare       _PATH_MDIA="${_DIRS_DATA}/${_FILE_MDIA}"	# media data file
 	declare       _PATH_DSTP="${_DIRS_DATA}/${_FILE_DSTP}"	# debstrap data file
+	declare       _DPTH_CONF="${_PATH_CONF}"				# default: common configuration file
+	declare       _DPTH_DIST="${_PATH_DIST}"				# "      : distribution data file
+	declare       _DPTH_MDIA="${_PATH_MDIA}"				# "      : media data file
+	declare       _DPTH_DSTP="${_PATH_DSTP}"				# "      : debstrap data file
 
 	# --- pre-configuration file templates ------------------------------------
 	declare       _FILE_KICK="kickstart_rhel.cfg"			# for rhel
@@ -572,6 +576,44 @@ function fnExec_backup() {
 # -----------------------------------------------------------------------------
 # descript: get common configuration data
 #   input :            : unused
+#   output:   stdout   : result
+#   return:            : unused
+#   g-var : PWD        : read
+#   g-var : SUDO_HOME  : read
+#   g-var : HOME       : read
+#   g-var : _SUDO_HOME : read
+#   g-var : _DIRS_CURR : read
+#   g-var : _DIRS_CONF : read
+#   g-var : _FILE_CONF : read
+#   g-var : _FILE_DIST : read
+#   g-var : _FILE_MDIA : read
+#   g-var : _FILE_DSTP : read
+#   g-var : _PATH_CONF : write
+#   g-var : _PATH_DIST : write
+#   g-var : _PATH_MDIA : write
+#   g-var : _PATH_DSTP : write
+# shellcheck disable=SC2317,SC2329
+function fnFind_config() {
+	declare -a    __DIRS=()				# directory
+	declare       __CONF=""				# common configuration file
+	declare       __DIST=""				# distribution data file
+	declare       __MDIA=""				# media data file
+	declare       __DSTP=""				# debstrap data file
+	# --- set search directory ------------------------------------------------
+	__DIRS=("${_DIRS_CURR:-"${PWD}"}" "${_SUDO_HOME:-"${SUDO_HOME:-"${HOME:-}"}"}")
+	[[ -n "${_DIRS_CONF:-}" ]] && [[ -e "${_DIRS_CONF}" ]] && __DIRS+=("${_DIRS_CONF}")
+	# --- file search ---------------------------------------------------------
+	__CONF="$(find "${__DIRS[@]}" -maxdepth 1 -name "${_FILE_CONF:-common.cfg}"       -size +0 -print -quit)"
+	__DIST="$(find "${__DIRS[@]}" -maxdepth 1 -name "${_FILE_DIST:-distribution.dat}" -size +0 -print -quit)"
+	__MDIA="$(find "${__DIRS[@]}" -maxdepth 1 -name "${_FILE_MDIA:-media.dat}"        -size +0 -print -quit)"
+	__DSTP="$(find "${__DIRS[@]}" -maxdepth 1 -name "${_FILE_DSTP:-debstrap.dat}"     -size +0 -print -quit)"
+	# --- result --------------------------------------------------------------
+	printf "%s %s %s %s" "${__CONF:-"-"}" "${__DIST:-"-"}" "${__MDIA:-"-"}" "${__DSTP:-"-"}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: get common configuration data
+#   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
 #   g-var : _DBGS_FLAG : read
@@ -845,6 +887,10 @@ function fnSet_conf_data() {
 		esac
 		eval readonly "${__NAME}"
 	done
+	_DPTH_CONF="${_PATH_CONF}"			# default: common configuration file
+	_DPTH_DIST="${_PATH_DIST}"			# "      : distribution data file
+	_DPTH_MDIA="${_PATH_MDIA}"			# "      : media data file
+	_DPTH_DSTP="${_PATH_DSTP}"			# "      : debstrap data file
 
 #	_CONF_AGMA,_CONF_CLUD,_CONF_KICK,_CONF_SEDD,_CONF_SEDU,_CONF_YAST
 #	_DBGS_FAIL,_DBGS_FLAG,_DBGS_LOGS,_DBGS_PARM,_DBGS_SIMU
@@ -968,13 +1014,25 @@ function fnInitialize() {
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "start" "[${__FUNC_NAME}]"
 
+	declare       __RSLT=""				# result
+	declare -a    __DIRS=()				# directory list
+
 	# --- get data file -------------------------------------------------------
-	_PATH_CONF="$(find "${_DIRS_CURR:-"${PWD}"}" "${_SUDO_HOME:-"${SUDO_HOME:-"${HOME:-}"}"}" "${_DIRS_DATA:-/srv/user/share/conf/_data}" -maxdepth 1 -name "${_FILE_CONF:-common.cfg}" -size +0 -print -quit)"
+	__RSLT="$(fnFind_config)"
+	read -r -a __DIRS < <(echo "${__RSLT:-}")
+
+	_PATH_CONF="${__DIRS[0]##-}"		# common configuration file
 	fnGet_conf_data						# get common configuration data
 	fnSet_conf_data						# set common configuration data
+
+	_PATH_DIST="${__DIRS[1]##-}"		# distribution data file
 	fnGet_dist_data						# get distribution data
+
+	_PATH_MDIA="${__DIRS[2]##-}"		# media data file
 	fnGet_media_data					# get media data
 	fnSet_media_data					# set common media data
+
+	_PATH_DSTP="${__DIRS[3]##-}"		# debstrap data file
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "complete" "[${__FUNC_NAME}]"
@@ -1014,14 +1072,44 @@ function fnMKdirectory() {
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "start" "[${__FUNC_NAME}]"
 
-	declare       __RTIV=""				# add/relative flag
+	declare       __RSLT=""				# result
+	declare -a    __DIRS=()				# directory list
+	declare -a    __LINK=()				# symbolic link list
+	declare       __FLAG=""				# flag (add/relative/...)
 	declare       __TGET=""				# taget path
 	declare       __SLNK=""				# symlink path
 	declare       __RNAM=""				# rename path
+	declare       __PATH=""				# full path
 	declare -a    __LIST=()				# work variable
 	declare -i    I=0
+
+	# === get data file =======================================================
+	__RSLT="$(fnFind_config)"
+	read -r -a __LIST < <(echo "${__RSLT:-}")
+	# --- common configuration file -------------------------------------------
+	_PATH_CONF="${__LIST[0]##-}"
+	if [[ -n "${_PATH_CONF:-}" ]] && [[ -e "${_PATH_CONF}" ]]; then
+		fnGet_conf_data					# get common configuration data
+		fnSet_conf_data					# set common configuration data
+	fi
+	# --- distribution data file -----------------------------------------------
+	_PATH_DIST="${__LIST[1]##-}"
+	if [[ -n "${_PATH_DIST:-}" ]] && [[ -e "${_PATH_DIST}" ]]; then
+		fnGet_dist_data					# get distribution data
+	fi
+	# --- media data file -----------------------------------------------------
+	_PATH_MDIA="${__LIST[2]##-}"
+	if [[ -n "${_PATH_MDIA:-}" ]] && [[ -e "${_PATH_MDIA}" ]]; then
+		fnGet_media_data				# get media data
+		fnSet_media_data				# set common media data
+	fi
+	# --- debstrap data file --------------------------------------------------
+	_PATH_DSTP="${__LIST[3]##-}"
+
+	# === create directory and symbolic link ==================================
+	# tree --charset=C --filesfirst -a /srv/
 	# --- directory list ------------------------------------------------------
-	declare -r -a __DIRS=(                                                                                                                                                              \
+	__DIRS=(                                                                                                                                                                            \
 		"${_DIRS_TOPS:?}"                                                                                                                                                               \
 		"${_DIRS_HGFS:?}"                                                                                                                                                               \
 		"${_DIRS_HTML:?}"                                                                                                                                                               \
@@ -1042,11 +1130,12 @@ function fnMKdirectory() {
 		"${_DIRS_CTNR:?}"                                                                                                                                                               \
 		"${_DIRS_CHRT:?}"                                                                                                                                                               \
 	)
+	readonly __DIRS
 	# --- symbolic link list --------------------------------------------------
 	# 0: a:add, r:relative
 	# 1: target
 	# 2: symlink
-	declare -r -a __LINK=(                                                                                                                                                              \
+	__LINK=(                                                                                                                                                                            \
 		"a  ${_DIRS_CONF:?}                                     ${_DIRS_HTML:?}/"                                                                                                       \
 		"a  ${_DIRS_IMGS:?}                                     ${_DIRS_HTML:?}/"                                                                                                       \
 		"a  ${_DIRS_ISOS:?}                                     ${_DIRS_HTML:?}/"                                                                                                       \
@@ -1071,20 +1160,17 @@ function fnMKdirectory() {
 		"a  ${_DIRS_LOAD:?}                                     ${_DIRS_TFTP:?}/"                                                                                                       \
 		"a  ${_DIRS_RMAK:?}                                     ${_DIRS_TFTP:?}/"                                                                                                       \
 	)
-
-	# tree --charset=C --filesfirst  -a /srv/
-
+	readonly __LINK
 	# --- create directory ----------------------------------------------------
 	mkdir -p "${__DIRS[@]:?}"
-
 	# --- create symbolic link ------------------------------------------------
 	for I in "${!__LINK[@]}"
 	do
 		read -r -a __LIST < <(echo "${__LINK[I]}")
-		__RTIV="${__LIST[0]:-}"			# a:add, r:relative
+		__FLAG="${__LIST[0]:-}"			# a:add, r:relative
 		__TGET="${__LIST[1]:-}"			# target
 		__SLNK="${__LIST[2]:-}"			# symlink
-		case "${__RTIV:-}" in
+		case "${__FLAG:-}" in
 			a) ;;
 			r) ;;
 			*) continue;;
@@ -1117,10 +1203,82 @@ function fnMKdirectory() {
 		fi
 		# --- create symbolic link --------------------------------------------
 		fnMsgout "create" "  symlink: [${__TGET}] -> [${__SLNK}]"
-		case "${__RTIV}" in
+		case "${__FLAG}" in
 			r) ln -sr "${__TGET}" "${__SLNK}";;
 			*) ln -s  "${__TGET}" "${__SLNK}";;
 		esac
+	done
+
+	# === copy default files ==================================================
+	# --- common configuration file -------------------------------------------
+	if [[ -n "${_DPTH_CONF:-}" ]] && [[ ! -e "${_DPTH_CONF}" ]]; then
+		if [[ -n "${_PATH_CONF:-}" ]] && [[ -e "${_PATH_CONF}" ]]; then
+			fnMsgout "copy" "     file: [${_PATH_CONF}] -> [${_DPTH_CONF}]"
+			cp --preserve=timestamps "${_PATH_CONF:-}" "${_DPTH_CONF:-}"
+			_PATH_CONF="${_DPTH_CONF:-}"
+		else
+			_PATH_CONF="${_DPTH_CONF:-}"
+			_PATH_DIST="${_DPTH_DIST:-}"
+			_PATH_MDIA="${_DPTH_MDIA:-}"
+			_PATH_DSTP="${_DPTH_DSTP:-}"
+			fnMsgout "create" "conf file: [${_PATH_CONF:-}]"
+			fnPut_conf_data
+			fnGet_conf_data
+			fnSet_conf_data
+			__RSLT="$(fnFind_config)"
+			read -r -a __LIST < <(echo "${__RSLT:-}")
+#			_PATH_CONF="${__LIST[0]##-}"
+			_PATH_DIST="${__LIST[1]##-}"
+			_PATH_MDIA="${__LIST[2]##-}"
+			_PATH_DSTP="${__LIST[3]##-}"
+		fi
+	fi
+	# --- distribution data file ----------------------------------------------
+	if [[ -n "${_DPTH_DIST:-}" ]] && [[ ! -e "${_DPTH_DIST}" ]] && [[ -n "${_PATH_DIST:-}" ]] && [[ -e "${_PATH_DIST}" ]]; then
+		fnMsgout "copy" "     file: [${_PATH_DIST}] -> [${_DPTH_DIST}]"
+		cp --preserve=timestamps "${_PATH_DIST:-}" "${_DPTH_DIST:-}"
+		_PATH_DIST="${_DPTH_DIST:-}"
+	fi
+	# --- media data file -----------------------------------------------------
+	if [[ -n "${_DPTH_MDIA:-}" ]] && [[ ! -e "${_DPTH_MDIA}" ]] && [[ -n "${_PATH_MDIA:-}" ]] && [[ -e "${_PATH_MDIA}" ]]; then
+		fnMsgout "copy" "     file: [${_PATH_MDIA}] -> [${_DPTH_MDIA}]"
+		cp --preserve=timestamps "${_PATH_MDIA:-}" "${_DPTH_MDIA:-}"
+		_PATH_MDIA="${_DPTH_MDIA:-}"
+	fi
+	# --- debstrap data file --------------------------------------------------
+	if [[ -n "${_DPTH_DSTP:-}" ]] && [[ ! -e "${_DPTH_DSTP}" ]] && [[ -n "${_PATH_DSTP:-}" ]] && [[ -e "${_PATH_DSTP}" ]]; then
+		fnMsgout "copy" "     file: [${_PATH_DSTP}] -> [${_DPTH_DSTP}]"
+		cp --preserve=timestamps "${_PATH_DSTP:-}" "${_DPTH_DSTP:-}"
+		_PATH_DSTP="${_DPTH_DSTP:-}"
+	fi
+
+	# === create symbolic link (isos) =========================================
+	for I in "${!_LIST_MDIA[@]}"
+	do
+		read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
+		__FLAG="${__LIST[1]:-}"
+		__SLNK="${__LIST[13]:-}"
+		__TGET="${__LIST[25]:-}/${__SLNK##*/}"
+		case "${__FLAG}" in
+			o) ;;
+			*) continue;;
+		esac
+		case "${__SLNK}" in
+			-) continue;;
+			*) ;;
+		esac
+		case "${__TGET%%/*}" in
+			-) continue;;
+			*) ;;
+		esac
+		# --- check symbolic link ---------------------------------------------
+		if [[ -h "${__SLNK}" ]]; then
+			fnMsgout "exist" "  symlink: [${__SLNK}]"
+			continue
+		fi
+		# --- create symbolic link --------------------------------------------
+		fnMsgout "create" "  symlink: [${__TGET}] -> [${__SLNK}]"
+		ln -s  "${__TGET}" "${__SLNK}"
 	done
 
 	# --- complete ------------------------------------------------------------
