@@ -38,7 +38,7 @@
 	# --- working directory ---------------------------------------------------
 	readonly _PROG_PATH="$0"
 	readonly _PROG_PARM="${*:-}"
-#	readonly _PROG_DIRS="${_PROG_PATH%/*}"
+	readonly _PROG_DIRS="${_PROG_PATH%/*}"
 	readonly _PROG_NAME="${_PROG_PATH##*/}"
 #	readonly _PROG_PROC="${_PROG_NAME}.$$"
 
@@ -128,6 +128,12 @@
 	_DIRS_CACH=""						# cache file
 	_DIRS_CTNR=""						# container file
 	_DIRS_CHRT=""						# container file (chroot)
+	# --- working directory parameter -----------------------------------------
+	_DIRS_BACK=""						# top of backup directory
+	_DIRS_ORIG=""						# original file directory
+	_DIRS_INIT=""						# initial file directory
+	_DIRS_SAMP=""						# sample file directory
+	_DIRS_LOGS=""						# log file directory
 
 # *** function section (common functions) *************************************
 
@@ -171,6 +177,7 @@ fnMsgout() {
 			esac
 			;;
 		remove   | umount  ) printf "\033[m${_PROG_NAME}:     \033[93m%-8.8s: %s\033[m\n"        "${1:-}" "${2:-}";; # warn
+		archive            ) printf "\033[m${_PROG_NAME}:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${1:-}" "${2:-}";; # warn
 		success            ) printf "\033[m${_PROG_NAME}:     \033[92m%-8.8s: %s\033[m\n"        "${1:-}" "${2:-}";; # info
 		failed             ) printf "\033[m${_PROG_NAME}:     \033[41m%-8.8s: %s\033[m\n"        "${1:-}" "${2:-}";; # alert
 		caution            ) printf "\033[m${_PROG_NAME}:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${1:-}" "${2:-}";; # warn
@@ -211,7 +218,7 @@ fnString_msg() {
 # -----------------------------------------------------------------------------
 # descript: IPv6 full address
 #   input :     $1     : value
-#   input :     $2     : format (not empty: full)
+#   input :     $2     : format (not empty: zero padding)
 #   output:   stdout   : output
 #   return:            : unused
 #   g-var :            : unused
@@ -219,31 +226,47 @@ fnString_msg() {
 fnIPv6GetFullAddr() {
 	___ADDR="${1:?}"
 	___FMAT="${2:+"%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x"}"
-	___FMAT="${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}"
-	___SPRT="$(echo "${___ADDR}" | sed -e 's/[^:]//g')"
-	___LENG=$((7-${#___SPRT}))
-	if [ "${___LENG}" -gt 0 ]; then
-		___SPRT="$(printf ':%.s' $(seq 1 $((___LENG+2))) || true)"
-		___ADDR="$(echo "${___ADDR}" | sed -e "s/::/${___SPRT}/")"
-	fi
-	___OCT1="$(echo "${___ADDR}" | cut -d ':' -f 1)"
-	___OCT2="$(echo "${___ADDR}" | cut -d ':' -f 2)"
-	___OCT3="$(echo "${___ADDR}" | cut -d ':' -f 3)"
-	___OCT4="$(echo "${___ADDR}" | cut -d ':' -f 4)"
-	___OCT5="$(echo "${___ADDR}" | cut -d ':' -f 5)"
-	___OCT6="$(echo "${___ADDR}" | cut -d ':' -f 6)"
-	___OCT7="$(echo "${___ADDR}" | cut -d ':' -f 7)"
-	___OCT8="$(echo "${___ADDR}" | cut -d ':' -f 8)"
-	# shellcheck disable=SC2059
-	printf "${___FMAT}" \
-	    "0x${___OCT1:-"0"}" \
-	    "0x${___OCT2:-"0"}" \
-	    "0x${___OCT3:-"0"}" \
-	    "0x${___OCT4:-"0"}" \
-	    "0x${___OCT5:-"0"}" \
-	    "0x${___OCT6:-"0"}" \
-	    "0x${___OCT7:-"0"}" \
-	    "0x${___OCT8:-"0"}"
+	echo "${___ADDR}" |
+		awk -F '/' '{
+			str=$1
+			gsub("[^:]","",str)
+			sep=""
+			for (i=1;i<=7-length(str)+2;i++) {
+				sep=sep":"
+			}
+			str=$1
+			gsub("::",sep,str)
+			split(str,arr,":")
+			for (i=0;i<length(arr);i++) {
+				num[i]=strtonum("0x"arr[i])
+			}
+			printf "'"${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}"'",
+			num[1],num[2],num[3],num[4],num[5],num[6],num[7],num[8]
+		}'
+#	___SPRT="$(echo "${___ADDR}" | sed -e 's/[^:]//g')"
+#	___LENG=$((7-${#___SPRT}))
+#	if [ "${___LENG}" -gt 0 ]; then
+#		___SPRT="$(printf ':%.s' $(seq 1 $((___LENG+2))) || true)"
+#		___ADDR="$(echo "${___ADDR}" | sed -e "s/::/${___SPRT}/")"
+#	fi
+#	___OCT1="$(echo "${___ADDR}" | cut -d ':' -f 1)"
+#	___OCT2="$(echo "${___ADDR}" | cut -d ':' -f 2)"
+#	___OCT3="$(echo "${___ADDR}" | cut -d ':' -f 3)"
+#	___OCT4="$(echo "${___ADDR}" | cut -d ':' -f 4)"
+#	___OCT5="$(echo "${___ADDR}" | cut -d ':' -f 5)"
+#	___OCT6="$(echo "${___ADDR}" | cut -d ':' -f 6)"
+#	___OCT7="$(echo "${___ADDR}" | cut -d ':' -f 7)"
+#	___OCT8="$(echo "${___ADDR}" | cut -d ':' -f 8)"
+#	# shellcheck disable=SC2059
+#	printf "${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}" \
+#	    "0x${___OCT1:-"0"}" \
+#	    "0x${___OCT2:-"0"}" \
+#	    "0x${___OCT3:-"0"}" \
+#	    "0x${___OCT4:-"0"}" \
+#	    "0x${___OCT5:-"0"}" \
+#	    "0x${___OCT6:-"0"}" \
+#	    "0x${___OCT7:-"0"}" \
+#	    "0x${___OCT8:-"0"}"
 }
 
 # -----------------------------------------------------------------------------
@@ -254,16 +277,17 @@ fnIPv6GetFullAddr() {
 #   g-var :            : unused
 # shellcheck disable=SC2148,SC2317,SC2329
 fnIPv6GetRevAddr() {
-	echo "${1:?}" | \
+	echo "${1:?}" |
 	    awk 'gsub(":","") {
-	        for(i=length();i>1;i--)              \
-	            printf("%c.", substr($0,i,1));   \
-	            printf("%c" , substr($0,1,1));}'
+	        for(i=length();i>1;i--)
+	            printf("%c.", substr($0,i,1))
+	            printf("%c" , substr($0,1,1))
+			}'
 }
 
 # -----------------------------------------------------------------------------
 # descript: IPv4 netmask conversion
-#   input :     $1     : value
+#   input :     $1     : value (nn or nnn.nnn.nnn.nnn)
 #   output:   stdout   : output
 #   return:            : unused
 #   g-var :            : unused
@@ -277,19 +301,19 @@ fnIPv4GetNetmask() {
 	echo "${1:?}" |
 		awk -F '.' '{
 			if (NF==1) {
-				n=lshift(0xFFFFFFFF,32-$1);
+				n=lshift(0xFFFFFFFF,32-$1)
 				printf "%d.%d.%d.%d",
 					and(rshift(n,24),0xFF),
 					and(rshift(n,16),0xFF),
 					and(rshift(n,8),0xFF),
 					and(n,0xFF)
 			} else {
-				h=xor(0xFFFFFFFF,lshift($1,24)+lshift($2,16)+lshift($3,8)+$4);
-				n=32;
+				h=xor(0xFFFFFFFF,lshift($1,24)+lshift($2,16)+lshift($3,8)+$4)
+				n=32
 				if (h>0) {
 					n-=int(log(h)/log(2)+1)
 				}
-				printf "%d",n;
+				printf "%d",n
 			}
 		}'
 }
@@ -447,6 +471,47 @@ fnGet_param_network() {
 	readonly _LINK_RADR
 }
 
+# -----------------------------------------------------------------------------
+# descript: file backup
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+#   g-var : _DIRS_TGET : read
+#   g-var : _DIRS_SAMP : read
+#   g-var : _DIRS_INIT : read
+#   g-var : _DIRS_ORIG : read
+# shellcheck disable=SC2148,SC2317,SC2329
+# --- file backup -------------------------------------------------------------
+fnFile_backup() {
+	___PATH="${1:?}"
+	___MODE="${2:-}"
+	# --- check ---------------------------------------------------------------
+	if [ ! -e "${___PATH}" ]; then
+		fnMsgout "caution" "not exist: [${___PATH}]"
+		mkdir -p "${___PATH%/*}"
+		___REAL="$(realpath --canonicalize-missing "${___PATH}")"
+		if [ ! -e "${___REAL}" ]; then
+			mkdir -p "${___REAL%/*}"
+		fi
+		touch "${___PATH}"
+	fi
+	# --- backup --------------------------------------------------------------
+	case "${___MODE:-}" in
+		samp) ___DIRS="${_DIRS_SAMP}";;
+		init) ___DIRS="${_DIRS_INIT}";;
+		*   ) ___DIRS="${_DIRS_ORIG}";;
+	esac
+	___BACK="${___PATH#"${_DIRS_TGET}/"}"
+	___BACK="${___DIRS}/${___BACK#/}"
+	mkdir -p "${___BACK%/*}"
+	chmod 600 "${___DIRS%/*}"
+	if [ -e "${___BACK}" ] || [ -L "${___BACK}" ]; then
+		___BACK="${___BACK}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
+	fi
+	fnMsgout "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
+	cp -a "${___PATH}" "${___BACK}"
+}
+
 # *** function section (subroutine functions) *********************************
 
 # -----------------------------------------------------------------------------
@@ -454,7 +519,6 @@ fnGet_param_network() {
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
-#   g-var : __FUNC_NAME: read
 #   g-var : TERM       : read
 #   g-var : _ROWS_SIZE : write
 #   g-var : _COLS_SIZE : write
@@ -517,12 +581,15 @@ fnGet_param_network() {
 #   g-var : _DIRS_CACH : write
 #   g-var : _DIRS_CTNR : write
 #   g-var : _DIRS_CHRT : write
+#   g-var : _DIRS_ORIG : read
+#   g-var : _DIRS_INIT : read
+#   g-var : _DIRS_SAMP : read
+#   g-var : _DIRS_LOGS : read
 #   g-var : _SAMB_USER : read
 #   g-var : _SAMB_GRUP : read
 #   g-var : _SAMB_GADM : read
 #   g-var : _SHEL_NLIN : read
 # shellcheck disable=SC2148,SC2317,SC2329
-# --- initialize --------------------------------------------------------------
 fnInitialize() {
 	__FUNC_NAME="fnInitialize"
 	fnMsgout "start" "[${__FUNC_NAME}]"
@@ -635,6 +702,20 @@ fnInitialize() {
 		"debug,_DIRS_CTNR=[${_DIRS_CTNR:-}]" \
 		"debug,_DIRS_CHRT=[${_DIRS_CHRT:-}]"
 
+	# --- working directory parameter -----------------------------------------
+										# top of working directory
+	_DIRS_BACK="${_DIRS_TGET:-}/var/adm/${_PROG_NAME%%_*}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
+	readonly _DIRS_BACK
+	readonly _DIRS_ORIG="${_DIRS_BACK}/orig"	# original file directory
+	readonly _DIRS_INIT="${_DIRS_BACK}/init"	# initial file directory
+	readonly _DIRS_SAMP="${_DIRS_BACK}/samp"	# sample file directory
+	readonly _DIRS_LOGS="${_DIRS_BACK}/logs"	# log file directory
+	fnDbgout "working directory" \
+		"debug,_DIRS_ORIG=[${_DIRS_ORIG:-}]" \
+		"debug,_DIRS_INIT=[${_DIRS_INIT:-}]" \
+		"debug,_DIRS_SAMP=[${_DIRS_SAMP:-}]" \
+		"debug,_DIRS_LOGS=[${_DIRS_LOGS:-}]" \
+
 	# --- samba ---------------------------------------------------------------
 	fnDbgout "samba info" \
 		"debug,_SAMB_USER=[${_SAMB_USER:-}]" \
@@ -646,7 +727,278 @@ fnInitialize() {
 	fnMsgout "complete" "[${__FUNC_NAME}]"
 }
 
+# -----------------------------------------------------------------------------
+# descript: package updates
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+#   g-var : _DIRS_BACK : read
+# shellcheck disable=SC2148,SC2317,SC2329
+fnUpdate_package() {
+	__FUNC_NAME="fnUpdate_package"
+	fnMsgout "start" "[${__FUNC_NAME}]"
+
+	# --- check command -------------------------------------------------------
+	  if command -v apt-get > /dev/null 2>&1; then
+		if ! apt-get --quiet              update      ; then fnMsgout "failed" "apt-get update";       return; fi
+		if ! apt-get --quiet --assume-yes upgrade     ; then fnMsgout "failed" "apt-get upgrade";      return; fi
+		if ! apt-get --quiet --assume-yes dist-upgrade; then fnMsgout "failed" "apt-get dist-upgrade"; return; fi
+		if ! apt-get --quiet --assume-yes autoremove  ; then fnMsgout "failed" "apt-get autoremove";   return; fi
+		if ! apt-get --quiet --assume-yes autoclean   ; then fnMsgout "failed" "apt-get autoclean";    return; fi
+		if ! apt-get --quiet --assume-yes clean       ; then fnMsgout "failed" "apt-get clean";        return; fi
+	elif command -v dnf     > /dev/null 2>&1; then
+		if ! dnf --quiet --assumeyes update; then fnMsgout "failed" "dnf update"; return; fi
+	elif command -v yum     > /dev/null 2>&1; then
+		if ! yum --quiet --assumeyes update; then fnMsgout "failed" "yum update"; return; fi
+	elif command -v zypper  > /dev/null 2>&1; then
+		_WORK_TEXT="$(LANG=C zypper lr | awk -F '|' '$1==1&&$2~/http/ {gsub(/^[ \t]+/,"",$2); gsub(/[ \t]+$/,"",$2); print $2;}')"
+		if [ -n "${_WORK_TEXT:-}" ]; then
+			if ! zypper modifyrepo --disable "${_WORK_TEXT}"; then fnMsgout "failed" "zypper repository disable"; return; fi
+		fi
+		if ! zypper                           refresh; then fnMsgout "failed" "zypper refresh"; return; fi
+		if ! zypper --quiet --non-interactive update ; then fnMsgout "failed" "zypper update";  return; fi
+	else
+		fnMsgout "failed" "package update failure (command not found)"
+		return
+	fi
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "complete" "[${__FUNC_NAME}]"
+}
+
+# -----------------------------------------------------------------------------
+# descript: creating a shared directory
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+#   g-var : _DIRS_TOPS : read
+#   g-var : _DIRS_HGFS : read
+#   g-var : _DIRS_HTML : read
+#   g-var : _DIRS_SAMB : read
+#   g-var : _DIRS_TFTP : read
+#   g-var : _DIRS_USER : read
+#   g-var : _DIRS_SHAR : read
+#   g-var : _DIRS_CONF : read
+#   g-var : _DIRS_DATA : read
+#   g-var : _DIRS_KEYS : read
+#   g-var : _DIRS_MKOS : read
+#   g-var : _DIRS_TMPL : read
+#   g-var : _DIRS_SHEL : read
+#   g-var : _DIRS_IMGS : read
+#   g-var : _DIRS_ISOS : read
+#   g-var : _DIRS_LOAD : read
+#   g-var : _DIRS_RMAK : read
+#   g-var : _DIRS_CACH : read
+#   g-var : _DIRS_CTNR : read
+#   g-var : _DIRS_CHRT : read
+#   g-var : _SAMB_USER : read
+#   g-var : _SAMB_GRUP : read
+#   g-var : _DIRS_SAMB : read
+# shellcheck disable=SC2148,SC2317,SC2329
+fnCreate_shared_directory(){
+	__FUNC_NAME="fnCreate_shared_directory"
+	fnMsgout "start" "[${__FUNC_NAME}]"
+
+	# --- create directory ----------------------------------------------------
+	mkdir -p "${_DIRS_TOPS:?}"
+	mkdir -p "${_DIRS_HGFS:?}"
+	mkdir -p "${_DIRS_HTML:?}"
+	mkdir -p "${_DIRS_SAMB:?}"/adm/commands
+	mkdir -p "${_DIRS_SAMB:?}"/adm/profiles
+	mkdir -p "${_DIRS_SAMB:?}"/pub/_license
+	mkdir -p "${_DIRS_SAMB:?}"/pub/contents/disc
+	mkdir -p "${_DIRS_SAMB:?}"/pub/contents/dlna/movies
+	mkdir -p "${_DIRS_SAMB:?}"/pub/contents/dlna/others
+	mkdir -p "${_DIRS_SAMB:?}"/pub/contents/dlna/photos
+	mkdir -p "${_DIRS_SAMB:?}"/pub/contents/dlna/sounds
+	mkdir -p "${_DIRS_SAMB:?}"/pub/hardware
+	mkdir -p "${_DIRS_SAMB:?}"/pub/software
+	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/linux
+	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/windows
+	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git
+	mkdir -p "${_DIRS_SAMB:?}"/usr
+	mkdir -p "${_DIRS_TFTP:?}"/boot/grub/fonts
+	mkdir -p "${_DIRS_TFTP:?}"/boot/grub/locale
+	mkdir -p "${_DIRS_TFTP:?}"/boot/grub/i386-pc
+	mkdir -p "${_DIRS_TFTP:?}"/boot/grub/i386-efi
+	mkdir -p "${_DIRS_TFTP:?}"/boot/grub/x86_64-efi
+	mkdir -p "${_DIRS_TFTP:?}"/ipxe
+	mkdir -p "${_DIRS_TFTP:?}"/menu-bios/pxelinux.cfg
+	mkdir -p "${_DIRS_TFTP:?}"/menu-efi64/pxelinux.cfg
+	mkdir -p "${_DIRS_USER:?}"/private
+	mkdir -p "${_DIRS_SHAR:?}"
+	mkdir -p "${_DIRS_CONF:?}"/_repository
+	mkdir -p "${_DIRS_CONF:?}"/agama
+	mkdir -p "${_DIRS_CONF:?}"/autoyast
+	mkdir -p "${_DIRS_CONF:?}"/kickstart
+	mkdir -p "${_DIRS_CONF:?}"/nocloud
+	mkdir -p "${_DIRS_CONF:?}"/preseed
+	mkdir -p "${_DIRS_CONF:?}"/windows
+	mkdir -p "${_DIRS_DATA:?}"
+	mkdir -p "${_DIRS_KEYS:?}"
+	mkdir -p "${_DIRS_MKOS:?}"/mkosi.build.d
+	mkdir -p "${_DIRS_MKOS:?}"/mkosi.clean.d
+	mkdir -p "${_DIRS_MKOS:?}"/mkosi.conf.d
+	mkdir -p "${_DIRS_MKOS:?}"/mkosi.extra
+	mkdir -p "${_DIRS_MKOS:?}"/mkosi.finalize.d
+	mkdir -p "${_DIRS_MKOS:?}"/mkosi.postinst.d
+	mkdir -p "${_DIRS_MKOS:?}"/mkosi.postoutput.d
+	mkdir -p "${_DIRS_MKOS:?}"/mkosi.prepare.d
+	mkdir -p "${_DIRS_MKOS:?}"/mkosi.repart
+	mkdir -p "${_DIRS_MKOS:?}"/mkosi.sync.d
+	mkdir -p "${_DIRS_TMPL:?}"
+	mkdir -p "${_DIRS_SHEL:?}"
+	mkdir -p "${_DIRS_IMGS:?}"
+	mkdir -p "${_DIRS_ISOS:?}"
+	mkdir -p "${_DIRS_LOAD:?}"
+	mkdir -p "${_DIRS_RMAK:?}"
+	mkdir -p "${_DIRS_CACH:?}"
+	mkdir -p "${_DIRS_CTNR:?}"
+	mkdir -p "${_DIRS_CHRT:?}"
+
+	# --- change file mode ----------------------------------------------------
+	chown -R "${_SAMB_USER}":"${_SAMB_GRUP}" "${_DIRS_SAMB}/"*
+	chmod -R  770 "${_DIRS_SAMB}/"*
+	chmod    1777 "${_DIRS_SAMB}/adm/profiles"
+
+	# --- create symbolic link ------------------------------------------------
+	[ ! -L "${_DIRS_HTML:?}/${_DIRS_CONF##*/}"               ] && ln -s "${_DIRS_CONF#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -L "${_DIRS_HTML:?}/${_DIRS_IMGS##*/}"               ] && ln -s "${_DIRS_IMGS#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -L "${_DIRS_HTML:?}/${_DIRS_ISOS##*/}"               ] && ln -s "${_DIRS_ISOS#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -L "${_DIRS_HTML:?}/${_DIRS_LOAD##*/}"               ] && ln -s "${_DIRS_LOAD#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -L "${_DIRS_HTML:?}/${_DIRS_RMAK##*/}"               ] && ln -s "${_DIRS_RMAK#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -L "${_DIRS_HTML:?}/${_DIRS_TFTP##*/}"               ] && ln -s "${_DIRS_TFTP#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -L "${_DIRS_HTML:?}/${_DIRS_CONF##*/}"               ] && ln -s "${_DIRS_CONF#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
+	[ ! -L "${_DIRS_HTML:?}/${_DIRS_IMGS##*/}"               ] && ln -s "${_DIRS_IMGS#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
+	[ ! -L "${_DIRS_HTML:?}/${_DIRS_ISOS##*/}"               ] && ln -s "${_DIRS_ISOS#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
+	[ ! -L "${_DIRS_HTML:?}/${_DIRS_LOAD##*/}"               ] && ln -s "${_DIRS_LOAD#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
+	[ ! -L "${_DIRS_HTML:?}/${_DIRS_RMAK##*/}"               ] && ln -s "${_DIRS_RMAK#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
+	[ ! -L "${_DIRS_TFTP:?}/menu-bios/${_DIRS_CONF##*/}"     ] && ln -s "../${_DIRS_CONF##*/}"             "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -L "${_DIRS_TFTP:?}/menu-bios/${_DIRS_IMGS##*/}"     ] && ln -s "../${_DIRS_IMGS##*/}"             "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -L "${_DIRS_TFTP:?}/menu-bios/${_DIRS_ISOS##*/}"     ] && ln -s "../${_DIRS_ISOS##*/}"             "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -L "${_DIRS_TFTP:?}/menu-bios/${_DIRS_LOAD##*/}"     ] && ln -s "../${_DIRS_LOAD##*/}"             "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -L "${_DIRS_TFTP:?}/menu-bios/${_DIRS_RMAK##*/}"     ] && ln -s "../${_DIRS_RMAK##*/}"             "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -L "${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"  ] && ln -s "../menu-bios/syslinux.cfg"        "${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"
+	[ ! -L "${_DIRS_TFTP:?}/menu-bios/${_DIRS_CONF##*/}"     ] && ln -s "../${_DIRS_CONF##*/}"             "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -L "${_DIRS_TFTP:?}/menu-bios/${_DIRS_IMGS##*/}"     ] && ln -s "../${_DIRS_IMGS##*/}"             "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -L "${_DIRS_TFTP:?}/menu-bios/${_DIRS_ISOS##*/}"     ] && ln -s "../${_DIRS_ISOS##*/}"             "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -L "${_DIRS_TFTP:?}/menu-bios/${_DIRS_LOAD##*/}"     ] && ln -s "../${_DIRS_LOAD##*/}"             "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -L "${_DIRS_TFTP:?}/menu-bios/${_DIRS_RMAK##*/}"     ] && ln -s "../${_DIRS_RMAK##*/}"             "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -L "${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default" ] && ln -s "../menu-efi64/syslinux.cfg"       "${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default"
+
+	# --- create autoexec.ipxe ------------------------------------------------
+	touch "${_DIRS_TFTP:?}/menu-bios/syslinux.cfg"
+	touch "${_DIRS_TFTP:?}/menu-efi64/syslinux.cfg"
+	fnFile_backup "${_DIRS_TFTP:-}/menu-bios/syslinux.cfg"  "init"
+	fnFile_backup "${_DIRS_TFTP:-}/menu-efi64/syslinux.cfg" "init"
+
+	# --- create autoexec.ipxe ------------------------------------------------
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_DIRS_TFTP:?}/autoexec.ipxe"
+		#!ipxe
+
+		cpuid --ext 29 && set arch amd64 || set arch x86
+
+		dhcp
+
+		set optn-timeout 1000
+		set menu-timeout 0
+		isset \${menu-default} || set menu-default exit
+
+		:start
+
+		:menu
+		menu Select the OS type you want to boot
+		item --gap --                                   --------------------------------------------------------------------------
+		item --gap --                                   [ System command ]
+		item -- shell                                   - iPXE shell
+		#item -- shutdown                               - System shutdown
+		item -- restart                                 - System reboot
+		item --gap --                                   --------------------------------------------------------------------------
+		choose --timeout \${menu-timeout} --default \${menu-default} selected || goto menu
+		goto \${selected}
+
+		:shell
+		echo "Booting iPXE shell ..."
+		shell
+		goto start
+
+		:shutdown
+		echo "System shutting down ..."
+		poweroff
+		exit
+
+		:restart
+		echo "System rebooting ..."
+		reboot
+		exit
+
+		:error
+		prompt Press any key to continue
+		exit
+
+		:exit
+		exit
+_EOT_
+	fnFile_backup "${_DIRS_TFTP:-}/autoexec.ipxe" "init"
+
+	# --- debug output --------------------------------------------------------
+	if [ -n "${_DBGS_FLAG:-}" ]; then
+		tree --charset C -n --filesfirst "${_DIRS_TOPS}"
+	fi
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "complete" "[${__FUNC_NAME}]" 
+}
+
 # *** main section ************************************************************
+
+# -----------------------------------------------------------------------------
+# descript: main
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+#   g-var : _DIRS_BACK : read
+# shellcheck disable=SC2148,SC2317,SC2329
+fnMain() {
+	_FUNC_NAME="fnMain"
+	fnMsgout "start" "[${_FUNC_NAME}]"
+
+	# --- initialize ----------------------------------------------------------
+	fnDetect_virt
+	fnInitialize
+
+	# --- debug backup---------------------------------------------------------
+	__DIRS="${_DIRS_BACK##*/}"
+	__DIRS="${__DIRS%%.[0-9]*}"
+	find "${_DIRS_BACK%/*}" -name "${_PROG_NAME%%_*}.[0-9]*" -type d | sort -r | tail -n +3 | \
+	while read -r __TGET
+	do
+		__PATH="${__TGET}.tgz"
+		fnMsgout "archive" "[${__TGET}] -> [${__PATH}]"
+		if tar -C "${__TGET}" -czf "${__PATH}" .; then
+			chmod 600 "${__PATH}"
+			fnMsgout "remove"  "${__TGET}"
+			rm -rf "${__TGET:?}"
+		fi
+	done
+	fnFile_backup "/proc/cmdline"
+	fnFile_backup "/proc/mounts"
+	fnFile_backup "/proc/self/mounts"
+
+	# --- package updates -----------------------------------------------------
+	fnUpdate_package
+
+	# --- creating a shared environment ---------------------------------------
+	fnCreate_shared_directory			# --- creating a shared directory
+
+	# --- debug output --------------------------------------------------------
+	if [ -n "${_DBGS_FLAG:-}" ]; then
+		tree --charset C -n --filesfirst "${_DIRS_BACK}"
+	fi
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "complete" "[${_FUNC_NAME}]"
+}
 
 	# --- start ---------------------------------------------------------------
 	__time_start=$(date +%s)
@@ -726,14 +1078,12 @@ fnInitialize() {
 
 	# --- debug output --------------------------------------------------------
 	if [ -n "${_DBGS_FLAG:-}" ]; then
-		fnMsgout "debug" "start: _COMD_LINE"
-		printf "%s\n" "${_COMD_LINE:-}"
-		fnMsgout "debug" "end  : _COMD_LINE"
+		fnDbgout "command line" \
+			"debug,_COMD_LINE=[${_COMD_LINE:-}]"
 	fi
 
 	# --- main processing -----------------------------------------------------
-	fnDetect_virt
-	fnInitialize
+	fnMain
 
 	# --- complete ------------------------------------------------------------
 	__time_end=$(date +%s)
