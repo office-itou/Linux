@@ -150,7 +150,7 @@ fnMain() {
 	# --- network manager -----------------------------------------------------
 	fnSetup_connman						# connman
 	fnSetup_netplan						# netplan
-	fnSetup_manager						# network manager
+	fnSetup_netman						# network manager
 
 	# --- application setup ---------------------------------------------------
 	fnSetup_hostname					# hostname

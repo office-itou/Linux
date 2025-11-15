@@ -36,19 +36,19 @@
 	_DBGS_FLAG=""						# debug flag (empty: normal, else: debug)
 
 	# --- working directory ---------------------------------------------------
-	readonly      _PROG_PATH="$0"
-	readonly      _PROG_PARM="${*:-}"
-#	readonly      _PROG_DIRS="${_PROG_PATH%/*}"
-	readonly      _PROG_NAME="${_PROG_PATH##*/}"
-#	readonly      _PROG_PROC="${_PROG_NAME}.$$"
+	readonly _PROG_PATH="$0"
+	readonly _PROG_PARM="${*:-}"
+	readonly _PROG_DIRS="${_PROG_PATH%/*}"
+	readonly _PROG_NAME="${_PROG_PATH##*/}"
+#	readonly _PROG_PROC="${_PROG_NAME}.$$"
 
 	# --- command line parameter ----------------------------------------------
 									  	# command line parameter
 	_COMD_LINE="$(cat /proc/cmdline || true)"
 	readonly _COMD_LINE
-	_IPV4_DHCP=""						# true: dhcp, else: fixed address
 	_NICS_NAME=""						# nic if name   (ex. ens160)
 	_NICS_MADR=""						# nic if mac    (ex. 00:00:00:00:00:00)
+	_NICS_AUTO=""						# ipv4 dhcp     (ex. empty or dhcp)
 	_NICS_IPV4=""						# ipv4 address  (ex. 192.168.1.1)
 	_NICS_MASK=""						# ipv4 netmask  (ex. 255.255.255.0)
 	_NICS_BIT4=""						# ipv4 cidr     (ex. 24)
@@ -114,7 +114,8 @@
 	_DIRS_TFTP=""						# tftp contents
 	_DIRS_USER=""						# user file
 	# --- shared of user file -------------------------------------------------
-	_DIRS_SHAR=""						# shared of user file
+	_DIRS_PVAT=""						# private contents directory
+	_DIRS_SHAR=""						# shared contents directory
 	_DIRS_CONF=""						# configuration file
 	_DIRS_DATA=""						# data file
 	_DIRS_KEYS=""						# keyring file
@@ -182,6 +183,7 @@ fnMsgout() {
 				*    ) printf "\033[m${_PROG_NAME:-}: \033[92m--- %-8.8s: %s ---\033[m\n" "${1:-}" "${2:-}";; # info
 			esac
 			;;
+		skip               ) printf "\033[m${_PROG_NAME:-}: \033[92m--- %-8.8s: %s ---\033[m\n"    "${1:-}" "${2:-}";; # info
 		remove   | umount  ) printf "\033[m${_PROG_NAME:-}:     \033[93m%-8.8s: %s\033[m\n"        "${1:-}" "${2:-}";; # warn
 		archive            ) printf "\033[m${_PROG_NAME:-}:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${1:-}" "${2:-}";; # warn
 		success            ) printf "\033[m${_PROG_NAME:-}:     \033[92m%-8.8s: %s\033[m\n"        "${1:-}" "${2:-}";; # info
@@ -376,15 +378,17 @@ fnNetwork_param() {
 		fnMsgout "caution" "not exist: [${___DIRS}]"
 	else
 		if [ -z "${_NICS_NAME#*"*"}" ]; then
-			_NICS_NAME="$(find "${___DIRS}" -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -E "${_NICS_NAME}" | sort | head -n 1)"
+#			_NICS_NAME="$(find "${___DIRS}" -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -E "${_NICS_NAME}" | sort | head -n 1)"
+			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' -not -path '*/virtual/*' -prune -name "${_NICS_NAME}" -printf "%f" | sort | head -n 1)"
 		fi
-		if ! find "${___DIRS}" -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -qE '^'"${_NICS_NAME}"'$'; then
+#		if ! find "${___DIRS}" -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -qE '^'"${_NICS_NAME}"'$'; then
+		if ! find "${___DIRS}" -path '*/net/*' -not -path '*/virtual/*' -prune -name "${_NICS_NAME}" -printf "%f" | grep -qE '^'"${_NICS_NAME}"'$'; then
 			fnMsgout "failed" "not exist: [${_NICS_NAME}]"
 		else
 			_NICS_MADR="${_NICS_MADR:-"$(ip -0 -brief address show dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}' || true)"}"
 			_NICS_IPV4="${_NICS_IPV4:-"$(ip -4 -brief address show dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}' || true)"}"
 			if ip -4 -oneline address show dev "${_NICS_NAME}" 2> /dev/null | grep -qE '[ \t]dynamic[ \t]'; then
-				_NICS_IPV4="dhcp"
+				_NICS_AUTO="dhcp"
 			fi
 			if [ -z "${_NICS_DNS4:-}" ] || [ -z "${_NICS_WGRP:-}" ]; then
 				if command -v resolvectl > /dev/null 2>&1; then
@@ -489,7 +493,7 @@ fnFile_backup() {
 		if [ ! -e "${___REAL}" ]; then
 			mkdir -p "${___REAL%/*}"
 		fi
-		touch "${___PATH}"
+		: > "${___PATH}"
 	fi
 	# --- backup --------------------------------------------------------------
 	case "${___MODE:-}" in
@@ -564,6 +568,7 @@ fnFile_backup() {
 #   g-var : _DIRS_SAMB : write
 #   g-var : _DIRS_TFTP : write
 #   g-var : _DIRS_USER : write
+#   g-var : _DIRS_PVAT : write
 #   g-var : _DIRS_SHAR : write
 #   g-var : _DIRS_CONF : write
 #   g-var : _DIRS_DATA : write
@@ -678,7 +683,8 @@ fnInitialize() {
 	readonly _DIRS_SAMB="${_DIRS_TOPS}/samba"			# samba shared
 	readonly _DIRS_TFTP="${_DIRS_TOPS}/tftp"			# tftp contents
 	readonly _DIRS_USER="${_DIRS_TOPS}/user"			# user file
-	readonly _DIRS_SHAR="${_DIRS_USER}/share"			# shared of user file
+	readonly _DIRS_PVAT="${_DIRS_USER}/private"			# private contents directory
+	readonly _DIRS_SHAR="${_DIRS_USER}/share"			# shared contents directory
 	readonly _DIRS_CONF="${_DIRS_SHAR}/conf"			# configuration file
 	readonly _DIRS_DATA="${_DIRS_CONF}/_data"			# data file
 	readonly _DIRS_KEYS="${_DIRS_CONF}/_keyring"		# keyring file
@@ -699,6 +705,7 @@ fnInitialize() {
 		"debug,_DIRS_SAMB=[${_DIRS_SAMB:-}]" \
 		"debug,_DIRS_TFTP=[${_DIRS_TFTP:-}]" \
 		"debug,_DIRS_USER=[${_DIRS_USER:-}]" \
+		"debug,_DIRS_PVAT=[${_DIRS_PVAT:-}]" \
 		"debug,_DIRS_SHAR=[${_DIRS_SHAR:-}]" \
 		"debug,_DIRS_CONF=[${_DIRS_CONF:-}]" \
 		"debug,_DIRS_DATA=[${_DIRS_DATA:-}]" \
@@ -769,12 +776,19 @@ fnInitialize() {
 #   return:            : unused
 #   g-var :            : unused
 fnSetup_wireplumber() {
+	__FUNC_NAME="fnGet_conf_file"
+	fnMsgout "start" "[${__FUNC_NAME}]"
+
+	# --- check command -------------------------------------------------------
 	if ! command -v wireplumber > /dev/null 2>&1; then
+		fnMsgout "skip" "[${__FUNC_NAME}]"
 		return
 	fi
-	# --- setup ---------------------------------------------------------------
-	__PATH="/etc/wireplumber/wireplumber.conf.d/50-alsa-config.conf"
+	# --- 50-alsa-config.conf -------------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/wireplumber/wireplumber.conf.d/50-alsa-config.conf"
+	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
+	cp -a "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
 		monitor.alsa.rules = [
 		  {
@@ -795,12 +809,25 @@ fnSetup_wireplumber() {
 		  }
 		]
 _EOT_
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
+	# --- service restart -----------------------------------------------------
 	__SRVC="wireplumber.service"
-	for __USER in $(ps --no-headers -C "${__SRVC%.*}" -o user)
-	do
-		fnMsgout "restart" "[${__USER}]@ ${__SRVC}"
-		systemctl --user --machine="${__USER}"@ restart "${__SRVC}" || true
-	done
+	if systemctl --quiet  is-active "${__SRVC}"; then
+		fnMsgout "restart" "${__SRVC}"
+		systemctl --quiet daemon-reload
+		for __USER in $(ps --no-headers -C "${__SRVC%.*}" -o user)
+		do
+			if systemctl --quiet --user --machine="${__USER}"@ restart "${__SRVC}"; then
+				fnMsgout "success" "${__USER}@ ${__SRVC}"
+			else
+				fnMsgout "failed" "${__USER}@ ${__SRVC}"
+			fi
+		done
+	fi
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------

@@ -45,7 +45,7 @@ _EOT_
 	fnFile_backup "${__PATH}" "init"	# backup initial file
 	# --- service restart -----------------------------------------------------
 	__SRVC="wireplumber.service"
-	if systemctl --quiet  is-active "${_SRVC_NAME}"; then
+	if systemctl --quiet  is-active "${__SRVC}"; then
 		fnMsgout "restart" "${__SRVC}"
 		systemctl --quiet daemon-reload
 		for __USER in $(ps --no-headers -C "${__SRVC%.*}" -o user)

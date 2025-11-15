@@ -55,23 +55,23 @@ _EOT_
 				${_NICS_NAME}:
 _EOT_
 		if [ -n "${_NICS_AUTO##-}" ]; then
-			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
 						dhcp4: true
 						dhcp6: true
 						ipv6-privacy: true
 _EOT_
 		else
-			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
 						addresses:
-						- ${NICS_IPV4}/${NICS_BIT4}
+						- ${_NICS_IPV4}/${_NICS_BIT4}
 						routes:
 						- to: default
-						via: ${NICS_GATE}
+						via: ${_NICS_GATE}
 						nameservers:
 						search:
-						- ${NICS_WGRP}
+						- ${_NICS_WGRP}
 						addresses:
-						- ${NICS_DNS4}
+						- ${_NICS_DNS4}
 						dhcp4: false
 						dhcp6: true
 						ipv6-privacy: true

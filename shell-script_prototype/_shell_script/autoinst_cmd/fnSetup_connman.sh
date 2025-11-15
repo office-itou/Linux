@@ -45,12 +45,14 @@ _EOT_
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
 	# --- settings ------------------------------------------------------------
-	__PATH="${_DIRS_TGET:-}/var/lib/connman/ethernet_${_NICS_MADR//:/}_cable/settings"
+	# shellcheck disable=SC2001
+	__MADR="$(echo "${_NICS_MADR}" | sed -e 's/://g')"
+	__PATH="${_DIRS_TGET:-}/var/lib/connman/ethernet_${__MADR}_cable/settings"
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
 	cp -a "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
-			[ethernet_${_NICS_MADR//:/}_cable]
+			[ethernet_${__MADR}_cable]
 			Name=Wired
 			AutoConnect=true
 			Modified=

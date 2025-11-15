@@ -36,19 +36,19 @@
 	_DBGS_FLAG=""						# debug flag (empty: normal, else: debug)
 
 	# --- working directory ---------------------------------------------------
-	readonly      _PROG_PATH="$0"
-	readonly      _PROG_PARM="${*:-}"
-#	readonly      _PROG_DIRS="${_PROG_PATH%/*}"
-	readonly      _PROG_NAME="${_PROG_PATH##*/}"
-#	readonly      _PROG_PROC="${_PROG_NAME}.$$"
+	readonly _PROG_PATH="$0"
+	readonly _PROG_PARM="${*:-}"
+	readonly _PROG_DIRS="${_PROG_PATH%/*}"
+	readonly _PROG_NAME="${_PROG_PATH##*/}"
+#	readonly _PROG_PROC="${_PROG_NAME}.$$"
 
 	# --- command line parameter ----------------------------------------------
 									  	# command line parameter
 	_COMD_LINE="$(cat /proc/cmdline || true)"
 	readonly _COMD_LINE
-	_IPV4_DHCP=""						# true: dhcp, else: fixed address
 	_NICS_NAME=""						# nic if name   (ex. ens160)
 	_NICS_MADR=""						# nic if mac    (ex. 00:00:00:00:00:00)
+	_NICS_AUTO=""						# ipv4 dhcp     (ex. empty or dhcp)
 	_NICS_IPV4=""						# ipv4 address  (ex. 192.168.1.1)
 	_NICS_MASK=""						# ipv4 netmask  (ex. 255.255.255.0)
 	_NICS_BIT4=""						# ipv4 cidr     (ex. 24)
@@ -114,7 +114,8 @@
 	_DIRS_TFTP=""						# tftp contents
 	_DIRS_USER=""						# user file
 	# --- shared of user file -------------------------------------------------
-	_DIRS_SHAR=""						# shared of user file
+	_DIRS_PVAT=""						# private contents directory
+	_DIRS_SHAR=""						# shared contents directory
 	_DIRS_CONF=""						# configuration file
 	_DIRS_DATA=""						# data file
 	_DIRS_KEYS=""						# keyring file
@@ -165,6 +166,351 @@ fnDbgout() {
 		shift
 	done
 	fnMsgout "-debugout" "${___ENDS}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: message output
+#   input :     $1     : section (start, complete, remove, umount, failed, ...)
+#   input :     $2     : message
+#   output:   stdout   : message
+#   return:            : unused
+#   g-var : _PROG_NAME : read
+fnMsgout() {
+	case "${1:-}" in
+		start    | complete)
+			case "${2:-}" in
+				*/*/*) printf "\033[m${_PROG_NAME:-}: \033[45m--- %-8.8s: %s ---\033[m\n" "${1:-}" "${2:-}";; # date
+				*    ) printf "\033[m${_PROG_NAME:-}: \033[92m--- %-8.8s: %s ---\033[m\n" "${1:-}" "${2:-}";; # info
+			esac
+			;;
+		skip               ) printf "\033[m${_PROG_NAME:-}: \033[92m--- %-8.8s: %s ---\033[m\n"    "${1:-}" "${2:-}";; # info
+		remove   | umount  ) printf "\033[m${_PROG_NAME:-}:     \033[93m%-8.8s: %s\033[m\n"        "${1:-}" "${2:-}";; # warn
+		archive            ) printf "\033[m${_PROG_NAME:-}:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${1:-}" "${2:-}";; # warn
+		success            ) printf "\033[m${_PROG_NAME:-}:     \033[92m%-8.8s: %s\033[m\n"        "${1:-}" "${2:-}";; # info
+		failed             ) printf "\033[m${_PROG_NAME:-}:     \033[41m%-8.8s: %s\033[m\n"        "${1:-}" "${2:-}";; # alert
+		caution            ) printf "\033[m${_PROG_NAME:-}:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${1:-}" "${2:-}";; # warn
+		-*                 ) printf "\033[m${_PROG_NAME:-}:     \033[36m%-8.8s: %s\033[m\n"        "${1#-}" "${2:-}";; # gap
+		info               ) printf "\033[m${_PROG_NAME:-}: \033[92m%12.12s: %s\033[m\n"           "${1:-}" "${2:-}";; # info
+		warn               ) printf "\033[m${_PROG_NAME:-}: \033[93m%12.12s: %s\033[m\n"           "${1:-}" "${2:-}";; # warn
+		alert              ) printf "\033[m${_PROG_NAME:-}: \033[91m%12.12s: %s\033[m\n"           "${1:-}" "${2:-}";; # alert
+		*                  ) printf "\033[m${_PROG_NAME:-}: \033[37m%12.12s: %s\033[m\n"           "${1:-}" "${2:-}";; # normal
+	esac
+}
+
+# -----------------------------------------------------------------------------
+# descript: string output
+#   input :     $1     : count
+#   input :     $2     : character
+#   output:   stdout   : output
+#   return:            : unused
+#   g-var : _TGET_VIRT : write
+fnString() {
+	printf "%${1:-80}s" "" | tr ' ' "${2:- }"
+}
+
+# -----------------------------------------------------------------------------
+# descript: string output with message
+#   input :     $1     : gaps
+#   input :     $2     : message
+#   output:   stdout   : output
+#   return:            : unused
+#   g-var : _TGET_VIRT : write
+fnStrmsg() {
+	___TXT1="$(echo "${1:-}" | cut -c -3)"
+	___TXT2="$(echo "${1:-}" | cut -c "$((${#___TXT1}+2+${#2}+1))"-)"
+	printf "%s %s %s" "${___TXT1}" "${2:-}" "${___TXT2}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: IPv6 full address
+#   input :     $1     : value
+#   input :     $2     : format (not empty: zero padding)
+#   output:   stdout   : output
+#   return:            : unused
+#   g-var :            : unused
+fnIPv6FullAddr() {
+	___ADDR="${1:?}"
+	___FMAT="${2:+"%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x"}"
+	echo "${___ADDR}" |
+		awk -F '/' '{
+			str=$1
+			gsub("[^:]","",str)
+			sep=""
+			for (i=1;i<=7-length(str)+2;i++) {
+				sep=sep":"
+			}
+			str=$1
+			gsub("::",sep,str)
+			split(str,arr,":")
+			for (i=0;i<length(arr);i++) {
+				num[i]=strtonum("0x"arr[i])
+			}
+			printf "'"${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}"'",
+			num[1],num[2],num[3],num[4],num[5],num[6],num[7],num[8]
+		}'
+#	___SPRT="$(echo "${___ADDR}" | sed -e 's/[^:]//g')"
+#	___LENG=$((7-${#___SPRT}))
+#	if [ "${___LENG}" -gt 0 ]; then
+#		___SPRT="$(printf ':%.s' $(seq 1 $((___LENG+2))) || true)"
+#		___ADDR="$(echo "${___ADDR}" | sed -e "s/::/${___SPRT}/")"
+#	fi
+#	___OCT1="$(echo "${___ADDR}" | cut -d ':' -f 1)"
+#	___OCT2="$(echo "${___ADDR}" | cut -d ':' -f 2)"
+#	___OCT3="$(echo "${___ADDR}" | cut -d ':' -f 3)"
+#	___OCT4="$(echo "${___ADDR}" | cut -d ':' -f 4)"
+#	___OCT5="$(echo "${___ADDR}" | cut -d ':' -f 5)"
+#	___OCT6="$(echo "${___ADDR}" | cut -d ':' -f 6)"
+#	___OCT7="$(echo "${___ADDR}" | cut -d ':' -f 7)"
+#	___OCT8="$(echo "${___ADDR}" | cut -d ':' -f 8)"
+#	printf "${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}" \
+#	    "0x${___OCT1:-"0"}" \
+#	    "0x${___OCT2:-"0"}" \
+#	    "0x${___OCT3:-"0"}" \
+#	    "0x${___OCT4:-"0"}" \
+#	    "0x${___OCT5:-"0"}" \
+#	    "0x${___OCT6:-"0"}" \
+#	    "0x${___OCT7:-"0"}" \
+#	    "0x${___OCT8:-"0"}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: IPv6 reverse address
+#   input :     $1     : value
+#   output:   stdout   : output
+#   return:            : unused
+#   g-var :            : unused
+fnIPv6RevAddr() {
+	echo "${1:?}" |
+	    awk 'gsub(":","") {
+	        for(i=length();i>1;i--)
+	            printf("%c.", substr($0,i,1))
+	            printf("%c" , substr($0,1,1))
+			}'
+}
+
+# -----------------------------------------------------------------------------
+# descript: IPv4 netmask conversion
+#   input :     $1     : value (nn or nnn.nnn.nnn.nnn)
+#   output:   stdout   : output
+#   return:            : unused
+#   g-var :            : unused
+# --- private ip address ------------------------------------------------------
+# class | ipv4 address range            | subnet mask range
+#   a   | 10.0.0.0    - 10.255.255.255  | 255.0.0.0     - 255.255.255.255 (up to 16,777,214 devices can be connected)
+#   b   | 172.16.0.0  - 172.31.255.255  | 255.255.0.0   - 255.255.255.255 (up to     65,534 devices can be connected)
+#   c   | 192.168.0.0 - 192.168.255.255 | 255.255.255.0 - 255.255.255.255 (up to        254 devices can be connected)
+fnIPv4Netmask() {
+	echo "${1:?}" |
+		awk -F '.' '{
+			if (NF==1) {
+				n=lshift(0xFFFFFFFF,32-$1)
+				printf "%d.%d.%d.%d",
+					and(rshift(n,24),0xFF),
+					and(rshift(n,16),0xFF),
+					and(rshift(n,8),0xFF),
+					and(n,0xFF)
+			} else {
+				h=xor(0xFFFFFFFF,lshift($1,24)+lshift($2,16)+lshift($3,8)+$4)
+				n=32
+				if (h>0) {
+					n-=int(log(h)/log(2)+1)
+				}
+				printf "%d",n
+			}
+		}'
+}
+
+# -----------------------------------------------------------------------------
+# descript: detecting target virtualization
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+#   g-var : _TGET_VIRT : write
+fnDetect_virt() {
+	if ! command -v systemd-detect-virt > /dev/null 2>&1; then
+		return
+	fi
+	_TGET_VIRT="$(systemd-detect-virt || true)"
+	readonly _TGET_VIRT
+}
+
+# -----------------------------------------------------------------------------
+# descript: get system parameter
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+#   g-var : _DIRS_TGET : read
+#   g-var : _DIST_NAME : write
+#   g-var : _DIST_VERS : write
+#   g-var : _DIST_CODE : write
+fnSystem_param() {
+	if [ -e "${_DIRS_TGET:-}"/etc/os-release ]; then
+		___PATH="${_DIRS_TGET:-}/etc/os-release"
+		_DIST_NAME="$(sed -ne 's/^ID=//p'                                "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
+		_DIST_VERS="$(sed -ne 's/^VERSION=\"\([[:graph:]]\+\).*\"$/\1/p' "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
+		_DIST_CODE="$(sed -ne 's/^VERSION_CODENAME=//p'                  "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
+	elif [ -e "${_DIRS_TGET:-}"/etc/lsb-release ]; then
+		___PATH="${_DIRS_TGET:-}/etc/lsb-release"
+		_DIST_NAME="$(sed -ne 's/DISTRIB_ID=//p'                                     "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
+		_DIST_VERS="$(sed -ne 's/DISTRIB_RELEASE=\"\([[:graph:]]\+\)[ \t].*\"$/\1/p' "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
+		_DIST_CODE="$(sed -ne 's/^VERSION=\".*(\([[:graph:]]\+\)).*\"$/\1/p'         "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
+	fi
+	_DIST_NAME="${_DIST_NAME#\"}"
+	_DIST_NAME="${_DIST_NAME%\"}"
+	readonly _DIST_NAME
+	readonly _DIST_CODE
+	readonly _DIST_VERS
+}
+
+# -----------------------------------------------------------------------------
+# descript: get network parameter
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+#   g-var : _DIRS_TGET : read
+#   g-var : _NICS_NAME : write
+#   g-var : _DIST_VERS : write
+#   g-var : _DIST_CODE : write
+fnNetwork_param() {
+	___DIRS="${_DIRS_TGET:-}/sys/devices"
+	_NICS_NAME="${_NICS_NAME:-"ens160"}"
+	if [ ! -e "${___DIRS}"/. ]; then
+		fnMsgout "caution" "not exist: [${___DIRS}]"
+	else
+		if [ -z "${_NICS_NAME#*"*"}" ]; then
+#			_NICS_NAME="$(find "${___DIRS}" -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -E "${_NICS_NAME}" | sort | head -n 1)"
+			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' -not -path '*/virtual/*' -prune -name "${_NICS_NAME}" -printf "%f" | sort | head -n 1)"
+		fi
+#		if ! find "${___DIRS}" -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -qE '^'"${_NICS_NAME}"'$'; then
+		if ! find "${___DIRS}" -path '*/net/*' -not -path '*/virtual/*' -prune -name "${_NICS_NAME}" -printf "%f" | grep -qE '^'"${_NICS_NAME}"'$'; then
+			fnMsgout "failed" "not exist: [${_NICS_NAME}]"
+		else
+			_NICS_MADR="${_NICS_MADR:-"$(ip -0 -brief address show dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}' || true)"}"
+			_NICS_IPV4="${_NICS_IPV4:-"$(ip -4 -brief address show dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}' || true)"}"
+			if ip -4 -oneline address show dev "${_NICS_NAME}" 2> /dev/null | grep -qE '[ \t]dynamic[ \t]'; then
+				_NICS_AUTO="dhcp"
+			fi
+			if [ -z "${_NICS_DNS4:-}" ] || [ -z "${_NICS_WGRP:-}" ]; then
+				if command -v resolvectl > /dev/null 2>&1; then
+					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/^Global:/            s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
+					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
+					_NICS_WGRP="${_NICS_WGRP:-"$(resolvectl domain 2> /dev/null | sed -ne '/^Global:/            s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
+					_NICS_WGRP="${_NICS_WGRP:-"$(resolvectl domain 2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
+				fi
+				___PATH="${_DIRS_TGET:-}/etc/resolv.conf"
+				if [ -e "${___PATH}" ]; then
+					_NICS_DNS4="${_NICS_DNS4:-"$(sed -ne '/^nameserver/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' "${___PATH}")"}"
+					_NICS_WGRP="${_NICS_WGRP:-"$(sed -ne '/^search/     s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p'                      "${___PATH}")"}"
+				fi
+			fi
+			_IPV6_ADDR="$(ip -6 -brief address show primary dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}')"
+			_LINK_ADDR="$(ip -6 -brief address show primary dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $4;}')"
+		fi
+	fi
+	__WORK="$(echo "${_NICS_IPV4:-}" | sed 's/[^0-9./]\+//g')"
+	_NICS_IPV4="$(echo "${__WORK}/" | cut -d '/' -f 1)"
+	_NICS_BIT4="$(echo "${__WORK}/" | cut -d '/' -f 2)"
+	if [ -z "${_NICS_BIT4}" ]; then
+		_NICS_BIT4="$(fnIPv4Netmask "${_NICS_MASK:-"255.255.255.0"}")"
+	else
+		_NICS_MASK="$(fnIPv4Netmask "${_NICS_BIT4:-"24"}")"
+	fi
+	_NICS_GATE="${_NICS_GATE:-"$(ip -4 -brief route list match default | awk '{print $3;}' | uniq)"}"
+	_NICS_FQDN="${_NICS_FQDN:-"$(cat "${_DIRS_TGET:-}/etc/hostname" || true)"}"
+	_NICS_HOST="${_NICS_HOST:-"$(echo "${_NICS_FQDN}." | cut -d '.' -f 1)"}"
+	_NICS_WGRP="${_NICS_WGRP:-"$(echo "${_NICS_FQDN}." | cut -d '.' -f 2)"}"
+	_NICS_HOST="$(echo "${_NICS_HOST}" | tr '[:upper:]' '[:lower:]')"
+	_NICS_WGRP="$(echo "${_NICS_WGRP}" | tr '[:upper:]' '[:lower:]')"
+	if [ "${_NICS_FQDN}" = "${_NICS_HOST}" ] && [ -n "${_NICS_HOST}" ] && [ -n "${_NICS_WGRP}" ]; then
+		_NICS_FQDN="${_NICS_HOST}.${_NICS_WGRP}"
+	fi
+	_IPV6_ADDR="${_IPV6_ADDR:-"2000::0/3"}"
+	_LINK_ADDR="${_LINK_ADDR:-"fe80::0/10"}"
+	_IPV4_UADR="${_NICS_IPV4%.*}"
+	_IPV4_LADR="${_NICS_IPV4#"${_IPV4_UADR:-"*"}."}"
+	_IPV6_CIDR="${_IPV6_ADDR##*/}"
+	_IPV6_ADDR="${_IPV6_ADDR%/"${_IPV6_CIDR:-"*"}"}"
+	_IPV6_FADR="$(fnIPv6FullAddr "${_IPV6_ADDR:-}" "true")"
+	_IPV6_UADR="$(echo "${_IPV6_FADR:-}" | cut -d ':' -f 1-4 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
+	_IPV6_LADR="$(echo "${_IPV6_FADR:-}" | cut -d ':' -f 5-8 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
+	_IPV6_RADR="$(fnIPv6RevAddr "${_IPV6_FADR:-}")"
+	_LINK_CIDR="${_LINK_ADDR##*/}"
+	_LINK_ADDR="${_LINK_ADDR%/"${_LINK_CIDR:-"*"}"}"
+	_LINK_FADR="$(fnIPv6FullAddr "${_LINK_ADDR:-}" "true")"
+	_LINK_UADR="$(echo "${_LINK_FADR:-}" | cut -d ':' -f 1-4 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
+	_LINK_LADR="$(echo "${_LINK_FADR:-}" | cut -d ':' -f 5-8 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
+	_LINK_RADR="$(fnIPv6RevAddr "${_LINK_FADR:-}")"
+	readonly _NICS_NAME
+	readonly _NICS_MADR
+	readonly _NICS_IPV4
+	readonly _NICS_MASK
+	readonly _NICS_BIT4
+	readonly _NICS_DNS4
+	readonly _NICS_GATE
+	readonly _NICS_FQDN
+	readonly _NICS_HOST
+	readonly _NICS_WGRP
+	readonly _NMAN_FLAG
+	readonly _NTPS_ADDR
+	readonly _NTPS_IPV4
+	readonly _IPV6_LHST
+	readonly _IPV4_LHST
+	readonly _IPV4_DUMY
+	readonly _IPV4_UADR
+	readonly _IPV4_LADR
+	readonly _IPV6_ADDR
+	readonly _IPV6_CIDR
+	readonly _IPV6_FADR
+	readonly _IPV6_UADR
+	readonly _IPV6_LADR
+	readonly _IPV6_RADR
+	readonly _LINK_ADDR
+	readonly _LINK_CIDR
+	readonly _LINK_FADR
+	readonly _LINK_UADR
+	readonly _LINK_LADR
+	readonly _LINK_RADR
+}
+
+# -----------------------------------------------------------------------------
+# descript: file backup
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+#   g-var : _DIRS_TGET : read
+#   g-var : _DIRS_SAMP : read
+#   g-var : _DIRS_INIT : read
+#   g-var : _DIRS_ORIG : read
+# --- file backup -------------------------------------------------------------
+fnFile_backup() {
+	___PATH="${1:?}"
+	___MODE="${2:-}"
+	# --- check ---------------------------------------------------------------
+	if [ ! -e "${___PATH}" ]; then
+		fnMsgout "caution" "not exist: [${___PATH}]"
+		mkdir -p "${___PATH%/*}"
+		___REAL="$(realpath --canonicalize-missing "${___PATH}")"
+		if [ ! -e "${___REAL}" ]; then
+			mkdir -p "${___REAL%/*}"
+		fi
+		: > "${___PATH}"
+	fi
+	# --- backup --------------------------------------------------------------
+	case "${___MODE:-}" in
+		samp) ___DIRS="${_DIRS_SAMP:-}";;
+		init) ___DIRS="${_DIRS_INIT:-}";;
+		*   ) ___DIRS="${_DIRS_ORIG:-}";;
+	esac
+	___DIRS="${_DIRS_TGET:-}${___DIRS}"
+	___BACK="${___PATH#"${_DIRS_TGET:-}/"}"
+	___BACK="${___DIRS}/${___BACK#/}"
+	mkdir -p "${___BACK%/*}"
+	chmod 600 "${___DIRS%/*}"
+	if [ -e "${___BACK}" ] || [ -L "${___BACK}" ]; then
+		___BACK="${___BACK}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
+	fi
+	fnMsgout "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
+	cp -a "${___PATH}" "${___BACK}"
 }
 
 # *** function section (subroutine functions) *********************************
@@ -222,6 +568,7 @@ fnDbgout() {
 #   g-var : _DIRS_SAMB : write
 #   g-var : _DIRS_TFTP : write
 #   g-var : _DIRS_USER : write
+#   g-var : _DIRS_PVAT : write
 #   g-var : _DIRS_SHAR : write
 #   g-var : _DIRS_CONF : write
 #   g-var : _DIRS_DATA : write
@@ -336,7 +683,8 @@ fnInitialize() {
 	readonly _DIRS_SAMB="${_DIRS_TOPS}/samba"			# samba shared
 	readonly _DIRS_TFTP="${_DIRS_TOPS}/tftp"			# tftp contents
 	readonly _DIRS_USER="${_DIRS_TOPS}/user"			# user file
-	readonly _DIRS_SHAR="${_DIRS_USER}/share"			# shared of user file
+	readonly _DIRS_PVAT="${_DIRS_USER}/private"			# private contents directory
+	readonly _DIRS_SHAR="${_DIRS_USER}/share"			# shared contents directory
 	readonly _DIRS_CONF="${_DIRS_SHAR}/conf"			# configuration file
 	readonly _DIRS_DATA="${_DIRS_CONF}/_data"			# data file
 	readonly _DIRS_KEYS="${_DIRS_CONF}/_keyring"		# keyring file
@@ -357,6 +705,7 @@ fnInitialize() {
 		"debug,_DIRS_SAMB=[${_DIRS_SAMB:-}]" \
 		"debug,_DIRS_TFTP=[${_DIRS_TFTP:-}]" \
 		"debug,_DIRS_USER=[${_DIRS_USER:-}]" \
+		"debug,_DIRS_PVAT=[${_DIRS_PVAT:-}]" \
 		"debug,_DIRS_SHAR=[${_DIRS_SHAR:-}]" \
 		"debug,_DIRS_CONF=[${_DIRS_CONF:-}]" \
 		"debug,_DIRS_DATA=[${_DIRS_DATA:-}]" \
@@ -374,7 +723,7 @@ fnInitialize() {
 
 	# --- working directory parameter -----------------------------------------
 										# top of working directory
-	_DIRS_INST="${_DIRS_TGET:-}${_DIRS_VADM:?}/${_PROG_NAME%%_*}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
+	_DIRS_INST="${_DIRS_VADM:?}/${_PROG_NAME%%_*}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
 	readonly _DIRS_INST							# auto-install working directory
 	readonly _DIRS_BACK="${_DIRS_INST}"			# top of backup directory
 	readonly _DIRS_ORIG="${_DIRS_BACK}/orig"	# original file directory
@@ -390,7 +739,7 @@ fnInitialize() {
 		"debug,_DIRS_SAMP=[${_DIRS_SAMP:-}]" \
 		"debug,_DIRS_LOGS=[${_DIRS_LOGS:-}]" \
 
-	find "${_DIRS_VADM:?}" -name "${_PROG_NAME%%_*}.[0-9]*" -type d | sort -r | tail -n +3 | \
+	find "${_DIRS_TGET:-}${_DIRS_VADM:?}" -name "${_PROG_NAME%%_*}.[0-9]*" -type d | sort -r | tail -n +3 | \
 	while read -r __TGET
 	do
 		__PATH="${__TGET}.tgz"
@@ -401,8 +750,8 @@ fnInitialize() {
 			rm -rf "${__TGET:?}"
 		fi
 	done
-	mkdir -p "${_DIRS_INST:?}"
-	chmod 600 "${_DIRS_INST:?}"
+	mkdir -p "${_DIRS_TGET:-}${_DIRS_INST:?}"
+	chmod 600 "${_DIRS_TGET:-}${_DIRS_INST:?}"
 
 	# --- samba ---------------------------------------------------------------
 	fnDbgout "samba info" \

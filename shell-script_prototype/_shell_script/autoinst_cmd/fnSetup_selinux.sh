@@ -25,7 +25,7 @@ fnSetup_selinux() {
 		done
 	done
 	# --- application ---------------------------------------------------------
-	semanage fcontext -a -t var_t                "${_DIRS_SRVR}(/.*)?" || true	# root of shared directory
+	semanage fcontext -a -t var_t                "${_DIRS_SHAR}(/.*)?" || true	# root of shared directory
 	semanage fcontext -a -t fusefs_t             "${_DIRS_HGFS}(/.*)?" || true	# root of hgfs shared directory
 	semanage fcontext -a -t httpd_user_content_t "${_DIRS_HTML}(/.*)?" || true	# root of html shared directory
 	semanage fcontext -a -t samba_share_t        "${_DIRS_SAMB}(/.*)?" || true	# root of samba shared directory

@@ -31,7 +31,7 @@ fnSetup_firewalld() {
 	# --- firewalld -----------------------------------------------------------
 	__ORIG="$(find "${_DIRS_TGET:-}"/lib/firewalld/zones/ "${_DIRS_TGET:-}"/usr/lib/firewalld/zones/ -name 'drop.xml' | sort | head -n 1)"
 	__PATH="${_DIRS_TGET:-}/etc/firewalld/zones/${_FWAL_ZONE}.xml"
-	cp --preserve=timestampsa "${_WORK_PATH}" "${_FILE_PATH}"
+	cp --preserve=timestampsa "${__ORIG}" "${__PATH}"
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
 	cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
