@@ -1,0 +1,41 @@
+# shellcheck disable=SC2148
+
+# -----------------------------------------------------------------------------
+# descript: clean device
+#   input :     $1     : device name
+#   output:   stdout   : message
+#   return:            : unused
+#   g-var :            : unused
+# shellcheck disable=SC2148,SC2317,SC2329
+fnClean_device() {
+	__FUNC_NAME="fnClean_device"
+	fnMsgout "start" "[${__FUNC_NAME}]"
+
+	__DEVS="${1:-}"
+	# --- remove lvm ----------------------------------------------------------
+	if [ -n "${__DEVS:-}" ]; then
+		if ! command -v pvs > /dev/null 2>&1; then
+			for __LINE in $(pvs --noheading --separator '|' | cut -d '|' -f 1-2 | grep "${__DEVS}" | sort -u)
+			do
+				__NAME="${__LINE#*\|}"		# vg
+				fnMsgout "remove" "vg=[${__NAME}]"
+				lvremove -q -y -ff "${__NAME}"
+			done
+			for __LINE in $(pvs --noheading --separator '|' | cut -d '|' -f 1-2 | grep "${__DEVS}" | sort -u)
+			do
+				__NAME="${__LINE%\|*}"		# pv
+				fnMsgout "remove" "pv=[${__NAME}]"
+				pvremove -q -y -ff "${__NAME}"
+			done
+		fi
+		# --- cleaning the device ---------------------------------------------
+		dd if=/dev/zero of="/dev/${__DEVS}" bs=1M count=10
+	fi
+	# --- unmount -------------------------------------------------------------
+	if mount | grep -q '/media'; then
+		umount /media || umount -l /media || true
+	fi
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "complete" "[${__FUNC_NAME}]" 
+}

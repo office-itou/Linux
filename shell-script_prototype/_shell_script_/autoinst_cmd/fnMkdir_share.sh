@@ -91,7 +91,7 @@ fnMkdir_share(){
 	mkdir -p "${_DIRS_CHRT:?}"
 
 	# --- change file mode ----------------------------------------------------
-	chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_SAMB}/"*
+	chown -R "${_SAMB_USER}":"${_SAMB_GRUP}" "${_DIRS_SAMB}/"*
 	chmod -R  770 "${_DIRS_SAMB}/"*
 	chmod    1777 "${_DIRS_SAMB}/adm/profiles"
 

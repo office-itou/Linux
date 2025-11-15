@@ -53,7 +53,6 @@
 #   g-var : _DIRS_SAMB : write
 #   g-var : _DIRS_TFTP : write
 #   g-var : _DIRS_USER : write
-#   g-var : _DIRS_PVAT : write
 #   g-var : _DIRS_SHAR : write
 #   g-var : _DIRS_CONF : write
 #   g-var : _DIRS_DATA : write
@@ -92,26 +91,13 @@ fnInitialize() {
 	readonly _ROWS_SIZE
 	readonly _COLS_SIZE
 
-	__COLS="${_COLS_SIZE}"
-	[ -n "${_PROG_NAME:-}" ] && __COLS=$((_COLS_SIZE-${#_PROG_NAME}-16))
-	_TEXT_GAP1="$(fnString "${__COLS:-"${_COLS_SIZE}"}" '-')"
-	_TEXT_GAP2="$(fnString "${__COLS:-"${_COLS_SIZE}"}" '=')"
-	unset __COLS
+	_TEXT_GAP1="$(fnString "$((_COLS_SIZE-${#_PROG_NAME}-16))" '-')"
+	_TEXT_GAP2="$(fnString "$((_COLS_SIZE-${#_PROG_NAME}-16))" '=')"
 	readonly _TEXT_GAP1
 	readonly _TEXT_GAP2
 
 	# --- target virtualization -----------------------------------------------
 	fnDetect_virt
-
-	_DIRS_TGET=""
-	for __DIRS in \
-		/target \
-		/mnt/sysimage/root \
-		/mnt/root
-	do
-		[ ! -e "${__DIRS}"/. ] && continue
-		_DIRS_TGET="${__DIRS}"
-	done
 
 	# --- system parameter ----------------------------------------------------
 	fnSystem_param
@@ -169,8 +155,7 @@ fnInitialize() {
 	readonly _DIRS_SAMB="${_DIRS_TOPS}/samba"			# samba shared
 	readonly _DIRS_TFTP="${_DIRS_TOPS}/tftp"			# tftp contents
 	readonly _DIRS_USER="${_DIRS_TOPS}/user"			# user file
-	readonly _DIRS_PVAT="${_DIRS_USER}/private"			# private contents directory
-	readonly _DIRS_SHAR="${_DIRS_USER}/share"			# shared contents directory
+	readonly _DIRS_SHAR="${_DIRS_USER}/share"			# shared of user file
 	readonly _DIRS_CONF="${_DIRS_SHAR}/conf"			# configuration file
 	readonly _DIRS_DATA="${_DIRS_CONF}/_data"			# data file
 	readonly _DIRS_KEYS="${_DIRS_CONF}/_keyring"		# keyring file
@@ -191,7 +176,6 @@ fnInitialize() {
 		"debug,_DIRS_SAMB=[${_DIRS_SAMB:-}]" \
 		"debug,_DIRS_TFTP=[${_DIRS_TFTP:-}]" \
 		"debug,_DIRS_USER=[${_DIRS_USER:-}]" \
-		"debug,_DIRS_PVAT=[${_DIRS_PVAT:-}]" \
 		"debug,_DIRS_SHAR=[${_DIRS_SHAR:-}]" \
 		"debug,_DIRS_CONF=[${_DIRS_CONF:-}]" \
 		"debug,_DIRS_DATA=[${_DIRS_DATA:-}]" \
@@ -209,23 +193,29 @@ fnInitialize() {
 
 	# --- working directory parameter -----------------------------------------
 										# top of working directory
-	_DIRS_INST="${_DIRS_VADM:?}/${_PROG_NAME%%_*}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
-	readonly _DIRS_INST							# auto-install working directory
-	readonly _DIRS_BACK="${_DIRS_INST}"			# top of backup directory
+	_DIRS_BACK="${_DIRS_TGET:-}/var/adm/${_PROG_NAME%%_*}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
+	readonly _DIRS_BACK
 	readonly _DIRS_ORIG="${_DIRS_BACK}/orig"	# original file directory
 	readonly _DIRS_INIT="${_DIRS_BACK}/init"	# initial file directory
 	readonly _DIRS_SAMP="${_DIRS_BACK}/samp"	# sample file directory
 	readonly _DIRS_LOGS="${_DIRS_BACK}/logs"	# log file directory
 	fnDbgout "working directory" \
-		"debug,_DIRS_VADM=[${_DIRS_VADM:-}]" \
-		"debug,_DIRS_INST=[${_DIRS_INST:-}]" \
-		"debug,_DIRS_BACK=[${_DIRS_BACK:-}]" \
 		"debug,_DIRS_ORIG=[${_DIRS_ORIG:-}]" \
 		"debug,_DIRS_INIT=[${_DIRS_INIT:-}]" \
 		"debug,_DIRS_SAMP=[${_DIRS_SAMP:-}]" \
 		"debug,_DIRS_LOGS=[${_DIRS_LOGS:-}]" \
 
-	find "${_DIRS_TGET:-}${_DIRS_VADM:?}" -name "${_PROG_NAME%%_*}.[0-9]*" -type d | sort -r | tail -n +3 | \
+	# --- samba ---------------------------------------------------------------
+	fnDbgout "samba info" \
+		"debug,_SAMB_USER=[${_SAMB_USER:-}]" \
+		"debug,_SAMB_GRUP=[${_SAMB_GRUP:-}]" \
+		"debug,_SAMB_GADM=[${_SAMB_GADM:-}]" \
+		"debug,_SHEL_NLIN=[${_SHEL_NLIN:-}]"
+
+	# --- debug backup---------------------------------------------------------
+	__DIRS="${_DIRS_BACK##*/}"
+	__DIRS="${__DIRS%%.[0-9]*}"
+	find "${_DIRS_BACK%/*}" -name "${_PROG_NAME%%_*}.[0-9]*" -type d | sort -r | tail -n +3 | \
 	while read -r __TGET
 	do
 		__PATH="${__TGET}.tgz"
@@ -236,17 +226,6 @@ fnInitialize() {
 			rm -rf "${__TGET:?}"
 		fi
 	done
-	mkdir -p "${_DIRS_TGET:-}${_DIRS_INST:?}"
-	chmod 600 "${_DIRS_TGET:-}${_DIRS_INST:?}"
-
-	# --- samba ---------------------------------------------------------------
-	fnDbgout "samba info" \
-		"debug,_SAMB_USER=[${_SAMB_USER:-}]" \
-		"debug,_SAMB_GRUP=[${_SAMB_GRUP:-}]" \
-		"debug,_SAMB_GADM=[${_SAMB_GADM:-}]" \
-		"debug,_SHEL_NLIN=[${_SHEL_NLIN:-}]"
-
-	# --- debug backup---------------------------------------------------------
 	fnFile_backup "/proc/cmdline"
 	fnFile_backup "/proc/mounts"
 	fnFile_backup "/proc/self/mounts"

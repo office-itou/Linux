@@ -1,37 +1,36 @@
 #!/bin/bash
 
-	declare -r    _SHEL_TOPS="${_PROG_DIRS:?}"
-	declare -r    _SHEL_COMN="${_PROG_DIRS:?}/../_common_sh"
+	declare -r    _SHEL_TOPS="${0%/*}"
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnGlobal_early.sh
+	source "${_SHEL_TOPS:?}"/common/fnGlobal_early.sh
 
 # *** function section (common functions) *************************************
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnDebugout.sh
+	source "${_SHEL_TOPS:?}"/common/fnDebugout.sh
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnDebugout_parameters.sh
+	source "${_SHEL_TOPS:?}"/common/fnDebugout_parameters.sh
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnDebugout_list.sh
+	source "${_SHEL_TOPS:?}"/common/fnDebugout_list.sh
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnDebugout_allparameters.sh
+	source "${_SHEL_TOPS:?}"/common/fnDebugout_allparameters.sh
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnMsgout.sh
+	source "${_SHEL_TOPS:?}"/common/fnMsgout.sh
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnTrap.sh
+	source "${_SHEL_TOPS:?}"/common/fnTrap.sh
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnExec_backup.sh
+	source "${_SHEL_TOPS:?}"/common/fnExec_backup.sh
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnGet_conf_data.sh
+	source "${_SHEL_TOPS:?}"/common/fnGet_conf_data.sh
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnSet_conf_data.sh
+	source "${_SHEL_TOPS:?}"/common/fnSet_conf_data.sh
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnGet_media_data.sh
+	source "${_SHEL_TOPS:?}"/common/fnGet_media_data.sh
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnPut_media_data.sh
+	source "${_SHEL_TOPS:?}"/common/fnPut_media_data.sh
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnSet_media_data.sh
+	source "${_SHEL_TOPS:?}"/common/fnSet_media_data.sh
 
 	# === main ================================================================
 
@@ -70,7 +69,7 @@ function fnMain() {
 }
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_TOPS}"/template/fnHelp.sh
+	source "${_SHEL_TOPS:?}"/template/fnHelp.sh
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnGlobal_late.sh
+	source "${_SHEL_TOPS:?}"/common/fnGlobal_late.sh
