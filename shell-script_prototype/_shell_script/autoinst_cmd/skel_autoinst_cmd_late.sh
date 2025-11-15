@@ -125,8 +125,6 @@
 	# shellcheck source=/dev/null
 	. "${_SHEL_TOPS}"/fnSetup_selinux.sh					# selinux
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_ipfilter.sh					# ipfilter
-	# shellcheck source=/dev/null
 	. "${_SHEL_TOPS}"/fnSetup_grub_menu.sh					# grub menu settings
 
 # *** main section ************************************************************
