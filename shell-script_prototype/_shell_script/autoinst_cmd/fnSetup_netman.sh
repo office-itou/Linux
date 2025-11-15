@@ -1,4 +1,4 @@
-### shellcheck disable=SC2148
+# shellcheck disable=SC2148
 
 # -----------------------------------------------------------------------------
 # descript: network manager

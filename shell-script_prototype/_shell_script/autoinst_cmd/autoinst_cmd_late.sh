@@ -1198,7 +1198,6 @@ _EOT_
 	fnMsgout "complete" "[${__FUNC_NAME}]" 
 }
 
-### shellcheck disable=SC2148
 # -----------------------------------------------------------------------------
 # descript: network manager
 #   input :            : unused
