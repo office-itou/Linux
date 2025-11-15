@@ -223,6 +223,7 @@ function funcCreate() {
 					while IFS= read -r __TEXT
 					do
 						case "${__TEXT#"${__TEXT%%[!"${IFS}"]*}"}" in
+							"#"[${IFS}]*"g-var"[${IFS}]*                ) continue;;
 							"#"[${IFS}]*"shellcheck"[${IFS}]*"source="* ) continue;;
 							"#"[${IFS}]*"shellcheck"[${IFS}]*"disable="*) continue;;
 							"#"[${IFS}]*) __FLAG="true";;

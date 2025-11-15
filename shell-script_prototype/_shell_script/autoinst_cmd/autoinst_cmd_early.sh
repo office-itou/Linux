@@ -151,8 +151,6 @@
 #   input :     $@     : list
 #   output:   stdout   : message
 #   return:            : unused
-#   g-var : _DBGS_FLAG : read
-#   g-var : _TEXT_GAP1 : read
 fnDbgout() {
 	___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${1:-}")"
 	___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${1:-}")"
@@ -174,7 +172,6 @@ fnDbgout() {
 #   input :     $2     : message
 #   output:   stdout   : message
 #   return:            : unused
-#   g-var : _PROG_NAME : read
 fnMsgout() {
 	case "${1:-}" in
 		start    | complete)
@@ -203,7 +200,6 @@ fnMsgout() {
 #   input :     $2     : character
 #   output:   stdout   : output
 #   return:            : unused
-#   g-var : _TGET_VIRT : write
 fnString() {
 	printf "%${1:-80}s" "" | tr ' ' "${2:- }"
 }
@@ -214,7 +210,6 @@ fnString() {
 #   input :     $2     : message
 #   output:   stdout   : output
 #   return:            : unused
-#   g-var : _TGET_VIRT : write
 fnStrmsg() {
 	___TXT1="$(echo "${1:-}" | cut -c -3)"
 	___TXT2="$(echo "${1:-}" | cut -c "$((${#___TXT1}+2+${#2}+1))"-)"
@@ -227,7 +222,6 @@ fnStrmsg() {
 #   input :     $2     : format (not empty: zero padding)
 #   output:   stdout   : output
 #   return:            : unused
-#   g-var :            : unused
 fnIPv6FullAddr() {
 	___ADDR="${1:?}"
 	___FMAT="${2:+"%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x"}"
@@ -278,7 +272,6 @@ fnIPv6FullAddr() {
 #   input :     $1     : value
 #   output:   stdout   : output
 #   return:            : unused
-#   g-var :            : unused
 fnIPv6RevAddr() {
 	echo "${1:?}" |
 	    awk 'gsub(":","") {
@@ -293,7 +286,6 @@ fnIPv6RevAddr() {
 #   input :     $1     : value (nn or nnn.nnn.nnn.nnn)
 #   output:   stdout   : output
 #   return:            : unused
-#   g-var :            : unused
 # --- private ip address ------------------------------------------------------
 # class | ipv4 address range            | subnet mask range
 #   a   | 10.0.0.0    - 10.255.255.255  | 255.0.0.0     - 255.255.255.255 (up to 16,777,214 devices can be connected)
@@ -325,7 +317,6 @@ fnIPv4Netmask() {
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
-#   g-var : _TGET_VIRT : write
 fnDetect_virt() {
 	if ! command -v systemd-detect-virt > /dev/null 2>&1; then
 		return
@@ -339,10 +330,6 @@ fnDetect_virt() {
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
-#   g-var : _DIRS_TGET : read
-#   g-var : _DIST_NAME : write
-#   g-var : _DIST_VERS : write
-#   g-var : _DIST_CODE : write
 fnSystem_param() {
 	if [ -e "${_DIRS_TGET:-}"/etc/os-release ]; then
 		___PATH="${_DIRS_TGET:-}/etc/os-release"
@@ -367,10 +354,6 @@ fnSystem_param() {
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
-#   g-var : _DIRS_TGET : read
-#   g-var : _NICS_NAME : write
-#   g-var : _DIST_VERS : write
-#   g-var : _DIST_CODE : write
 fnNetwork_param() {
 	___DIRS="${_DIRS_TGET:-}/sys/devices"
 	_NICS_NAME="${_NICS_NAME:-"ens160"}"
@@ -477,10 +460,6 @@ fnNetwork_param() {
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
-#   g-var : _DIRS_TGET : read
-#   g-var : _DIRS_SAMP : read
-#   g-var : _DIRS_INIT : read
-#   g-var : _DIRS_ORIG : read
 # --- file backup -------------------------------------------------------------
 fnFile_backup() {
 	___PATH="${1:?}"
@@ -520,77 +499,6 @@ fnFile_backup() {
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
-#   g-var : TERM       : read
-#   g-var : _ROWS_SIZE : write
-#   g-var : _COLS_SIZE : write
-#   g-var : _TEXT_GAP1 : write
-#   g-var : _TEXT_GAP2 : write
-#   g-var : _TGET_VIRT : read
-#   g-var : _DIST_NAME : read
-#   g-var : _DIST_VERS : read
-#   g-var : _DIST_CODE : read
-#   g-var : _NICS_NAME : read
-#   g-var : _NICS_MADR : read
-#   g-var : _NICS_IPV4 : read
-#   g-var : _NICS_MASK : read
-#   g-var : _NICS_BIT4 : read
-#   g-var : _NICS_DNS4 : read
-#   g-var : _NICS_GATE : read
-#   g-var : _NICS_FQDN : read
-#   g-var : _NICS_HOST : read
-#   g-var : _NICS_WGRP : read
-#   g-var : _NMAN_FLAG : read
-#   g-var : _NTPS_ADDR : read
-#   g-var : _NTPS_IPV4 : read
-#   g-var : _IPV6_LHST : read
-#   g-var : _IPV4_LHST : read
-#   g-var : _IPV4_DUMY : read
-#   g-var : _IPV4_UADR : read
-#   g-var : _IPV4_LADR : read
-#   g-var : _IPV6_ADDR : read
-#   g-var : _IPV6_CIDR : read
-#   g-var : _IPV6_FADR : read
-#   g-var : _IPV6_UADR : read
-#   g-var : _IPV6_LADR : read
-#   g-var : _IPV6_RADR : read
-#   g-var : _LINK_ADDR : read
-#   g-var : _LINK_CIDR : read
-#   g-var : _LINK_FADR : read
-#   g-var : _LINK_UADR : read
-#   g-var : _LINK_LADR : read
-#   g-var : _LINK_RADR : read
-#   g-var : _FWAL_ZONE : read
-#   g-var : _FWAL_NAME : read
-#   g-var : _FWAL_PORT : read
-#   g-var : _DIRS_TOPS : write
-#   g-var : _DIRS_HGFS : write
-#   g-var : _DIRS_HTML : write
-#   g-var : _DIRS_SAMB : write
-#   g-var : _DIRS_TFTP : write
-#   g-var : _DIRS_USER : write
-#   g-var : _DIRS_PVAT : write
-#   g-var : _DIRS_SHAR : write
-#   g-var : _DIRS_CONF : write
-#   g-var : _DIRS_DATA : write
-#   g-var : _DIRS_KEYS : write
-#   g-var : _DIRS_MKOS : write
-#   g-var : _DIRS_TMPL : write
-#   g-var : _DIRS_SHEL : write
-#   g-var : _DIRS_IMGS : write
-#   g-var : _DIRS_ISOS : write
-#   g-var : _DIRS_LOAD : write
-#   g-var : _DIRS_RMAK : write
-#   g-var : _DIRS_CACH : write
-#   g-var : _DIRS_CTNR : write
-#   g-var : _DIRS_CHRT : write
-#   g-var : _DIRS_ORIG : read
-#   g-var : _DIRS_INIT : read
-#   g-var : _DIRS_SAMP : read
-#   g-var : _DIRS_LOGS : read
-#   g-var : _SAMB_USER : read
-#   g-var : _SAMB_GRUP : read
-#   g-var : _SAMB_GADM : read
-#   g-var : _SHEL_NLIN : read
 fnInitialize() {
 	__FUNC_NAME="fnInitialize"
 	fnMsgout "start" "[${__FUNC_NAME}]"
@@ -774,7 +682,6 @@ fnInitialize() {
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
-#   g-var :            : unused
 fnSetup_wireplumber() {
 	__FUNC_NAME="fnGet_conf_file"
 	fnMsgout "start" "[${__FUNC_NAME}]"
@@ -835,10 +742,6 @@ _EOT_
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
-#   g-var : _DIRS_TGET : read
-#   g-var : _DIRS_SAMP : read
-#   g-var : _DIRS_INIT : read
-#   g-var : _DIRS_ORIG : read
 # --- file backup -------------------------------------------------------------
 fnGet_conf_file() {
 	__FUNC_NAME="fnGet_conf_file"

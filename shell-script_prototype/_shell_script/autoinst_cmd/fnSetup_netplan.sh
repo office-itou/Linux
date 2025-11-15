@@ -56,25 +56,25 @@ _EOT_
 _EOT_
 		if [ -n "${_NICS_AUTO##-}" ]; then
 			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
-						dhcp4: true
-						dhcp6: true
-						ipv6-privacy: true
+				dhcp4: true
+				dhcp6: true
+				ipv6-privacy: true
 _EOT_
 		else
 			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
-						addresses:
-						- ${_NICS_IPV4}/${_NICS_BIT4}
-						routes:
-						- to: default
-						via: ${_NICS_GATE}
-						nameservers:
-						search:
-						- ${_NICS_WGRP}
-						addresses:
-						- ${_NICS_DNS4}
-						dhcp4: false
-						dhcp6: true
-						ipv6-privacy: true
+				addresses:
+				- ${_NICS_IPV4}/${_NICS_BIT4}
+				routes:
+				- to: default
+				via: ${_NICS_GATE}
+				nameservers:
+				search:
+				- ${_NICS_WGRP}
+				addresses:
+				- ${_NICS_DNS4}
+				dhcp4: false
+				dhcp6: true
+				ipv6-privacy: true
 _EOT_
 		fi
 		chmod 600 "${__PATH}"
