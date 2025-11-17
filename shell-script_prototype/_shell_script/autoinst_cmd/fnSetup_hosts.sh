@@ -20,7 +20,7 @@ fnSetup_hosts() {
 	__PATH="${_DIRS_TGET:-}/etc/hosts"
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
-	cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	if [ "${_NICS_IPV4##*.}" -eq 0 ]; then
 		__WORK="#${_IPV4_DUMY:-"127.0.1.1"}"
 	else

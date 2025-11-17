@@ -14,7 +14,8 @@ fnClean_device() {
 	__DEVS="${1:-}"
 	# --- remove lvm ----------------------------------------------------------
 	if [ -n "${__DEVS:-}" ]; then
-		if ! command -v pvs > /dev/null 2>&1; then
+		__PATH="$(fnFind_command 'pvs' | sort | head -n 1)"
+		if [ -n "${__PATH:-}" ]; then
 			for __LINE in $(pvs --noheading --separator '|' | cut -d '|' -f 1-2 | grep "${__DEVS}" | sort -u)
 			do
 				__NAME="${__LINE#*\|}"		# vg

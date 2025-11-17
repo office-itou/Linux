@@ -58,6 +58,8 @@
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnStrmsg.sh							# string output with message
 	# shellcheck source=/dev/null
+	. "${_SHEL_COMN}"/fnFind_command.sh						# find command
+	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnIPv6FullAddr.sh						# IPv6 full address
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnIPv6RevAddr.sh						# IPv6 reverse address

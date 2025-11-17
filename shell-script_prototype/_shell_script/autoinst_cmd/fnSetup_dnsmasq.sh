@@ -17,25 +17,25 @@ fnSetup_dnsmasq() {
 		return
 	fi
 	# --- dnsmasq.service -----------------------------------------------------
-	__PATH="$(find "${_DIRS_TGET:-}"/lib/systemd/system/ "${_DIRS_TGET:-}"/usr/lib/systemd/system/ -name 'dnsmasq.service' | sort | head -n 1)"
-	fnFile_backup "${__PATH}"			# backup original file
-	mkdir -p "${__PATH%/*}"
-	cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
-	sed -i "${__PATH}" \
+	__SRVC="$(fnFind_serivce 'dnsmasq.service' | sort | head -n 1)"
+	fnFile_backup "${__SRVC}"			# backup original file
+	mkdir -p "${__SRVC%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__SRVC#*"${_DIRS_TGET:-}/"}" "${__SRVC}"
+	sed -i "${__SRVC}" \
 	    -e '/^\[Unit\]$/,/^\[.\+\]/                       {' \
 	    -e '/^Requires=/                            s/^/#/g' \
 	    -e '/^After=/                               s/^/#/g' \
 	    -e '/^Description=/a Requires=network-online.target' \
 	    -e '/^Description=/a After=network-online.target'    \
 	    -e '                                              }'
-	fnDbgdump "${__PATH}"				# debugout
-	fnFile_backup "${__PATH}" "init"	# backup initial file
+	fnDbgdump "${__SRVC}"				# debugout
+	fnFile_backup "${__SRVC}" "init"	# backup initial file
 	# --- dnsmasq -------------------------------------------------------------
 	__PATH="${_DIRS_TGET:-}/etc/default/dnsmasq"
 	if [ -e "${__PATH}" ]; then
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
-		cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 		sed -i "${__PATH}" \
 		    -e 's/^#\(IGNORE_RESOLVCONF\)=.*$/\1=yes/' \
 		    -e 's/^#\(DNSMASQ_EXCEPT\)=.*$/\1="lo"/'
@@ -43,12 +43,12 @@ fnSetup_dnsmasq() {
 		fnFile_backup "${__PATH}" "init"	# backup initial file
 	fi
 	# --- default.conf --------------------------------------------------------
-	__CONF="$(find "${_DIRS_TGET:-}/etc/dnsmasq.d" "${_DIRS_TGET:-}/usr/share" -name 'trust-anchors.conf' -type f)"
+	__CONF="$(find "${_DIRS_TGET:-}"/etc/dnsmasq.d "${_DIRS_TGET:-}/usr/share" -name 'trust-anchors.conf' -type f)"
 	__CONF="${__CONF#"${_DIRS_TGET:-}"}"
 	__PATH="${_DIRS_TGET:-}/etc/dnsmasq.d/default.conf"
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
-	cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
 		# --- log ---------------------------------------------------------------------
 		#log-queries                                                # dns query log output
@@ -107,7 +107,7 @@ _EOT_
 	__PATH="${_DIRS_TGET:-}/etc/dnsmasq.d/pxeboot.conf"
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
-	cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
 		#log-queries                                                # dns query log output
 		#log-dhcp                                                   # dhcp transaction log output
@@ -180,14 +180,16 @@ _EOT_
 		fnDbgdump "${__PATH}"				# debugout
 	done
 	# --- service restart -----------------------------------------------------
-	__SRVC="dnsmasq.service"
-	if systemctl --quiet is-active "${__SRVC}"; then
-		fnMsgout "restart" "${__SRVC}"
-		systemctl --quiet daemon-reload
-		if systemctl --quiet restart "${__SRVC}"; then
-			fnMsgout "success" "${__SRVC}"
-		else
-			fnMsgout "failed" "${__SRVC}"
+	if [ -z "${_TGET_CNTR:-}" ]; then
+		__SRVC="${__SRVC##*/}"
+		if systemctl --quiet is-active "${__SRVC}"; then
+			fnMsgout "restart" "${__SRVC}"
+			systemctl --quiet daemon-reload
+			if systemctl --quiet restart "${__SRVC}"; then
+				fnMsgout "success" "${__SRVC}"
+			else
+				fnMsgout "failed" "${__SRVC}"
+			fi
 		fi
 	fi
 

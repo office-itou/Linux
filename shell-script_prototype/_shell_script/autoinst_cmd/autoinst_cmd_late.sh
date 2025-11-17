@@ -63,6 +63,7 @@
 	_FILE_SEED=""						# preseed file name
 	# --- target --------------------------------------------------------------
 	_TGET_VIRT=""						# virtualization (ex. vmware)
+	_TGET_CNTR=""						# is container   (empty: none, else: container)
 	# --- set system parameter ------------------------------------------------
 	_DIST_NAME=""						# distribution name (ex. debian)
 	_DIST_VERS=""						# release version   (ex. 13)
@@ -71,9 +72,12 @@
 	_COLS_SIZE="80"						# screen size: columns
 	_TEXT_GAP1=""						# gap1
 	_TEXT_GAP2=""						# gap2
+	_COMD_BBOX=""						# busybox (empty: inactive, else: active )
+	_OPTN_COPY="--preserve=timestamps"	# copy option
 	# --- network parameter ---------------------------------------------------
 	readonly _NTPS_ADDR="ntp.nict.jp"	# ntp server address
 	readonly _NTPS_IPV4="61.205.120.130" # ntp server ipv4 address
+	readonly _NTPS_FBAK="ntp1.jst.mfeed.ad.jp ntp2.jst.mfeed.ad.jp ntp3.jst.mfeed.ad.jp"
 	readonly _IPV6_LHST="::1"			# ipv6 local host address
 	readonly _IPV4_LHST="127.0.0.1"		# ipv4 local host address
 	readonly _IPV4_DUMY="127.0.1.1"		# ipv4 dummy address
@@ -101,11 +105,9 @@
 	readonly _SAMB_USER="sambauser"		# force user
 	readonly _SAMB_GRUP="sambashare"	# force group
 	readonly _SAMB_GADM="sambaadmin"	# admin group
-										# login shell (disallow system login to samba user)
-	_SHEL_NLIN="$(command -v nologin || true)"
-	_SHEL_NLIN="${_SHEL_NLIN:-"$([ -e /usr/sbin/nologin ] && echo "/usr/sbin/nologin")"}"
-	_SHEL_NLIN="${_SHEL_NLIN:-"$([ -e /sbin/nologin     ] && echo "/sbin/nologin")"}"
-	readonly _SHEL_NLIN
+										# nsswitch.conf
+	readonly _SAMB_NSSW="wins mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns mdns4 mdns6"
+	_SHEL_NLIN=""						# login shell (disallow system login to samba user)
 	# --- shared directory parameter ------------------------------------------
 	_DIRS_TOPS=""						# top of shared directory
 	_DIRS_HGFS=""						# vmware shared
@@ -236,6 +238,26 @@ fnStrmsg() {
 }
 
 # -----------------------------------------------------------------------------
+# descript: find command
+#   input :     $1     : command name
+#   output:   stdout   : output
+#   return:            : unused
+# --- file backup -------------------------------------------------------------
+fnFind_command() {
+	find "${_DIRS_TGET:-}"/bin/ "${_DIRS_TGET:-}"/sbin/ "${_DIRS_TGET:-}"/usr/bin/ "${_DIRS_TGET:-}"/usr/sbin/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \)
+}
+
+# -----------------------------------------------------------------------------
+# descript: find service
+#   input :     $1     : service name
+#   output:   stdout   : output
+#   return:            : unused
+# --- file backup -------------------------------------------------------------
+fnFind_serivce() {
+	find "${_DIRS_TGET:-}"/lib/systemd/system/ "${_DIRS_TGET:-}"/usr/lib/systemd/system/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \)
+}
+
+# -----------------------------------------------------------------------------
 # descript: IPv6 full address
 #   input :     $1     : value
 #   input :     $2     : format (not empty: zero padding)
@@ -256,7 +278,7 @@ fnIPv6FullAddr() {
 			gsub("::",sep,str)
 			split(str,arr,":")
 			for (i=0;i<length(arr);i++) {
-				num[i]=strtonum("0x"arr[i])
+				num[i]="0x"arr[i]
 			}
 			printf "'"${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}"'",
 			num[1],num[2],num[3],num[4],num[5],num[6],num[7],num[8]
@@ -321,12 +343,15 @@ fnIPv4Netmask() {
 					and(rshift(n,8),0xFF),
 					and(n,0xFF)
 			} else {
-				h=xor(0xFFFFFFFF,lshift($1,24)+lshift($2,16)+lshift($3,8)+$4)
-				n=32
-				if (h>0) {
-					n-=int(log(h)/log(2)+1)
+				n=xor(0xFFFFFFFF,lshift($1,24)+lshift($2,16)+lshift($3,8)+$4)
+				c=0
+				while (n>0) {
+					if (n%2==1) {
+						c++
+					}
+					n=int(n/2)
 				}
-				printf "%d",n
+				printf "%d",(32-c)
 			}
 		}'
 }
@@ -342,6 +367,12 @@ fnDetect_virt() {
 	fi
 	_TGET_VIRT="$(systemd-detect-virt || true)"
 	readonly _TGET_VIRT
+	_TGET_CNTR=""
+	case "$(systemctl is-system-running || true)" in
+		offline) _TGET_CNTR="true";;
+		*) ;;
+	esac
+	readonly _TGET_CNTR
 }
 
 # -----------------------------------------------------------------------------
@@ -381,10 +412,11 @@ fnNetwork_param() {
 	else
 		if [ -z "${_NICS_NAME#*"*"}" ]; then
 #			_NICS_NAME="$(find "${___DIRS}" -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -E "${_NICS_NAME}" | sort | head -n 1)"
-			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' -not -path '*/virtual/*' -prune -name "${_NICS_NAME}" -printf "%f" | sort | head -n 1)"
+			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | sort | head -n 1)"
+			_NICS_NAME="${_NICS_NAME##*/}"
 		fi
 #		if ! find "${___DIRS}" -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -qE '^'"${_NICS_NAME}"'$'; then
-		if ! find "${___DIRS}" -path '*/net/*' -not -path '*/virtual/*' -prune -name "${_NICS_NAME}" -printf "%f" | grep -qE '^'"${_NICS_NAME}"'$'; then
+		if ! find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | grep -q "${_NICS_NAME}"; then
 			fnMsgout "failed" "not exist: [${_NICS_NAME}]"
 		else
 			_NICS_MADR="${_NICS_MADR:-"$(ip -0 -brief address show dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}' || true)"}"
@@ -393,7 +425,8 @@ fnNetwork_param() {
 				_NICS_AUTO="dhcp"
 			fi
 			if [ -z "${_NICS_DNS4:-}" ] || [ -z "${_NICS_WGRP:-}" ]; then
-				if command -v resolvectl > /dev/null 2>&1; then
+				__PATH="$(fnFind_command 'resolvectl' | sort | head -n 1)"
+				if [ -n "${__PATH:-}" ]; then
 					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/^Global:/            s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
 					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
 					_NICS_WGRP="${_NICS_WGRP:-"$(resolvectl domain 2> /dev/null | sed -ne '/^Global:/            s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
@@ -418,7 +451,11 @@ fnNetwork_param() {
 		_NICS_MASK="$(fnIPv4Netmask "${_NICS_BIT4:-"24"}")"
 	fi
 	_NICS_GATE="${_NICS_GATE:-"$(ip -4 -brief route list match default | awk '{print $3;}' | uniq)"}"
-	_NICS_FQDN="${_NICS_FQDN:-"$(cat "${_DIRS_TGET:-}/etc/hostname" || true)"}"
+	if [ -e "${_DIRS_TGET:-}/etc/hostname" ]; then
+		_NICS_FQDN="${_NICS_FQDN:-"$(cat "${_DIRS_TGET:-}/etc/hostname" || true)"}"
+	fi
+	_NICS_FQDN="${_NICS_FQDN:-"${_DIST_NAME:+"sv-${_DIST_NAME}.workgroup"}"}"
+	_NICS_FQDN="${_NICS_FQDN:-"localhost.local"}"
 	_NICS_HOST="${_NICS_HOST:-"$(echo "${_NICS_FQDN}." | cut -d '.' -f 1)"}"
 	_NICS_WGRP="${_NICS_WGRP:-"$(echo "${_NICS_FQDN}." | cut -d '.' -f 2)"}"
 	_NICS_HOST="$(echo "${_NICS_HOST}" | tr '[:upper:]' '[:lower:]')"
@@ -508,7 +545,7 @@ fnFile_backup() {
 		___BACK="${___BACK}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
 	fi
 	fnMsgout "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
-	cp -a "${___PATH}" "${___BACK}"
+	cp --archive "${___PATH}" "${___BACK}"
 }
 
 # *** function section (subroutine functions) *********************************
@@ -541,23 +578,31 @@ fnInitialize() {
 	readonly _TEXT_GAP1
 	readonly _TEXT_GAP2
 
+	if realpath "$(command -v cp || true)" | grep 'busybox'; then
+		_COMD_BBOX="true"
+		_OPTN_COPY="-p"
+	fi
+
 	# --- target virtualization -----------------------------------------------
 	fnDetect_virt
 
 	_DIRS_TGET=""
 	for __DIRS in \
 		/target \
-		/mnt/sysimage/root \
+		/mnt/sysimage \
 		/mnt/root
 	do
 		[ ! -e "${__DIRS}"/. ] && continue
 		_DIRS_TGET="${__DIRS}"
+		break
 	done
+	readonly _DIRS_TGET
 
 	# --- system parameter ----------------------------------------------------
 	fnSystem_param
 	fnDbgout "system parameter" \
 		"info,_TGET_VIRT=[${_TGET_VIRT:-}]" \
+		"info,_TGET_CNTR=[${_TGET_CNTR:-}]" \
 		"info,_DIRS_TGET=[${_DIRS_TGET:-}]" \
 		"info,_DIST_NAME=[${_DIST_NAME:-}]" \
 		"info,_DIST_VERS=[${_DIST_VERS:-}]" \
@@ -568,6 +613,7 @@ fnInitialize() {
 	fnDbgout "network info" \
 		"info,_NICS_NAME=[${_NICS_NAME:-}]" \
 		"debug,_NICS_MADR=[${_NICS_MADR:-}]" \
+		"info,_NICS_AUTO=[${_NICS_AUTO:-}]" \
 		"info,_NICS_IPV4=[${_NICS_IPV4:-}]" \
 		"info,_NICS_MASK=[${_NICS_MASK:-}]" \
 		"info,_NICS_BIT4=[${_NICS_BIT4:-}]" \
@@ -579,6 +625,7 @@ fnInitialize() {
 		"debug,_NMAN_FLAG=[${_NMAN_FLAG:-}]" \
 		"info,_NTPS_ADDR=[${_NTPS_ADDR:-}]" \
 		"debug,_NTPS_IPV4=[${_NTPS_IPV4:-}]" \
+		"debug,_NTPS_FBAK=[${_NTPS_FBAK:-}]" \
 		"debug,_IPV6_LHST=[${_IPV6_LHST:-}]" \
 		"debug,_IPV4_LHST=[${_IPV4_LHST:-}]" \
 		"debug,_IPV4_DUMY=[${_IPV4_DUMY:-}]" \
@@ -650,7 +697,7 @@ fnInitialize() {
 
 	# --- working directory parameter -----------------------------------------
 										# top of working directory
-	_DIRS_INST="${_DIRS_VADM:?}/${_PROG_NAME%%_*}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
+	_DIRS_INST="${_DIRS_VADM:?}/${_PROG_NAME%%_*}.$(date ${__time_start:+-d "@${__time_start}"} +"%Y%m%d%H%M%S")"
 	readonly _DIRS_INST							# auto-install working directory
 	readonly _DIRS_BACK="${_DIRS_INST}"			# top of backup directory
 	readonly _DIRS_ORIG="${_DIRS_BACK}/orig"	# original file directory
@@ -666,12 +713,14 @@ fnInitialize() {
 		"debug,_DIRS_SAMP=[${_DIRS_SAMP:-}]" \
 		"debug,_DIRS_LOGS=[${_DIRS_LOGS:-}]" \
 
+	mkdir -p "${_DIRS_TGET:-}${_DIRS_INST%.*}/"
+	chmod 600 "${_DIRS_TGET:-}${_DIRS_VADM:?}"
 	find "${_DIRS_TGET:-}${_DIRS_VADM:?}" -name "${_PROG_NAME%%_*}.[0-9]*" -type d | sort -r | tail -n +3 | \
 	while read -r __TGET
 	do
 		__PATH="${__TGET}.tgz"
 		fnMsgout "archive" "[${__TGET}] -> [${__PATH}]"
-		if tar -C "${__TGET}" -czf "${__PATH}" .; then
+		if tar -C "${__TGET}" -cf "${__PATH}" .; then
 			chmod 600 "${__PATH}"
 			fnMsgout "remove"  "${__TGET}"
 			rm -rf "${__TGET:?}"
@@ -681,11 +730,24 @@ fnInitialize() {
 	chmod 600 "${_DIRS_TGET:-}${_DIRS_INST:?}"
 
 	# --- samba ---------------------------------------------------------------
+	_SHEL_NLIN="$(fnFind_command 'nologin' | sort -r | head -n 1)"
+	_SHEL_NLIN="${_SHEL_NLIN#*"${_DIRS_TGET:-}"}"
+	_SHEL_NLIN="${_SHEL_NLIN:-"$(if [ -e /usr/sbin/nologin ]; then echo "/usr/sbin/nologin"; fi)"}"
+	_SHEL_NLIN="${_SHEL_NLIN:-"$(if [ -e /sbin/nologin     ]; then echo "/sbin/nologin"; fi)"}"
+	readonly _SHEL_NLIN
 	fnDbgout "samba info" \
 		"debug,_SAMB_USER=[${_SAMB_USER:-}]" \
 		"debug,_SAMB_GRUP=[${_SAMB_GRUP:-}]" \
 		"debug,_SAMB_GADM=[${_SAMB_GADM:-}]" \
+		"debug,_SAMB_NSSW=[${_SAMB_NSSW:-}]" \
 		"debug,_SHEL_NLIN=[${_SHEL_NLIN:-}]"
+
+	# --- auto install --------------------------------------------------------
+	fnDbgout "shell info" \
+		"debug,_FILE_ERLY=[${_FILE_ERLY:-}]" \
+		"debug,_FILE_LATE=[${_FILE_LATE:-}]" \
+		"debug,_FILE_PART=[${_FILE_PART:-}]" \
+		"debug,_FILE_RUNS=[${_FILE_RUNS:-}]"
 
 	# --- debug backup---------------------------------------------------------
 	fnFile_backup "/proc/cmdline"
@@ -742,6 +804,12 @@ fnMkdir_share(){
 	__FUNC_NAME="fnMkdir_share"
 	fnMsgout "start" "[${__FUNC_NAME}]"
 
+	# --- create system user id -----------------------------------------------
+	if ! id "${_SAMB_USER}" > /dev/null 2>&1; then
+		if ! grep -qE '^'"${_SAMB_GADM}"':' /etc/group; then groupadd --system "${_SAMB_GADM}"; fi
+		if ! grep -qE '^'"${_SAMB_GRUP}"':' /etc/group; then groupadd --system "${_SAMB_GRUP}"; fi
+		useradd --system --shell "${_SHEL_NLIN}" --groups "${_SAMB_GRUP}" "${_SAMB_USER}"
+	fi
 	# --- create directory ----------------------------------------------------
 	mkdir -p "${_DIRS_TOPS:?}"
 	mkdir -p "${_DIRS_HGFS:?}"
@@ -886,7 +954,7 @@ _EOT_
 
 	# --- debug output --------------------------------------------------------
 	if [ -n "${_DBGS_FLAG:-}" ]; then
-		tree --charset C -n --filesfirst "${_DIRS_TOPS}"
+		command -v tree > /dev/null 2>&1 && tree --charset C -n --filesfirst "${_DIRS_TOPS}"
 	fi
 
 	# --- complete ------------------------------------------------------------
@@ -902,8 +970,9 @@ fnSetup_connman() {
 	__FUNC_NAME="fnSetup_connman"
 	fnMsgout "start" "[${__FUNC_NAME}]"
 
-	# --- check command -------------------------------------------------------
-	if ! command -v connmanctl > /dev/null 2>&1; then
+	# --- check service -------------------------------------------------------
+	__SRVC="$(fnFind_serivce 'connman.service' | sort | head -n 1)"
+	if [ -z "${__SRVC:-}" ]; then
 		fnMsgout "skip" "[${__FUNC_NAME}]"
 		return
 	fi
@@ -911,7 +980,7 @@ fnSetup_connman() {
 	__PATH="${_DIRS_TGET:-}/etc/connman/main.conf"
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
-	cp -a "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
 
 		# Generated by user script
@@ -927,7 +996,7 @@ _EOT_
 	__PATH="${_DIRS_TGET:-}/etc/systemd/system/connman.service.d/disable_dns_proxy.conf"
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
-	cp -a "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
 		[Service]
 		ExecStart=
@@ -940,7 +1009,7 @@ _EOT_
 	__PATH="${_DIRS_TGET:-}/var/lib/connman/ethernet_${__MADR}_cable/settings"
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
-	cp -a "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
 			[ethernet_${__MADR}_cable]
 			Name=Wired
@@ -971,14 +1040,16 @@ _EOT_
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
 	# --- service restart -----------------------------------------------------
-	__SRVC="wireplumber.service"
-	if systemctl --quiet is-active "${__SRVC}"; then
-		fnMsgout "restart" "${__SRVC}"
-		systemctl --quiet daemon-reload
-		if systemctl --quiet restart "${__SRVC}"; then
-			fnMsgout "success" "${__SRVC}"
-		else
-			fnMsgout "failed" "${__SRVC}"
+	if [ -z "${_TGET_CNTR:-}" ]; then
+		__SRVC="${__SRVC##*/}"
+		if systemctl --quiet is-active "${__SRVC}"; then
+			fnMsgout "restart" "${__SRVC}"
+			systemctl --quiet daemon-reload
+			if systemctl --quiet restart "${__SRVC}"; then
+				fnMsgout "success" "${__SRVC}"
+			else
+				fnMsgout "failed" "${__SRVC}"
+			fi
 		fi
 	fi
 
@@ -1006,7 +1077,7 @@ fnSetup_netplan() {
 		__PATH="${_DIRS_TGET:-}/etc/netplan/99-network-manager-all.yaml"
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
-		cp -a "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
 			network:
 			  version: 2
@@ -1019,7 +1090,7 @@ _EOT_
 		if [ -e "${__PATH%/*}/." ]; then
 			fnFile_backup "${__PATH}"			# backup original file
 			mkdir -p "${__PATH%/*}"
-			cp -a "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+			cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
 				network: {config: disabled}
 _EOT_
@@ -1030,7 +1101,7 @@ _EOT_
 		__PATH="${_DIRS_TGET:-}/etc/netplan/99-network-config-${_NICS_NAME}.yaml"
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
-		cp -a "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
 			network:
 				version: 2
@@ -1087,8 +1158,9 @@ fnSetup_netman() {
 	__FUNC_NAME="fnSetup_netman"
 	fnMsgout "start" "[${__FUNC_NAME}]"
 
-	# --- check command -------------------------------------------------------
-	if ! command -v nmcli > /dev/null 2>&1; then
+	# --- check service -------------------------------------------------------
+	__SRVC="$(fnFind_serivce 'NetworkManager.service' | sort | head -n 1)"
+	if [ -z "${__SRVC:-}" ]; then
 		fnMsgout "skip" "[${__FUNC_NAME}]"
 		return
 	fi
@@ -1099,7 +1171,7 @@ fnSetup_netman() {
 			__PATH="${_DIRS_TGET:-}/etc/NetworkManager/system-connections/${__CONF}.nmconnection"
 			fnFile_backup "${__PATH}"			# backup original file
 			mkdir -p "${__PATH%/*}"
-			cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+			cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 			nmcli --offline connection add \
 				type ethernet \
 				match.interface-name "${__CONF##*-}*" \
@@ -1120,19 +1192,22 @@ fnSetup_netman() {
 	else
 		__PATH="${_DIRS_TGET:-}/etc/NetworkManager/system-connections/${_NICS_NAME}.nmconnection"
 		__SRVC="NetworkManager.service"
-		if systemctl --quiet is-active "${__SRVC}"; then
-			__UUID="$(nmcli --fields DEVICE,UUID connection show | awk '$1=="'"${_NICS_NAME}"'" {print $2;}')"
-			for __FIND in "${_DIRS_TGET:-}/etc/NetworkManager/system-connections/"* "${_DIRS_TGET:-}/run/NetworkManager/system-connections/"*
-			do
-				if grep -Hqs "uuid=${__UUID}" "${__FIND}"; then
-					__PATH="${__FIND}"
-					break
-				fi
-			done
+		__UUID=""
+		if [ -z "${_TGET_CNTR:-}" ]; then
+			if systemctl --quiet is-active "${__SRVC}"; then
+				__UUID="$(nmcli --fields DEVICE,UUID connection show | awk '$1=="'"${_NICS_NAME}"'" {print $2;}')"
+				for __FIND in "${_DIRS_TGET:-}/etc/NetworkManager/system-connections/"* "${_DIRS_TGET:-}/run/NetworkManager/system-connections/"*
+				do
+					if grep -Hqs "uuid=${__UUID}" "${__FIND}"; then
+						__PATH="${__FIND}"
+						break
+					fi
+				done
+			fi
 		fi
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
-#		cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+#		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 		__CNID="${__PATH##*/}"
 		__CNID="${__CNID%.*}"
 		set -f
@@ -1173,7 +1248,7 @@ fnSetup_netman() {
 	__PATH="${_DIRS_TGET:-}/etc/NetworkManager/conf.d/dns.conf"
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
-	cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	if command -v resolvectl > /dev/null 2>&1; then
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
 			[main]
@@ -1191,7 +1266,7 @@ _EOT_
 	__PATH="${_DIRS_TGET:-}/etc/NetworkManager/conf.d/mdns.conf"
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
-	cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	if command -v resolvectl > /dev/null 2>&1; then
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
 			[connection]
@@ -1201,27 +1276,29 @@ _EOT_
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
 	# --- service restart -----------------------------------------------------
-	__SRVC="NetworkManager.service"
+	__SRVC="${__SRVC##*/}"
 	if systemctl --quiet is-enabled "${__SRVC}"; then
-		__NWKD="systemd-networkd.service"
-		if systemctl --quiet is-enabled "${__NWKD}"; then
-			fnMsgout "mask" "${__NWKD}"
-			systemctl --quiet mask "${__NWKD}"
-			systemctl --quiet mask "${__NWKD%.*}.socket"
+		__SVEX="systemd-networkd.service"
+		if systemctl --quiet is-enabled "${__SVEX}"; then
+			fnMsgout "mask" "${__SVEX}"
+			systemctl --quiet mask "${__SVEX}"
+			systemctl --quiet mask "${__SVEX%.*}.socket"
 		fi
 	fi
-	if systemctl --quiet is-active "${__SRVC}"; then
-		fnMsgout "restart" "${__SRVC}"
-		systemctl --quiet daemon-reload
-		if systemctl --quiet restart "${__SRVC}"; then
-			fnMsgout "success" "${__SRVC}"
-		else
-			fnMsgout "failed" "${__SRVC}"
-		fi
-		if nmcli connection reload; then
-			fnMsgout "success" "nmcli connection reload"
-		else
-			fnMsgout "failed" "nmcli connection reload"
+	if [ -z "${_TGET_CNTR:-}" ]; then
+		if systemctl --quiet is-active "${__SRVC}"; then
+			fnMsgout "restart" "${__SRVC}"
+			systemctl --quiet daemon-reload
+			if systemctl --quiet restart "${__SRVC}"; then
+				fnMsgout "success" "${__SRVC}"
+			else
+				fnMsgout "failed" "${__SRVC}"
+			fi
+			if nmcli connection reload; then
+				fnMsgout "success" "nmcli connection reload"
+			else
+				fnMsgout "failed" "nmcli connection reload"
+			fi
 		fi
 	fi
 
@@ -1247,7 +1324,7 @@ fnSetup_hostname() {
 	__PATH="${_DIRS_TGET:-}/etc/hostname"
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
-	cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	echo "${_NICS_FQDN:-}" > "${__PATH}"
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
@@ -1274,7 +1351,7 @@ fnSetup_hosts() {
 	__PATH="${_DIRS_TGET:-}/etc/hosts"
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
-	cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	if [ "${_NICS_IPV4##*.}" -eq 0 ]; then
 		__WORK="#${_IPV4_DUMY:-"127.0.1.1"}"
 	else
@@ -1313,29 +1390,29 @@ fnSetup_firewalld() {
 		return
 	fi
 	# --- firewalld.service ---------------------------------------------------
-	__PATH="$(find "${_DIRS_TGET:-}"/lib/systemd/system/ "${_DIRS_TGET:-}"/usr/lib/systemd/system/ -name 'firewalld.service' | sort | head -n 1)"
-	fnFile_backup "${__PATH}"			# backup original file
-	mkdir -p "${__PATH%/*}"
-	cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
-	sed -i "${__PATH}" \
+	__SRVC="$(fnFind_serivce 'firewalld.service' | sort | head -n 1)"
+	fnFile_backup "${__SRVC}"			# backup original file
+	mkdir -p "${__SRVC%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__SRVC#*"${_DIRS_TGET:-}/"}" "${__SRVC}"
+	sed -i "${__SRVC}" \
 	    -e '/\[Unit\]/,/\[.*\]/                {' \
 	    -e '/^Before=network-pre.target$/ s/^/#/' \
 	    -e '/^Wants=network-pre.target$/  s/^/#/' \
 	    -e '                                   }'
-	fnDbgdump "${__PATH}"				# debugout
-	fnFile_backup "${__PATH}" "init"	# backup initial file
+	fnDbgdump "${__SRVC}"				# debugout
+	fnFile_backup "${__SRVC}" "init"	# backup initial file
 	# --- firewalld -----------------------------------------------------------
 	__ORIG="$(find "${_DIRS_TGET:-}"/lib/firewalld/zones/ "${_DIRS_TGET:-}"/usr/lib/firewalld/zones/ -name 'drop.xml' | sort | head -n 1)"
 	__PATH="${_DIRS_TGET:-}/etc/firewalld/zones/${_FWAL_ZONE}.xml"
-	cp --preserve=timestampsa "${__ORIG}" "${__PATH}"
+	cp --preserve=timestamps "${__ORIG}" "${__PATH}"
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
-	cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	__IPV4="${_IPV4_UADR}.0/${_NICS_BIT4}"
 	__IPV6="${_IPV6_UADR%%::}::/${_IPV6_CIDR}"
 	__LINK="${_LINK_UADR%%::}::/10"
-	__SRVC="firewalld.service"
-	if systemctl --quiet is-active "${__SRVC}"; then
+	__SRVC="${__SRVC##*/}"
+	if [ -z "${_TGET_CNTR:-}" ] && systemctl --quiet is-active "${__SRVC}"; then
 		fnMsgout "active" "${__SRVC}"
 		firewall-cmd --quiet --permanent --set-default-zone="${_FWAL_ZONE}" || true
 		[ -n "${_NICS_NAME##-}" ] && { firewall-cmd --quiet --permanent --zone="${_FWAL_ZONE}" --change-interface="${_NICS_NAME}" || true; }
@@ -1410,25 +1487,25 @@ fnSetup_dnsmasq() {
 		return
 	fi
 	# --- dnsmasq.service -----------------------------------------------------
-	__PATH="$(find "${_DIRS_TGET:-}"/lib/systemd/system/ "${_DIRS_TGET:-}"/usr/lib/systemd/system/ -name 'dnsmasq.service' | sort | head -n 1)"
-	fnFile_backup "${__PATH}"			# backup original file
-	mkdir -p "${__PATH%/*}"
-	cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
-	sed -i "${__PATH}" \
+	__SRVC="$(fnFind_serivce 'dnsmasq.service' | sort | head -n 1)"
+	fnFile_backup "${__SRVC}"			# backup original file
+	mkdir -p "${__SRVC%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__SRVC#*"${_DIRS_TGET:-}/"}" "${__SRVC}"
+	sed -i "${__SRVC}" \
 	    -e '/^\[Unit\]$/,/^\[.\+\]/                       {' \
 	    -e '/^Requires=/                            s/^/#/g' \
 	    -e '/^After=/                               s/^/#/g' \
 	    -e '/^Description=/a Requires=network-online.target' \
 	    -e '/^Description=/a After=network-online.target'    \
 	    -e '                                              }'
-	fnDbgdump "${__PATH}"				# debugout
-	fnFile_backup "${__PATH}" "init"	# backup initial file
+	fnDbgdump "${__SRVC}"				# debugout
+	fnFile_backup "${__SRVC}" "init"	# backup initial file
 	# --- dnsmasq -------------------------------------------------------------
 	__PATH="${_DIRS_TGET:-}/etc/default/dnsmasq"
 	if [ -e "${__PATH}" ]; then
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
-		cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 		sed -i "${__PATH}" \
 		    -e 's/^#\(IGNORE_RESOLVCONF\)=.*$/\1=yes/' \
 		    -e 's/^#\(DNSMASQ_EXCEPT\)=.*$/\1="lo"/'
@@ -1436,12 +1513,12 @@ fnSetup_dnsmasq() {
 		fnFile_backup "${__PATH}" "init"	# backup initial file
 	fi
 	# --- default.conf --------------------------------------------------------
-	__CONF="$(find "${_DIRS_TGET:-}/etc/dnsmasq.d" "${_DIRS_TGET:-}/usr/share" -name 'trust-anchors.conf' -type f)"
+	__CONF="$(find "${_DIRS_TGET:-}"/etc/dnsmasq.d "${_DIRS_TGET:-}/usr/share" -name 'trust-anchors.conf' -type f)"
 	__CONF="${__CONF#"${_DIRS_TGET:-}"}"
 	__PATH="${_DIRS_TGET:-}/etc/dnsmasq.d/default.conf"
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
-	cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
 		# --- log ---------------------------------------------------------------------
 		#log-queries                                                # dns query log output
@@ -1500,7 +1577,7 @@ _EOT_
 	__PATH="${_DIRS_TGET:-}/etc/dnsmasq.d/pxeboot.conf"
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
-	cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
 		#log-queries                                                # dns query log output
 		#log-dhcp                                                   # dhcp transaction log output
@@ -1573,14 +1650,16 @@ _EOT_
 		fnDbgdump "${__PATH}"				# debugout
 	done
 	# --- service restart -----------------------------------------------------
-	__SRVC="dnsmasq.service"
-	if systemctl --quiet is-active "${__SRVC}"; then
-		fnMsgout "restart" "${__SRVC}"
-		systemctl --quiet daemon-reload
-		if systemctl --quiet restart "${__SRVC}"; then
-			fnMsgout "success" "${__SRVC}"
-		else
-			fnMsgout "failed" "${__SRVC}"
+	if [ -z "${_TGET_CNTR:-}" ]; then
+		__SRVC="${__SRVC##*/}"
+		if systemctl --quiet is-active "${__SRVC}"; then
+			fnMsgout "restart" "${__SRVC}"
+			systemctl --quiet daemon-reload
+			if systemctl --quiet restart "${__SRVC}"; then
+				fnMsgout "success" "${__SRVC}"
+			else
+				fnMsgout "failed" "${__SRVC}"
+			fi
 		fi
 	fi
 
@@ -1589,66 +1668,613 @@ _EOT_
 }
 
 # -----------------------------------------------------------------------------
-# descript: 
+# descript: resolv.conf
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
 fnSetup_resolv() {
-	:
+	__FUNC_NAME="fnSetup_resolv"
+	fnMsgout "start" "[${__FUNC_NAME}]"
+
+	# --- check command -------------------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/resolv.conf"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	if ! command -v resolvectl > /dev/null 2>&1; then
+		if [ ! -L "${__PATH}" ]; then
+			cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+				# Generated by user script
+				search ${_NICS_WGRP}
+				nameserver ${_IPV6_LHST}
+				nameserver ${_IPV4_LHST}
+_EOT_
+		fi
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+	else
+		__CONF="${_DIRS_TGET:-}/run/systemd/resolve/stub-resolv.conf"
+		fnFile_backup "${__CONF}"			# backup original file
+#		if grep -qi 'Do not edit.' "${__PATH}"; then
+#			fnMsgout "skip" "resolv.conf setup for chroot"
+#		else
+#			mkdir -p "${__CONF%/*}"
+#			cp --preserve=timestamps "${_DIRS_ORIG}/${__CONF#*"${_DIRS_TGET:-}/"}" "${__CONF}"
+			if [ ! -L "${__PATH}" ]; then
+				rm -f "${__PATH}"
+				ln -s "../${__CONF#"${_DIRS_TGET:-}/"}" "${__PATH}"
+			fi
+			fnDbgdump "${__PATH}"				# debugout
+			fnFile_backup "${__PATH}" "init"	# backup initial file
+			fnFile_backup "${__CONF}" "init"	# backup initial file
+#		fi
+		# --- default.conf ----------------------------------------------------
+		__PATH="${_DIRS_TGET:-}/etc/systemd/resolved.conf.d/default.conf"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+			[Resolve]
+			MulticastDNS=yes
+			DNS=${_NICS_DNS4}
+			Domains=${_NICS_WGRP}
+_EOT_
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+		# --- service restart -------------------------------------------------
+		__SRVC="systemd-resolved.service"
+		if systemctl --quiet is-enabled "${__SRVC}"; then
+			__SVEX="avahi-daemon.service"
+			if systemctl --quiet is-enabled "${__SVEX}"; then
+				fnMsgout "mask" "${__SVEX}"
+				systemctl --quiet mask "${__SVEX}"
+				systemctl --quiet mask "${__SVEX%.*}.socket"
+			fi
+		fi
+		if [ -z "${_TGET_CNTR:-}" ]; then
+			if systemctl --quiet is-active "${__SRVC}"; then
+				fnMsgout "restart" "${__SRVC}"
+				systemctl --quiet daemon-reload
+				if systemctl --quiet restart "${__SRVC}"; then
+					fnMsgout "success" "${__SRVC}"
+				else
+					fnMsgout "failed" "${__SRVC}"
+				fi
+			fi
+		fi
+	fi
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
-# descript: 
+# descript: apache
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
 fnSetup_apache() {
-	:
+	__FUNC_NAME="fnSetup_apache"
+	fnMsgout "start" "[${__FUNC_NAME}]"
+
+	# --- check service -------------------------------------------------------
+	__SRVC="$(fnFind_serivce 'apache2.service' 'httpd.service' | sort | head -n 1)"
+	if [ -z "${__SRVC:-}" ]; then
+		fnMsgout "skip" "[${__FUNC_NAME}]"
+		return
+	fi
+	# --- apache2.conf / httpd.conf -------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/${__SRVC%%.*}/sites-available/999-site.conf"
+	if [ -e "${__PATH%/*}/." ]; then
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		sed -e 's%^\([ \t]\+DocumentRoot[ \t]\+\).*$%\1'"${_DIRS_HTML}"/html'%' \
+		    "${__PATH%/*}/000-default.conf" \
+		> "${__PATH}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+			<Directory ${_DIRS_HTML}/>
+			 	Options Indexes FollowSymLinks
+			 	AllowOverride None
+			 	Require all granted
+			</Directory>
+_EOT_
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+		# --- registration ----------------------------------------------------
+		a2dissite 000-default
+		a2ensite "${__PATH##*/}"
+	else
+		__PATH="${_DIRS_TGET:-}/etc/${__SRVC%%.*}/conf.d/site.conf"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+			<VirtualHost *:80>
+			 	ServerAdmin webmaster@localhost
+			 	DocumentRoot ${_DIRS_HTML}/html
+			#	ErrorLog \${APACHE_LOG_DIR}/error.log
+			#	CustomLog \${APACHE_LOG_DIR}/access.log combined
+			</VirtualHost>
+
+			<Directory ${_DIRS_HTML}/>
+			 	Options Indexes FollowSymLinks
+			 	AllowOverride None
+			 	Require all granted
+			</Directory>
+_EOT_
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+	fi
+	# --- service restart -----------------------------------------------------
+	if [ -z "${_TGET_CNTR:-}" ]; then
+		__SRVC="${__SRVC##*/}"
+		if systemctl --quiet is-active "${__SRVC}"; then
+			fnMsgout "restart" "${__SRVC}"
+			systemctl --quiet daemon-reload
+			if systemctl --quiet restart "${__SRVC}"; then
+				fnMsgout "success" "${__SRVC}"
+			else
+				fnMsgout "failed" "${__SRVC}"
+			fi
+		fi
+	fi
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
-# descript: 
+# descript: samba
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
 fnSetup_samba() {
-	:
+	__FUNC_NAME="fnSetup_samba"
+	fnMsgout "start" "[${__FUNC_NAME}]"
+
+	# --- check command -------------------------------------------------------
+	if ! command -v pdbedit > /dev/null 2>&1; then
+		fnMsgout "skip" "[${__FUNC_NAME}]"
+		return
+	fi
+	# --- check service -------------------------------------------------------
+	__SMBD="$(fnFind_serivce 'smbd.service' 'smb.service' | sort | head -n 1)"
+	__NMBD="$(fnFind_serivce 'nmbd.service' 'nmb.service' | sort | head -n 1)"
+	if [ -z "${__SMBD:-}" ] || [ -z "${__NMBD:-}" ]; then
+		fnMsgout "skip" "[${__FUNC_NAME}]"
+		return
+	fi
+	# --- create passdb.tdb ---------------------------------------------------
+	pdbedit -L > /dev/null 2>&1 || true
+	# --- nsswitch.conf -------------------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/nsswitch.conf"
+	if [ -e "${__PATH}" ]; then
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		sed -i "${__PATH}"                \
+		    -e '/^hosts:[ \t]\+/       {' \
+		    -e 's/\(files\).*$/\1/'       \
+		    -e 's/$/ '"${_SAMB_NSSW}"'/}' \
+			-e '/^\(passwd\|group\|shadow\|gshadow\):[ \t]\+/ s/[ \t]\+winbind//'
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+	fi
+	# --- smb.conf ------------------------------------------------------------
+	# https://www.samba.gr.jp/project/translation/current/htmldocs/manpages/smb.conf.5.html
+	__PATH="${_DIRS_TGET:-}/etc/samba/smb.conf"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	__CONF="${_DIRS_TGET:-}/tmp/${__PATH##*/}.work"
+	# <-- global settings section -------------------------------------------->
+	# allow insecure wide links = Yes
+	testparm -s -v                                                                   | \
+	sed -ne '/^\[global\]$/,/^[ \t]*$/                                              {' \
+	    -e  '/^[ \t]*acl check permissions[ \t]*=/        s/^/#/'                      \
+	    -e  '/^[ \t]*allocation roundup size[ \t]*=/      s/^/#/'                      \
+	    -e  '/^[ \t]*allow nt4 crypto[ \t]*=/             s/^/#/'                      \
+	    -e  '/^[ \t]*blocking locks[ \t]*=/               s/^/#/'                      \
+	    -e  '/^[ \t]*client NTLMv2 auth[ \t]*=/           s/^/#/'                      \
+	    -e  '/^[ \t]*client lanman auth[ \t]*=/           s/^/#/'                      \
+	    -e  '/^[ \t]*client plaintext auth[ \t]*=/        s/^/#/'                      \
+	    -e  '/^[ \t]*client schannel[ \t]*=/              s/^/#/'                      \
+	    -e  '/^[ \t]*client use spnego principal[ \t]*=/  s/^/#/'                      \
+	    -e  '/^[ \t]*client use spnego[ \t]*=/            s/^/#/'                      \
+	    -e  '/^[ \t]*copy[ \t]*=/                         s/^/#/'                      \
+	    -e  '/^[ \t]*domain logons[ \t]*=/                s/^/#/'                      \
+	    -e  '/^[ \t]*enable privileges[ \t]*=/            s/^/#/'                      \
+	    -e  '/^[ \t]*encrypt passwords[ \t]*=/            s/^/#/'                      \
+	    -e  '/^[ \t]*idmap backend[ \t]*=/                s/^/#/'                      \
+	    -e  '/^[ \t]*idmap gid[ \t]*=/                    s/^/#/'                      \
+	    -e  '/^[ \t]*idmap uid[ \t]*=/                    s/^/#/'                      \
+	    -e  '/^[ \t]*lanman auth[ \t]*=/                  s/^/#/'                      \
+	    -e  '/^[ \t]*lsa over netlogon[ \t]*=/            s/^/#/'                      \
+	    -e  '/^[ \t]*nbt client socket address[ \t]*=/    s/^/#/'                      \
+	    -e  '/^[ \t]*null passwords[ \t]*=/               s/^/#/'                      \
+	    -e  '/^[ \t]*raw NTLMv2 auth[ \t]*=/              s/^/#/'                      \
+	    -e  '/^[ \t]*reject md5 clients[ \t]*=/           s/^/#/'                      \
+	    -e  '/^[ \t]*server schannel require seal[ \t]*=/ s/^/#/'                      \
+	    -e  '/^[ \t]*server schannel[ \t]*=/              s/^/#/'                      \
+	    -e  '/^[ \t]*syslog only[ \t]*=/                  s/^/#/'                      \
+	    -e  '/^[ \t]*syslog[ \t]*=/                       s/^/#/'                      \
+	    -e  '/^[ \t]*unicode[ \t]*=/                      s/^/#/'                      \
+	    -e  '/^[ \t]*winbind separator[ \t]*=/            s/^/#/'                      \
+	    -e  '/^[ \t]*allow insecure wide links[ \t]*=/    s/=.*$/= Yes/'               \
+	    -e  '/^[ \t]*dos charset[ \t]*=/                  s/=.*$/= CP932/'             \
+	    -e  '/^[ \t]*unix password sync[ \t]*=/           s/=.*$/= No/'                \
+	    -e  '/^[ \t]*netbios name[ \t]*=/                 s/=.*$/= '"${_NICS_HOST}"'/' \
+	    -e  '/^[ \t]*workgroup[ \t]*=/                    s/=.*$/= '"${_NICS_WGRP}"'/' \
+	    -e  '/^[ \t]*interfaces[ \t]*=/                   s/=.*$/= '"${_NICS_NAME}"'/' \
+	    -e  'p                                                                      }' \
+	> "${__CONF}" 2> /dev/null
+	[ -z "${_NICS_HOST##-}" ] && sed -i "${__CONF}" -e '/^[ \t]*netbios name[ \t]*=/d'
+	[ -z "${_NICS_WGRP##-}" ] && sed -i "${__CONF}" -e '/^[ \t]*workgroup[ \t]*=/d'
+	[ -z "${_NICS_NAME##-}" ] && sed -i "${__CONF}" -e '/^[ \t]*interfaces[ \t]*=/d'
+	# <-- shared settings section -------------------------------------------->
+	# wide links = Yes
+	# tree
+	#	/srv/samba/
+	#	|-- adm
+	#	|   |-- commands
+	#	|   `-- profiles
+	#	|-- pub
+	#	|   |-- _license
+	#	|   |-- contents
+	#	|   |   |-- disc
+	#	|   |   `-- dlna
+	#	|   |       |-- movies
+	#	|   |       |-- others
+	#	|   |       |-- photos
+	#	|   |       `-- sounds
+	#	|   |-- hardware
+	#	|   |-- resource
+	#	|   |   |-- image
+	#	|   |   |   |-- linux
+	#	|   |   |   `-- windows
+	#	|   |   `-- source
+	#	|   |       `-- git
+	#	|   `-- software
+	#	`-- usr
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__CONF}"
+		[homes]
+		        browseable = No
+		        comment = Home Directories
+		        create mask = 0770
+		        directory mask = 0770
+		        force group = ${_SAMB_GRUP}
+		        force user = ${_SAMB_USER}
+		        valid users = %S
+		        write list = @${_SAMB_GRUP}
+		[printers]
+		        browseable = No
+		        comment = All Printers
+		        create mask = 0700
+		        path = /var/tmp
+		        printable = Yes
+		[print$]
+		        comment = Printer Drivers
+		        path = /var/lib/samba/printers
+		[adm]
+		        browseable = No
+		        comment = Administrator directories
+		        create mask = 0770
+		        directory mask = 0770
+		        force group = ${_SAMB_GRUP}
+		        force user = ${_SAMB_USER}
+		        path = ${_DIRS_SAMB}/adm
+		        valid users = @${_SAMB_GRUP}
+		        write list = @${_SAMB_GADM}
+		[pub]
+		        browseable = Yes
+		        comment = Public directories
+		        create mask = 0770
+		        directory mask = 0770
+		        force group = ${_SAMB_GRUP}
+		        force user = ${_SAMB_USER}
+		        path = ${_DIRS_SAMB}/pub
+		        valid users = @${_SAMB_GRUP}
+		        write list = @${_SAMB_GADM}
+		[usr]
+		        browseable = No
+		        comment = User directories
+		        create mask = 0770
+		        directory mask = 0770
+		        force group = ${_SAMB_GRUP}
+		        force user = ${_SAMB_USER}
+		        path = ${_DIRS_SAMB}/usr
+		        valid users = @${_SAMB_GADM}
+		        write list = @${_SAMB_GADM}
+		[share]
+		        browseable = No
+		        comment = Shared directories
+		        create mask = 0770
+		        directory mask = 0770
+		        force group = ${_SAMB_GRUP}
+		        force user = ${_SAMB_USER}
+		        path = ${_DIRS_SAMB}
+		        valid users = @${_SAMB_GADM}
+		        write list = @${_SAMB_GADM}
+		[dlna]
+		        browseable = No
+		        comment = DLNA directories
+		        create mask = 0770
+		        directory mask = 0770
+		        force group = ${_SAMB_GRUP}
+		        force user = ${_SAMB_USER}
+		        path = ${_DIRS_SAMB}/pub/contents/dlna
+		        valid users = @${_SAMB_GRUP}
+		        write list = @${_SAMB_GADM}
+		[html-share]
+		        browseable = No
+		        comment = HTML shared directories
+		        guest ok = Yes
+		        path = ${_DIRS_HTML}
+		        wide links = Yes
+		[tftp-share]
+		        browseable = No
+		        comment = TFTP shared directories
+		        guest ok = Yes
+		        path = ${_DIRS_TFTP}
+		        wide links = Yes
+_EOT_
+	# --- output --------------------------------------------------------------
+	testparm -s "${__CONF}" > "${__PATH}"
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
+	# --- service restart -----------------------------------------------------
+	if [ -z "${_TGET_CNTR:-}" ]; then
+		__SRVC="${__SMBD##*/}"
+		if systemctl --quiet is-active "${__SRVC}"; then
+			fnMsgout "restart" "${__SRVC}"
+			systemctl --quiet daemon-reload
+			if systemctl --quiet restart "${__SRVC}"; then
+				fnMsgout "success" "${__SRVC}"
+			else
+				fnMsgout "failed" "${__SRVC}"
+			fi
+		fi
+		__SRVC="${__NMBD##*/}"
+		if systemctl --quiet is-active "${__SRVC}"; then
+			fnMsgout "restart" "${__SRVC}"
+			systemctl --quiet daemon-reload
+			if systemctl --quiet restart "${__SRVC}"; then
+				fnMsgout "success" "${__SRVC}"
+			else
+				fnMsgout "failed" "${__SRVC}"
+			fi
+		fi
+	fi
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
-# descript: 
+# descript: timesyncd
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
 fnSetup_timesyncd() {
-	:
+	__FUNC_NAME="fnSetup_timesyncd"
+	fnMsgout "start" "[${__FUNC_NAME}]"
+
+	# --- check service -------------------------------------------------------
+	__SRVC="$(fnFind_serivce 'systemd-timesyncd.service' | sort | head -n 1)"
+	if [ -z "${__SRVC:-}" ]; then
+		fnMsgout "skip" "[${__FUNC_NAME}]"
+		return
+	fi
+	# --- timesyncd.conf ------------------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/systemd/timesyncd.conf.d/local.conf"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
+		# --- user settings ---
+		[Time]
+		NTP=${_NTPS_ADDR}
+		FallbackNTP=${_NTPS_FBAK}
+		PollIntervalMinSec=1h
+		PollIntervalMaxSec=1d
+		SaveIntervalSec=infinity
+_EOT_
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
+	# --- service restart -----------------------------------------------------
+	if [ -z "${_TGET_CNTR:-}" ]; then
+		__SRVC="${__SRVC##*/}"
+		if systemctl --quiet is-active "${__SRVC}"; then
+			fnMsgout "restart" "${__SRVC}"
+			systemctl --quiet daemon-reload
+			if systemctl --quiet restart "${__SRVC}"; then
+				fnMsgout "success" "${__SRVC}"
+			else
+				fnMsgout "failed" "${__SRVC}"
+			fi
+		fi
+	fi
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
-# descript: 
+# descript: chronyd
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
 fnSetup_chronyd() {
-	:
+	__FUNC_NAME="fnSetup_chronyd"
+	fnMsgout "start" "[${__FUNC_NAME}]"
+
+	# --- check service -------------------------------------------------------
+	__SRVC="$(fnFind_serivce 'chronyd.service' | sort | head -n 1)"
+	if [ -z "${__SRVC:-}" ]; then
+		fnMsgout "skip" "[${__FUNC_NAME}]"
+		return
+	fi
+	# --- chrony.conf ---------------------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/chrony.conf"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
+	# --- service restart -----------------------------------------------------
+	if [ -z "${_TGET_CNTR:-}" ]; then
+		__SRVC="${__SRVC##*/}"
+		if systemctl --quiet is-active "${__SRVC}"; then
+			fnMsgout "restart" "${__SRVC}"
+			systemctl --quiet daemon-reload
+			if systemctl --quiet restart "${__SRVC}"; then
+				fnMsgout "success" "${__SRVC}"
+			else
+				fnMsgout "failed" "${__SRVC}"
+			fi
+			hwclock --systohc
+			hwclock --test
+		fi
+	fi
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
-# descript: 
+# descript: openssh-server
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
 fnSetup_ssh() {
-	:
+	__FUNC_NAME="fnSetup_ssh"
+	fnMsgout "start" "[${__FUNC_NAME}]"
+
+	# --- check service -------------------------------------------------------
+	__SRVC="$(fnFind_serivce 'ssh.service' 'sshd.service' | sort | head -n 1)"
+	if [ -z "${__SRVC:-}" ]; then
+		fnMsgout "skip" "[${__FUNC_NAME}]"
+		return
+	fi
+	# --- default.conf --------------------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/ssh/sshd_config.d/default.conf"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
+		# --- user settings ---
+
+		# port number to listen to ssh
+		#Port 22
+
+		# ip address to accept connections
+		#ListenAddress 0.0.0.0
+		#ListenAddress ::
+
+		# ssh protocol
+		Protocol 2
+
+		# whether to allow root login
+		PermitRootLogin no
+
+		# configuring public key authentication
+		#PubkeyAuthentication no
+
+		# public key file location
+		#AuthorizedKeysFile
+
+		# setting password authentication
+		PasswordAuthentication yes
+
+		# configuring challenge-response authentication
+		#ChallengeResponseAuthentication no
+
+		# sshd log is output to /var/log/secure
+		#SyslogFacility AUTHPRIV
+
+		# specify log output level
+		#LogLevel INFO
+_EOT_
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
+	# --- service restart -----------------------------------------------------
+	if [ -z "${_TGET_CNTR:-}" ]; then
+		__SRVC="${__SRVC##*/}"
+		if systemctl --quiet is-active "${__SRVC}"; then
+			fnMsgout "restart" "${__SRVC}"
+			systemctl --quiet daemon-reload
+			if systemctl --quiet restart "${__SRVC}"; then
+				fnMsgout "success" "${__SRVC}"
+			else
+				fnMsgout "failed" "${__SRVC}"
+			fi
+		fi
+	fi
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
-# descript: 
+# descript: vmware shared directory
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
 fnSetup_vmware() {
-	:
+	__FUNC_NAME="fnSetup_vmware"
+	fnMsgout "start" "[${__FUNC_NAME}]"
+
+	# --- check command -------------------------------------------------------
+	if ! command -v vmware-hgfsclient > /dev/null 2>&1; then
+		fnMsgout "skip" "[${__FUNC_NAME}]"
+		return
+	fi
+	# --- GNOME3 rendering issues ---------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/environment.d/99vmware.conf"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+		CLUTTER_PAINT=disable-clipped-redraws:disable-culling
+_EOT_
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
+	# --- check file system ---------------------------------------------------
+	if command -v vmhgfs-fuse > /dev/null 2>&1; then
+		__FSYS="fuse.vmhgfs-fuse"
+	else
+		__FSYS="vmhgfs"
+	fi
+	# --- fstab ---------------------------------------------------------------
+	__FSTB="$(printf "%-15s %-15s %-7s %-15s %-7s %s" ".host:/" "${_DIRS_HGFS:?}" "${__FSYS}" "nofail,allow_other,defaults" "0" "0")"
+	if ! vmware-hgfsclient > /dev/null 2>&1; then
+		__FSTB="#${__FSTB}"
+	fi
+	__PATH="${_DIRS_TGET:-}/etc/fstab"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+		${__FSTB}
+_EOT_
+	# --- check mount ---------------------------------------------------------
+	if [ -z "${_TGET_CNTR:-}" ]; then
+		systemctl --quiet daemon-reload
+		if mount "${_DIRS_HGFS}"; then
+			fnMsgout "success" "VMware shared directory mounted"
+			LANG=C df -h "${_DIRS_HGFS}"
+		else
+			fnMsgout "failed" "VMware shared directory not mounted"
+			sed -i "${__PATH}" \
+			    -e "\%${__FSTB}% s/^/#/g"
+		fi
+	fi
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -1657,54 +2283,145 @@ fnSetup_vmware() {
 #   output:   stdout   : message
 #   return:            : unused
 fnSetup_wireplumber() {
-	__FUNC_NAME="fnGet_conf_file"
+	__FUNC_NAME="fnSetup_wireplumber"
 	fnMsgout "start" "[${__FUNC_NAME}]"
 
-	# --- check command -------------------------------------------------------
-	if ! command -v wireplumber > /dev/null 2>&1; then
+	# --- check service -------------------------------------------------------
+	__SRVC="$(fnFind_serivce 'chronyd.service' | sort | head -n 1)"
+	if [ -z "${__SRVC:-}" ]; then
 		fnMsgout "skip" "[${__FUNC_NAME}]"
 		return
 	fi
-	# --- 50-alsa-config.conf -------------------------------------------------
-	__PATH="${_DIRS_TGET:-}/etc/wireplumber/wireplumber.conf.d/50-alsa-config.conf"
-	fnFile_backup "${__PATH}"			# backup original file
-	mkdir -p "${__PATH%/*}"
-	cp -a "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
-	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
-		monitor.alsa.rules = [
-		  {
-		    matches = [
-		      # This matches the value of the node.name property of the node.
-		      {
-		        node.name = "~alsa_output.*"
-		      }
-		    ]
-		    actions = {
-		      # Apply all the desired node specific settings here.
-		      update-props = {
-		        api.alsa.period-size   = 1024
-		        api.alsa.headroom      = 8192
-		        session.suspend-timeout-seconds = 0
-		      }
-		    }
-		  }
-		]
+	# --- alsa ----------------------------------------------------------------
+	__CONF="${_DIRS_TGET:-}/usr/share/wireplumber/main.lua.d/50-alsa-config.lua"
+	if [ -e "${__CONF}" ]; then
+		fnFile_backup "${__CONF}"			# backup original file
+		# --- 50-alsa-config.lua ----------------------------------------------
+		__PATH="${_DIRS_TGET:-}/etc/wireplumber/main.lua.d/${__CONF##*/}"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${__CONF}" "${__PATH}"
+		sed -i "${__PATH}"                                                                    \
+		    -e '/^alsa_monitor.rules[ \t]*=[ \t]*{$/,/^}$/                                 {' \
+		    -e '/^[ \t]*apply_properties[ \t]*=[ \t]*{/,/^[ \t]*}/                         {' \
+		    -e '/\["api.alsa.period-size"\]/a \        \["api.alsa.period-size"\]   = 1024,'  \
+		    -e '/\["api.alsa.headroom"\]/a    \        \["api.alsa.headroom"\]      = 16384,' \
+		    -e '}}'
+	else
+		__CONF="${_DIRS_TGET:-}/usr/share/wireplumber/wireplumber.conf.d/alsa-vm.conf"
+		if [ -e "${__CONF}" ]; then
+			fnFile_backup "${__CONF}"			# backup original file
+			# --- alsa-vm.conf ------------------------------------------------
+			__PATH="${_DIRS_TGET:-}/etc/wireplumber/wireplumber.conf.d/${__CONF##*/}"
+			fnFile_backup "${__PATH}"			# backup original file
+			mkdir -p "${__PATH%/*}"
+			cp --preserve=timestamps "${__CONF}" "${__PATH}"
+			sed -i "${__PATH}"                                                      \
+			    -e '/^monitor.alsa.rules[ \t]*=[ \t]*\[$/,/^\]$/                 {' \
+			    -e '/^[ \t]*actions[ \t]*=[ \t]*{$/,/^[ \t]*}$/                  {' \
+			    -e '/^[ \t]*update-props[ \t]*=[ \t]*{$/,/^[ \t]*}$/             {' \
+			    -e '/^[ \t]*api.alsa.period-size[ \t]*/ s/=\([ \t]*\).*$/=\11024/'  \
+			    -e '/^[ \t]*api.alsa.headroom[ \t]*/    s/=\([ \t]*\).*$/=\116384/' \
+			    -e '}}}'
+		else
+			# --- 50-alsa-config.conf -----------------------------------------
+			__PATH="${_DIRS_TGET:-}/etc/wireplumber/wireplumber.conf.d/50-alsa-config.conf"
+			fnFile_backup "${__PATH}"			# backup original file
+			mkdir -p "${__PATH%/*}"
+			cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+				monitor.alsa.rules = [
+				  {
+				    matches = [
+				      # This matches the value of the 'node.name' property of the node.
+				      {
+				        node.name = "~alsa_output.*"
+				      }
+				    ]
+				    actions = {
+				      # Apply all the desired node specific settings here.
+				      update-props = {
+				        api.alsa.period-size   = 1024
+				        api.alsa.headroom      = 16384
+				        session.suspend-timeout-seconds = 0
+				      }
+				    }
+				  }
+				]
 _EOT_
+		fi
+	fi
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
+	# --- bluetooth -----------------------------------------------------------
+	__CONF="${_DIRS_TGET:-}/usr/share/wireplumber/bluetooth.lua.d/50-bluez-config.lua"
+	if [ -e "${__CONF}" ]; then
+		fnFile_backup "${__CONF}"			# backup original file
+		# --- 50-bluez-config.lua ---------------------------------------------
+		__PATH="${_DIRS_TGET:-}/etc/wireplumber/bluetooth.lua.d/${__CONF##*/}"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${__CONF}" "${__PATH}"
+		sed -i "${__PATH}"                                                                 \
+		    -e '/^bluez_monitor.properties[ \t]*=[ \t]*{$/,/^}$/                        {' \
+		    -e '/\["bluez5.headset-roles"\]/a  \    \["bluez5.headset-roles"\] = "[ ]",'   \
+		    -e '/\["bluez5.hfphsp-backend"\]/a \    \["bluez5.hfphsp-backend"\] = "none",' \
+		    -e '                                                                        }' \
+		    -e '/^bluez_monitor.rules[ \t]*=[ \t]*{$/,/^}$/                             {' \
+		    -e '/^[ \t]*apply_properties[ \t]*=[ \t]*{/,/^[ \t]*},/                     {' \
+		    -e '/\["bluez5.media-source-role"\]/,/^[ \t]*},/                            {' \
+		    -e '/^[ \t]*},/i \        \["bluez5.auto-connect"\] = "\[ a2dp_sink \]",'      \
+		    -e '/^[ \t]*},/i \        \["bluez5.hw-volume"\]    = "\[ a2dp_sink \]",'      \
+		    -e '}}}'
+	else
+		# --- bluez.conf ------------------------------------------------------
+		__PATH="${_DIRS_TGET:-}/etc/wireplumber/wireplumber.conf.d/bluez.conf"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+			monitor.bluez.properties = {
+			  bluez5.headset-roles  = "[ ]"
+			  bluez5.hfphsp-backend = "none"
+			}
+
+			monitor.bluez.rules = [
+			  {
+			    matches = [
+			      {
+			        node.name = "~bluez_input.*"
+			      }
+			      {
+			        node.name = "~bluez_output.*"
+			      }
+			    ]
+			    actions = {
+			      update-props = {
+			        bluez5.auto-connect = "[ a2dp_sink ]"
+			        bluez5.hw-volume    = "[ a2dp_sink ]"
+			      }
+			    }
+			  }
+			]
+_EOT_
+	fi
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
 	# --- service restart -----------------------------------------------------
-	__SRVC="wireplumber.service"
-	if systemctl --quiet  is-active "${__SRVC}"; then
-		fnMsgout "restart" "${__SRVC}"
-		systemctl --quiet daemon-reload
-		for __USER in $(ps --no-headers -C "${__SRVC%.*}" -o user)
-		do
-			if systemctl --quiet --user --machine="${__USER}"@ restart "${__SRVC}"; then
-				fnMsgout "success" "${__USER}@ ${__SRVC}"
-			else
-				fnMsgout "failed" "${__USER}@ ${__SRVC}"
-			fi
-		done
+	if [ -z "${_TGET_CNTR:-}" ]; then
+		__SRVC="${__SRVC##*/}"
+		if systemctl --quiet  is-active "${__SRVC}"; then
+			fnMsgout "restart" "${__SRVC}"
+			systemctl --quiet daemon-reload
+			for __USER in $(ps --no-headers -C "${__SRVC%.*}" -o user)
+			do
+				if systemctl --quiet --user --machine="${__USER}"@ restart "${__SRVC}"; then
+					fnMsgout "success" "${__USER}@ ${__SRVC}"
+				else
+					fnMsgout "failed" "${__USER}@ ${__SRVC}"
+				fi
+			done
+		fi
 	fi
 
 	# --- complete ------------------------------------------------------------
@@ -1712,21 +2429,189 @@ _EOT_
 }
 
 # -----------------------------------------------------------------------------
-# descript: 
+# descript: skeleton
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
 fnSetup_skel() {
-	:
+	__FUNC_NAME="fnSetup_skel"
+	fnMsgout "start" "[${__FUNC_NAME}]"
+
+	# --- .bashrc -------------------------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/skel/.bashrc"
+	if [ -e "${__PATH}" ]; then
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+			# --- measures against garbled characters ---
+			case "${TERM}" in
+			    linux ) export LANG=C;;
+			    *     )              ;;
+			esac
+			# --- user custom ---
+			alias vi='vim'
+			alias view='vim'
+			alias diff='diff --color=auto'
+			alias ip='ip -color=auto'
+			alias ls='ls --color=auto'
+_EOT_
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+	fi
+	# --- .bash_history -------------------------------------------------------
+	__PATH="$(fnFind_command 'apt-get' | sort | head -n 1)"
+	if [ -n "${__PATH:-}" ]; then
+		__PATH="${_DIRS_TGET:-}/etc/skel/.bash_history"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+			sudo bash -c 'apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade'
+_EOT_
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+	fi
+	# --- .vimrc --------------------------------------------------------------
+	__PATH="$(fnFind_command 'vim' | sort | head -n 1)"
+	if [ -n "${__PATH:-}" ]; then
+		__PATH="${_DIRS_TGET:-}/etc/skel/.vimrc"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+			set number              " Print the line number in front of each line.
+			set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
+			set list                " List mode: Show tabs as CTRL-I is displayed, display \$ after end of line.
+			set listchars=tab:>_    " Strings to use in 'list' mode and for the |:list| command.
+			set nowrap              " This option changes how text is displayed.
+			set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
+			set laststatus=2        " The value of this option influences when the last window will have a status line always.
+			set mouse-=a            " Disable mouse usage
+			syntax on               " Vim5 and later versions support syntax highlighting.
+_EOT_
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+	fi
+	# --- .curlrc -------------------------------------------------------------
+	__PATH="$(fnFind_command 'curl' | sort | head -n 1)"
+	if [ -n "${__PATH:-}" ]; then
+		__PATH="${_DIRS_TGET:-}/etc/skel/.curlrc"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+			location
+			progress-bar
+			remote-time
+			show-error
+_EOT_
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+	fi
+	# --- distribute to existing users ----------------------------------------
+	for __DIRS in "${_DIRS_TGET:-}"/root \
+	              "${_DIRS_TGET:-}"/home/*
+	do
+		if [ ! -e "${__DIRS}/." ]; then
+			continue
+		fi
+		for __FILE in "${_DIRS_TGET:-}/etc/skel/.bashrc"       \
+		              "${_DIRS_TGET:-}/etc/skel/.bash_history" \
+		              "${_DIRS_TGET:-}/etc/skel/.vimrc"        \
+		              "${_DIRS_TGET:-}/etc/skel/.curlrc"
+		do
+			if [ ! -e "${__FILE}" ]; then
+				continue
+			fi
+			__PATH="${__DIRS}/${__FILE#*/etc/skel/}"
+			mkdir -p "${__PATH%/*}"
+			cp --preserve=timestamps "${__FILE}" "${__PATH}"
+			chown "${__DIRS##*/}": "${__PATH}"
+			fnDbgdump "${__PATH}"				# debugout
+			fnFile_backup "${__PATH}" "init"	# backup initial file
+		done
+	done
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
-# descript: 
+# descript: sudoers
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
 fnSetup_sudo() {
-	:
+	__FUNC_NAME="fnSetup_sudo"
+	fnMsgout "start" "[${__FUNC_NAME}]"
+
+	# --- check command -------------------------------------------------------
+	__PATH="$(fnFind_command 'sudo' | sort | head -n 1)"
+	if [ -z "${__PATH:-}" ]; then
+		fnMsgout "skip" "[${__FUNC_NAME}]"
+		return
+	fi
+	# --- sudoers -------------------------------------------------------------
+	__PATH="${_DIRS_TGET:-}"/etc/sudoers
+	__CONF="${_DIRS_TGET:-}"/usr/etc/sudoers
+	if [ ! -e "${__PATH}" ] && [ -e "${__CONF}" ]; then
+		fnFile_backup "${__CONF}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${__CONF}" "${__PATH}"
+		if ! grep -qE '^@includedir /etc/sudoers.d$' "${__PATH}" 2> /dev/null; then
+			echo "@includedir /etc/sudoers.d" >> "${__PATH}"
+		fi
+	fi
+	fnFile_backup "${__PATH}"			# backup original file
+	__CONF="${_DIRS_TGET:-}"/tmp/sudoers-local.work
+	__WORK="$(sed -ne 's/^.*\(sudo\|wheel\).*$/\1/p' "${_DIRS_TGET:-}"/etc/group)"
+	__WORK="${__WORK:+"$(printf "%-6s %-13s %s" "%${__WORK}" "ALL=(ALL:ALL)" "ALL")"}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__CONF}"
+		Defaults !targetpw
+		#Defaults authenticate
+		root   ALL=(ALL:ALL) ALL
+		${__WORK:-}
+_EOT_
+	# --- sudoers-local -------------------------------------------------------
+	if visudo -q -c -f "${__CONF}"; then
+		__PATH="${_DIRS_TGET:-}/etc/sudoers.d/sudoers-local"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${__CONF}" "${__PATH}"
+		chown -c root:root "${__PATH}"
+		chmod -c 0440 "${__PATH}"
+		fnMsgout "success" "[${__PATH}]"
+		# --- sudoers ---------------------------------------------------------
+		__PATH="${_DIRS_TGET:-}/etc/sudoers"
+		__CONF="${_DIRS_TGET:-}/tmp/sudoers.work"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		sed "${__PATH}"                                                  \
+		    -e '/^Defaults[ \t]\+targetpw[ \t]*/ s/^/#/'                 \
+		    -e '/^ALL[ \t]\+ALL=(ALL\(\|:ALL\))[ \t]\+ALL[ \t]*/ s/^/#/' \
+		> "${__CONF}"
+		if visudo -q -c -f "${__CONF}"; then
+			cp --preserve=timestamps "${__CONF}" "${__PATH}"
+			chown -c root:root "${__PATH}"
+			chmod -c 0440 "${__PATH}"
+			fnDbgdump "${__PATH}"				# debugout
+			fnFile_backup "${__PATH}" "init"	# backup initial file
+			fnMsgout "success" "[${__PATH}]"
+			fnMsgout "info" "show user permissions: sudo -ll"
+		else
+			fnMsgout "failed" "[${__CONF}]"
+			visudo -c -f "${__CONF}" || true
+		fi
+	else
+		fnMsgout "failed" "[${__CONF}]"
+		visudo -c -f "${__CONF}" || true
+	fi
+	fnDbgdump "${__CONF}"				# debugout
+	fnFile_backup "${__CONF}" "init"	# backup initial file
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -1841,6 +2726,35 @@ fnSetup_selinux() {
 }
 
 # -----------------------------------------------------------------------------
+# descript: ipfilter
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnSetup_ipfilter() {
+	__FUNC_NAME="fnSetup_ipfilte"
+	fnMsgout "start" "[${__FUNC_NAME}]"
+
+	# --- ipfilter.conf -------------------------------------------------------
+#	__PATH="${_DIRS_TGET:-}/usr/lib/systemd/system/systemd-logind.service.d/ipfilter.conf"
+#	fnFile_backup "${__PATH}"			# backup original file
+#	mkdir -p "${__PATH%/*}"
+#	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+#	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+#		[Service]
+#		IPAddressDeny=any           # 0.0.0.0/0      ::/0
+#		IPAddressAllow=localhost    # 127.0.0.0/8    ::1/128
+#		IPAddressAllow=link-local   # 169.254.0.0/16 fe80::/64
+#		IPAddressAllow=multicast    # 224.0.0.0/4    ff00::/8
+#		IPAddressAllow=${NICS_IPV4%.*}.0/${NICS_BIT4}
+#_EOT_
+#	fnDbgdump "${__PATH}"				# debugout
+#	fnFile_backup "${__PATH}" "init"	# backup initial file
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "complete" "[${__FUNC_NAME}]" 
+}
+
+# -----------------------------------------------------------------------------
 # descript: 
 #   input :            : unused
 #   output:   stdout   : message
@@ -1898,7 +2812,7 @@ fnMain() {
 
 	# --- debug output --------------------------------------------------------
 	if [ -n "${_DBGS_FLAG:-}" ]; then
-		tree --charset C -n --filesfirst "${_DIRS_BACK:-}"
+		command -v tree > /dev/null 2>&1 && tree --charset C -n --filesfirst "${_DIRS_BACK:-}"
 	fi
 
 	# --- complete ------------------------------------------------------------

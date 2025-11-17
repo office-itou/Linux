@@ -39,5 +39,5 @@ fnFile_backup() {
 		___BACK="${___BACK}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
 	fi
 	fnMsgout "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
-	cp -a "${___PATH}" "${___BACK}"
+	cp --archive "${___PATH}" "${___BACK}"
 }

@@ -13,4 +13,10 @@ fnDetect_virt() {
 	fi
 	_TGET_VIRT="$(systemd-detect-virt || true)"
 	readonly _TGET_VIRT
+	_TGET_CNTR=""
+	case "$(systemctl is-system-running || true)" in
+		offline) _TGET_CNTR="true";;
+		*) ;;
+	esac
+	readonly _TGET_CNTR
 }

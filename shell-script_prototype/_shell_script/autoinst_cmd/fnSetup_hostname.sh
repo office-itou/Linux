@@ -20,7 +20,7 @@ fnSetup_hostname() {
 	__PATH="${_DIRS_TGET:-}/etc/hostname"
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
-	cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	echo "${_NICS_FQDN:-}" > "${__PATH}"
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file

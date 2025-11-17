@@ -12,8 +12,9 @@ fnSetup_netman() {
 	__FUNC_NAME="fnSetup_netman"
 	fnMsgout "start" "[${__FUNC_NAME}]"
 
-	# --- check command -------------------------------------------------------
-	if ! command -v nmcli > /dev/null 2>&1; then
+	# --- check service -------------------------------------------------------
+	__SRVC="$(fnFind_serivce 'NetworkManager.service' | sort | head -n 1)"
+	if [ -z "${__SRVC:-}" ]; then
 		fnMsgout "skip" "[${__FUNC_NAME}]"
 		return
 	fi
@@ -24,7 +25,7 @@ fnSetup_netman() {
 			__PATH="${_DIRS_TGET:-}/etc/NetworkManager/system-connections/${__CONF}.nmconnection"
 			fnFile_backup "${__PATH}"			# backup original file
 			mkdir -p "${__PATH%/*}"
-			cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+			cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 			nmcli --offline connection add \
 				type ethernet \
 				match.interface-name "${__CONF##*-}*" \
@@ -45,19 +46,22 @@ fnSetup_netman() {
 	else
 		__PATH="${_DIRS_TGET:-}/etc/NetworkManager/system-connections/${_NICS_NAME}.nmconnection"
 		__SRVC="NetworkManager.service"
-		if systemctl --quiet is-active "${__SRVC}"; then
-			__UUID="$(nmcli --fields DEVICE,UUID connection show | awk '$1=="'"${_NICS_NAME}"'" {print $2;}')"
-			for __FIND in "${_DIRS_TGET:-}/etc/NetworkManager/system-connections/"* "${_DIRS_TGET:-}/run/NetworkManager/system-connections/"*
-			do
-				if grep -Hqs "uuid=${__UUID}" "${__FIND}"; then
-					__PATH="${__FIND}"
-					break
-				fi
-			done
+		__UUID=""
+		if [ -z "${_TGET_CNTR:-}" ]; then
+			if systemctl --quiet is-active "${__SRVC}"; then
+				__UUID="$(nmcli --fields DEVICE,UUID connection show | awk '$1=="'"${_NICS_NAME}"'" {print $2;}')"
+				for __FIND in "${_DIRS_TGET:-}/etc/NetworkManager/system-connections/"* "${_DIRS_TGET:-}/run/NetworkManager/system-connections/"*
+				do
+					if grep -Hqs "uuid=${__UUID}" "${__FIND}"; then
+						__PATH="${__FIND}"
+						break
+					fi
+				done
+			fi
 		fi
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
-#		cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+#		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 		__CNID="${__PATH##*/}"
 		__CNID="${__CNID%.*}"
 		set -f
@@ -98,7 +102,7 @@ fnSetup_netman() {
 	__PATH="${_DIRS_TGET:-}/etc/NetworkManager/conf.d/dns.conf"
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
-	cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	if command -v resolvectl > /dev/null 2>&1; then
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
 			[main]
@@ -116,7 +120,7 @@ _EOT_
 	__PATH="${_DIRS_TGET:-}/etc/NetworkManager/conf.d/mdns.conf"
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
-	cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	if command -v resolvectl > /dev/null 2>&1; then
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
 			[connection]
@@ -126,27 +130,29 @@ _EOT_
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
 	# --- service restart -----------------------------------------------------
-	__SRVC="NetworkManager.service"
+	__SRVC="${__SRVC##*/}"
 	if systemctl --quiet is-enabled "${__SRVC}"; then
-		__NWKD="systemd-networkd.service"
-		if systemctl --quiet is-enabled "${__NWKD}"; then
-			fnMsgout "mask" "${__NWKD}"
-			systemctl --quiet mask "${__NWKD}"
-			systemctl --quiet mask "${__NWKD%.*}.socket"
+		__SVEX="systemd-networkd.service"
+		if systemctl --quiet is-enabled "${__SVEX}"; then
+			fnMsgout "mask" "${__SVEX}"
+			systemctl --quiet mask "${__SVEX}"
+			systemctl --quiet mask "${__SVEX%.*}.socket"
 		fi
 	fi
-	if systemctl --quiet is-active "${__SRVC}"; then
-		fnMsgout "restart" "${__SRVC}"
-		systemctl --quiet daemon-reload
-		if systemctl --quiet restart "${__SRVC}"; then
-			fnMsgout "success" "${__SRVC}"
-		else
-			fnMsgout "failed" "${__SRVC}"
-		fi
-		if nmcli connection reload; then
-			fnMsgout "success" "nmcli connection reload"
-		else
-			fnMsgout "failed" "nmcli connection reload"
+	if [ -z "${_TGET_CNTR:-}" ]; then
+		if systemctl --quiet is-active "${__SRVC}"; then
+			fnMsgout "restart" "${__SRVC}"
+			systemctl --quiet daemon-reload
+			if systemctl --quiet restart "${__SRVC}"; then
+				fnMsgout "success" "${__SRVC}"
+			else
+				fnMsgout "failed" "${__SRVC}"
+			fi
+			if nmcli connection reload; then
+				fnMsgout "success" "nmcli connection reload"
+			else
+				fnMsgout "failed" "nmcli connection reload"
+			fi
 		fi
 	fi
 

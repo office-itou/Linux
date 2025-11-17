@@ -100,23 +100,31 @@ fnInitialize() {
 	readonly _TEXT_GAP1
 	readonly _TEXT_GAP2
 
+	if realpath "$(command -v cp || true)" | grep 'busybox'; then
+		_COMD_BBOX="true"
+		_OPTN_COPY="-p"
+	fi
+
 	# --- target virtualization -----------------------------------------------
 	fnDetect_virt
 
 	_DIRS_TGET=""
 	for __DIRS in \
 		/target \
-		/mnt/sysimage/root \
+		/mnt/sysimage \
 		/mnt/root
 	do
 		[ ! -e "${__DIRS}"/. ] && continue
 		_DIRS_TGET="${__DIRS}"
+		break
 	done
+	readonly _DIRS_TGET
 
 	# --- system parameter ----------------------------------------------------
 	fnSystem_param
 	fnDbgout "system parameter" \
 		"info,_TGET_VIRT=[${_TGET_VIRT:-}]" \
+		"info,_TGET_CNTR=[${_TGET_CNTR:-}]" \
 		"info,_DIRS_TGET=[${_DIRS_TGET:-}]" \
 		"info,_DIST_NAME=[${_DIST_NAME:-}]" \
 		"info,_DIST_VERS=[${_DIST_VERS:-}]" \
@@ -127,6 +135,7 @@ fnInitialize() {
 	fnDbgout "network info" \
 		"info,_NICS_NAME=[${_NICS_NAME:-}]" \
 		"debug,_NICS_MADR=[${_NICS_MADR:-}]" \
+		"info,_NICS_AUTO=[${_NICS_AUTO:-}]" \
 		"info,_NICS_IPV4=[${_NICS_IPV4:-}]" \
 		"info,_NICS_MASK=[${_NICS_MASK:-}]" \
 		"info,_NICS_BIT4=[${_NICS_BIT4:-}]" \
@@ -138,6 +147,7 @@ fnInitialize() {
 		"debug,_NMAN_FLAG=[${_NMAN_FLAG:-}]" \
 		"info,_NTPS_ADDR=[${_NTPS_ADDR:-}]" \
 		"debug,_NTPS_IPV4=[${_NTPS_IPV4:-}]" \
+		"debug,_NTPS_FBAK=[${_NTPS_FBAK:-}]" \
 		"debug,_IPV6_LHST=[${_IPV6_LHST:-}]" \
 		"debug,_IPV4_LHST=[${_IPV4_LHST:-}]" \
 		"debug,_IPV4_DUMY=[${_IPV4_DUMY:-}]" \
@@ -209,7 +219,7 @@ fnInitialize() {
 
 	# --- working directory parameter -----------------------------------------
 										# top of working directory
-	_DIRS_INST="${_DIRS_VADM:?}/${_PROG_NAME%%_*}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
+	_DIRS_INST="${_DIRS_VADM:?}/${_PROG_NAME%%_*}.$(date ${__time_start:+-d "@${__time_start}"} +"%Y%m%d%H%M%S")"
 	readonly _DIRS_INST							# auto-install working directory
 	readonly _DIRS_BACK="${_DIRS_INST}"			# top of backup directory
 	readonly _DIRS_ORIG="${_DIRS_BACK}/orig"	# original file directory
@@ -225,12 +235,14 @@ fnInitialize() {
 		"debug,_DIRS_SAMP=[${_DIRS_SAMP:-}]" \
 		"debug,_DIRS_LOGS=[${_DIRS_LOGS:-}]" \
 
+	mkdir -p "${_DIRS_TGET:-}${_DIRS_INST%.*}/"
+	chmod 600 "${_DIRS_TGET:-}${_DIRS_VADM:?}"
 	find "${_DIRS_TGET:-}${_DIRS_VADM:?}" -name "${_PROG_NAME%%_*}.[0-9]*" -type d | sort -r | tail -n +3 | \
 	while read -r __TGET
 	do
 		__PATH="${__TGET}.tgz"
 		fnMsgout "archive" "[${__TGET}] -> [${__PATH}]"
-		if tar -C "${__TGET}" -czf "${__PATH}" .; then
+		if tar -C "${__TGET}" -cf "${__PATH}" .; then
 			chmod 600 "${__PATH}"
 			fnMsgout "remove"  "${__TGET}"
 			rm -rf "${__TGET:?}"
@@ -240,11 +252,24 @@ fnInitialize() {
 	chmod 600 "${_DIRS_TGET:-}${_DIRS_INST:?}"
 
 	# --- samba ---------------------------------------------------------------
+	_SHEL_NLIN="$(fnFind_command 'nologin' | sort -r | head -n 1)"
+	_SHEL_NLIN="${_SHEL_NLIN#*"${_DIRS_TGET:-}"}"
+	_SHEL_NLIN="${_SHEL_NLIN:-"$(if [ -e /usr/sbin/nologin ]; then echo "/usr/sbin/nologin"; fi)"}"
+	_SHEL_NLIN="${_SHEL_NLIN:-"$(if [ -e /sbin/nologin     ]; then echo "/sbin/nologin"; fi)"}"
+	readonly _SHEL_NLIN
 	fnDbgout "samba info" \
 		"debug,_SAMB_USER=[${_SAMB_USER:-}]" \
 		"debug,_SAMB_GRUP=[${_SAMB_GRUP:-}]" \
 		"debug,_SAMB_GADM=[${_SAMB_GADM:-}]" \
+		"debug,_SAMB_NSSW=[${_SAMB_NSSW:-}]" \
 		"debug,_SHEL_NLIN=[${_SHEL_NLIN:-}]"
+
+	# --- auto install --------------------------------------------------------
+	fnDbgout "shell info" \
+		"debug,_FILE_ERLY=[${_FILE_ERLY:-}]" \
+		"debug,_FILE_LATE=[${_FILE_LATE:-}]" \
+		"debug,_FILE_PART=[${_FILE_PART:-}]" \
+		"debug,_FILE_RUNS=[${_FILE_RUNS:-}]"
 
 	# --- debug backup---------------------------------------------------------
 	fnFile_backup "/proc/cmdline"

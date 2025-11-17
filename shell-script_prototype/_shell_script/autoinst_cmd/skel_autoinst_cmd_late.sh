@@ -60,6 +60,10 @@
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnStrmsg.sh							# string output with message
 	# shellcheck source=/dev/null
+	. "${_SHEL_COMN}"/fnFind_command.sh						# find command
+	# shellcheck source=/dev/null
+	. "${_SHEL_COMN}"/fnFind_service.sh						# find service
+	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnIPv6FullAddr.sh						# IPv6 full address
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnIPv6RevAddr.sh						# IPv6 reverse address
@@ -125,6 +129,8 @@
 	# shellcheck source=/dev/null
 	. "${_SHEL_TOPS}"/fnSetup_selinux.sh					# selinux
 	# shellcheck source=/dev/null
+	. "${_SHEL_TOPS}"/fnSetup_ipfilter.sh					# ipfilter
+	# shellcheck source=/dev/null
 	. "${_SHEL_TOPS}"/fnSetup_grub_menu.sh					# grub menu settings
 
 # *** main section ************************************************************
@@ -177,7 +183,7 @@ fnMain() {
 
 	# --- debug output --------------------------------------------------------
 	if [ -n "${_DBGS_FLAG:-}" ]; then
-		tree --charset C -n --filesfirst "${_DIRS_BACK:-}"
+		command -v tree > /dev/null 2>&1 && tree --charset C -n --filesfirst "${_DIRS_BACK:-}"
 	fi
 
 	# --- complete ------------------------------------------------------------

@@ -22,7 +22,7 @@ fnSetup_netplan() {
 		__PATH="${_DIRS_TGET:-}/etc/netplan/99-network-manager-all.yaml"
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
-		cp -a "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
 			network:
 			  version: 2
@@ -35,7 +35,7 @@ _EOT_
 		if [ -e "${__PATH%/*}/." ]; then
 			fnFile_backup "${__PATH}"			# backup original file
 			mkdir -p "${__PATH%/*}"
-			cp -a "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+			cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
 				network: {config: disabled}
 _EOT_
@@ -46,7 +46,7 @@ _EOT_
 		__PATH="${_DIRS_TGET:-}/etc/netplan/99-network-config-${_NICS_NAME}.yaml"
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
-		cp -a "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
 			network:
 				version: 2

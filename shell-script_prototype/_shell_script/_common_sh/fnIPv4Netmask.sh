@@ -23,12 +23,15 @@ fnIPv4Netmask() {
 					and(rshift(n,8),0xFF),
 					and(n,0xFF)
 			} else {
-				h=xor(0xFFFFFFFF,lshift($1,24)+lshift($2,16)+lshift($3,8)+$4)
-				n=32
-				if (h>0) {
-					n-=int(log(h)/log(2)+1)
+				n=xor(0xFFFFFFFF,lshift($1,24)+lshift($2,16)+lshift($3,8)+$4)
+				c=0
+				while (n>0) {
+					if (n%2==1) {
+						c++
+					}
+					n=int(n/2)
 				}
-				printf "%d",n
+				printf "%d",(32-c)
 			}
 		}'
 }

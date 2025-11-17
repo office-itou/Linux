@@ -19,9 +19,8 @@ fnGet_conf_file() {
 	__PATH=""
 	__DIRS=""
 
-	__DIRS="${_FILE_SEED%/*/user-data}"
-	__DIRS="${_FILE_SEED%/*}"
-	__DIRS="${__DIRS%/*}"
+	__DIRS="${_FILE_SEED%/user-data}"
+	__DIRS="${__DIRS%/*/*}"
 	__DIRS="${__DIRS%%/}"
 	__DIRS="${__DIRS}/script"
 
@@ -35,7 +34,8 @@ fnGet_conf_file() {
 		case "${__LINE}" in
 			http:*|https:*|ftp:*|tftp:*)
 				fnMsgout "download" "${__LINE}"
-				if command -v wget > /dev/null 2>&1; then
+				__PATH="$(fnFind_command 'wget' | sort | head -n 1)"
+				if [ -n "${__PATH:-}" ]; then
 					if ! wget \
 					  --tries=3 \
 					  --timeout=10 \
@@ -87,8 +87,11 @@ fnGet_conf_file() {
 				;;
 			*) continue;;
 		esac
+		mkdir -p "${_DIRS_TGET:-}${_DIRS_INST%.*}/"
+		cp ${_OPTN_COPY:+${_OPTN_COPY}} "${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}" "${_DIRS_TGET:-}${_DIRS_INST%.*}/"
 		if [ "${__LINE##*/}" != "${_FILE_SEED##*/}" ] && [ -e "${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}" ]; then
 			chmod +x "${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}"
+			chmod +x "${_DIRS_TGET:-}${_DIRS_INST%.*}/${__LINE##*/}"
 		fi
 		fnMsgout "success" "${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}"
 	done

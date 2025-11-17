@@ -58,6 +58,10 @@
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnStrmsg.sh							# string output with message
 	# shellcheck source=/dev/null
+	. "${_SHEL_COMN}"/fnFind_command.sh						# find command
+	# shellcheck source=/dev/null
+	. "${_SHEL_COMN}"/fnFind_service.sh						# find service
+	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnIPv6FullAddr.sh						# IPv6 full address
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnIPv6RevAddr.sh						# IPv6 reverse address
@@ -103,7 +107,9 @@ fnMain() {
 
 	# --- debug output --------------------------------------------------------
 	if [ -n "${_DBGS_FLAG:-}" ]; then
-		tree --charset C -n --filesfirst "${_DIRS_BACK:-}"
+		if command -v tree > /dev/null 2>&1; then
+			tree --charset C -n --filesfirst "${_DIRS_BACK:-}"
+		fi
 	fi
 
 	# --- complete ------------------------------------------------------------

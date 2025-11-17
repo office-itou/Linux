@@ -33,6 +33,12 @@ fnMkdir_share(){
 	__FUNC_NAME="fnMkdir_share"
 	fnMsgout "start" "[${__FUNC_NAME}]"
 
+	# --- create system user id -----------------------------------------------
+	if ! id "${_SAMB_USER}" > /dev/null 2>&1; then
+		if ! grep -qE '^'"${_SAMB_GADM}"':' /etc/group; then groupadd --system "${_SAMB_GADM}"; fi
+		if ! grep -qE '^'"${_SAMB_GRUP}"':' /etc/group; then groupadd --system "${_SAMB_GRUP}"; fi
+		useradd --system --shell "${_SHEL_NLIN}" --groups "${_SAMB_GRUP}" "${_SAMB_USER}"
+	fi
 	# --- create directory ----------------------------------------------------
 	mkdir -p "${_DIRS_TOPS:?}"
 	mkdir -p "${_DIRS_HGFS:?}"
@@ -177,7 +183,7 @@ _EOT_
 
 	# --- debug output --------------------------------------------------------
 	if [ -n "${_DBGS_FLAG:-}" ]; then
-		tree --charset C -n --filesfirst "${_DIRS_TOPS}"
+		command -v tree > /dev/null 2>&1 && tree --charset C -n --filesfirst "${_DIRS_TOPS}"
 	fi
 
 	# --- complete ------------------------------------------------------------

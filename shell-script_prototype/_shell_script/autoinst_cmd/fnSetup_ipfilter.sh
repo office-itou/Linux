@@ -7,7 +7,7 @@
 #   return:            : unused
 #   g-var :            : unused
 # shellcheck disable=SC2148,SC2317,SC2329
-fnSetup_ipfilte() {
+fnSetup_ipfilter() {
 	__FUNC_NAME="fnSetup_ipfilte"
 	fnMsgout "start" "[${__FUNC_NAME}]"
 
@@ -15,7 +15,7 @@ fnSetup_ipfilte() {
 #	__PATH="${_DIRS_TGET:-}/usr/lib/systemd/system/systemd-logind.service.d/ipfilter.conf"
 #	fnFile_backup "${__PATH}"			# backup original file
 #	mkdir -p "${__PATH%/*}"
-#	cp -a "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+#	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 #	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
 #		[Service]
 #		IPAddressDeny=any           # 0.0.0.0/0      ::/0

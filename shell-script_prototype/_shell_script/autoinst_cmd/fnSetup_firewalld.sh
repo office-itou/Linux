@@ -17,29 +17,29 @@ fnSetup_firewalld() {
 		return
 	fi
 	# --- firewalld.service ---------------------------------------------------
-	__PATH="$(find "${_DIRS_TGET:-}"/lib/systemd/system/ "${_DIRS_TGET:-}"/usr/lib/systemd/system/ -name 'firewalld.service' | sort | head -n 1)"
-	fnFile_backup "${__PATH}"			# backup original file
-	mkdir -p "${__PATH%/*}"
-	cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
-	sed -i "${__PATH}" \
+	__SRVC="$(fnFind_serivce 'firewalld.service' | sort | head -n 1)"
+	fnFile_backup "${__SRVC}"			# backup original file
+	mkdir -p "${__SRVC%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__SRVC#*"${_DIRS_TGET:-}/"}" "${__SRVC}"
+	sed -i "${__SRVC}" \
 	    -e '/\[Unit\]/,/\[.*\]/                {' \
 	    -e '/^Before=network-pre.target$/ s/^/#/' \
 	    -e '/^Wants=network-pre.target$/  s/^/#/' \
 	    -e '                                   }'
-	fnDbgdump "${__PATH}"				# debugout
-	fnFile_backup "${__PATH}" "init"	# backup initial file
+	fnDbgdump "${__SRVC}"				# debugout
+	fnFile_backup "${__SRVC}" "init"	# backup initial file
 	# --- firewalld -----------------------------------------------------------
 	__ORIG="$(find "${_DIRS_TGET:-}"/lib/firewalld/zones/ "${_DIRS_TGET:-}"/usr/lib/firewalld/zones/ -name 'drop.xml' | sort | head -n 1)"
 	__PATH="${_DIRS_TGET:-}/etc/firewalld/zones/${_FWAL_ZONE}.xml"
-	cp --preserve=timestampsa "${__ORIG}" "${__PATH}"
+	cp --preserve=timestamps "${__ORIG}" "${__PATH}"
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
-	cp --preserve=timestampsa "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	__IPV4="${_IPV4_UADR}.0/${_NICS_BIT4}"
 	__IPV6="${_IPV6_UADR%%::}::/${_IPV6_CIDR}"
 	__LINK="${_LINK_UADR%%::}::/10"
-	__SRVC="firewalld.service"
-	if systemctl --quiet is-active "${__SRVC}"; then
+	__SRVC="${__SRVC##*/}"
+	if [ -z "${_TGET_CNTR:-}" ] && systemctl --quiet is-active "${__SRVC}"; then
 		fnMsgout "active" "${__SRVC}"
 		firewall-cmd --quiet --permanent --set-default-zone="${_FWAL_ZONE}" || true
 		[ -n "${_NICS_NAME##-}" ] && { firewall-cmd --quiet --permanent --zone="${_FWAL_ZONE}" --change-interface="${_NICS_NAME}" || true; }

@@ -21,6 +21,7 @@
 	_FILE_SEED=""						# preseed file name
 	# --- target --------------------------------------------------------------
 	_TGET_VIRT=""						# virtualization (ex. vmware)
+	_TGET_CNTR=""						# is container   (empty: none, else: container)
 	# --- set system parameter ------------------------------------------------
 	_DIST_NAME=""						# distribution name (ex. debian)
 	_DIST_VERS=""						# release version   (ex. 13)
@@ -29,9 +30,12 @@
 	_COLS_SIZE="80"						# screen size: columns
 	_TEXT_GAP1=""						# gap1
 	_TEXT_GAP2=""						# gap2
+	_COMD_BBOX=""						# busybox (empty: inactive, else: active )
+	_OPTN_COPY="--preserve=timestamps"	# copy option
 	# --- network parameter ---------------------------------------------------
 	readonly _NTPS_ADDR="ntp.nict.jp"	# ntp server address
 	readonly _NTPS_IPV4="61.205.120.130" # ntp server ipv4 address
+	readonly _NTPS_FBAK="ntp1.jst.mfeed.ad.jp ntp2.jst.mfeed.ad.jp ntp3.jst.mfeed.ad.jp"
 	readonly _IPV6_LHST="::1"			# ipv6 local host address
 	readonly _IPV4_LHST="127.0.0.1"		# ipv4 local host address
 	readonly _IPV4_DUMY="127.0.1.1"		# ipv4 dummy address
@@ -59,11 +63,9 @@
 	readonly _SAMB_USER="sambauser"		# force user
 	readonly _SAMB_GRUP="sambashare"	# force group
 	readonly _SAMB_GADM="sambaadmin"	# admin group
-										# login shell (disallow system login to samba user)
-	_SHEL_NLIN="$(command -v nologin || true)"
-	_SHEL_NLIN="${_SHEL_NLIN:-"$([ -e /usr/sbin/nologin ] && echo "/usr/sbin/nologin")"}"
-	_SHEL_NLIN="${_SHEL_NLIN:-"$([ -e /sbin/nologin     ] && echo "/sbin/nologin")"}"
-	readonly _SHEL_NLIN
+										# nsswitch.conf
+	readonly _SAMB_NSSW="wins mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns mdns4 mdns6"
+	_SHEL_NLIN=""						# login shell (disallow system login to samba user)
 	# --- shared directory parameter ------------------------------------------
 	_DIRS_TOPS=""						# top of shared directory
 	_DIRS_HGFS=""						# vmware shared

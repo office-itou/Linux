@@ -18,10 +18,11 @@ fnNetwork_param() {
 	else
 		if [ -z "${_NICS_NAME#*"*"}" ]; then
 #			_NICS_NAME="$(find "${___DIRS}" -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -E "${_NICS_NAME}" | sort | head -n 1)"
-			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' -not -path '*/virtual/*' -prune -name "${_NICS_NAME}" -printf "%f" | sort | head -n 1)"
+			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | sort | head -n 1)"
+			_NICS_NAME="${_NICS_NAME##*/}"
 		fi
 #		if ! find "${___DIRS}" -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -qE '^'"${_NICS_NAME}"'$'; then
-		if ! find "${___DIRS}" -path '*/net/*' -not -path '*/virtual/*' -prune -name "${_NICS_NAME}" -printf "%f" | grep -qE '^'"${_NICS_NAME}"'$'; then
+		if ! find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | grep -q "${_NICS_NAME}"; then
 			fnMsgout "failed" "not exist: [${_NICS_NAME}]"
 		else
 			_NICS_MADR="${_NICS_MADR:-"$(ip -0 -brief address show dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}' || true)"}"
@@ -30,7 +31,8 @@ fnNetwork_param() {
 				_NICS_AUTO="dhcp"
 			fi
 			if [ -z "${_NICS_DNS4:-}" ] || [ -z "${_NICS_WGRP:-}" ]; then
-				if command -v resolvectl > /dev/null 2>&1; then
+				__PATH="$(fnFind_command 'resolvectl' | sort | head -n 1)"
+				if [ -n "${__PATH:-}" ]; then
 					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/^Global:/            s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
 					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
 					_NICS_WGRP="${_NICS_WGRP:-"$(resolvectl domain 2> /dev/null | sed -ne '/^Global:/            s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
@@ -55,7 +57,11 @@ fnNetwork_param() {
 		_NICS_MASK="$(fnIPv4Netmask "${_NICS_BIT4:-"24"}")"
 	fi
 	_NICS_GATE="${_NICS_GATE:-"$(ip -4 -brief route list match default | awk '{print $3;}' | uniq)"}"
-	_NICS_FQDN="${_NICS_FQDN:-"$(cat "${_DIRS_TGET:-}/etc/hostname" || true)"}"
+	if [ -e "${_DIRS_TGET:-}/etc/hostname" ]; then
+		_NICS_FQDN="${_NICS_FQDN:-"$(cat "${_DIRS_TGET:-}/etc/hostname" || true)"}"
+	fi
+	_NICS_FQDN="${_NICS_FQDN:-"${_DIST_NAME:+"sv-${_DIST_NAME}.workgroup"}"}"
+	_NICS_FQDN="${_NICS_FQDN:-"localhost.local"}"
 	_NICS_HOST="${_NICS_HOST:-"$(echo "${_NICS_FQDN}." | cut -d '.' -f 1)"}"
 	_NICS_WGRP="${_NICS_WGRP:-"$(echo "${_NICS_FQDN}." | cut -d '.' -f 2)"}"
 	_NICS_HOST="$(echo "${_NICS_HOST}" | tr '[:upper:]' '[:lower:]')"

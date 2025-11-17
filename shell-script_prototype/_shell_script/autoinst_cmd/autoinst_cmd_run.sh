@@ -63,6 +63,7 @@
 	_FILE_SEED=""						# preseed file name
 	# --- target --------------------------------------------------------------
 	_TGET_VIRT=""						# virtualization (ex. vmware)
+	_TGET_CNTR=""						# is container   (empty: none, else: container)
 	# --- set system parameter ------------------------------------------------
 	_DIST_NAME=""						# distribution name (ex. debian)
 	_DIST_VERS=""						# release version   (ex. 13)
@@ -71,9 +72,12 @@
 	_COLS_SIZE="80"						# screen size: columns
 	_TEXT_GAP1=""						# gap1
 	_TEXT_GAP2=""						# gap2
+	_COMD_BBOX=""						# busybox (empty: inactive, else: active )
+	_OPTN_COPY="--preserve=timestamps"	# copy option
 	# --- network parameter ---------------------------------------------------
 	readonly _NTPS_ADDR="ntp.nict.jp"	# ntp server address
 	readonly _NTPS_IPV4="61.205.120.130" # ntp server ipv4 address
+	readonly _NTPS_FBAK="ntp1.jst.mfeed.ad.jp ntp2.jst.mfeed.ad.jp ntp3.jst.mfeed.ad.jp"
 	readonly _IPV6_LHST="::1"			# ipv6 local host address
 	readonly _IPV4_LHST="127.0.0.1"		# ipv4 local host address
 	readonly _IPV4_DUMY="127.0.1.1"		# ipv4 dummy address
@@ -101,11 +105,9 @@
 	readonly _SAMB_USER="sambauser"		# force user
 	readonly _SAMB_GRUP="sambashare"	# force group
 	readonly _SAMB_GADM="sambaadmin"	# admin group
-										# login shell (disallow system login to samba user)
-	_SHEL_NLIN="$(command -v nologin || true)"
-	_SHEL_NLIN="${_SHEL_NLIN:-"$([ -e /usr/sbin/nologin ] && echo "/usr/sbin/nologin")"}"
-	_SHEL_NLIN="${_SHEL_NLIN:-"$([ -e /sbin/nologin     ] && echo "/sbin/nologin")"}"
-	readonly _SHEL_NLIN
+										# nsswitch.conf
+	readonly _SAMB_NSSW="wins mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns mdns4 mdns6"
+	_SHEL_NLIN=""						# login shell (disallow system login to samba user)
 	# --- shared directory parameter ------------------------------------------
 	_DIRS_TOPS=""						# top of shared directory
 	_DIRS_HGFS=""						# vmware shared
@@ -217,6 +219,16 @@ fnStrmsg() {
 }
 
 # -----------------------------------------------------------------------------
+# descript: find command
+#   input :     $1     : command name
+#   output:   stdout   : output
+#   return:            : unused
+# --- file backup -------------------------------------------------------------
+fnFind_command() {
+	find "${_DIRS_TGET:-}"/bin/ "${_DIRS_TGET:-}"/sbin/ "${_DIRS_TGET:-}"/usr/bin/ "${_DIRS_TGET:-}"/usr/sbin/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \)
+}
+
+# -----------------------------------------------------------------------------
 # descript: IPv6 full address
 #   input :     $1     : value
 #   input :     $2     : format (not empty: zero padding)
@@ -237,7 +249,7 @@ fnIPv6FullAddr() {
 			gsub("::",sep,str)
 			split(str,arr,":")
 			for (i=0;i<length(arr);i++) {
-				num[i]=strtonum("0x"arr[i])
+				num[i]="0x"arr[i]
 			}
 			printf "'"${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}"'",
 			num[1],num[2],num[3],num[4],num[5],num[6],num[7],num[8]
@@ -302,12 +314,15 @@ fnIPv4Netmask() {
 					and(rshift(n,8),0xFF),
 					and(n,0xFF)
 			} else {
-				h=xor(0xFFFFFFFF,lshift($1,24)+lshift($2,16)+lshift($3,8)+$4)
-				n=32
-				if (h>0) {
-					n-=int(log(h)/log(2)+1)
+				n=xor(0xFFFFFFFF,lshift($1,24)+lshift($2,16)+lshift($3,8)+$4)
+				c=0
+				while (n>0) {
+					if (n%2==1) {
+						c++
+					}
+					n=int(n/2)
 				}
-				printf "%d",n
+				printf "%d",(32-c)
 			}
 		}'
 }
@@ -323,6 +338,12 @@ fnDetect_virt() {
 	fi
 	_TGET_VIRT="$(systemd-detect-virt || true)"
 	readonly _TGET_VIRT
+	_TGET_CNTR=""
+	case "$(systemctl is-system-running || true)" in
+		offline) _TGET_CNTR="true";;
+		*) ;;
+	esac
+	readonly _TGET_CNTR
 }
 
 # -----------------------------------------------------------------------------
@@ -362,10 +383,11 @@ fnNetwork_param() {
 	else
 		if [ -z "${_NICS_NAME#*"*"}" ]; then
 #			_NICS_NAME="$(find "${___DIRS}" -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -E "${_NICS_NAME}" | sort | head -n 1)"
-			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' -not -path '*/virtual/*' -prune -name "${_NICS_NAME}" -printf "%f" | sort | head -n 1)"
+			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | sort | head -n 1)"
+			_NICS_NAME="${_NICS_NAME##*/}"
 		fi
 #		if ! find "${___DIRS}" -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -qE '^'"${_NICS_NAME}"'$'; then
-		if ! find "${___DIRS}" -path '*/net/*' -not -path '*/virtual/*' -prune -name "${_NICS_NAME}" -printf "%f" | grep -qE '^'"${_NICS_NAME}"'$'; then
+		if ! find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | grep -q "${_NICS_NAME}"; then
 			fnMsgout "failed" "not exist: [${_NICS_NAME}]"
 		else
 			_NICS_MADR="${_NICS_MADR:-"$(ip -0 -brief address show dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}' || true)"}"
@@ -374,7 +396,8 @@ fnNetwork_param() {
 				_NICS_AUTO="dhcp"
 			fi
 			if [ -z "${_NICS_DNS4:-}" ] || [ -z "${_NICS_WGRP:-}" ]; then
-				if command -v resolvectl > /dev/null 2>&1; then
+				__PATH="$(fnFind_command 'resolvectl' | sort | head -n 1)"
+				if [ -n "${__PATH:-}" ]; then
 					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/^Global:/            s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
 					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
 					_NICS_WGRP="${_NICS_WGRP:-"$(resolvectl domain 2> /dev/null | sed -ne '/^Global:/            s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
@@ -399,7 +422,11 @@ fnNetwork_param() {
 		_NICS_MASK="$(fnIPv4Netmask "${_NICS_BIT4:-"24"}")"
 	fi
 	_NICS_GATE="${_NICS_GATE:-"$(ip -4 -brief route list match default | awk '{print $3;}' | uniq)"}"
-	_NICS_FQDN="${_NICS_FQDN:-"$(cat "${_DIRS_TGET:-}/etc/hostname" || true)"}"
+	if [ -e "${_DIRS_TGET:-}/etc/hostname" ]; then
+		_NICS_FQDN="${_NICS_FQDN:-"$(cat "${_DIRS_TGET:-}/etc/hostname" || true)"}"
+	fi
+	_NICS_FQDN="${_NICS_FQDN:-"${_DIST_NAME:+"sv-${_DIST_NAME}.workgroup"}"}"
+	_NICS_FQDN="${_NICS_FQDN:-"localhost.local"}"
 	_NICS_HOST="${_NICS_HOST:-"$(echo "${_NICS_FQDN}." | cut -d '.' -f 1)"}"
 	_NICS_WGRP="${_NICS_WGRP:-"$(echo "${_NICS_FQDN}." | cut -d '.' -f 2)"}"
 	_NICS_HOST="$(echo "${_NICS_HOST}" | tr '[:upper:]' '[:lower:]')"
@@ -489,7 +516,7 @@ fnFile_backup() {
 		___BACK="${___BACK}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
 	fi
 	fnMsgout "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
-	cp -a "${___PATH}" "${___BACK}"
+	cp --archive "${___PATH}" "${___BACK}"
 }
 
 # *** function section (subroutine functions) *********************************
@@ -522,23 +549,31 @@ fnInitialize() {
 	readonly _TEXT_GAP1
 	readonly _TEXT_GAP2
 
+	if realpath "$(command -v cp || true)" | grep 'busybox'; then
+		_COMD_BBOX="true"
+		_OPTN_COPY="-p"
+	fi
+
 	# --- target virtualization -----------------------------------------------
 	fnDetect_virt
 
 	_DIRS_TGET=""
 	for __DIRS in \
 		/target \
-		/mnt/sysimage/root \
+		/mnt/sysimage \
 		/mnt/root
 	do
 		[ ! -e "${__DIRS}"/. ] && continue
 		_DIRS_TGET="${__DIRS}"
+		break
 	done
+	readonly _DIRS_TGET
 
 	# --- system parameter ----------------------------------------------------
 	fnSystem_param
 	fnDbgout "system parameter" \
 		"info,_TGET_VIRT=[${_TGET_VIRT:-}]" \
+		"info,_TGET_CNTR=[${_TGET_CNTR:-}]" \
 		"info,_DIRS_TGET=[${_DIRS_TGET:-}]" \
 		"info,_DIST_NAME=[${_DIST_NAME:-}]" \
 		"info,_DIST_VERS=[${_DIST_VERS:-}]" \
@@ -549,6 +584,7 @@ fnInitialize() {
 	fnDbgout "network info" \
 		"info,_NICS_NAME=[${_NICS_NAME:-}]" \
 		"debug,_NICS_MADR=[${_NICS_MADR:-}]" \
+		"info,_NICS_AUTO=[${_NICS_AUTO:-}]" \
 		"info,_NICS_IPV4=[${_NICS_IPV4:-}]" \
 		"info,_NICS_MASK=[${_NICS_MASK:-}]" \
 		"info,_NICS_BIT4=[${_NICS_BIT4:-}]" \
@@ -560,6 +596,7 @@ fnInitialize() {
 		"debug,_NMAN_FLAG=[${_NMAN_FLAG:-}]" \
 		"info,_NTPS_ADDR=[${_NTPS_ADDR:-}]" \
 		"debug,_NTPS_IPV4=[${_NTPS_IPV4:-}]" \
+		"debug,_NTPS_FBAK=[${_NTPS_FBAK:-}]" \
 		"debug,_IPV6_LHST=[${_IPV6_LHST:-}]" \
 		"debug,_IPV4_LHST=[${_IPV4_LHST:-}]" \
 		"debug,_IPV4_DUMY=[${_IPV4_DUMY:-}]" \
@@ -631,7 +668,7 @@ fnInitialize() {
 
 	# --- working directory parameter -----------------------------------------
 										# top of working directory
-	_DIRS_INST="${_DIRS_VADM:?}/${_PROG_NAME%%_*}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
+	_DIRS_INST="${_DIRS_VADM:?}/${_PROG_NAME%%_*}.$(date ${__time_start:+-d "@${__time_start}"} +"%Y%m%d%H%M%S")"
 	readonly _DIRS_INST							# auto-install working directory
 	readonly _DIRS_BACK="${_DIRS_INST}"			# top of backup directory
 	readonly _DIRS_ORIG="${_DIRS_BACK}/orig"	# original file directory
@@ -647,12 +684,14 @@ fnInitialize() {
 		"debug,_DIRS_SAMP=[${_DIRS_SAMP:-}]" \
 		"debug,_DIRS_LOGS=[${_DIRS_LOGS:-}]" \
 
+	mkdir -p "${_DIRS_TGET:-}${_DIRS_INST%.*}/"
+	chmod 600 "${_DIRS_TGET:-}${_DIRS_VADM:?}"
 	find "${_DIRS_TGET:-}${_DIRS_VADM:?}" -name "${_PROG_NAME%%_*}.[0-9]*" -type d | sort -r | tail -n +3 | \
 	while read -r __TGET
 	do
 		__PATH="${__TGET}.tgz"
 		fnMsgout "archive" "[${__TGET}] -> [${__PATH}]"
-		if tar -C "${__TGET}" -czf "${__PATH}" .; then
+		if tar -C "${__TGET}" -cf "${__PATH}" .; then
 			chmod 600 "${__PATH}"
 			fnMsgout "remove"  "${__TGET}"
 			rm -rf "${__TGET:?}"
@@ -662,11 +701,24 @@ fnInitialize() {
 	chmod 600 "${_DIRS_TGET:-}${_DIRS_INST:?}"
 
 	# --- samba ---------------------------------------------------------------
+	_SHEL_NLIN="$(fnFind_command 'nologin' | sort -r | head -n 1)"
+	_SHEL_NLIN="${_SHEL_NLIN#*"${_DIRS_TGET:-}"}"
+	_SHEL_NLIN="${_SHEL_NLIN:-"$(if [ -e /usr/sbin/nologin ]; then echo "/usr/sbin/nologin"; fi)"}"
+	_SHEL_NLIN="${_SHEL_NLIN:-"$(if [ -e /sbin/nologin     ]; then echo "/sbin/nologin"; fi)"}"
+	readonly _SHEL_NLIN
 	fnDbgout "samba info" \
 		"debug,_SAMB_USER=[${_SAMB_USER:-}]" \
 		"debug,_SAMB_GRUP=[${_SAMB_GRUP:-}]" \
 		"debug,_SAMB_GADM=[${_SAMB_GADM:-}]" \
+		"debug,_SAMB_NSSW=[${_SAMB_NSSW:-}]" \
 		"debug,_SHEL_NLIN=[${_SHEL_NLIN:-}]"
+
+	# --- auto install --------------------------------------------------------
+	fnDbgout "shell info" \
+		"debug,_FILE_ERLY=[${_FILE_ERLY:-}]" \
+		"debug,_FILE_LATE=[${_FILE_LATE:-}]" \
+		"debug,_FILE_PART=[${_FILE_PART:-}]" \
+		"debug,_FILE_RUNS=[${_FILE_RUNS:-}]"
 
 	# --- debug backup---------------------------------------------------------
 	fnFile_backup "/proc/cmdline"
