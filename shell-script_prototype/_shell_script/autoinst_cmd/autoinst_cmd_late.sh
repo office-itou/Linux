@@ -132,7 +132,7 @@
 	_DIRS_CTNR=""						# container file
 	_DIRS_CHRT=""						# container file (chroot)
 	# --- working directory parameter -----------------------------------------
-	readonly _DIRS_VADM="/var/adm"		# top of admin working directory
+	readonly _DIRS_VADM="/var/admin"	# top of admin working directory
 	_DIRS_INST=""						# auto-install working directory
 	_DIRS_BACK=""						# top of backup directory
 	_DIRS_ORIG=""						# original file directory
@@ -590,9 +590,9 @@ fnInitialize() {
 	for __DIRS in \
 		/target \
 		/mnt/sysimage \
-		/mnt/root
+		/mnt/
 	do
-		[ ! -e "${__DIRS}"/. ] && continue
+		[ ! -e "${__DIRS}"/root/. ] && continue
 		_DIRS_TGET="${__DIRS}"
 		break
 	done
@@ -1852,7 +1852,9 @@ fnSetup_samba() {
 	if [ -e "${__PATH}" ]; then
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
-		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		if [ ! -L "${__PATH}" ]; then
+			cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		fi
 		sed -i "${__PATH}"                \
 		    -e '/^hosts:[ \t]\+/       {' \
 		    -e 's/\(files\).*$/\1/'       \
@@ -2287,7 +2289,7 @@ fnSetup_wireplumber() {
 	fnMsgout "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
-	__SRVC="$(fnFind_serivce 'chronyd.service' | sort | head -n 1)"
+	__SRVC="$(fnFind_serivce 'wireplumber.service' | sort | head -n 1)"
 	if [ -z "${__SRVC:-}" ]; then
 		fnMsgout "skip" "[${__FUNC_NAME}]"
 		return
@@ -2439,6 +2441,10 @@ fnSetup_skel() {
 
 	# --- .bashrc -------------------------------------------------------------
 	__PATH="${_DIRS_TGET:-}/etc/skel/.bashrc"
+	__CONF="${_DIRS_TGET:-}/usr/etc/skel/.bashrc"
+	if [ ! -e "${__PATH}" ] && [ -e "${__CONF}" ]; then
+		cp --preserve=timestamps "${__CONF}" "${__PATH}"
+	fi
 	if [ -e "${__PATH}" ]; then
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
@@ -2755,6 +2761,70 @@ fnSetup_ipfilter() {
 }
 
 # -----------------------------------------------------------------------------
+# descript: service
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnSetup_service() {
+	__FUNC_NAME="fnSetup_skel"
+	fnMsgout "start" "[${__FUNC_NAME}]"
+
+	set -f
+	set --
+	for __LIST in \
+		apparmor.service \
+		auditd.service \
+		firewalld.service \
+		clamav-freshclam.service \
+		NetworkManager.service \
+		systemd-resolved.service \
+		dnsmasq.service \
+		systemd-timesyncd.service \
+		chronyd.service\
+		open-vm-tools.service \
+		vmtoolsd.service \
+		ssh.service \
+		sshd.service \
+		apache2.service \
+		httpd.service \
+		smb.service \
+		smbd.service \
+		nmb.service \
+		nmbd.service \
+		avahi-daemon.service
+	do
+		if [ ! -e "${_DIRS_TGET:-}/lib/systemd/system/${__LIST}"     ] \
+		&& [ ! -e "${_DIRS_TGET:-}/usr/lib/systemd/system/${__LIST}" ]; then
+			continue
+		fi
+		fnMsgout "enable" "${__LIST}"
+		set -- "$@" "${__LIST}"
+	done 
+	set +f
+	if [ $# -gt 0 ]; then
+		systemctl enable "$@"
+		# --- service restart -------------------------------------------------
+		if [ -z "${_TGET_CNTR:-}" ]; then
+			for __SRVC in "$@"
+			do
+				if systemctl --quiet is-active "${__SRVC}"; then
+					fnMsgout "restart" "${__SRVC}"
+					systemctl --quiet daemon-reload
+					if systemctl --quiet restart "${__SRVC}"; then
+						fnMsgout "success" "${__SRVC}"
+					else
+						fnMsgout "failed" "${__SRVC}"
+					fi
+				fi
+			done
+		fi
+	fi
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "complete" "[${__FUNC_NAME}]" 
+}
+
+# -----------------------------------------------------------------------------
 # descript: 
 #   input :            : unused
 #   output:   stdout   : message
@@ -2806,6 +2876,7 @@ fnMain() {
 	fnSetup_apparmor					# apparmor
 	fnSetup_selinux						# selinux
 	fnSetup_ipfilter					# ipfilter
+	fnSetup_service						# service
 
 	# --- booting setup -------------------------------------------------------
 	fnSetup_grub_menu					# grub menu settings

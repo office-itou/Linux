@@ -30,7 +30,9 @@ fnSetup_samba() {
 	if [ -e "${__PATH}" ]; then
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
-		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		if [ ! -L "${__PATH}" ]; then
+			cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		fi
 		sed -i "${__PATH}"                \
 		    -e '/^hosts:[ \t]\+/       {' \
 		    -e 's/\(files\).*$/\1/'       \

@@ -40,26 +40,26 @@
     "pre": [
       {
         "name": "zzz_pre.sh",
-        "content": "#!/bin/sh;mkdir -p /var/adm/autoinst/;{cd /var/adm/autoinst/;wget http://192.168.1.12/conf/script/autoinst_cmd_early.sh;chmod +x ./autoinst_cmd_early.sh;./autoinst_cmd_early.sh;} >> /var/adm/autoinst/autoinst_cmd_early.sh.log 2>&1;exit 0;"
+        "content": "#!/bin/sh\nmkdir -p /var/admin/autoinst/\n{\ncd /var/admin/autoinst/\ncurl -L -# -O -R -S http://192.168.1.12/conf/script/autoinst_cmd_early.sh\nchmod +x ./autoinst_cmd_early.sh\n./autoinst_cmd_early.sh\n} >> /var/admin/autoinst/autoinst_cmd_early.sh.log 2>&1\nexit 0\n"
       }
     ],
     "postPartitioning": [
       {
         "name": "zzz_postpartitioning.sh",
-        "content": "#!/bin/sh;"
+        "content": "#!/bin/sh\n{\ncd /var/admin/autoinst/\n./autoinst_cmd_part.sh\n} >> /var/admin/autoinst/autoinst_cmd_part.sh.log 2>&1\nexit 0\n"
       }
     ],
     "post": [
       {
         "name": "zzz_post.sh",
         "chroot": false,
-        "content": "#!/bin/sh;{mkdir -p /target/var/adm/;mount --bind /var/adm/ /target/var/adm/;mount --bind /run/     /target/run/;mount --bind /proc/    /target/proc/;mount --bind /sys/     /target/sys/;chroot /target/ /var/adm/autoinst/autoinst_cmd_late.sh;umount /target/sys/ /target/proc/ /target/run/ /target/var/adm/;} >> /var/adm/autoinst/autoinst_cmd_late.sh.log 2>&1;cp -pr /var/adm/* /target/var/adm/;exit 0;"
+        "content": "#!/bin/sh\n{\nmkdir -p /mnt/var/admin/\nmount --bind /var/admin/ /mnt/var/admin/\nmount --bind /run/ /mnt/run/\nmount --bind /proc/ /mnt/proc/\nmount --bind /sys/ /mnt/sys/\nchroot /mnt/ /var/admin/autoinst/autoinst_cmd_late.sh\numount /mnt/sys/ /mnt/proc/ /mnt/run/ /mnt/var/admin/\n} >> /var/admin/autoinst/autoinst_cmd_late.sh.log 2>&1\ncp -pr /var/admin/* /mnt/var/admin/\nexit 0\n"
       }
     ],
     "init": [
       {
         "name": "zzz_init.sh",
-        "content": "#!/bin/sh;"
+        "content": "#!/bin/sh\n{\ncd /var/admin/autoinst/\n./autoinst_cmd_run.sh\n} >> /var/admin/autoinst/autoinst_cmd_run.sh.log 2>&1\nexit 0\n"
       }
     ]
   },

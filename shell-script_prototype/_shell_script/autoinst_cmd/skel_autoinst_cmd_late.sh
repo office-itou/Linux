@@ -131,6 +131,8 @@
 	# shellcheck source=/dev/null
 	. "${_SHEL_TOPS}"/fnSetup_ipfilter.sh					# ipfilter
 	# shellcheck source=/dev/null
+	. "${_SHEL_TOPS}"/fnSetup_service.sh					# service
+	# shellcheck source=/dev/null
 	. "${_SHEL_TOPS}"/fnSetup_grub_menu.sh					# grub menu settings
 
 # *** main section ************************************************************
@@ -177,6 +179,7 @@ fnMain() {
 	fnSetup_apparmor					# apparmor
 	fnSetup_selinux						# selinux
 	fnSetup_ipfilter					# ipfilter
+	fnSetup_service						# service
 
 	# --- booting setup -------------------------------------------------------
 	fnSetup_grub_menu					# grub menu settings

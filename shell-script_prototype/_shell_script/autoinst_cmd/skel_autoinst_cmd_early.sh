@@ -52,6 +52,8 @@
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnDbgout.sh							# message output (debug out)
 	# shellcheck source=/dev/null
+	. "${_SHEL_COMN}"/fnDbgdump.sh							# dump output (debug out)
+	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnMsgout.sh							# message output
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnString.sh							# string output

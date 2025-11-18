@@ -12,7 +12,7 @@ fnSetup_wireplumber() {
 	fnMsgout "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
-	__SRVC="$(fnFind_serivce 'chronyd.service' | sort | head -n 1)"
+	__SRVC="$(fnFind_serivce 'wireplumber.service' | sort | head -n 1)"
 	if [ -z "${__SRVC:-}" ]; then
 		fnMsgout "skip" "[${__FUNC_NAME}]"
 		return

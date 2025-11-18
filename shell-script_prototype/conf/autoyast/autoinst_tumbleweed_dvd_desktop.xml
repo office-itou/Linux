@@ -147,7 +147,7 @@ fixed address -->
 * post-scripts (during the first boot of the installed system, no services running)
 * init-scripts (during the first boot of the installed system, all services up and running)
 -->
-<!-- log's directory: /var/adm/autoinstall/logs/ -->
+<!-- log's directory: /var/admin/autoinstall/logs/ -->
   <scripts t="map">
     <!-- *** pre-scripts *************************************************** -->
     <pre-scripts t="list">
@@ -181,7 +181,7 @@ fixed address -->
   if [ -n "${_DIRS_TGET}" ] && [ ! -d "${_DIRS_TGET}/root/." ]; then
     _DIRS_TGET=""
   fi
-  _DIRS_INST="/var/adm/autoinst"
+  _DIRS_INST="/var/admin/autoinst"
   _PATH_LOGS="${_DIRS_TGET}${_DIRS_INST}/${_FUNC_NAME}.log"
   mkdir -p "${_DIRS_TGET}${_DIRS_INST}"
   chmod 0600 "${_DIRS_TGET}${_DIRS_INST}"
@@ -375,7 +375,7 @@ fixed address -->
   if [ -n "${_DIRS_TGET}" ] && [ ! -d "${_DIRS_TGET}/root/." ]; then
     _DIRS_TGET=""
   fi
-  _DIRS_INST="/var/adm/autoinst"
+  _DIRS_INST="/var/admin/autoinst"
   _PATH_LOGS="${_DIRS_TGET}${_DIRS_INST}/${_FUNC_NAME}.log"
   mkdir -p "${_DIRS_TGET}${_DIRS_INST}"
   chmod 0600 "${_DIRS_TGET}${_DIRS_INST}"
@@ -425,7 +425,7 @@ fixed address -->
   if [ -n "${_DIRS_TGET}" ] && [ ! -d "${_DIRS_TGET}/root/." ]; then
     _DIRS_TGET=""
   fi
-  _DIRS_INST="/var/adm/autoinst"
+  _DIRS_INST="/var/admin/autoinst"
   _PATH_LOGS="${_DIRS_TGET}${_DIRS_INST}/${_FUNC_NAME}.log"
   mkdir -p "${_DIRS_TGET}${_DIRS_INST}"
   chmod 0600 "${_DIRS_TGET}${_DIRS_INST}"
@@ -506,7 +506,7 @@ fixed address -->
   if [ -n "${_DIRS_TGET}" ] && [ ! -d "${_DIRS_TGET}/root/." ]; then
     _DIRS_TGET=""
   fi
-  _DIRS_INST="/var/adm/autoinst"
+  _DIRS_INST="/var/admin/autoinst"
   _PATH_LOGS="${_DIRS_TGET}${_DIRS_INST}/${_FUNC_NAME}.log"
   mkdir -p "${_DIRS_TGET}${_DIRS_INST}"
   chmod 0600 "${_DIRS_TGET}${_DIRS_INST}"
@@ -549,7 +549,7 @@ fixed address -->
   if [ -n "${_DIRS_TGET}" ] && [ ! -d "${_DIRS_TGET}/root/." ]; then
     _DIRS_TGET=""
   fi
-  _DIRS_INST="/var/adm/autoinst"
+  _DIRS_INST="/var/admin/autoinst"
   _PATH_LOGS="${_DIRS_TGET}${_DIRS_INST}/${_FUNC_NAME}.log"
   mkdir -p "${_DIRS_TGET}${_DIRS_INST}"
   chmod 0600 "${_DIRS_TGET}${_DIRS_INST}"

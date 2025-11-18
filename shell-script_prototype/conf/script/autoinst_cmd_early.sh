@@ -132,7 +132,7 @@
 	_DIRS_CTNR=""						# container file
 	_DIRS_CHRT=""						# container file (chroot)
 	# --- working directory parameter -----------------------------------------
-	readonly _DIRS_VADM="/var/adm"		# top of admin working directory
+	readonly _DIRS_VADM="/var/admin"	# top of admin working directory
 	_DIRS_INST=""						# auto-install working directory
 	_DIRS_BACK=""						# top of backup directory
 	_DIRS_ORIG=""						# original file directory
@@ -165,6 +165,25 @@ fnDbgout() {
 		fi
 		shift
 	done
+	fnMsgout "-debugout" "${___ENDS}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: dump output (debug out)
+#   input :     $1     : path
+#   output:   stdout   : message
+#   return:            : unused
+fnDbgdump() {
+	[ -z "${_DBGS_FLAG:-}" ] && return
+	___PATH="${1:?}"
+	if [ ! -e "${___PATH}" ]; then
+		fnMsgout "failed" "not exist: [${___PATH}]"
+		return
+	fi
+	___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${___PATH}")"
+	___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${___PATH}")"
+	fnMsgout "-debugout" "${___STRT}"
+	cat "${___PATH}"
 	fnMsgout "-debugout" "${___ENDS}"
 }
 
@@ -571,9 +590,9 @@ fnInitialize() {
 	for __DIRS in \
 		/target \
 		/mnt/sysimage \
-		/mnt/root
+		/mnt/
 	do
-		[ ! -e "${__DIRS}"/. ] && continue
+		[ ! -e "${__DIRS}"/root/. ] && continue
 		_DIRS_TGET="${__DIRS}"
 		break
 	done
@@ -749,7 +768,7 @@ fnSetup_wireplumber() {
 	fnMsgout "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
-	__SRVC="$(fnFind_serivce 'chronyd.service' | sort | head -n 1)"
+	__SRVC="$(fnFind_serivce 'wireplumber.service' | sort | head -n 1)"
 	if [ -z "${__SRVC:-}" ]; then
 		fnMsgout "skip" "[${__FUNC_NAME}]"
 		return

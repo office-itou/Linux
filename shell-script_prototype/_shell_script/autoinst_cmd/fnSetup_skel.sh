@@ -13,6 +13,10 @@ fnSetup_skel() {
 
 	# --- .bashrc -------------------------------------------------------------
 	__PATH="${_DIRS_TGET:-}/etc/skel/.bashrc"
+	__CONF="${_DIRS_TGET:-}/usr/etc/skel/.bashrc"
+	if [ ! -e "${__PATH}" ] && [ -e "${__CONF}" ]; then
+		cp --preserve=timestamps "${__CONF}" "${__PATH}"
+	fi
 	if [ -e "${__PATH}" ]; then
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"

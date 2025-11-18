@@ -90,7 +90,7 @@
 	_DIRS_CTNR=""						# container file
 	_DIRS_CHRT=""						# container file (chroot)
 	# --- working directory parameter -----------------------------------------
-	readonly _DIRS_VADM="/var/adm"		# top of admin working directory
+	readonly _DIRS_VADM="/var/admin"	# top of admin working directory
 	_DIRS_INST=""						# auto-install working directory
 	_DIRS_BACK=""						# top of backup directory
 	_DIRS_ORIG=""						# original file directory

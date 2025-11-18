@@ -112,9 +112,9 @@ fnInitialize() {
 	for __DIRS in \
 		/target \
 		/mnt/sysimage \
-		/mnt/root
+		/mnt/
 	do
-		[ ! -e "${__DIRS}"/. ] && continue
+		[ ! -e "${__DIRS}"/root/. ] && continue
 		_DIRS_TGET="${__DIRS}"
 		break
 	done
