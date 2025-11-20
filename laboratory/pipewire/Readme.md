@@ -26,7 +26,7 @@
     | Display          |     3D      |
     | Bluetooth        |     Yes     |
 
-  * ### 以下が有れば必ずコメントにする
+  * ### vmxファイル内に以下が有れば必ずコメントにする
 
     ``` text: vmxファイル
     #pciSound.PlayBuffer = "500"  # サウンドバッファの指定
@@ -39,9 +39,11 @@
 
   **sudoを使わない事に注意**
 
-  ``` bash: サービスの再起動
-  systemctl --user restart wireplumber.service
-  ```
+  * サービスの再起動
+
+    ``` bash: サービスの再起動
+    systemctl --user restart wireplumber.service
+    ```
 
   * ### pipewireのバージョンが0.3.65の場合
 
