@@ -101,7 +101,7 @@ fnMain() {
 
 	# --- initial setup -------------------------------------------------------
 	fnInitialize						# initialize
-	fnDbgout							# parameter debug output
+	fnDbgparam							# parameter debug output
 
 	# --- main processing -----------------------------------------------------
 	/bin/kill-all-dhcp

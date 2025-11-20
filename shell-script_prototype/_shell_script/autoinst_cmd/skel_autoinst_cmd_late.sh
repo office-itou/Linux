@@ -153,7 +153,7 @@ fnMain() {
 
 	# --- initial setup -------------------------------------------------------
 	fnInitialize						# initialize
-	fnDbgout							# parameter debug output
+	fnDbgparam							# parameter debug output
 	fnPackage_update					# package updates
 	fnMkdir_share						# creating a shared directory
 

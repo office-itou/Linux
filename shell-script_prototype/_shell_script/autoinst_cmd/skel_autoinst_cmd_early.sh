@@ -105,7 +105,7 @@ fnMain() {
 
 	# --- initial setup -------------------------------------------------------
 	fnInitialize						# initialize
-	fnDbgout							# parameter debug output
+	fnDbgparam							# parameter debug output
 
 	# --- main processing -----------------------------------------------------
 	fnSetup_wireplumber					# wireplumber (alsa) settings
