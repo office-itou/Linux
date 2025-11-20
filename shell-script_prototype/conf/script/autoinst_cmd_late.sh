@@ -144,74 +144,47 @@
 	readonly _FILE_LATE="autoinst_cmd_late.sh"	# "              to run late
 	readonly _FILE_PART="autoinst_cmd_part.sh"	# "              to run after partition
 	readonly _FILE_RUNS="autoinst_cmd_run.sh"	# "              to run preseed/run
+	# --- common data file (prefer non-empty current file) --------------------
+#	readonly _FILE_CONF="common.cfg"			# common configuration file
+#	readonly _FILE_DIST="distribution.dat"		# distribution data file
+#	readonly _FILE_MDIA="media.dat"				# media data file
+#	readonly _FILE_DSTP="debstrap.dat"			# debstrap data file
+	# --- pre-configuration file templates ------------------------------------
+#	readonly _FILE_KICK="kickstart_rhel.cfg"	# for rhel
+#	readonly _FILE_CLUD="user-data_ubuntu"		# for ubuntu cloud-init
+#	readonly _FILE_SEDD="preseed_debian.cfg"	# for debian
+#	readonly _FILE_SEDU="preseed_ubuntu.cfg"	# for ubuntu
+#	readonly _FILE_YAST="yast_opensuse.xml"		# for opensuse
+#	readonly _FILE_AGMA="agama_opensuse.json"	# for opensuse
 
 # *** function section (common functions) *************************************
 
 # -----------------------------------------------------------------------------
-# descript: message output (debug out)
-#   input :     $1     : title
-#   input :     $@     : list
-#   output:   stdout   : message
-#   return:            : unused
-fnDbgout() {
-	___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${1:-}")"
-	___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${1:-}")"
-	shift
-	fnMsgout "-debugout" "${___STRT}"
-	while [ -n "${1:-}" ]
-	do
-		if [ "${1%%,*}" != "debug" ] || [ -n "${_DBGS_FLAG:-}" ]; then
-			fnMsgout "${1%%,*}" "${1#*,}"
-		fi
-		shift
-	done
-	fnMsgout "-debugout" "${___ENDS}"
-}
-
-# -----------------------------------------------------------------------------
-# descript: dump output (debug out)
-#   input :     $1     : path
-#   output:   stdout   : message
-#   return:            : unused
-fnDbgdump() {
-	[ -z "${_DBGS_FLAG:-}" ] && return
-	___PATH="${1:?}"
-	if [ ! -e "${___PATH}" ]; then
-		fnMsgout "failed" "not exist: [${___PATH}]"
-		return
-	fi
-	___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${___PATH}")"
-	___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${___PATH}")"
-	fnMsgout "-debugout" "${___STRT}"
-	cat "${___PATH}"
-	fnMsgout "-debugout" "${___ENDS}"
-}
-
-# -----------------------------------------------------------------------------
 # descript: message output
-#   input :     $1     : section (start, complete, remove, umount, failed, ...)
-#   input :     $2     : message
+#   input :     $1     : title (program name, etc)
+#   input :     $2     : section (start, complete, remove, umount, failed, ...)
+#   input :     $3     : message
 #   output:   stdout   : message
 #   return:            : unused
 fnMsgout() {
-	case "${1:-}" in
+	case "${2:-}" in
 		start    | complete)
-			case "${2:-}" in
-				*/*/*) printf "\033[m${_PROG_NAME:-}: \033[45m--- %-8.8s: %s ---\033[m\n" "${1:-}" "${2:-}";; # date
-				*    ) printf "\033[m${_PROG_NAME:-}: \033[92m--- %-8.8s: %s ---\033[m\n" "${1:-}" "${2:-}";; # info
+			case "${3:-}" in
+				*/*/*) printf "\033[m${1:-}: \033[45m--- %-8.8s: %s ---\033[m\n" "${2:-}" "${3:-}";; # date
+				*    ) printf "\033[m${1:-}: \033[92m--- %-8.8s: %s ---\033[m\n" "${2:-}" "${3:-}";; # info
 			esac
 			;;
-		skip               ) printf "\033[m${_PROG_NAME:-}: \033[92m--- %-8.8s: %s ---\033[m\n"    "${1:-}" "${2:-}";; # info
-		remove   | umount  ) printf "\033[m${_PROG_NAME:-}:     \033[93m%-8.8s: %s\033[m\n"        "${1:-}" "${2:-}";; # warn
-		archive            ) printf "\033[m${_PROG_NAME:-}:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${1:-}" "${2:-}";; # warn
-		success            ) printf "\033[m${_PROG_NAME:-}:     \033[92m%-8.8s: %s\033[m\n"        "${1:-}" "${2:-}";; # info
-		failed             ) printf "\033[m${_PROG_NAME:-}:     \033[41m%-8.8s: %s\033[m\n"        "${1:-}" "${2:-}";; # alert
-		caution            ) printf "\033[m${_PROG_NAME:-}:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${1:-}" "${2:-}";; # warn
-		-*                 ) printf "\033[m${_PROG_NAME:-}:     \033[36m%-8.8s: %s\033[m\n"        "${1#-}" "${2:-}";; # gap
-		info               ) printf "\033[m${_PROG_NAME:-}: \033[92m%12.12s: %s\033[m\n"           "${1:-}" "${2:-}";; # info
-		warn               ) printf "\033[m${_PROG_NAME:-}: \033[93m%12.12s: %s\033[m\n"           "${1:-}" "${2:-}";; # warn
-		alert              ) printf "\033[m${_PROG_NAME:-}: \033[91m%12.12s: %s\033[m\n"           "${1:-}" "${2:-}";; # alert
-		*                  ) printf "\033[m${_PROG_NAME:-}: \033[37m%12.12s: %s\033[m\n"           "${1:-}" "${2:-}";; # normal
+		skip               ) printf "\033[m${1:-}: \033[92m--- %-8.8s: %s ---\033[m\n"    "${2:-}" "${3:-}";; # info
+		remove   | umount  ) printf "\033[m${1:-}:     \033[93m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # warn
+		archive            ) printf "\033[m${1:-}:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${2:-}" "${3:-}";; # warn
+		success            ) printf "\033[m${1:-}:     \033[92m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # info
+		failed             ) printf "\033[m${1:-}:     \033[41m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # alert
+		caution            ) printf "\033[m${1:-}:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${2:-}" "${3:-}";; # warn
+		-*                 ) printf "\033[m${1:-}:     \033[36m%-8.8s: %s\033[m\n"        "${1#-}" "${3:-}";; # gap
+		info               ) printf "\033[m${1:-}: \033[92m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # info
+		warn               ) printf "\033[m${1:-}: \033[93m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # warn
+		alert              ) printf "\033[m${1:-}: \033[91m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # alert
+		*                  ) printf "\033[m${1:-}: \033[37m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # normal
 	esac
 }
 
@@ -238,23 +211,14 @@ fnStrmsg() {
 }
 
 # -----------------------------------------------------------------------------
-# descript: find command
-#   input :     $1     : command name
-#   output:   stdout   : output
+# descript: target system state
+#   input :            : unused
+#   output:   stdout   : result
 #   return:            : unused
-# --- file backup -------------------------------------------------------------
-fnFind_command() {
-	find "${_DIRS_TGET:-}"/bin/ "${_DIRS_TGET:-}"/sbin/ "${_DIRS_TGET:-}"/usr/bin/ "${_DIRS_TGET:-}"/usr/sbin/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \)
-}
-
-# -----------------------------------------------------------------------------
-# descript: find service
-#   input :     $1     : service name
-#   output:   stdout   : output
-#   return:            : unused
-# --- file backup -------------------------------------------------------------
-fnFind_serivce() {
-	find "${_DIRS_TGET:-}"/lib/systemd/system/ "${_DIRS_TGET:-}"/usr/lib/systemd/system/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \)
+fnTargetsys() {
+	___VIRT="$(systemd-detect-virt)"
+	___CNTR="$(systemctl is-system-running)"
+	printf "%s,%s" "${___VIRT:-}" "${___CNTR:-}"
 }
 
 # -----------------------------------------------------------------------------
@@ -281,31 +245,8 @@ fnIPv6FullAddr() {
 				num[i]="0x"arr[i]
 			}
 			printf "'"${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}"'",
-			num[1],num[2],num[3],num[4],num[5],num[6],num[7],num[8]
+				num[1],num[2],num[3],num[4],num[5],num[6],num[7],num[8]
 		}'
-#	___SPRT="$(echo "${___ADDR}" | sed -e 's/[^:]//g')"
-#	___LENG=$((7-${#___SPRT}))
-#	if [ "${___LENG}" -gt 0 ]; then
-#		___SPRT="$(printf ':%.s' $(seq 1 $((___LENG+2))) || true)"
-#		___ADDR="$(echo "${___ADDR}" | sed -e "s/::/${___SPRT}/")"
-#	fi
-#	___OCT1="$(echo "${___ADDR}" | cut -d ':' -f 1)"
-#	___OCT2="$(echo "${___ADDR}" | cut -d ':' -f 2)"
-#	___OCT3="$(echo "${___ADDR}" | cut -d ':' -f 3)"
-#	___OCT4="$(echo "${___ADDR}" | cut -d ':' -f 4)"
-#	___OCT5="$(echo "${___ADDR}" | cut -d ':' -f 5)"
-#	___OCT6="$(echo "${___ADDR}" | cut -d ':' -f 6)"
-#	___OCT7="$(echo "${___ADDR}" | cut -d ':' -f 7)"
-#	___OCT8="$(echo "${___ADDR}" | cut -d ':' -f 8)"
-#	printf "${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}" \
-#	    "0x${___OCT1:-"0"}" \
-#	    "0x${___OCT2:-"0"}" \
-#	    "0x${___OCT3:-"0"}" \
-#	    "0x${___OCT4:-"0"}" \
-#	    "0x${___OCT5:-"0"}" \
-#	    "0x${___OCT6:-"0"}" \
-#	    "0x${___OCT7:-"0"}" \
-#	    "0x${___OCT8:-"0"}"
 }
 
 # -----------------------------------------------------------------------------
@@ -357,22 +298,192 @@ fnIPv4Netmask() {
 }
 
 # -----------------------------------------------------------------------------
-# descript: detecting target virtualization
-#   input :            : unused
+# descript: message output (debug out)
+#   input :     $1     : title
+#   input :     $@     : list
 #   output:   stdout   : message
 #   return:            : unused
-fnDetect_virt() {
-	if ! command -v systemd-detect-virt > /dev/null 2>&1; then
+fnDbgout() {
+	___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${1:-}")"
+	___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${1:-}")"
+	shift
+	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___STRT}"
+	while [ -n "${1:-}" ]
+	do
+		if [ "${1%%,*}" != "debug" ] || [ -n "${_DBGS_FLAG:-}" ]; then
+			fnMsgout "${_PROG_NAME:-}" "${1%%,*}" "${1#*,}"
+		fi
+		shift
+	done
+	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: dump output (debug out)
+#   input :     $1     : path
+#   output:   stdout   : message
+#   return:            : unused
+fnDbgdump() {
+	[ -z "${_DBGS_FLAG:-}" ] && return
+	if [ ! -e "${1:?}" ]; then
+		fnMsgout "${_PROG_NAME:-}" "failed" "not exist: [${1:-}]"
 		return
 	fi
-	_TGET_VIRT="$(systemd-detect-virt || true)"
-	readonly _TGET_VIRT
-	_TGET_CNTR=""
-	case "$(systemctl is-system-running || true)" in
-		offline) _TGET_CNTR="true";;
-		*) ;;
-	esac
-	readonly _TGET_CNTR
+	___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${1:-}")"
+	___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${1:-}")"
+	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___STRT}"
+	cat "${1:-}"
+	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: parameter debug output
+#   input :            : unused
+#   output:   stdout   : debug out
+#   return:            : unused
+fnDbgparam() {
+	[ -z "${_DBGS_PARM:-}" ] && return
+
+	__FUNC_NAME="fnDbgout"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	# --- system parameter ----------------------------------------------------
+	fnDbgout "system parameter" \
+		"info,_TGET_VIRT=[${_TGET_VIRT:-}]" \
+		"info,_TGET_CNTR=[${_TGET_CNTR:-}]" \
+		"info,_DIRS_TGET=[${_DIRS_TGET:-}]" \
+		"info,_DIST_NAME=[${_DIST_NAME:-}]" \
+		"info,_DIST_VERS=[${_DIST_VERS:-}]" \
+		"info,_DIST_CODE=[${_DIST_CODE:-}]"
+
+	# --- network parameter ---------------------------------------------------
+	fnDbgout "network info" \
+		"info,_NICS_NAME=[${_NICS_NAME:-}]" \
+		"debug,_NICS_MADR=[${_NICS_MADR:-}]" \
+		"info,_NICS_AUTO=[${_NICS_AUTO:-}]" \
+		"info,_NICS_IPV4=[${_NICS_IPV4:-}]" \
+		"info,_NICS_MASK=[${_NICS_MASK:-}]" \
+		"info,_NICS_BIT4=[${_NICS_BIT4:-}]" \
+		"info,_NICS_DNS4=[${_NICS_DNS4:-}]" \
+		"info,_NICS_GATE=[${_NICS_GATE:-}]" \
+		"info,_NICS_FQDN=[${_NICS_FQDN:-}]" \
+		"debug,_NICS_HOST=[${_NICS_HOST:-}]" \
+		"debug,_NICS_WGRP=[${_NICS_WGRP:-}]" \
+		"debug,_NMAN_FLAG=[${_NMAN_FLAG:-}]" \
+		"info,_NTPS_ADDR=[${_NTPS_ADDR:-}]" \
+		"debug,_NTPS_IPV4=[${_NTPS_IPV4:-}]" \
+		"debug,_NTPS_FBAK=[${_NTPS_FBAK:-}]" \
+		"debug,_IPV6_LHST=[${_IPV6_LHST:-}]" \
+		"debug,_IPV4_LHST=[${_IPV4_LHST:-}]" \
+		"debug,_IPV4_DUMY=[${_IPV4_DUMY:-}]" \
+		"debug,_IPV4_UADR=[${_IPV4_UADR:-}]" \
+		"debug,_IPV4_LADR=[${_IPV4_LADR:-}]" \
+		"debug,_IPV6_ADDR=[${_IPV6_ADDR:-}]" \
+		"debug,_IPV6_CIDR=[${_IPV6_CIDR:-}]" \
+		"debug,_IPV6_FADR=[${_IPV6_FADR:-}]" \
+		"debug,_IPV6_UADR=[${_IPV6_UADR:-}]" \
+		"debug,_IPV6_LADR=[${_IPV6_LADR:-}]" \
+		"debug,_IPV6_RADR=[${_IPV6_RADR:-}]" \
+		"debug,_LINK_ADDR=[${_LINK_ADDR:-}]" \
+		"debug,_LINK_CIDR=[${_LINK_CIDR:-}]" \
+		"debug,_LINK_FADR=[${_LINK_FADR:-}]" \
+		"debug,_LINK_UADR=[${_LINK_UADR:-}]" \
+		"debug,_LINK_LADR=[${_LINK_LADR:-}]" \
+		"debug,_LINK_RADR=[${_LINK_RADR:-}]"
+
+	# --- firewalld parameter -------------------------------------------------
+	fnDbgout "firewalld info" \
+		"info,_FWAL_ZONE=[${_FWAL_ZONE:-}]" \
+		"debug,_FWAL_NAME=[${_FWAL_NAME:-}]" \
+		"debug,_FWAL_PORT=[${_FWAL_PORT:-}]"
+
+	# --- shared directory parameter ------------------------------------------
+	fnDbgout "shared directory" \
+		"info,_DIRS_TOPS=[${_DIRS_TOPS:-}]" \
+		"debug,_DIRS_HGFS=[${_DIRS_HGFS:-}]" \
+		"debug,_DIRS_HTML=[${_DIRS_HTML:-}]" \
+		"debug,_DIRS_SAMB=[${_DIRS_SAMB:-}]" \
+		"debug,_DIRS_TFTP=[${_DIRS_TFTP:-}]" \
+		"debug,_DIRS_USER=[${_DIRS_USER:-}]" \
+		"debug,_DIRS_PVAT=[${_DIRS_PVAT:-}]" \
+		"debug,_DIRS_SHAR=[${_DIRS_SHAR:-}]" \
+		"debug,_DIRS_CONF=[${_DIRS_CONF:-}]" \
+		"debug,_DIRS_DATA=[${_DIRS_DATA:-}]" \
+		"debug,_DIRS_KEYS=[${_DIRS_KEYS:-}]" \
+		"debug,_DIRS_MKOS=[${_DIRS_MKOS:-}]" \
+		"debug,_DIRS_TMPL=[${_DIRS_TMPL:-}]" \
+		"debug,_DIRS_SHEL=[${_DIRS_SHEL:-}]" \
+		"debug,_DIRS_IMGS=[${_DIRS_IMGS:-}]" \
+		"debug,_DIRS_ISOS=[${_DIRS_ISOS:-}]" \
+		"debug,_DIRS_LOAD=[${_DIRS_LOAD:-}]" \
+		"debug,_DIRS_RMAK=[${_DIRS_RMAK:-}]" \
+		"debug,_DIRS_CACH=[${_DIRS_CACH:-}]" \
+		"debug,_DIRS_CTNR=[${_DIRS_CTNR:-}]" \
+		"debug,_DIRS_CHRT=[${_DIRS_CHRT:-}]"
+
+	# --- working directory parameter -----------------------------------------
+	fnDbgout "working directory" \
+		"debug,_DIRS_VADM=[${_DIRS_VADM:-}]" \
+		"debug,_DIRS_INST=[${_DIRS_INST:-}]" \
+		"debug,_DIRS_BACK=[${_DIRS_BACK:-}]" \
+		"debug,_DIRS_ORIG=[${_DIRS_ORIG:-}]" \
+		"debug,_DIRS_INIT=[${_DIRS_INIT:-}]" \
+		"debug,_DIRS_SAMP=[${_DIRS_SAMP:-}]" \
+		"debug,_DIRS_LOGS=[${_DIRS_LOGS:-}]" \
+
+	# --- samba ---------------------------------------------------------------
+	fnDbgout "samba info" \
+		"debug,_SAMB_USER=[${_SAMB_USER:-}]" \
+		"debug,_SAMB_GRUP=[${_SAMB_GRUP:-}]" \
+		"debug,_SAMB_GADM=[${_SAMB_GADM:-}]" \
+		"debug,_SAMB_NSSW=[${_SAMB_NSSW:-}]" \
+		"debug,_SHEL_NLIN=[${_SHEL_NLIN:-}]"
+
+	# --- auto install --------------------------------------------------------
+	fnDbgout "shell info" \
+		"debug,_FILE_ERLY=[${_FILE_ERLY:-}]" \
+		"debug,_FILE_LATE=[${_FILE_LATE:-}]" \
+		"debug,_FILE_PART=[${_FILE_PART:-}]" \
+		"debug,_FILE_RUNS=[${_FILE_RUNS:-}]"
+
+	# --- common data file (prefer non-empty current file) --------------------
+	fnDbgout "common data file info" \
+		"debug,_FILE_CONF=[${_FILE_CONF:-}]" \
+		"debug,_FILE_DIST=[${_FILE_DIST:-}]" \
+		"debug,_FILE_MDIA=[${_FILE_MDIA:-}]" \
+		"debug,_FILE_DSTP=[${_FILE_DSTP:-}]"
+
+	# --- pre-configuration file templates ------------------------------------
+	fnDbgout "pre-configuration file info" \
+		"debug,_FILE_KICK=[${_FILE_KICK:-}]" \
+		"debug,_FILE_CLUD=[${_FILE_CLUD:-}]" \
+		"debug,_FILE_SEDD=[${_FILE_SEDD:-}]" \
+		"debug,_FILE_SEDU=[${_FILE_SEDU:-}]" \
+		"debug,_FILE_YAST=[${_FILE_YAST:-}]" \
+		"debug,_FILE_AGMA=[${_FILE_AGMA:-}]"
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+}
+
+# -----------------------------------------------------------------------------
+# descript: find command
+#   input :     $1     : command name
+#   output:   stdout   : output
+#   return:            : unused
+# --- file backup -------------------------------------------------------------
+fnFind_command() {
+	find "${_DIRS_TGET:-}"/bin/ "${_DIRS_TGET:-}"/sbin/ "${_DIRS_TGET:-}"/usr/bin/ "${_DIRS_TGET:-}"/usr/sbin/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \)
+}
+
+# -----------------------------------------------------------------------------
+# descript: find service
+#   input :     $1     : service name
+#   output:   stdout   : output
+#   return:            : unused
+# --- file backup -------------------------------------------------------------
+fnFind_serivce() {
+	find "${_DIRS_TGET:-}"/lib/systemd/system/ "${_DIRS_TGET:-}"/usr/lib/systemd/system/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \)
 }
 
 # -----------------------------------------------------------------------------
@@ -408,7 +519,7 @@ fnNetwork_param() {
 	___DIRS="${_DIRS_TGET:-}/sys/devices"
 	_NICS_NAME="${_NICS_NAME:-"ens160"}"
 	if [ ! -e "${___DIRS}"/. ]; then
-		fnMsgout "caution" "not exist: [${___DIRS}]"
+		fnMsgout "${_PROG_NAME:-}" "caution" "not exist: [${___DIRS}]"
 	else
 		if [ -z "${_NICS_NAME#*"*"}" ]; then
 #			_NICS_NAME="$(find "${___DIRS}" -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -E "${_NICS_NAME}" | sort | head -n 1)"
@@ -417,7 +528,7 @@ fnNetwork_param() {
 		fi
 #		if ! find "${___DIRS}" -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -qE '^'"${_NICS_NAME}"'$'; then
 		if ! find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | grep -q "${_NICS_NAME}"; then
-			fnMsgout "failed" "not exist: [${_NICS_NAME}]"
+			fnMsgout "${_PROG_NAME:-}" "failed" "not exist: [${_NICS_NAME}]"
 		else
 			_NICS_MADR="${_NICS_MADR:-"$(ip -0 -brief address show dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}' || true)"}"
 			_NICS_IPV4="${_NICS_IPV4:-"$(ip -4 -brief address show dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}' || true)"}"
@@ -442,9 +553,9 @@ fnNetwork_param() {
 			_LINK_ADDR="$(ip -6 -brief address show primary dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $4;}')"
 		fi
 	fi
-	__WORK="$(echo "${_NICS_IPV4:-}" | sed 's/[^0-9./]\+//g')"
-	_NICS_IPV4="$(echo "${__WORK}/" | cut -d '/' -f 1)"
-	_NICS_BIT4="$(echo "${__WORK}/" | cut -d '/' -f 2)"
+	___WORK="$(echo "${_NICS_IPV4:-}" | sed 's/[^0-9./]\+//g')"
+	_NICS_IPV4="$(echo "${___WORK}/" | cut -d '/' -f 1)"
+	_NICS_BIT4="$(echo "${___WORK}/" | cut -d '/' -f 2)"
 	if [ -z "${_NICS_BIT4}" ]; then
 		_NICS_BIT4="$(fnIPv4Netmask "${_NICS_MASK:-"255.255.255.0"}")"
 	else
@@ -522,7 +633,7 @@ fnFile_backup() {
 	___MODE="${2:-}"
 	# --- check ---------------------------------------------------------------
 	if [ ! -e "${___PATH}" ]; then
-		fnMsgout "caution" "not exist: [${___PATH}]"
+		fnMsgout "${_PROG_NAME:-}" "caution" "not exist: [${___PATH}]"
 		mkdir -p "${___PATH%/*}"
 		___REAL="$(realpath --canonicalize-missing "${___PATH}")"
 		if [ ! -e "${___REAL}" ]; then
@@ -544,7 +655,7 @@ fnFile_backup() {
 	if [ -e "${___BACK}" ] || [ -L "${___BACK}" ]; then
 		___BACK="${___BACK}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
 	fi
-	fnMsgout "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
+	fnMsgout "${_PROG_NAME:-}" "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
 	cp --archive "${___PATH}" "${___BACK}"
 }
 
@@ -557,7 +668,7 @@ fnFile_backup() {
 #   return:            : unused
 fnInitialize() {
 	__FUNC_NAME="fnInitialize"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- set system parameter ------------------------------------------------
 	if [ -n "${TERM:-}" ] \
@@ -584,7 +695,13 @@ fnInitialize() {
 	fi
 
 	# --- target virtualization -----------------------------------------------
-	fnDetect_virt
+	__WORK="$(fnTargetsys)"
+	case "${__WORK##*,}" in
+		offline) _TGET_CNTR="true";;
+		*      ) _TGET_CNTR="";;
+	esac
+	readonly _TGET_CNTR
+	readonly _TGET_VIRT="${__WORK%,*}"
 
 	_DIRS_TGET=""
 	for __DIRS in \
@@ -600,56 +717,9 @@ fnInitialize() {
 
 	# --- system parameter ----------------------------------------------------
 	fnSystem_param
-	fnDbgout "system parameter" \
-		"info,_TGET_VIRT=[${_TGET_VIRT:-}]" \
-		"info,_TGET_CNTR=[${_TGET_CNTR:-}]" \
-		"info,_DIRS_TGET=[${_DIRS_TGET:-}]" \
-		"info,_DIST_NAME=[${_DIST_NAME:-}]" \
-		"info,_DIST_VERS=[${_DIST_VERS:-}]" \
-		"info,_DIST_CODE=[${_DIST_CODE:-}]"
-
 	# --- network parameter ---------------------------------------------------
 	fnNetwork_param
-	fnDbgout "network info" \
-		"info,_NICS_NAME=[${_NICS_NAME:-}]" \
-		"debug,_NICS_MADR=[${_NICS_MADR:-}]" \
-		"info,_NICS_AUTO=[${_NICS_AUTO:-}]" \
-		"info,_NICS_IPV4=[${_NICS_IPV4:-}]" \
-		"info,_NICS_MASK=[${_NICS_MASK:-}]" \
-		"info,_NICS_BIT4=[${_NICS_BIT4:-}]" \
-		"info,_NICS_DNS4=[${_NICS_DNS4:-}]" \
-		"info,_NICS_GATE=[${_NICS_GATE:-}]" \
-		"info,_NICS_FQDN=[${_NICS_FQDN:-}]" \
-		"debug,_NICS_HOST=[${_NICS_HOST:-}]" \
-		"debug,_NICS_WGRP=[${_NICS_WGRP:-}]" \
-		"debug,_NMAN_FLAG=[${_NMAN_FLAG:-}]" \
-		"info,_NTPS_ADDR=[${_NTPS_ADDR:-}]" \
-		"debug,_NTPS_IPV4=[${_NTPS_IPV4:-}]" \
-		"debug,_NTPS_FBAK=[${_NTPS_FBAK:-}]" \
-		"debug,_IPV6_LHST=[${_IPV6_LHST:-}]" \
-		"debug,_IPV4_LHST=[${_IPV4_LHST:-}]" \
-		"debug,_IPV4_DUMY=[${_IPV4_DUMY:-}]" \
-		"debug,_IPV4_UADR=[${_IPV4_UADR:-}]" \
-		"debug,_IPV4_LADR=[${_IPV4_LADR:-}]" \
-		"debug,_IPV6_ADDR=[${_IPV6_ADDR:-}]" \
-		"debug,_IPV6_CIDR=[${_IPV6_CIDR:-}]" \
-		"debug,_IPV6_FADR=[${_IPV6_FADR:-}]" \
-		"debug,_IPV6_UADR=[${_IPV6_UADR:-}]" \
-		"debug,_IPV6_LADR=[${_IPV6_LADR:-}]" \
-		"debug,_IPV6_RADR=[${_IPV6_RADR:-}]" \
-		"debug,_LINK_ADDR=[${_LINK_ADDR:-}]" \
-		"debug,_LINK_CIDR=[${_LINK_CIDR:-}]" \
-		"debug,_LINK_FADR=[${_LINK_FADR:-}]" \
-		"debug,_LINK_UADR=[${_LINK_UADR:-}]" \
-		"debug,_LINK_LADR=[${_LINK_LADR:-}]" \
-		"debug,_LINK_RADR=[${_LINK_RADR:-}]"
-
 	# --- firewalld parameter -------------------------------------------------
-	fnDbgout "firewalld info" \
-		"info,_FWAL_ZONE=[${_FWAL_ZONE:-}]" \
-		"debug,_FWAL_NAME=[${_FWAL_NAME:-}]" \
-		"debug,_FWAL_PORT=[${_FWAL_PORT:-}]"
-
 	# --- shared directory parameter ------------------------------------------
 	readonly _DIRS_TOPS="${_DIRS_TGET:-}/srv"			# top of shared directory
 	readonly _DIRS_HGFS="${_DIRS_TOPS}/hgfs"			# vmware shared
@@ -672,29 +742,6 @@ fnInitialize() {
 	readonly _DIRS_CACH="${_DIRS_SHAR}/cache"			# cache file
 	readonly _DIRS_CTNR="${_DIRS_SHAR}/containers"		# container file
 	readonly _DIRS_CHRT="${_DIRS_SHAR}/chroot"			# container file (chroot)
-	fnDbgout "shared directory" \
-		"info,_DIRS_TOPS=[${_DIRS_TOPS:-}]" \
-		"debug,_DIRS_HGFS=[${_DIRS_HGFS:-}]" \
-		"debug,_DIRS_HTML=[${_DIRS_HTML:-}]" \
-		"debug,_DIRS_SAMB=[${_DIRS_SAMB:-}]" \
-		"debug,_DIRS_TFTP=[${_DIRS_TFTP:-}]" \
-		"debug,_DIRS_USER=[${_DIRS_USER:-}]" \
-		"debug,_DIRS_PVAT=[${_DIRS_PVAT:-}]" \
-		"debug,_DIRS_SHAR=[${_DIRS_SHAR:-}]" \
-		"debug,_DIRS_CONF=[${_DIRS_CONF:-}]" \
-		"debug,_DIRS_DATA=[${_DIRS_DATA:-}]" \
-		"debug,_DIRS_KEYS=[${_DIRS_KEYS:-}]" \
-		"debug,_DIRS_MKOS=[${_DIRS_MKOS:-}]" \
-		"debug,_DIRS_TMPL=[${_DIRS_TMPL:-}]" \
-		"debug,_DIRS_SHEL=[${_DIRS_SHEL:-}]" \
-		"debug,_DIRS_IMGS=[${_DIRS_IMGS:-}]" \
-		"debug,_DIRS_ISOS=[${_DIRS_ISOS:-}]" \
-		"debug,_DIRS_LOAD=[${_DIRS_LOAD:-}]" \
-		"debug,_DIRS_RMAK=[${_DIRS_RMAK:-}]" \
-		"debug,_DIRS_CACH=[${_DIRS_CACH:-}]" \
-		"debug,_DIRS_CTNR=[${_DIRS_CTNR:-}]" \
-		"debug,_DIRS_CHRT=[${_DIRS_CHRT:-}]"
-
 	# --- working directory parameter -----------------------------------------
 										# top of working directory
 	_DIRS_INST="${_DIRS_VADM:?}/${_PROG_NAME%%_*}.$(date ${__time_start:+-d "@${__time_start}"} +"%Y%m%d%H%M%S")"
@@ -704,58 +751,35 @@ fnInitialize() {
 	readonly _DIRS_INIT="${_DIRS_BACK}/init"	# initial file directory
 	readonly _DIRS_SAMP="${_DIRS_BACK}/samp"	# sample file directory
 	readonly _DIRS_LOGS="${_DIRS_BACK}/logs"	# log file directory
-	fnDbgout "working directory" \
-		"debug,_DIRS_VADM=[${_DIRS_VADM:-}]" \
-		"debug,_DIRS_INST=[${_DIRS_INST:-}]" \
-		"debug,_DIRS_BACK=[${_DIRS_BACK:-}]" \
-		"debug,_DIRS_ORIG=[${_DIRS_ORIG:-}]" \
-		"debug,_DIRS_INIT=[${_DIRS_INIT:-}]" \
-		"debug,_DIRS_SAMP=[${_DIRS_SAMP:-}]" \
-		"debug,_DIRS_LOGS=[${_DIRS_LOGS:-}]" \
-
 	mkdir -p "${_DIRS_TGET:-}${_DIRS_INST%.*}/"
 	chmod 600 "${_DIRS_TGET:-}${_DIRS_VADM:?}"
 	find "${_DIRS_TGET:-}${_DIRS_VADM:?}" -name "${_PROG_NAME%%_*}.[0-9]*" -type d | sort -r | tail -n +3 | \
 	while read -r __TGET
 	do
 		__PATH="${__TGET}.tgz"
-		fnMsgout "archive" "[${__TGET}] -> [${__PATH}]"
+		fnMsgout "${_PROG_NAME:-}" "archive" "[${__TGET}] -> [${__PATH}]"
 		if tar -C "${__TGET}" -cf "${__PATH}" .; then
 			chmod 600 "${__PATH}"
-			fnMsgout "remove"  "${__TGET}"
+			fnMsgout "${_PROG_NAME:-}" "remove"  "${__TGET}"
 			rm -rf "${__TGET:?}"
 		fi
 	done
 	mkdir -p "${_DIRS_TGET:-}${_DIRS_INST:?}"
 	chmod 600 "${_DIRS_TGET:-}${_DIRS_INST:?}"
-
 	# --- samba ---------------------------------------------------------------
 	_SHEL_NLIN="$(fnFind_command 'nologin' | sort -r | head -n 1)"
 	_SHEL_NLIN="${_SHEL_NLIN#*"${_DIRS_TGET:-}"}"
 	_SHEL_NLIN="${_SHEL_NLIN:-"$(if [ -e /usr/sbin/nologin ]; then echo "/usr/sbin/nologin"; fi)"}"
 	_SHEL_NLIN="${_SHEL_NLIN:-"$(if [ -e /sbin/nologin     ]; then echo "/sbin/nologin"; fi)"}"
 	readonly _SHEL_NLIN
-	fnDbgout "samba info" \
-		"debug,_SAMB_USER=[${_SAMB_USER:-}]" \
-		"debug,_SAMB_GRUP=[${_SAMB_GRUP:-}]" \
-		"debug,_SAMB_GADM=[${_SAMB_GADM:-}]" \
-		"debug,_SAMB_NSSW=[${_SAMB_NSSW:-}]" \
-		"debug,_SHEL_NLIN=[${_SHEL_NLIN:-}]"
-
 	# --- auto install --------------------------------------------------------
-	fnDbgout "shell info" \
-		"debug,_FILE_ERLY=[${_FILE_ERLY:-}]" \
-		"debug,_FILE_LATE=[${_FILE_LATE:-}]" \
-		"debug,_FILE_PART=[${_FILE_PART:-}]" \
-		"debug,_FILE_RUNS=[${_FILE_RUNS:-}]"
-
 	# --- debug backup---------------------------------------------------------
 	fnFile_backup "/proc/cmdline"
 	fnFile_backup "/proc/mounts"
 	fnFile_backup "/proc/self/mounts"
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
 # -----------------------------------------------------------------------------
@@ -765,34 +789,34 @@ fnInitialize() {
 #   return:            : unused
 fnPackage_update() {
 	__FUNC_NAME="fnPackage_update"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check command -------------------------------------------------------
 	  if command -v apt-get > /dev/null 2>&1; then
-		if ! apt-get --quiet              update      ; then fnMsgout "failed" "apt-get update";       return; fi
-		if ! apt-get --quiet --assume-yes upgrade     ; then fnMsgout "failed" "apt-get upgrade";      return; fi
-		if ! apt-get --quiet --assume-yes dist-upgrade; then fnMsgout "failed" "apt-get dist-upgrade"; return; fi
-		if ! apt-get --quiet --assume-yes autoremove  ; then fnMsgout "failed" "apt-get autoremove";   return; fi
-		if ! apt-get --quiet --assume-yes autoclean   ; then fnMsgout "failed" "apt-get autoclean";    return; fi
-		if ! apt-get --quiet --assume-yes clean       ; then fnMsgout "failed" "apt-get clean";        return; fi
+		if ! apt-get --quiet              update      ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get update";       return; fi
+		if ! apt-get --quiet --assume-yes upgrade     ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get upgrade";      return; fi
+		if ! apt-get --quiet --assume-yes dist-upgrade; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get dist-upgrade"; return; fi
+		if ! apt-get --quiet --assume-yes autoremove  ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get autoremove";   return; fi
+		if ! apt-get --quiet --assume-yes autoclean   ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get autoclean";    return; fi
+		if ! apt-get --quiet --assume-yes clean       ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get clean";        return; fi
 	elif command -v dnf     > /dev/null 2>&1; then
-		if ! dnf --quiet --assumeyes update; then fnMsgout "failed" "dnf update"; return; fi
+		if ! dnf --quiet --assumeyes update; then fnMsgout "${_PROG_NAME:-}" "failed" "dnf update"; return; fi
 	elif command -v yum     > /dev/null 2>&1; then
-		if ! yum --quiet --assumeyes update; then fnMsgout "failed" "yum update"; return; fi
+		if ! yum --quiet --assumeyes update; then fnMsgout "${_PROG_NAME:-}" "failed" "yum update"; return; fi
 	elif command -v zypper  > /dev/null 2>&1; then
 		_WORK_TEXT="$(LANG=C zypper lr | awk -F '|' '$1==1&&$2~/http/ {gsub(/^[ \t]+/,"",$2); gsub(/[ \t]+$/,"",$2); print $2;}')"
 		if [ -n "${_WORK_TEXT:-}" ]; then
-			if ! zypper modifyrepo --disable "${_WORK_TEXT}"; then fnMsgout "failed" "zypper repository disable"; return; fi
+			if ! zypper modifyrepo --disable "${_WORK_TEXT}"; then fnMsgout "${_PROG_NAME:-}" "failed" "zypper repository disable"; return; fi
 		fi
-		if ! zypper                           refresh; then fnMsgout "failed" "zypper refresh"; return; fi
-		if ! zypper --quiet --non-interactive update ; then fnMsgout "failed" "zypper update";  return; fi
+		if ! zypper                           refresh; then fnMsgout "${_PROG_NAME:-}" "failed" "zypper refresh"; return; fi
+		if ! zypper --quiet --non-interactive update ; then fnMsgout "${_PROG_NAME:-}" "failed" "zypper update";  return; fi
 	else
-		fnMsgout "failed" "package update failure (command not found)"
+		fnMsgout "${_PROG_NAME:-}" "failed" "package update failure (command not found)"
 		return
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
 # -----------------------------------------------------------------------------
@@ -802,7 +826,7 @@ fnPackage_update() {
 #   return:            : unused
 fnMkdir_share(){
 	__FUNC_NAME="fnMkdir_share"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- create system user id -----------------------------------------------
 	if ! id "${_SAMB_USER}" > /dev/null 2>&1; then
@@ -958,7 +982,7 @@ _EOT_
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -968,12 +992,12 @@ _EOT_
 #   return:            : unused
 fnSetup_connman() {
 	__FUNC_NAME="fnSetup_connman"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
 	__SRVC="$(fnFind_serivce 'connman.service' | sort | head -n 1)"
 	if [ -z "${__SRVC:-}" ]; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- main.conf -----------------------------------------------------------
@@ -1043,18 +1067,18 @@ _EOT_
 	if [ -z "${_TGET_CNTR:-}" ]; then
 		__SRVC="${__SRVC##*/}"
 		if systemctl --quiet is-active "${__SRVC}"; then
-			fnMsgout "restart" "${__SRVC}"
+			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
 			systemctl --quiet daemon-reload
 			if systemctl --quiet restart "${__SRVC}"; then
-				fnMsgout "success" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
 			else
-				fnMsgout "failed" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
 			fi
 		fi
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -1064,11 +1088,11 @@ _EOT_
 #   return:            : unused
 fnSetup_netplan() {
 	__FUNC_NAME="fnSetup_netplan"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check command -------------------------------------------------------
 	if ! command -v netplan > /dev/null 2>&1; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- configures ----------------------------------------------------------
@@ -1139,14 +1163,14 @@ _EOT_
 	# --- netplan -------------------------------------------------------------
 	if netplan status 2> /dev/null; then
 		if netplan apply; then
-			fnMsgout "success" "netplan apply"
+			fnMsgout "${_PROG_NAME:-}" "success" "netplan apply"
 		else
-			fnMsgout "failed" "netplan apply"
+			fnMsgout "${_PROG_NAME:-}" "failed" "netplan apply"
 		fi
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -1156,12 +1180,12 @@ _EOT_
 #   return:            : unused
 fnSetup_netman() {
 	__FUNC_NAME="fnSetup_netman"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
 	__SRVC="$(fnFind_serivce 'NetworkManager.service' | sort | head -n 1)"
 	if [ -z "${__SRVC:-}" ]; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- configures ----------------------------------------------------------
@@ -1280,30 +1304,30 @@ _EOT_
 	if systemctl --quiet is-enabled "${__SRVC}"; then
 		__SVEX="systemd-networkd.service"
 		if systemctl --quiet is-enabled "${__SVEX}"; then
-			fnMsgout "mask" "${__SVEX}"
+			fnMsgout "${_PROG_NAME:-}" "mask" "${__SVEX}"
 			systemctl --quiet mask "${__SVEX}"
 			systemctl --quiet mask "${__SVEX%.*}.socket"
 		fi
 	fi
 	if [ -z "${_TGET_CNTR:-}" ]; then
 		if systemctl --quiet is-active "${__SRVC}"; then
-			fnMsgout "restart" "${__SRVC}"
+			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
 			systemctl --quiet daemon-reload
 			if systemctl --quiet restart "${__SRVC}"; then
-				fnMsgout "success" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
 			else
-				fnMsgout "failed" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
 			fi
 			if nmcli connection reload; then
-				fnMsgout "success" "nmcli connection reload"
+				fnMsgout "${_PROG_NAME:-}" "success" "nmcli connection reload"
 			else
-				fnMsgout "failed" "nmcli connection reload"
+				fnMsgout "${_PROG_NAME:-}" "failed" "nmcli connection reload"
 			fi
 		fi
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -1313,11 +1337,11 @@ _EOT_
 #   return:            : unused
 fnSetup_hostname() {
 	__FUNC_NAME="fnSetup_hostname"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check fqdn ----------------------------------------------------------
 	if [ -z "${_NICS_FQDN:-}" ]; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- hostname ------------------------------------------------------------
@@ -1330,7 +1354,7 @@ fnSetup_hostname() {
 	fnFile_backup "${__PATH}" "init"	# backup initial file
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -1340,11 +1364,11 @@ fnSetup_hostname() {
 #   return:            : unused
 fnSetup_hosts() {
 	__FUNC_NAME="fnSetup_hosts"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check fqdn ----------------------------------------------------------
 	if [ -z "${_NICS_FQDN:-}" ]; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- hosts ---------------------------------------------------------------
@@ -1372,7 +1396,7 @@ _EOT_
 	fnFile_backup "${__PATH}" "init"	# backup initial file
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -1382,11 +1406,11 @@ _EOT_
 #   return:            : unused
 fnSetup_firewalld() {
 	__FUNC_NAME="fnSetup_firewalld"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check command -------------------------------------------------------
 	if ! command -v firewall-cmd > /dev/null 2>&1; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- firewalld.service ---------------------------------------------------
@@ -1413,7 +1437,7 @@ fnSetup_firewalld() {
 	__LINK="${_LINK_UADR%%::}::/10"
 	__SRVC="${__SRVC##*/}"
 	if [ -z "${_TGET_CNTR:-}" ] && systemctl --quiet is-active "${__SRVC}"; then
-		fnMsgout "active" "${__SRVC}"
+		fnMsgout "${_PROG_NAME:-}" "active" "${__SRVC}"
 		firewall-cmd --quiet --permanent --set-default-zone="${_FWAL_ZONE}" || true
 		[ -n "${_NICS_NAME##-}" ] && { firewall-cmd --quiet --permanent --zone="${_FWAL_ZONE}" --change-interface="${_NICS_NAME}" || true; }
 		for __NAME in ${_FWAL_NAME}
@@ -1439,7 +1463,7 @@ fnSetup_firewalld() {
 			firewall-cmd --list-all --zone="${_FWAL_ZONE}"
 		fi
 	else
-		fnMsgout "inactive" "${__SRVC}"
+		fnMsgout "${_PROG_NAME:-}" "inactive" "${__SRVC}"
 		firewall-offline-cmd --quiet --set-default-zone="${_FWAL_ZONE}" || true
 		[ -n "${_NICS_NAME##-}" ] && { firewall-offline-cmd --quiet --zone="${_FWAL_ZONE}" --change-interface="${_NICS_NAME}" || true; }
 		for __NAME in ${_FWAL_NAME}
@@ -1469,7 +1493,7 @@ fnSetup_firewalld() {
 	fnFile_backup "${__PATH}" "init"	# backup initial file
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -1479,11 +1503,11 @@ fnSetup_firewalld() {
 #   return:            : unused
 fnSetup_dnsmasq() {
 	__FUNC_NAME="fnSetup_dnsmasq"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check command -------------------------------------------------------
 	if ! command -v dnsmasq > /dev/null 2>&1; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- dnsmasq.service -----------------------------------------------------
@@ -1653,18 +1677,18 @@ _EOT_
 	if [ -z "${_TGET_CNTR:-}" ]; then
 		__SRVC="${__SRVC##*/}"
 		if systemctl --quiet is-active "${__SRVC}"; then
-			fnMsgout "restart" "${__SRVC}"
+			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
 			systemctl --quiet daemon-reload
 			if systemctl --quiet restart "${__SRVC}"; then
-				fnMsgout "success" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
 			else
-				fnMsgout "failed" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
 			fi
 		fi
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -1674,7 +1698,7 @@ _EOT_
 #   return:            : unused
 fnSetup_resolv() {
 	__FUNC_NAME="fnSetup_resolv"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check command -------------------------------------------------------
 	__PATH="${_DIRS_TGET:-}/etc/resolv.conf"
@@ -1696,7 +1720,7 @@ _EOT_
 		__CONF="${_DIRS_TGET:-}/run/systemd/resolve/stub-resolv.conf"
 		fnFile_backup "${__CONF}"			# backup original file
 #		if grep -qi 'Do not edit.' "${__PATH}"; then
-#			fnMsgout "skip" "resolv.conf setup for chroot"
+#			fnMsgout "${_PROG_NAME:-}" "skip" "resolv.conf setup for chroot"
 #		else
 #			mkdir -p "${__CONF%/*}"
 #			cp --preserve=timestamps "${_DIRS_ORIG}/${__CONF#*"${_DIRS_TGET:-}/"}" "${__CONF}"
@@ -1726,26 +1750,26 @@ _EOT_
 		if systemctl --quiet is-enabled "${__SRVC}"; then
 			__SVEX="avahi-daemon.service"
 			if systemctl --quiet is-enabled "${__SVEX}"; then
-				fnMsgout "mask" "${__SVEX}"
+				fnMsgout "${_PROG_NAME:-}" "mask" "${__SVEX}"
 				systemctl --quiet mask "${__SVEX}"
 				systemctl --quiet mask "${__SVEX%.*}.socket"
 			fi
 		fi
 		if [ -z "${_TGET_CNTR:-}" ]; then
 			if systemctl --quiet is-active "${__SRVC}"; then
-				fnMsgout "restart" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
 				systemctl --quiet daemon-reload
 				if systemctl --quiet restart "${__SRVC}"; then
-					fnMsgout "success" "${__SRVC}"
+					fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
 				else
-					fnMsgout "failed" "${__SRVC}"
+					fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
 				fi
 			fi
 		fi
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -1755,12 +1779,12 @@ _EOT_
 #   return:            : unused
 fnSetup_apache() {
 	__FUNC_NAME="fnSetup_apache"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
 	__SRVC="$(fnFind_serivce 'apache2.service' 'httpd.service' | sort | head -n 1)"
 	if [ -z "${__SRVC:-}" ]; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- apache2.conf / httpd.conf -------------------------------------------
@@ -1810,18 +1834,18 @@ _EOT_
 	if [ -z "${_TGET_CNTR:-}" ]; then
 		__SRVC="${__SRVC##*/}"
 		if systemctl --quiet is-active "${__SRVC}"; then
-			fnMsgout "restart" "${__SRVC}"
+			fnMsgout "${_PROG_NAME:-}" "${_PROG_NAME:-}" "restart" "${__SRVC}"
 			systemctl --quiet daemon-reload
 			if systemctl --quiet restart "${__SRVC}"; then
-				fnMsgout "success" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "${_PROG_NAME:-}" "success" "${__SRVC}"
 			else
-				fnMsgout "failed" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "${_PROG_NAME:-}" "failed" "${__SRVC}"
 			fi
 		fi
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -1831,18 +1855,18 @@ _EOT_
 #   return:            : unused
 fnSetup_samba() {
 	__FUNC_NAME="fnSetup_samba"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check command -------------------------------------------------------
 	if ! command -v pdbedit > /dev/null 2>&1; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- check service -------------------------------------------------------
 	__SMBD="$(fnFind_serivce 'smbd.service' 'smb.service' | sort | head -n 1)"
 	__NMBD="$(fnFind_serivce 'nmbd.service' 'nmb.service' | sort | head -n 1)"
 	if [ -z "${__SMBD:-}" ] || [ -z "${__NMBD:-}" ]; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- create passdb.tdb ---------------------------------------------------
@@ -2029,28 +2053,28 @@ _EOT_
 	if [ -z "${_TGET_CNTR:-}" ]; then
 		__SRVC="${__SMBD##*/}"
 		if systemctl --quiet is-active "${__SRVC}"; then
-			fnMsgout "restart" "${__SRVC}"
+			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
 			systemctl --quiet daemon-reload
 			if systemctl --quiet restart "${__SRVC}"; then
-				fnMsgout "success" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
 			else
-				fnMsgout "failed" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
 			fi
 		fi
 		__SRVC="${__NMBD##*/}"
 		if systemctl --quiet is-active "${__SRVC}"; then
-			fnMsgout "restart" "${__SRVC}"
+			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
 			systemctl --quiet daemon-reload
 			if systemctl --quiet restart "${__SRVC}"; then
-				fnMsgout "success" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
 			else
-				fnMsgout "failed" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
 			fi
 		fi
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -2060,12 +2084,12 @@ _EOT_
 #   return:            : unused
 fnSetup_timesyncd() {
 	__FUNC_NAME="fnSetup_timesyncd"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
 	__SRVC="$(fnFind_serivce 'systemd-timesyncd.service' | sort | head -n 1)"
 	if [ -z "${__SRVC:-}" ]; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- timesyncd.conf ------------------------------------------------------
@@ -2088,18 +2112,18 @@ _EOT_
 	if [ -z "${_TGET_CNTR:-}" ]; then
 		__SRVC="${__SRVC##*/}"
 		if systemctl --quiet is-active "${__SRVC}"; then
-			fnMsgout "restart" "${__SRVC}"
+			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
 			systemctl --quiet daemon-reload
 			if systemctl --quiet restart "${__SRVC}"; then
-				fnMsgout "success" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
 			else
-				fnMsgout "failed" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
 			fi
 		fi
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -2109,12 +2133,12 @@ _EOT_
 #   return:            : unused
 fnSetup_chronyd() {
 	__FUNC_NAME="fnSetup_chronyd"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
 	__SRVC="$(fnFind_serivce 'chronyd.service' | sort | head -n 1)"
 	if [ -z "${__SRVC:-}" ]; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- chrony.conf ---------------------------------------------------------
@@ -2128,12 +2152,12 @@ fnSetup_chronyd() {
 	if [ -z "${_TGET_CNTR:-}" ]; then
 		__SRVC="${__SRVC##*/}"
 		if systemctl --quiet is-active "${__SRVC}"; then
-			fnMsgout "restart" "${__SRVC}"
+			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
 			systemctl --quiet daemon-reload
 			if systemctl --quiet restart "${__SRVC}"; then
-				fnMsgout "success" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
 			else
-				fnMsgout "failed" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
 			fi
 			hwclock --systohc
 			hwclock --test
@@ -2141,7 +2165,7 @@ fnSetup_chronyd() {
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -2151,12 +2175,12 @@ fnSetup_chronyd() {
 #   return:            : unused
 fnSetup_ssh() {
 	__FUNC_NAME="fnSetup_ssh"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
 	__SRVC="$(fnFind_serivce 'ssh.service' 'sshd.service' | sort | head -n 1)"
 	if [ -z "${__SRVC:-}" ]; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- default.conf --------------------------------------------------------
@@ -2204,18 +2228,18 @@ _EOT_
 	if [ -z "${_TGET_CNTR:-}" ]; then
 		__SRVC="${__SRVC##*/}"
 		if systemctl --quiet is-active "${__SRVC}"; then
-			fnMsgout "restart" "${__SRVC}"
+			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
 			systemctl --quiet daemon-reload
 			if systemctl --quiet restart "${__SRVC}"; then
-				fnMsgout "success" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
 			else
-				fnMsgout "failed" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
 			fi
 		fi
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -2225,11 +2249,11 @@ _EOT_
 #   return:            : unused
 fnSetup_vmware() {
 	__FUNC_NAME="fnSetup_vmware"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check command -------------------------------------------------------
 	if ! command -v vmware-hgfsclient > /dev/null 2>&1; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- GNOME3 rendering issues ---------------------------------------------
@@ -2264,10 +2288,10 @@ _EOT_
 	if [ -z "${_TGET_CNTR:-}" ]; then
 		systemctl --quiet daemon-reload
 		if mount "${_DIRS_HGFS}"; then
-			fnMsgout "success" "VMware shared directory mounted"
+			fnMsgout "${_PROG_NAME:-}" "success" "VMware shared directory mounted"
 			LANG=C df -h "${_DIRS_HGFS}"
 		else
-			fnMsgout "failed" "VMware shared directory not mounted"
+			fnMsgout "${_PROG_NAME:-}" "failed" "VMware shared directory not mounted"
 			sed -i "${__PATH}" \
 			    -e "\%${__FSTB}% s/^/#/g"
 		fi
@@ -2276,7 +2300,7 @@ _EOT_
 	fnFile_backup "${__PATH}" "init"	# backup initial file
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -2286,12 +2310,12 @@ _EOT_
 #   return:            : unused
 fnSetup_wireplumber() {
 	__FUNC_NAME="fnSetup_wireplumber"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
 	__SRVC="$(fnFind_serivce 'wireplumber.service' | sort | head -n 1)"
 	if [ -z "${__SRVC:-}" ]; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- alsa ----------------------------------------------------------------
@@ -2413,21 +2437,21 @@ _EOT_
 	if [ -z "${_TGET_CNTR:-}" ]; then
 		__SRVC="${__SRVC##*/}"
 		if systemctl --quiet  is-active "${__SRVC}"; then
-			fnMsgout "restart" "${__SRVC}"
+			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
 			systemctl --quiet daemon-reload
 			for __USER in $(ps --no-headers -C "${__SRVC%.*}" -o user)
 			do
 				if systemctl --quiet --user --machine="${__USER}"@ restart "${__SRVC}"; then
-					fnMsgout "success" "${__USER}@ ${__SRVC}"
+					fnMsgout "${_PROG_NAME:-}" "success" "${__USER}@ ${__SRVC}"
 				else
-					fnMsgout "failed" "${__USER}@ ${__SRVC}"
+					fnMsgout "${_PROG_NAME:-}" "failed" "${__USER}@ ${__SRVC}"
 				fi
 			done
 		fi
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -2437,7 +2461,7 @@ _EOT_
 #   return:            : unused
 fnSetup_skel() {
 	__FUNC_NAME="fnSetup_skel"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- .bashrc -------------------------------------------------------------
 	__PATH="${_DIRS_TGET:-}/etc/skel/.bashrc"
@@ -2540,7 +2564,7 @@ _EOT_
 	done
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -2550,12 +2574,12 @@ _EOT_
 #   return:            : unused
 fnSetup_sudo() {
 	__FUNC_NAME="fnSetup_sudo"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check command -------------------------------------------------------
 	__PATH="$(fnFind_command 'sudo' | sort | head -n 1)"
 	if [ -z "${__PATH:-}" ]; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- sudoers -------------------------------------------------------------
@@ -2587,7 +2611,7 @@ _EOT_
 		cp --preserve=timestamps "${__CONF}" "${__PATH}"
 		chown -c root:root "${__PATH}"
 		chmod -c 0440 "${__PATH}"
-		fnMsgout "success" "[${__PATH}]"
+		fnMsgout "${_PROG_NAME:-}" "success" "[${__PATH}]"
 		# --- sudoers ---------------------------------------------------------
 		__PATH="${_DIRS_TGET:-}/etc/sudoers"
 		__CONF="${_DIRS_TGET:-}/tmp/sudoers.work"
@@ -2603,21 +2627,21 @@ _EOT_
 			chmod -c 0440 "${__PATH}"
 			fnDbgdump "${__PATH}"				# debugout
 			fnFile_backup "${__PATH}" "init"	# backup initial file
-			fnMsgout "success" "[${__PATH}]"
-			fnMsgout "info" "show user permissions: sudo -ll"
+			fnMsgout "${_PROG_NAME:-}" "success" "[${__PATH}]"
+			fnMsgout "${_PROG_NAME:-}" "info" "show user permissions: sudo -ll"
 		else
-			fnMsgout "failed" "[${__CONF}]"
+			fnMsgout "${_PROG_NAME:-}" "failed" "[${__CONF}]"
 			visudo -c -f "${__CONF}" || true
 		fi
 	else
-		fnMsgout "failed" "[${__CONF}]"
+		fnMsgout "${_PROG_NAME:-}" "failed" "[${__CONF}]"
 		visudo -c -f "${__CONF}" || true
 	fi
 	fnDbgdump "${__CONF}"				# debugout
 	fnFile_backup "${__CONF}" "init"	# backup initial file
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -2645,11 +2669,11 @@ fnSetupModule_ipxe() {
 #   return:            : unused
 fnSetup_apparmor() {
 	__FUNC_NAME="fnSetup_apparmor"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check command -------------------------------------------------------
 	if ! command -v aa-enabled > /dev/null 2>&1; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- debug out -----------------------------------------------------------
@@ -2657,7 +2681,7 @@ fnSetup_apparmor() {
 	aa-status || true
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -2667,11 +2691,11 @@ fnSetup_apparmor() {
 #   return:            : unused
 fnSetup_selinux() {
 	__FUNC_NAME="fnSetup_selinux"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check command -------------------------------------------------------
 	if ! command -v getenforce > /dev/null 2>&1; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- backup original file ------------------------------------------------
@@ -2708,27 +2732,27 @@ fnSetup_selinux() {
 		done
 	done
 	# --- restore context labels ----------------------------------------------
-	fnMsgout "restore" "context labels"
+	fnMsgout "${_PROG_NAME:-}" "restore" "context labels"
 	fixfiles onboot || true
 	# --- debug out -----------------------------------------------------------
 	if [ -n "${_DBGS_FLAG:-}" ]; then
 		___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: status")"
 		___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : status")"
-		fnMsgout "-debugout" "${___STRT}"
+		fnMsgout "${_PROG_NAME:-}" "-debugout" "${___STRT}"
 		getenforce || true
 		if command -v sestatus > /dev/null 2>&1; then
 			sestatus || true
 		fi
-		fnMsgout "-debugout" "${___ENDS}"
+		fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
 		___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: fcontext")"
 		___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : fcontext")"
-		fnMsgout "-debugout" "${___STRT}"
+		fnMsgout "${_PROG_NAME:-}" "-debugout" "${___STRT}"
 		semanage fcontext -l | grep -E '^/srv' || true
-		fnMsgout "-debugout" "${___ENDS}"
+		fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -2738,7 +2762,7 @@ fnSetup_selinux() {
 #   return:            : unused
 fnSetup_ipfilter() {
 	__FUNC_NAME="fnSetup_ipfilte"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- ipfilter.conf -------------------------------------------------------
 #	__PATH="${_DIRS_TGET:-}/usr/lib/systemd/system/systemd-logind.service.d/ipfilter.conf"
@@ -2757,7 +2781,7 @@ fnSetup_ipfilter() {
 #	fnFile_backup "${__PATH}" "init"	# backup initial file
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -2767,7 +2791,7 @@ fnSetup_ipfilter() {
 #   return:            : unused
 fnSetup_service() {
 	__FUNC_NAME="fnSetup_skel"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	set -f
 	set --
@@ -2797,7 +2821,7 @@ fnSetup_service() {
 		&& [ ! -e "${_DIRS_TGET:-}/usr/lib/systemd/system/${__LIST}" ]; then
 			continue
 		fi
-		fnMsgout "enable" "${__LIST}"
+		fnMsgout "${_PROG_NAME:-}" "enable" "${__LIST}"
 		set -- "$@" "${__LIST}"
 	done 
 	set +f
@@ -2808,12 +2832,12 @@ fnSetup_service() {
 			for __SRVC in "$@"
 			do
 				if systemctl --quiet is-active "${__SRVC}"; then
-					fnMsgout "restart" "${__SRVC}"
+					fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
 					systemctl --quiet daemon-reload
 					if systemctl --quiet restart "${__SRVC}"; then
-						fnMsgout "success" "${__SRVC}"
+						fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
 					else
-						fnMsgout "failed" "${__SRVC}"
+						fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
 					fi
 				fi
 			done
@@ -2821,7 +2845,7 @@ fnSetup_service() {
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -2843,10 +2867,11 @@ fnSetup_grub_menu() {
 #   g-var : _DIRS_BACK : read
 fnMain() {
 	_FUNC_NAME="fnMain"
-	fnMsgout "start" "[${_FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${_FUNC_NAME}]"
 
 	# --- initial setup -------------------------------------------------------
 	fnInitialize						# initialize
+	fnDbgparam							# parameter debug output
 	fnPackage_update					# package updates
 	fnMkdir_share						# creating a shared directory
 
@@ -2887,12 +2912,12 @@ fnMain() {
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${_FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${_FUNC_NAME}]"
 }
 
 	# --- start ---------------------------------------------------------------
 	__time_start=$(date +%s)
-	fnMsgout "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
+	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
 
 	# --- boot parameter selection --------------------------------------------
 	for __LINE in ${_COMD_LINE:-} ${_PROG_PARM:-}
@@ -2978,8 +3003,8 @@ fnMain() {
 	# --- complete ------------------------------------------------------------
 	__time_end=$(date +%s)
 	__time_elapsed=$((__time_end - __time_start))
-	fnMsgout "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"
-	fnMsgout "elapsed" "$(printf "%dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60)) || true)"
+	fnMsgout "${_PROG_NAME:-}" "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"
+	fnMsgout "${_PROG_NAME:-}" "elapsed" "$(printf "%dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60)) || true)"
 
 	exit 0
 
