@@ -37,34 +37,34 @@
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMN}"/fnMsgout.sh						# message output
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMN}"/fnString.sh						# string output
+	source "${_SHEL_COMN}"/fnString.sh						# string output
 	# shellcheck source=/dev/null
 #	source "${_SHEL_COMN}"/fnStrmsg.sh						# string output with message
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMN}"/fnTargetsys.sh					# target system state
+	source "${_SHEL_COMN}"/fnTargetsys.sh					# target system state
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMN}"/fnIPv6FullAddr.sh				# IPv6 full address
+	source "${_SHEL_COMN}"/fnIPv6FullAddr.sh				# IPv6 full address
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMN}"/fnIPv6RevAddr.sh					# IPv6 reverse address
+	source "${_SHEL_COMN}"/fnIPv6RevAddr.sh					# IPv6 reverse address
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMN}"/fnIPv4Netmask.sh					# IPv4 netmask conversion
+	source "${_SHEL_COMN}"/fnIPv4Netmask.sh					# IPv4 netmask conversion
 
 	# shellcheck source=/dev/null
-#	source "${_SHEL_TOPS}"/fnDbgout.sh						# message output (debug out)
+#	source "${_SHEL_COMD}"/fnDbgout.sh						# message output (debug out)
 	# shellcheck source=/dev/null
-#	source "${_SHEL_TOPS}"/fnDbgdump.sh						# dump output (debug out)
+#	source "${_SHEL_COMD}"/fnDbgdump.sh						# dump output (debug out)
 	# shellcheck source=/dev/null
-#	source "${_SHEL_TOPS}"/fnDbgparam.sh					# parameter debug output
+#	source "${_SHEL_COMD}"/fnDbgparam.sh					# parameter debug output
 	# shellcheck source=/dev/null
-#	source "${_SHEL_TOPS}"/fnFind_command.sh				# find command
+	source "${_SHEL_COMD}"/fnFind_command.sh				# find command
 	# shellcheck source=/dev/null
-#	source "${_SHEL_TOPS}"/fnFind_service.sh				# find service
+#	source "${_SHEL_COMD}"/fnFind_service.sh				# find service
 	# shellcheck source=/dev/null
-#	source "${_SHEL_TOPS}"/fnSystem_param.sh				# get system parameter
+	source "${_SHEL_COMD}"/fnSystem_param.sh				# get system parameter
 	# shellcheck source=/dev/null
-#	source "${_SHEL_TOPS}"/fnNetwork_param.sh				# get network parameter
+	source "${_SHEL_COMD}"/fnNetwork_param.sh				# get network parameter
 	# shellcheck source=/dev/null
-#	source "${_SHEL_TOPS}"/fnFile_backup.sh					# file backup
+#	source "${_SHEL_COMD}"/fnFile_backup.sh					# file backup
 
 # *** function section (subroutine functions) *********************************
 
@@ -81,6 +81,63 @@ declare -a    _LIST_CONF=()
 declare       __PROC=""
 declare -a    __OPTN=()
 declare       __RSLT=""
+
+# --- set system parameter ------------------------------------------------
+if [[ -n "${TERM:-}" ]] \
+&& command -v tput > /dev/null 2>&1; then
+	_ROWS_SIZE=$(tput lines || true)
+	_COLS_SIZE=$(tput cols  || true)
+fi
+[[ "${_ROWS_SIZE:-"0"}" -lt 25 ]] && _ROWS_SIZE=25
+[[ "${_COLS_SIZE:-"0"}" -lt 80 ]] && _COLS_SIZE=80
+readonly _ROWS_SIZE
+readonly _COLS_SIZE
+
+__COLS="${_COLS_SIZE}"
+[[ -n "${_PROG_NAME:-}" ]] && __COLS=$((_COLS_SIZE-${#_PROG_NAME}-16))
+_TEXT_GAP1="$(fnString "${__COLS:-"${_COLS_SIZE}"}" '-')"
+_TEXT_GAP2="$(fnString "${__COLS:-"${_COLS_SIZE}"}" '=')"
+unset __COLS
+readonly _TEXT_GAP1
+readonly _TEXT_GAP2
+
+if realpath "$(command -v cp || true)" | grep 'busybox'; then
+	_COMD_BBOX="true"
+	_OPTN_COPY="-p"
+fi
+
+# --- target virtualization -----------------------------------------------
+__WORK="$(fnTargetsys)"
+case "${__WORK##*,}" in
+	offline) _TGET_CNTR="true";;
+	*      ) _TGET_CNTR="";;
+esac
+readonly _TGET_CNTR
+readonly _TGET_VIRT="${__WORK%,*}"
+
+_DIRS_TGET=""
+for __DIRS in \
+	/target \
+	/mnt/sysimage \
+	/mnt/
+do
+	[[ ! -e "${__DIRS}"/root/. ]] && continue
+	_DIRS_TGET="${__DIRS}"
+	break
+done
+readonly _DIRS_TGET
+
+# --- samba ---------------------------------------------------------------
+_SHEL_NLIN="$(fnFind_command 'nologin' | sort -r | head -n 1)"
+_SHEL_NLIN="${_SHEL_NLIN#*"${_DIRS_TGET:-}"}"
+_SHEL_NLIN="${_SHEL_NLIN:-"$(if [[ -e /usr/sbin/nologin ]]; then echo "/usr/sbin/nologin"; fi)"}"
+_SHEL_NLIN="${_SHEL_NLIN:-"$(if [[ -e /sbin/nologin     ]]; then echo "/sbin/nologin"; fi)"}"
+readonly _SHEL_NLIN
+
+fnNetwork_param
+
+# shellcheck disable=SC1091
+source "${_SHEL_COMD}"/fnCmdline.sh
 
 set -f -- "${@:-}"
 set +f
@@ -108,6 +165,5 @@ do
 		_[A-Za-z]*) ;;
 		*         ) continue;;
 	esac
-	__VALU="$(eval echo -n "\${${__NAME}:-}")"
-	printf "%s=[%s]\n" "${__NAME}" "${__VALU:-}"
+	printf "%s=[%s]\n" "${__NAME}" "${!__NAME:-}"
 done

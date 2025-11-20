@@ -85,34 +85,4 @@ function fnNetwork_param() {
 	_LINK_UADR="$(echo "${_LINK_FADR:-}" | cut -d ':' -f 1-4 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
 	_LINK_LADR="$(echo "${_LINK_FADR:-}" | cut -d ':' -f 5-8 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
 	_LINK_RADR="$(fnIPv6RevAddr "${_LINK_FADR:-}")"
-	readonly _NICS_NAME
-	readonly _NICS_MADR
-	readonly _NICS_IPV4
-	readonly _NICS_MASK
-	readonly _NICS_BIT4
-	readonly _NICS_DNS4
-	readonly _NICS_GATE
-	readonly _NICS_FQDN
-	readonly _NICS_HOST
-	readonly _NICS_WGRP
-	readonly _NMAN_FLAG
-	readonly _NTPS_ADDR
-	readonly _NTPS_IPV4
-	readonly _IPV6_LHST
-	readonly _IPV4_LHST
-	readonly _IPV4_DUMY
-	readonly _IPV4_UADR
-	readonly _IPV4_LADR
-	readonly _IPV6_ADDR
-	readonly _IPV6_CIDR
-	readonly _IPV6_FADR
-	readonly _IPV6_UADR
-	readonly _IPV6_LADR
-	readonly _IPV6_RADR
-	readonly _LINK_ADDR
-	readonly _LINK_CIDR
-	readonly _LINK_FADR
-	readonly _LINK_UADR
-	readonly _LINK_LADR
-	readonly _LINK_RADR
 }

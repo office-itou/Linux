@@ -58,7 +58,8 @@ function fnGet_conf_data() {
 			esac
 			__VALU="${__VALU/:_${__WORK}_:/\$\{_${__WORK}\}}"
 		done
-		read -r "_${__NAME}" < <(eval echo "${__VALU}" || true)
+		read -r "_${__NAME}" < <(eval echo "${__VALU}")
+#		read -r "_${__NAME}" < <(eval echo "${__VALU}" || true)
 	done
 
 	__NAME_REFR="${__OPTN[*]:-}"
