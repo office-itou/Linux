@@ -17,7 +17,6 @@ function fnLtrim() {
 #   output:   stdout   : output
 #   return:            : unused
 #   g-var :            : unused
-#   g-var :            : unused
 # shellcheck disable=SC2148,SC2317,SC2329
 function fnRtrim() {
 	echo -n "${1%"${1##*[!"${IFS}"]}"}"	# rtrim
@@ -29,10 +28,9 @@ function fnRtrim() {
 #   output:   stdout   : output
 #   return:            : unused
 #   g-var :            : unused
-#   g-var :            : unused
 # shellcheck disable=SC2148,SC2317,SC2329
 function fnTrim() {
-	declare       __WORK=""
-	__WORK="$(fnLtrim "$1")"
-	fnRtrim "${__WORK}"
+	declare       ___WORK=""
+	___WORK="$(fnLtrim "$1")"
+	fnRtrim "${___WORK}"
 }

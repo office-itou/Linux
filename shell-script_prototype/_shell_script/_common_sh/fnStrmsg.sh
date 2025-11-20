@@ -6,7 +6,7 @@
 #   input :     $2     : message
 #   output:   stdout   : output
 #   return:            : unused
-#   g-var : _TGET_VIRT : write
+#   g-var :            : unused
 # shellcheck disable=SC2148,SC2317,SC2329
 fnStrmsg() {
 	___TXT1="$(echo "${1:-}" | cut -c -3)"

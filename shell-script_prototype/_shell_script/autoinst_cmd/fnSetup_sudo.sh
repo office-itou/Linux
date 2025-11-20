@@ -9,12 +9,12 @@
 # shellcheck disable=SC2148,SC2317,SC2329
 fnSetup_sudo() {
 	__FUNC_NAME="fnSetup_sudo"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check command -------------------------------------------------------
 	__PATH="$(fnFind_command 'sudo' | sort | head -n 1)"
 	if [ -z "${__PATH:-}" ]; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- sudoers -------------------------------------------------------------
@@ -46,7 +46,7 @@ _EOT_
 		cp --preserve=timestamps "${__CONF}" "${__PATH}"
 		chown -c root:root "${__PATH}"
 		chmod -c 0440 "${__PATH}"
-		fnMsgout "success" "[${__PATH}]"
+		fnMsgout "${_PROG_NAME:-}" "success" "[${__PATH}]"
 		# --- sudoers ---------------------------------------------------------
 		__PATH="${_DIRS_TGET:-}/etc/sudoers"
 		__CONF="${_DIRS_TGET:-}/tmp/sudoers.work"
@@ -62,19 +62,19 @@ _EOT_
 			chmod -c 0440 "${__PATH}"
 			fnDbgdump "${__PATH}"				# debugout
 			fnFile_backup "${__PATH}" "init"	# backup initial file
-			fnMsgout "success" "[${__PATH}]"
-			fnMsgout "info" "show user permissions: sudo -ll"
+			fnMsgout "${_PROG_NAME:-}" "success" "[${__PATH}]"
+			fnMsgout "${_PROG_NAME:-}" "info" "show user permissions: sudo -ll"
 		else
-			fnMsgout "failed" "[${__CONF}]"
+			fnMsgout "${_PROG_NAME:-}" "failed" "[${__CONF}]"
 			visudo -c -f "${__CONF}" || true
 		fi
 	else
-		fnMsgout "failed" "[${__CONF}]"
+		fnMsgout "${_PROG_NAME:-}" "failed" "[${__CONF}]"
 		visudo -c -f "${__CONF}" || true
 	fi
 	fnDbgdump "${__CONF}"				# debugout
 	fnFile_backup "${__CONF}" "init"	# backup initial file
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }

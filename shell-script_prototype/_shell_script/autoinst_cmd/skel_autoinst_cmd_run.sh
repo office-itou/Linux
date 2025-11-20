@@ -45,12 +45,10 @@
 	readonly _SHEL_TOPS="${_PROG_DIRS:?}"
 	readonly _SHEL_COMN="${_PROG_DIRS:?}/../_common_sh"
 	# shellcheck source=/dev/null
-	. "${_SHEL_COMN:?}"/fnGlobal_variables.sh
+	. "${_SHEL_TOPS:?}"/fnGlobal_variables.sh				# global variables (for basic)
 
 # *** function section (common functions) *************************************
 
-	# shellcheck source=/dev/null
-	. "${_SHEL_COMN}"/fnDbgout.sh							# message output (debug out)
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnMsgout.sh							# message output
 	# shellcheck source=/dev/null
@@ -58,21 +56,30 @@
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnStrmsg.sh							# string output with message
 	# shellcheck source=/dev/null
-	. "${_SHEL_COMN}"/fnFind_command.sh						# find command
+	. "${_SHEL_COMN}"/fnTargetsys.sh						# target system state
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnIPv6FullAddr.sh						# IPv6 full address
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnIPv6RevAddr.sh						# IPv6 reverse address
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnIPv4Netmask.sh						# IPv4 netmask conversion
+
 	# shellcheck source=/dev/null
-	. "${_SHEL_COMN}"/fnDetect_virt.sh						# detecting target virtualization
+	. "${_SHEL_TOPS}"/fnDbgout.sh							# message output (debug out)
 	# shellcheck source=/dev/null
-	. "${_SHEL_COMN}"/fnSystem_param.sh						# get system parameter
+#	. "${_SHEL_TOPS}"/fnDbgdump.sh							# dump output (debug out)
 	# shellcheck source=/dev/null
-	. "${_SHEL_COMN}"/fnNetwork_param.sh					# get network parameter
+	. "${_SHEL_TOPS}"/fnDbgparam.sh							# parameter debug output
 	# shellcheck source=/dev/null
-	. "${_SHEL_COMN}"/fnFile_backup.sh						# file backup
+	. "${_SHEL_TOPS}"/fnFind_command.sh						# find command
+	# shellcheck source=/dev/null
+#	. "${_SHEL_TOPS}"/fnFind_service.sh						# find service
+	# shellcheck source=/dev/null
+	. "${_SHEL_TOPS}"/fnSystem_param.sh						# get system parameter
+	# shellcheck source=/dev/null
+	. "${_SHEL_TOPS}"/fnNetwork_param.sh					# get network parameter
+	# shellcheck source=/dev/null
+	. "${_SHEL_TOPS}"/fnFile_backup.sh						# file backup
 
 # *** function section (subroutine functions) *********************************
 
@@ -90,10 +97,11 @@
 # shellcheck disable=SC2148,SC2317,SC2329
 fnMain() {
 	_FUNC_NAME="fnMain"
-	fnMsgout "start" "[${_FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${_FUNC_NAME}]"
 
 	# --- initial setup -------------------------------------------------------
 	fnInitialize						# initialize
+	fnDbgout							# parameter debug output
 
 	# --- main processing -----------------------------------------------------
 	/bin/kill-all-dhcp
@@ -105,12 +113,12 @@ fnMain() {
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${_FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${_FUNC_NAME}]"
 }
 
 	# --- start ---------------------------------------------------------------
 	__time_start=$(date +%s)
-	fnMsgout "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
+	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
 
 	# shellcheck source=/dev/null
 	. "${_SHEL_TOPS}"/fncmdline.sh		# command line
@@ -132,8 +140,8 @@ fnMain() {
 	# --- complete ------------------------------------------------------------
 	__time_end=$(date +%s)
 	__time_elapsed=$((__time_end - __time_start))
-	fnMsgout "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"
-	fnMsgout "elapsed" "$(printf "%dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60)) || true)"
+	fnMsgout "${_PROG_NAME:-}" "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"
+	fnMsgout "${_PROG_NAME:-}" "elapsed" "$(printf "%dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60)) || true)"
 
 	exit 0
 

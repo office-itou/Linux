@@ -10,43 +10,7 @@
 #   g-var : _COLS_SIZE : write
 #   g-var : _TEXT_GAP1 : write
 #   g-var : _TEXT_GAP2 : write
-#   g-var : _TGET_VIRT : read
-#   g-var : _DIST_NAME : read
-#   g-var : _DIST_VERS : read
-#   g-var : _DIST_CODE : read
-#   g-var : _NICS_NAME : read
-#   g-var : _NICS_MADR : read
-#   g-var : _NICS_IPV4 : read
-#   g-var : _NICS_MASK : read
-#   g-var : _NICS_BIT4 : read
-#   g-var : _NICS_DNS4 : read
-#   g-var : _NICS_GATE : read
-#   g-var : _NICS_FQDN : read
-#   g-var : _NICS_HOST : read
-#   g-var : _NICS_WGRP : read
-#   g-var : _NMAN_FLAG : read
-#   g-var : _NTPS_ADDR : read
-#   g-var : _NTPS_IPV4 : read
-#   g-var : _IPV6_LHST : read
-#   g-var : _IPV4_LHST : read
-#   g-var : _IPV4_DUMY : read
-#   g-var : _IPV4_UADR : read
-#   g-var : _IPV4_LADR : read
-#   g-var : _IPV6_ADDR : read
-#   g-var : _IPV6_CIDR : read
-#   g-var : _IPV6_FADR : read
-#   g-var : _IPV6_UADR : read
-#   g-var : _IPV6_LADR : read
-#   g-var : _IPV6_RADR : read
-#   g-var : _LINK_ADDR : read
-#   g-var : _LINK_CIDR : read
-#   g-var : _LINK_FADR : read
-#   g-var : _LINK_UADR : read
-#   g-var : _LINK_LADR : read
-#   g-var : _LINK_RADR : read
-#   g-var : _FWAL_ZONE : read
-#   g-var : _FWAL_NAME : read
-#   g-var : _FWAL_PORT : read
+#   g-var : _TGET_VIRT : write
 #   g-var : _DIRS_TOPS : write
 #   g-var : _DIRS_HGFS : write
 #   g-var : _DIRS_HTML : write
@@ -68,18 +32,17 @@
 #   g-var : _DIRS_CACH : write
 #   g-var : _DIRS_CTNR : write
 #   g-var : _DIRS_CHRT : write
-#   g-var : _DIRS_ORIG : read
-#   g-var : _DIRS_INIT : read
-#   g-var : _DIRS_SAMP : read
-#   g-var : _DIRS_LOGS : read
-#   g-var : _SAMB_USER : read
-#   g-var : _SAMB_GRUP : read
-#   g-var : _SAMB_GADM : read
-#   g-var : _SHEL_NLIN : read
+#   g-var : _DIRS_INST : write
+#   g-var : _DIRS_BACK : write
+#   g-var : _DIRS_ORIG : write
+#   g-var : _DIRS_INIT : write
+#   g-var : _DIRS_SAMP : write
+#   g-var : _DIRS_LOGS : write
+#   g-var : _SHEL_NLIN : write
 # shellcheck disable=SC2148,SC2317,SC2329
 fnInitialize() {
 	__FUNC_NAME="fnInitialize"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- set system parameter ------------------------------------------------
 	if [ -n "${TERM:-}" ] \
@@ -106,7 +69,13 @@ fnInitialize() {
 	fi
 
 	# --- target virtualization -----------------------------------------------
-	fnDetect_virt
+	__WORK="$(fnTargetsys)"
+	case "${__WORK##*,}" in
+		offline) _TGET_CNTR="true";;
+		*      ) _TGET_CNTR="";;
+	esac
+	readonly _TGET_CNTR
+	readonly _TGET_VIRT="${__WORK%,*}"
 
 	_DIRS_TGET=""
 	for __DIRS in \
@@ -122,56 +91,9 @@ fnInitialize() {
 
 	# --- system parameter ----------------------------------------------------
 	fnSystem_param
-	fnDbgout "system parameter" \
-		"info,_TGET_VIRT=[${_TGET_VIRT:-}]" \
-		"info,_TGET_CNTR=[${_TGET_CNTR:-}]" \
-		"info,_DIRS_TGET=[${_DIRS_TGET:-}]" \
-		"info,_DIST_NAME=[${_DIST_NAME:-}]" \
-		"info,_DIST_VERS=[${_DIST_VERS:-}]" \
-		"info,_DIST_CODE=[${_DIST_CODE:-}]"
-
 	# --- network parameter ---------------------------------------------------
 	fnNetwork_param
-	fnDbgout "network info" \
-		"info,_NICS_NAME=[${_NICS_NAME:-}]" \
-		"debug,_NICS_MADR=[${_NICS_MADR:-}]" \
-		"info,_NICS_AUTO=[${_NICS_AUTO:-}]" \
-		"info,_NICS_IPV4=[${_NICS_IPV4:-}]" \
-		"info,_NICS_MASK=[${_NICS_MASK:-}]" \
-		"info,_NICS_BIT4=[${_NICS_BIT4:-}]" \
-		"info,_NICS_DNS4=[${_NICS_DNS4:-}]" \
-		"info,_NICS_GATE=[${_NICS_GATE:-}]" \
-		"info,_NICS_FQDN=[${_NICS_FQDN:-}]" \
-		"debug,_NICS_HOST=[${_NICS_HOST:-}]" \
-		"debug,_NICS_WGRP=[${_NICS_WGRP:-}]" \
-		"debug,_NMAN_FLAG=[${_NMAN_FLAG:-}]" \
-		"info,_NTPS_ADDR=[${_NTPS_ADDR:-}]" \
-		"debug,_NTPS_IPV4=[${_NTPS_IPV4:-}]" \
-		"debug,_NTPS_FBAK=[${_NTPS_FBAK:-}]" \
-		"debug,_IPV6_LHST=[${_IPV6_LHST:-}]" \
-		"debug,_IPV4_LHST=[${_IPV4_LHST:-}]" \
-		"debug,_IPV4_DUMY=[${_IPV4_DUMY:-}]" \
-		"debug,_IPV4_UADR=[${_IPV4_UADR:-}]" \
-		"debug,_IPV4_LADR=[${_IPV4_LADR:-}]" \
-		"debug,_IPV6_ADDR=[${_IPV6_ADDR:-}]" \
-		"debug,_IPV6_CIDR=[${_IPV6_CIDR:-}]" \
-		"debug,_IPV6_FADR=[${_IPV6_FADR:-}]" \
-		"debug,_IPV6_UADR=[${_IPV6_UADR:-}]" \
-		"debug,_IPV6_LADR=[${_IPV6_LADR:-}]" \
-		"debug,_IPV6_RADR=[${_IPV6_RADR:-}]" \
-		"debug,_LINK_ADDR=[${_LINK_ADDR:-}]" \
-		"debug,_LINK_CIDR=[${_LINK_CIDR:-}]" \
-		"debug,_LINK_FADR=[${_LINK_FADR:-}]" \
-		"debug,_LINK_UADR=[${_LINK_UADR:-}]" \
-		"debug,_LINK_LADR=[${_LINK_LADR:-}]" \
-		"debug,_LINK_RADR=[${_LINK_RADR:-}]"
-
 	# --- firewalld parameter -------------------------------------------------
-	fnDbgout "firewalld info" \
-		"info,_FWAL_ZONE=[${_FWAL_ZONE:-}]" \
-		"debug,_FWAL_NAME=[${_FWAL_NAME:-}]" \
-		"debug,_FWAL_PORT=[${_FWAL_PORT:-}]"
-
 	# --- shared directory parameter ------------------------------------------
 	readonly _DIRS_TOPS="${_DIRS_TGET:-}/srv"			# top of shared directory
 	readonly _DIRS_HGFS="${_DIRS_TOPS}/hgfs"			# vmware shared
@@ -194,29 +116,6 @@ fnInitialize() {
 	readonly _DIRS_CACH="${_DIRS_SHAR}/cache"			# cache file
 	readonly _DIRS_CTNR="${_DIRS_SHAR}/containers"		# container file
 	readonly _DIRS_CHRT="${_DIRS_SHAR}/chroot"			# container file (chroot)
-	fnDbgout "shared directory" \
-		"info,_DIRS_TOPS=[${_DIRS_TOPS:-}]" \
-		"debug,_DIRS_HGFS=[${_DIRS_HGFS:-}]" \
-		"debug,_DIRS_HTML=[${_DIRS_HTML:-}]" \
-		"debug,_DIRS_SAMB=[${_DIRS_SAMB:-}]" \
-		"debug,_DIRS_TFTP=[${_DIRS_TFTP:-}]" \
-		"debug,_DIRS_USER=[${_DIRS_USER:-}]" \
-		"debug,_DIRS_PVAT=[${_DIRS_PVAT:-}]" \
-		"debug,_DIRS_SHAR=[${_DIRS_SHAR:-}]" \
-		"debug,_DIRS_CONF=[${_DIRS_CONF:-}]" \
-		"debug,_DIRS_DATA=[${_DIRS_DATA:-}]" \
-		"debug,_DIRS_KEYS=[${_DIRS_KEYS:-}]" \
-		"debug,_DIRS_MKOS=[${_DIRS_MKOS:-}]" \
-		"debug,_DIRS_TMPL=[${_DIRS_TMPL:-}]" \
-		"debug,_DIRS_SHEL=[${_DIRS_SHEL:-}]" \
-		"debug,_DIRS_IMGS=[${_DIRS_IMGS:-}]" \
-		"debug,_DIRS_ISOS=[${_DIRS_ISOS:-}]" \
-		"debug,_DIRS_LOAD=[${_DIRS_LOAD:-}]" \
-		"debug,_DIRS_RMAK=[${_DIRS_RMAK:-}]" \
-		"debug,_DIRS_CACH=[${_DIRS_CACH:-}]" \
-		"debug,_DIRS_CTNR=[${_DIRS_CTNR:-}]" \
-		"debug,_DIRS_CHRT=[${_DIRS_CHRT:-}]"
-
 	# --- working directory parameter -----------------------------------------
 										# top of working directory
 	_DIRS_INST="${_DIRS_VADM:?}/${_PROG_NAME%%_*}.$(date ${__time_start:+-d "@${__time_start}"} +"%Y%m%d%H%M%S")"
@@ -226,56 +125,33 @@ fnInitialize() {
 	readonly _DIRS_INIT="${_DIRS_BACK}/init"	# initial file directory
 	readonly _DIRS_SAMP="${_DIRS_BACK}/samp"	# sample file directory
 	readonly _DIRS_LOGS="${_DIRS_BACK}/logs"	# log file directory
-	fnDbgout "working directory" \
-		"debug,_DIRS_VADM=[${_DIRS_VADM:-}]" \
-		"debug,_DIRS_INST=[${_DIRS_INST:-}]" \
-		"debug,_DIRS_BACK=[${_DIRS_BACK:-}]" \
-		"debug,_DIRS_ORIG=[${_DIRS_ORIG:-}]" \
-		"debug,_DIRS_INIT=[${_DIRS_INIT:-}]" \
-		"debug,_DIRS_SAMP=[${_DIRS_SAMP:-}]" \
-		"debug,_DIRS_LOGS=[${_DIRS_LOGS:-}]" \
-
 	mkdir -p "${_DIRS_TGET:-}${_DIRS_INST%.*}/"
 	chmod 600 "${_DIRS_TGET:-}${_DIRS_VADM:?}"
 	find "${_DIRS_TGET:-}${_DIRS_VADM:?}" -name "${_PROG_NAME%%_*}.[0-9]*" -type d | sort -r | tail -n +3 | \
 	while read -r __TGET
 	do
 		__PATH="${__TGET}.tgz"
-		fnMsgout "archive" "[${__TGET}] -> [${__PATH}]"
+		fnMsgout "${_PROG_NAME:-}" "archive" "[${__TGET}] -> [${__PATH}]"
 		if tar -C "${__TGET}" -cf "${__PATH}" .; then
 			chmod 600 "${__PATH}"
-			fnMsgout "remove"  "${__TGET}"
+			fnMsgout "${_PROG_NAME:-}" "remove"  "${__TGET}"
 			rm -rf "${__TGET:?}"
 		fi
 	done
 	mkdir -p "${_DIRS_TGET:-}${_DIRS_INST:?}"
 	chmod 600 "${_DIRS_TGET:-}${_DIRS_INST:?}"
-
 	# --- samba ---------------------------------------------------------------
 	_SHEL_NLIN="$(fnFind_command 'nologin' | sort -r | head -n 1)"
 	_SHEL_NLIN="${_SHEL_NLIN#*"${_DIRS_TGET:-}"}"
 	_SHEL_NLIN="${_SHEL_NLIN:-"$(if [ -e /usr/sbin/nologin ]; then echo "/usr/sbin/nologin"; fi)"}"
 	_SHEL_NLIN="${_SHEL_NLIN:-"$(if [ -e /sbin/nologin     ]; then echo "/sbin/nologin"; fi)"}"
 	readonly _SHEL_NLIN
-	fnDbgout "samba info" \
-		"debug,_SAMB_USER=[${_SAMB_USER:-}]" \
-		"debug,_SAMB_GRUP=[${_SAMB_GRUP:-}]" \
-		"debug,_SAMB_GADM=[${_SAMB_GADM:-}]" \
-		"debug,_SAMB_NSSW=[${_SAMB_NSSW:-}]" \
-		"debug,_SHEL_NLIN=[${_SHEL_NLIN:-}]"
-
 	# --- auto install --------------------------------------------------------
-	fnDbgout "shell info" \
-		"debug,_FILE_ERLY=[${_FILE_ERLY:-}]" \
-		"debug,_FILE_LATE=[${_FILE_LATE:-}]" \
-		"debug,_FILE_PART=[${_FILE_PART:-}]" \
-		"debug,_FILE_RUNS=[${_FILE_RUNS:-}]"
-
 	# --- debug backup---------------------------------------------------------
 	fnFile_backup "/proc/cmdline"
 	fnFile_backup "/proc/mounts"
 	fnFile_backup "/proc/self/mounts"
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }

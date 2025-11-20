@@ -6,7 +6,7 @@
 #   input :     $2     : character
 #   output:   stdout   : output
 #   return:            : unused
-#   g-var : _TGET_VIRT : write
+#   g-var :            : unused
 # shellcheck disable=SC2148,SC2317,SC2329
 fnString() {
 	printf "%${1:-80}s" "" | tr ' ' "${2:- }"

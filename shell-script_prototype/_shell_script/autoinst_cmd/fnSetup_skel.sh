@@ -9,7 +9,7 @@
 # shellcheck disable=SC2148,SC2317,SC2329
 fnSetup_skel() {
 	__FUNC_NAME="fnSetup_skel"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- .bashrc -------------------------------------------------------------
 	__PATH="${_DIRS_TGET:-}/etc/skel/.bashrc"
@@ -112,5 +112,5 @@ _EOT_
 	done
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }

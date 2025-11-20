@@ -10,12 +10,12 @@
 # shellcheck disable=SC2148,SC2317,SC2329
 fnSetup_netman() {
 	__FUNC_NAME="fnSetup_netman"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
 	__SRVC="$(fnFind_serivce 'NetworkManager.service' | sort | head -n 1)"
 	if [ -z "${__SRVC:-}" ]; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- configures ----------------------------------------------------------
@@ -134,28 +134,28 @@ _EOT_
 	if systemctl --quiet is-enabled "${__SRVC}"; then
 		__SVEX="systemd-networkd.service"
 		if systemctl --quiet is-enabled "${__SVEX}"; then
-			fnMsgout "mask" "${__SVEX}"
+			fnMsgout "${_PROG_NAME:-}" "mask" "${__SVEX}"
 			systemctl --quiet mask "${__SVEX}"
 			systemctl --quiet mask "${__SVEX%.*}.socket"
 		fi
 	fi
 	if [ -z "${_TGET_CNTR:-}" ]; then
 		if systemctl --quiet is-active "${__SRVC}"; then
-			fnMsgout "restart" "${__SRVC}"
+			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
 			systemctl --quiet daemon-reload
 			if systemctl --quiet restart "${__SRVC}"; then
-				fnMsgout "success" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
 			else
-				fnMsgout "failed" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
 			fi
 			if nmcli connection reload; then
-				fnMsgout "success" "nmcli connection reload"
+				fnMsgout "${_PROG_NAME:-}" "success" "nmcli connection reload"
 			else
-				fnMsgout "failed" "nmcli connection reload"
+				fnMsgout "${_PROG_NAME:-}" "failed" "nmcli connection reload"
 			fi
 		fi
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }

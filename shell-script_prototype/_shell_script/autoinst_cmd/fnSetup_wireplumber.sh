@@ -9,12 +9,12 @@
 # shellcheck disable=SC2148,SC2317,SC2329
 fnSetup_wireplumber() {
 	__FUNC_NAME="fnSetup_wireplumber"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
 	__SRVC="$(fnFind_serivce 'wireplumber.service' | sort | head -n 1)"
 	if [ -z "${__SRVC:-}" ]; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- alsa ----------------------------------------------------------------
@@ -136,19 +136,19 @@ _EOT_
 	if [ -z "${_TGET_CNTR:-}" ]; then
 		__SRVC="${__SRVC##*/}"
 		if systemctl --quiet  is-active "${__SRVC}"; then
-			fnMsgout "restart" "${__SRVC}"
+			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
 			systemctl --quiet daemon-reload
 			for __USER in $(ps --no-headers -C "${__SRVC%.*}" -o user)
 			do
 				if systemctl --quiet --user --machine="${__USER}"@ restart "${__SRVC}"; then
-					fnMsgout "success" "${__USER}@ ${__SRVC}"
+					fnMsgout "${_PROG_NAME:-}" "success" "${__USER}@ ${__SRVC}"
 				else
-					fnMsgout "failed" "${__USER}@ ${__SRVC}"
+					fnMsgout "${_PROG_NAME:-}" "failed" "${__USER}@ ${__SRVC}"
 				fi
 			done
 		fi
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }

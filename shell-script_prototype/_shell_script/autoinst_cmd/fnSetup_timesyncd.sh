@@ -9,12 +9,12 @@
 # shellcheck disable=SC2148,SC2317,SC2329
 fnSetup_timesyncd() {
 	__FUNC_NAME="fnSetup_timesyncd"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
 	__SRVC="$(fnFind_serivce 'systemd-timesyncd.service' | sort | head -n 1)"
 	if [ -z "${__SRVC:-}" ]; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- timesyncd.conf ------------------------------------------------------
@@ -37,16 +37,16 @@ _EOT_
 	if [ -z "${_TGET_CNTR:-}" ]; then
 		__SRVC="${__SRVC##*/}"
 		if systemctl --quiet is-active "${__SRVC}"; then
-			fnMsgout "restart" "${__SRVC}"
+			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
 			systemctl --quiet daemon-reload
 			if systemctl --quiet restart "${__SRVC}"; then
-				fnMsgout "success" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
 			else
-				fnMsgout "failed" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
 			fi
 		fi
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }

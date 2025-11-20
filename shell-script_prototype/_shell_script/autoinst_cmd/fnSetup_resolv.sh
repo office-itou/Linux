@@ -9,7 +9,7 @@
 # shellcheck disable=SC2148,SC2317,SC2329
 fnSetup_resolv() {
 	__FUNC_NAME="fnSetup_resolv"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check command -------------------------------------------------------
 	__PATH="${_DIRS_TGET:-}/etc/resolv.conf"
@@ -31,7 +31,7 @@ _EOT_
 		__CONF="${_DIRS_TGET:-}/run/systemd/resolve/stub-resolv.conf"
 		fnFile_backup "${__CONF}"			# backup original file
 #		if grep -qi 'Do not edit.' "${__PATH}"; then
-#			fnMsgout "skip" "resolv.conf setup for chroot"
+#			fnMsgout "${_PROG_NAME:-}" "skip" "resolv.conf setup for chroot"
 #		else
 #			mkdir -p "${__CONF%/*}"
 #			cp --preserve=timestamps "${_DIRS_ORIG}/${__CONF#*"${_DIRS_TGET:-}/"}" "${__CONF}"
@@ -61,24 +61,24 @@ _EOT_
 		if systemctl --quiet is-enabled "${__SRVC}"; then
 			__SVEX="avahi-daemon.service"
 			if systemctl --quiet is-enabled "${__SVEX}"; then
-				fnMsgout "mask" "${__SVEX}"
+				fnMsgout "${_PROG_NAME:-}" "mask" "${__SVEX}"
 				systemctl --quiet mask "${__SVEX}"
 				systemctl --quiet mask "${__SVEX%.*}.socket"
 			fi
 		fi
 		if [ -z "${_TGET_CNTR:-}" ]; then
 			if systemctl --quiet is-active "${__SRVC}"; then
-				fnMsgout "restart" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
 				systemctl --quiet daemon-reload
 				if systemctl --quiet restart "${__SRVC}"; then
-					fnMsgout "success" "${__SRVC}"
+					fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
 				else
-					fnMsgout "failed" "${__SRVC}"
+					fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
 				fi
 			fi
 		fi
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }

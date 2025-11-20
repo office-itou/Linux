@@ -9,11 +9,11 @@
 # shellcheck disable=SC2148,SC2317,SC2329
 fnSetup_selinux() {
 	__FUNC_NAME="fnSetup_selinux"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check command -------------------------------------------------------
 	if ! command -v getenforce > /dev/null 2>&1; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- backup original file ------------------------------------------------
@@ -50,25 +50,25 @@ fnSetup_selinux() {
 		done
 	done
 	# --- restore context labels ----------------------------------------------
-	fnMsgout "restore" "context labels"
+	fnMsgout "${_PROG_NAME:-}" "restore" "context labels"
 	fixfiles onboot || true
 	# --- debug out -----------------------------------------------------------
 	if [ -n "${_DBGS_FLAG:-}" ]; then
 		___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: status")"
 		___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : status")"
-		fnMsgout "-debugout" "${___STRT}"
+		fnMsgout "${_PROG_NAME:-}" "-debugout" "${___STRT}"
 		getenforce || true
 		if command -v sestatus > /dev/null 2>&1; then
 			sestatus || true
 		fi
-		fnMsgout "-debugout" "${___ENDS}"
+		fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
 		___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: fcontext")"
 		___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : fcontext")"
-		fnMsgout "-debugout" "${___STRT}"
+		fnMsgout "${_PROG_NAME:-}" "-debugout" "${___STRT}"
 		semanage fcontext -l | grep -E '^/srv' || true
-		fnMsgout "-debugout" "${___ENDS}"
+		fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }

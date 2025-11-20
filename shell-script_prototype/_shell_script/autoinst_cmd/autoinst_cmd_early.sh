@@ -148,70 +148,31 @@
 # *** function section (common functions) *************************************
 
 # -----------------------------------------------------------------------------
-# descript: message output (debug out)
-#   input :     $1     : title
-#   input :     $@     : list
-#   output:   stdout   : message
-#   return:            : unused
-fnDbgout() {
-	___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${1:-}")"
-	___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${1:-}")"
-	shift
-	fnMsgout "-debugout" "${___STRT}"
-	while [ -n "${1:-}" ]
-	do
-		if [ "${1%%,*}" != "debug" ] || [ -n "${_DBGS_FLAG:-}" ]; then
-			fnMsgout "${1%%,*}" "${1#*,}"
-		fi
-		shift
-	done
-	fnMsgout "-debugout" "${___ENDS}"
-}
-
-# -----------------------------------------------------------------------------
-# descript: dump output (debug out)
-#   input :     $1     : path
-#   output:   stdout   : message
-#   return:            : unused
-fnDbgdump() {
-	[ -z "${_DBGS_FLAG:-}" ] && return
-	___PATH="${1:?}"
-	if [ ! -e "${___PATH}" ]; then
-		fnMsgout "failed" "not exist: [${___PATH}]"
-		return
-	fi
-	___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${___PATH}")"
-	___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${___PATH}")"
-	fnMsgout "-debugout" "${___STRT}"
-	cat "${___PATH}"
-	fnMsgout "-debugout" "${___ENDS}"
-}
-
-# -----------------------------------------------------------------------------
 # descript: message output
-#   input :     $1     : section (start, complete, remove, umount, failed, ...)
-#   input :     $2     : message
+#   input :     $1     : title (program name, etc)
+#   input :     $2     : section (start, complete, remove, umount, failed, ...)
+#   input :     $3     : message
 #   output:   stdout   : message
 #   return:            : unused
 fnMsgout() {
-	case "${1:-}" in
+	case "${2:-}" in
 		start    | complete)
-			case "${2:-}" in
-				*/*/*) printf "\033[m${_PROG_NAME:-}: \033[45m--- %-8.8s: %s ---\033[m\n" "${1:-}" "${2:-}";; # date
-				*    ) printf "\033[m${_PROG_NAME:-}: \033[92m--- %-8.8s: %s ---\033[m\n" "${1:-}" "${2:-}";; # info
+			case "${3:-}" in
+				*/*/*) printf "\033[m${1:-}: \033[45m--- %-8.8s: %s ---\033[m\n" "${2:-}" "${3:-}";; # date
+				*    ) printf "\033[m${1:-}: \033[92m--- %-8.8s: %s ---\033[m\n" "${2:-}" "${3:-}";; # info
 			esac
 			;;
-		skip               ) printf "\033[m${_PROG_NAME:-}: \033[92m--- %-8.8s: %s ---\033[m\n"    "${1:-}" "${2:-}";; # info
-		remove   | umount  ) printf "\033[m${_PROG_NAME:-}:     \033[93m%-8.8s: %s\033[m\n"        "${1:-}" "${2:-}";; # warn
-		archive            ) printf "\033[m${_PROG_NAME:-}:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${1:-}" "${2:-}";; # warn
-		success            ) printf "\033[m${_PROG_NAME:-}:     \033[92m%-8.8s: %s\033[m\n"        "${1:-}" "${2:-}";; # info
-		failed             ) printf "\033[m${_PROG_NAME:-}:     \033[41m%-8.8s: %s\033[m\n"        "${1:-}" "${2:-}";; # alert
-		caution            ) printf "\033[m${_PROG_NAME:-}:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${1:-}" "${2:-}";; # warn
-		-*                 ) printf "\033[m${_PROG_NAME:-}:     \033[36m%-8.8s: %s\033[m\n"        "${1#-}" "${2:-}";; # gap
-		info               ) printf "\033[m${_PROG_NAME:-}: \033[92m%12.12s: %s\033[m\n"           "${1:-}" "${2:-}";; # info
-		warn               ) printf "\033[m${_PROG_NAME:-}: \033[93m%12.12s: %s\033[m\n"           "${1:-}" "${2:-}";; # warn
-		alert              ) printf "\033[m${_PROG_NAME:-}: \033[91m%12.12s: %s\033[m\n"           "${1:-}" "${2:-}";; # alert
-		*                  ) printf "\033[m${_PROG_NAME:-}: \033[37m%12.12s: %s\033[m\n"           "${1:-}" "${2:-}";; # normal
+		skip               ) printf "\033[m${1:-}: \033[92m--- %-8.8s: %s ---\033[m\n"    "${2:-}" "${3:-}";; # info
+		remove   | umount  ) printf "\033[m${1:-}:     \033[93m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # warn
+		archive            ) printf "\033[m${1:-}:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${2:-}" "${3:-}";; # warn
+		success            ) printf "\033[m${1:-}:     \033[92m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # info
+		failed             ) printf "\033[m${1:-}:     \033[41m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # alert
+		caution            ) printf "\033[m${1:-}:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${2:-}" "${3:-}";; # warn
+		-*                 ) printf "\033[m${1:-}:     \033[36m%-8.8s: %s\033[m\n"        "${1#-}" "${3:-}";; # gap
+		info               ) printf "\033[m${1:-}: \033[92m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # info
+		warn               ) printf "\033[m${1:-}: \033[93m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # warn
+		alert              ) printf "\033[m${1:-}: \033[91m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # alert
+		*                  ) printf "\033[m${1:-}: \033[37m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # normal
 	esac
 }
 
@@ -238,26 +199,6 @@ fnStrmsg() {
 }
 
 # -----------------------------------------------------------------------------
-# descript: find command
-#   input :     $1     : command name
-#   output:   stdout   : output
-#   return:            : unused
-# --- file backup -------------------------------------------------------------
-fnFind_command() {
-	find "${_DIRS_TGET:-}"/bin/ "${_DIRS_TGET:-}"/sbin/ "${_DIRS_TGET:-}"/usr/bin/ "${_DIRS_TGET:-}"/usr/sbin/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \)
-}
-
-# -----------------------------------------------------------------------------
-# descript: find service
-#   input :     $1     : service name
-#   output:   stdout   : output
-#   return:            : unused
-# --- file backup -------------------------------------------------------------
-fnFind_serivce() {
-	find "${_DIRS_TGET:-}"/lib/systemd/system/ "${_DIRS_TGET:-}"/usr/lib/systemd/system/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \)
-}
-
-# -----------------------------------------------------------------------------
 # descript: IPv6 full address
 #   input :     $1     : value
 #   input :     $2     : format (not empty: zero padding)
@@ -281,31 +222,8 @@ fnIPv6FullAddr() {
 				num[i]="0x"arr[i]
 			}
 			printf "'"${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}"'",
-			num[1],num[2],num[3],num[4],num[5],num[6],num[7],num[8]
+				num[1],num[2],num[3],num[4],num[5],num[6],num[7],num[8]
 		}'
-#	___SPRT="$(echo "${___ADDR}" | sed -e 's/[^:]//g')"
-#	___LENG=$((7-${#___SPRT}))
-#	if [ "${___LENG}" -gt 0 ]; then
-#		___SPRT="$(printf ':%.s' $(seq 1 $((___LENG+2))) || true)"
-#		___ADDR="$(echo "${___ADDR}" | sed -e "s/::/${___SPRT}/")"
-#	fi
-#	___OCT1="$(echo "${___ADDR}" | cut -d ':' -f 1)"
-#	___OCT2="$(echo "${___ADDR}" | cut -d ':' -f 2)"
-#	___OCT3="$(echo "${___ADDR}" | cut -d ':' -f 3)"
-#	___OCT4="$(echo "${___ADDR}" | cut -d ':' -f 4)"
-#	___OCT5="$(echo "${___ADDR}" | cut -d ':' -f 5)"
-#	___OCT6="$(echo "${___ADDR}" | cut -d ':' -f 6)"
-#	___OCT7="$(echo "${___ADDR}" | cut -d ':' -f 7)"
-#	___OCT8="$(echo "${___ADDR}" | cut -d ':' -f 8)"
-#	printf "${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}" \
-#	    "0x${___OCT1:-"0"}" \
-#	    "0x${___OCT2:-"0"}" \
-#	    "0x${___OCT3:-"0"}" \
-#	    "0x${___OCT4:-"0"}" \
-#	    "0x${___OCT5:-"0"}" \
-#	    "0x${___OCT6:-"0"}" \
-#	    "0x${___OCT7:-"0"}" \
-#	    "0x${___OCT8:-"0"}"
 }
 
 # -----------------------------------------------------------------------------
@@ -354,6 +272,66 @@ fnIPv4Netmask() {
 				printf "%d",(32-c)
 			}
 		}'
+}
+
+# -----------------------------------------------------------------------------
+# descript: message output (debug out)
+#   input :     $1     : title
+#   input :     $@     : list
+#   output:   stdout   : message
+#   return:            : unused
+fnDbgout() {
+	___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${1:-}")"
+	___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${1:-}")"
+	shift
+	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___STRT}"
+	while [ -n "${1:-}" ]
+	do
+		if [ "${1%%,*}" != "debug" ] || [ -n "${_DBGS_FLAG:-}" ]; then
+			fnMsgout "${_PROG_NAME:-}" "${1%%,*}" "${1#*,}"
+		fi
+		shift
+	done
+	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: dump output (debug out)
+#   input :     $1     : path
+#   output:   stdout   : message
+#   return:            : unused
+fnDbgdump() {
+	[ -z "${_DBGS_FLAG:-}" ] && return
+	___PATH="${1:?}"
+	if [ ! -e "${___PATH}" ]; then
+		fnMsgout "${_PROG_NAME:-}" "failed" "not exist: [${___PATH}]"
+		return
+	fi
+	___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${___PATH}")"
+	___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${___PATH}")"
+	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___STRT}"
+	cat "${___PATH}"
+	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: find command
+#   input :     $1     : command name
+#   output:   stdout   : output
+#   return:            : unused
+# --- file backup -------------------------------------------------------------
+fnFind_command() {
+	find "${_DIRS_TGET:-}"/bin/ "${_DIRS_TGET:-}"/sbin/ "${_DIRS_TGET:-}"/usr/bin/ "${_DIRS_TGET:-}"/usr/sbin/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \)
+}
+
+# -----------------------------------------------------------------------------
+# descript: find service
+#   input :     $1     : service name
+#   output:   stdout   : output
+#   return:            : unused
+# --- file backup -------------------------------------------------------------
+fnFind_serivce() {
+	find "${_DIRS_TGET:-}"/lib/systemd/system/ "${_DIRS_TGET:-}"/usr/lib/systemd/system/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \)
 }
 
 # -----------------------------------------------------------------------------
@@ -408,7 +386,7 @@ fnNetwork_param() {
 	___DIRS="${_DIRS_TGET:-}/sys/devices"
 	_NICS_NAME="${_NICS_NAME:-"ens160"}"
 	if [ ! -e "${___DIRS}"/. ]; then
-		fnMsgout "caution" "not exist: [${___DIRS}]"
+		fnMsgout "${_PROG_NAME:-}" "caution" "not exist: [${___DIRS}]"
 	else
 		if [ -z "${_NICS_NAME#*"*"}" ]; then
 #			_NICS_NAME="$(find "${___DIRS}" -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -E "${_NICS_NAME}" | sort | head -n 1)"
@@ -417,7 +395,7 @@ fnNetwork_param() {
 		fi
 #		if ! find "${___DIRS}" -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -qE '^'"${_NICS_NAME}"'$'; then
 		if ! find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | grep -q "${_NICS_NAME}"; then
-			fnMsgout "failed" "not exist: [${_NICS_NAME}]"
+			fnMsgout "${_PROG_NAME:-}" "failed" "not exist: [${_NICS_NAME}]"
 		else
 			_NICS_MADR="${_NICS_MADR:-"$(ip -0 -brief address show dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}' || true)"}"
 			_NICS_IPV4="${_NICS_IPV4:-"$(ip -4 -brief address show dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}' || true)"}"
@@ -442,9 +420,9 @@ fnNetwork_param() {
 			_LINK_ADDR="$(ip -6 -brief address show primary dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $4;}')"
 		fi
 	fi
-	__WORK="$(echo "${_NICS_IPV4:-}" | sed 's/[^0-9./]\+//g')"
-	_NICS_IPV4="$(echo "${__WORK}/" | cut -d '/' -f 1)"
-	_NICS_BIT4="$(echo "${__WORK}/" | cut -d '/' -f 2)"
+	___WORK="$(echo "${_NICS_IPV4:-}" | sed 's/[^0-9./]\+//g')"
+	_NICS_IPV4="$(echo "${___WORK}/" | cut -d '/' -f 1)"
+	_NICS_BIT4="$(echo "${___WORK}/" | cut -d '/' -f 2)"
 	if [ -z "${_NICS_BIT4}" ]; then
 		_NICS_BIT4="$(fnIPv4Netmask "${_NICS_MASK:-"255.255.255.0"}")"
 	else
@@ -522,7 +500,7 @@ fnFile_backup() {
 	___MODE="${2:-}"
 	# --- check ---------------------------------------------------------------
 	if [ ! -e "${___PATH}" ]; then
-		fnMsgout "caution" "not exist: [${___PATH}]"
+		fnMsgout "${_PROG_NAME:-}" "caution" "not exist: [${___PATH}]"
 		mkdir -p "${___PATH%/*}"
 		___REAL="$(realpath --canonicalize-missing "${___PATH}")"
 		if [ ! -e "${___REAL}" ]; then
@@ -544,7 +522,7 @@ fnFile_backup() {
 	if [ -e "${___BACK}" ] || [ -L "${___BACK}" ]; then
 		___BACK="${___BACK}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
 	fi
-	fnMsgout "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
+	fnMsgout "${_PROG_NAME:-}" "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
 	cp --archive "${___PATH}" "${___BACK}"
 }
 
@@ -557,7 +535,7 @@ fnFile_backup() {
 #   return:            : unused
 fnInitialize() {
 	__FUNC_NAME="fnInitialize"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- set system parameter ------------------------------------------------
 	if [ -n "${TERM:-}" ] \
@@ -719,10 +697,10 @@ fnInitialize() {
 	while read -r __TGET
 	do
 		__PATH="${__TGET}.tgz"
-		fnMsgout "archive" "[${__TGET}] -> [${__PATH}]"
+		fnMsgout "${_PROG_NAME:-}" "archive" "[${__TGET}] -> [${__PATH}]"
 		if tar -C "${__TGET}" -cf "${__PATH}" .; then
 			chmod 600 "${__PATH}"
-			fnMsgout "remove"  "${__TGET}"
+			fnMsgout "${_PROG_NAME:-}" "remove"  "${__TGET}"
 			rm -rf "${__TGET:?}"
 		fi
 	done
@@ -755,7 +733,7 @@ fnInitialize() {
 	fnFile_backup "/proc/self/mounts"
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
 # -----------------------------------------------------------------------------
@@ -765,12 +743,12 @@ fnInitialize() {
 #   return:            : unused
 fnSetup_wireplumber() {
 	__FUNC_NAME="fnSetup_wireplumber"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
 	__SRVC="$(fnFind_serivce 'wireplumber.service' | sort | head -n 1)"
 	if [ -z "${__SRVC:-}" ]; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- alsa ----------------------------------------------------------------
@@ -892,21 +870,21 @@ _EOT_
 	if [ -z "${_TGET_CNTR:-}" ]; then
 		__SRVC="${__SRVC##*/}"
 		if systemctl --quiet  is-active "${__SRVC}"; then
-			fnMsgout "restart" "${__SRVC}"
+			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
 			systemctl --quiet daemon-reload
 			for __USER in $(ps --no-headers -C "${__SRVC%.*}" -o user)
 			do
 				if systemctl --quiet --user --machine="${__USER}"@ restart "${__SRVC}"; then
-					fnMsgout "success" "${__USER}@ ${__SRVC}"
+					fnMsgout "${_PROG_NAME:-}" "success" "${__USER}@ ${__SRVC}"
 				else
-					fnMsgout "failed" "${__USER}@ ${__SRVC}"
+					fnMsgout "${_PROG_NAME:-}" "failed" "${__USER}@ ${__SRVC}"
 				fi
 			done
 		fi
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # -----------------------------------------------------------------------------
@@ -917,7 +895,7 @@ _EOT_
 # --- file backup -------------------------------------------------------------
 fnGet_conf_file() {
 	__FUNC_NAME="fnGet_conf_file"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	__LINE=""
 	__PATH=""
@@ -937,7 +915,7 @@ fnGet_conf_file() {
 	do
 		case "${__LINE}" in
 			http:*|https:*|ftp:*|tftp:*)
-				fnMsgout "download" "${__LINE}"
+				fnMsgout "${_PROG_NAME:-}" "download" "${__LINE}"
 				__PATH="$(fnFind_command 'wget' | sort | head -n 1)"
 				if [ -n "${__PATH:-}" ]; then
 					if ! wget \
@@ -950,7 +928,7 @@ fnGet_conf_file() {
 					  --output-document "${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}" \
 					  "${__LINE}" \
 					; then
-						fnMsgout "failed" "${__LINE}"
+						fnMsgout "${_PROG_NAME:-}" "failed" "${__LINE}"
 						__PATH="${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}"
 						rm -rf "${__PATH:?}"
 						continue
@@ -973,7 +951,7 @@ fnGet_conf_file() {
 					  --output "${__LINE##*/}" \
 					  "${__LINE}" \
 					; then
-						fnMsgout "failed" "${__LINE}"
+						fnMsgout "${_PROG_NAME:-}" "failed" "${__LINE}"
 						__PATH="${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}"
 						rm -rf "${__PATH:?}"
 						continue
@@ -981,9 +959,9 @@ fnGet_conf_file() {
 				fi
 				;;
 			file:*|/*)
-				fnMsgout "copy" "${__LINE}"
+				fnMsgout "${_PROG_NAME:-}" "copy" "${__LINE}"
 				if ! cp --preserve=timestamps "${__LINE#*:*//}" "${_DIRS_TGET:-}${_DIRS_INST}/"; then
-					fnMsgout "failed" "${__LINE}"
+					fnMsgout "${_PROG_NAME:-}" "failed" "${__LINE}"
 					__PATH="${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}"
 					rm -rf "${__PATH:?}"
 					continue
@@ -997,11 +975,11 @@ fnGet_conf_file() {
 			chmod +x "${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}"
 			chmod +x "${_DIRS_TGET:-}${_DIRS_INST%.*}/${__LINE##*/}"
 		fi
-		fnMsgout "success" "${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}"
+		fnMsgout "${_PROG_NAME:-}" "success" "${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}"
 	done
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
 
 # *** main section ************************************************************
@@ -1014,7 +992,7 @@ fnGet_conf_file() {
 #   g-var : _DIRS_BACK : read
 fnMain() {
 	_FUNC_NAME="fnMain"
-	fnMsgout "start" "[${_FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${_FUNC_NAME}]"
 
 	# --- initial setup -------------------------------------------------------
 	fnInitialize						# initialize
@@ -1031,12 +1009,12 @@ fnMain() {
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${_FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${_FUNC_NAME}]"
 }
 
 	# --- start ---------------------------------------------------------------
 	__time_start=$(date +%s)
-	fnMsgout "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
+	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
 
 	# --- boot parameter selection --------------------------------------------
 	for __LINE in ${_COMD_LINE:-} ${_PROG_PARM:-}
@@ -1122,8 +1100,8 @@ fnMain() {
 	# --- complete ------------------------------------------------------------
 	__time_end=$(date +%s)
 	__time_elapsed=$((__time_end - __time_start))
-	fnMsgout "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"
-	fnMsgout "elapsed" "$(printf "%dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60)) || true)"
+	fnMsgout "${_PROG_NAME:-}" "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"
+	fnMsgout "${_PROG_NAME:-}" "elapsed" "$(printf "%dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60)) || true)"
 
 	exit 0
 

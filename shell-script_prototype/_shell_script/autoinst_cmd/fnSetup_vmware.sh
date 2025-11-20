@@ -9,11 +9,11 @@
 # shellcheck disable=SC2148,SC2317,SC2329
 fnSetup_vmware() {
 	__FUNC_NAME="fnSetup_vmware"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check command -------------------------------------------------------
 	if ! command -v vmware-hgfsclient > /dev/null 2>&1; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- GNOME3 rendering issues ---------------------------------------------
@@ -48,10 +48,10 @@ _EOT_
 	if [ -z "${_TGET_CNTR:-}" ]; then
 		systemctl --quiet daemon-reload
 		if mount "${_DIRS_HGFS}"; then
-			fnMsgout "success" "VMware shared directory mounted"
+			fnMsgout "${_PROG_NAME:-}" "success" "VMware shared directory mounted"
 			LANG=C df -h "${_DIRS_HGFS}"
 		else
-			fnMsgout "failed" "VMware shared directory not mounted"
+			fnMsgout "${_PROG_NAME:-}" "failed" "VMware shared directory not mounted"
 			sed -i "${__PATH}" \
 			    -e "\%${__FSTB}% s/^/#/g"
 		fi
@@ -60,5 +60,5 @@ _EOT_
 	fnFile_backup "${__PATH}" "init"	# backup initial file
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }

@@ -5,11 +5,11 @@
 #   input :     $1     : device name
 #   output:   stdout   : message
 #   return:            : unused
-#   g-var :            : unused
+#   g-var : _PROG_NAME : read
 # shellcheck disable=SC2148,SC2317,SC2329
 fnClean_device() {
 	__FUNC_NAME="fnClean_device"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	__DEVS="${1:-}"
 	# --- remove lvm ----------------------------------------------------------
@@ -19,13 +19,13 @@ fnClean_device() {
 			for __LINE in $(pvs --noheading --separator '|' | cut -d '|' -f 1-2 | grep "${__DEVS}" | sort -u)
 			do
 				__NAME="${__LINE#*\|}"		# vg
-				fnMsgout "remove" "vg=[${__NAME}]"
+				fnMsgout "${_PROG_NAME:-}" "remove" "vg=[${__NAME}]"
 				lvremove -q -y -ff "${__NAME}"
 			done
 			for __LINE in $(pvs --noheading --separator '|' | cut -d '|' -f 1-2 | grep "${__DEVS}" | sort -u)
 			do
 				__NAME="${__LINE%\|*}"		# pv
-				fnMsgout "remove" "pv=[${__NAME}]"
+				fnMsgout "${_PROG_NAME:-}" "remove" "pv=[${__NAME}]"
 				pvremove -q -y -ff "${__NAME}"
 			done
 		fi
@@ -38,5 +38,5 @@ fnClean_device() {
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }

@@ -9,11 +9,11 @@
 # shellcheck disable=SC2148,SC2317,SC2329
 fnSetup_hostname() {
 	__FUNC_NAME="fnSetup_hostname"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check fqdn ----------------------------------------------------------
 	if [ -z "${_NICS_FQDN:-}" ]; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- hostname ------------------------------------------------------------
@@ -26,5 +26,5 @@ fnSetup_hostname() {
 	fnFile_backup "${__PATH}" "init"	# backup initial file
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }

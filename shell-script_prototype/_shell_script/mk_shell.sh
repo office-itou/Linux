@@ -80,21 +80,23 @@
 	# --- external script -----------------------------------------------------
 	declare -r    _SHEL_TOPS="${_PROG_DIRS:?}"
 	declare -r    _SHEL_COMN="${_PROG_DIRS:?}/_common_bash"
+	declare -r    _SHEL_CUST="${_PROG_DIRS:?}/custom_cmd"
 
 # *** function section (common functions) *************************************
 
-	# shellcheck source=/dev/null
-	source "${_SHEL_COMN:?}"/fnDebugout_parameters.sh		# print out of internal variables
-	# shellcheck source=/dev/null
-	source "${_SHEL_COMN:?}"/fnDbgout.sh					# message output (debug out)
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMN:?}"/fnMsgout.sh					# message output
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMN:?}"/fnString.sh					# string output
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMN:?}"/fnTrim.sh						# ltrim,rtrim,trim
+
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN:?}"/fnTrap.sh						# trap
+	source "${_SHEL_CUST:?}"/fnDbgout.sh					# message output (debug out)
+	# shellcheck source=/dev/null
+	source "${_SHEL_CUST:?}"/fnDebugout_parameters.sh		# print out of internal variables
+	# shellcheck source=/dev/null
+	source "${_SHEL_CUST:?}"/fnTrap.sh						# trap
 
 # *** function section (subroutine functions) *********************************
 
@@ -113,7 +115,7 @@
 fnInitialize() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	declare -i    __COLS=0				# work
 
@@ -138,7 +140,7 @@ fnInitialize() {
 	readonly _TEXT_GAP2
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 }
@@ -154,7 +156,7 @@ fnInitialize() {
 function funcCreate() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	declare -n    __NAME_REFR="${1:-}"	# name reference
 	shift
@@ -182,13 +184,13 @@ function funcCreate() {
 		fi
 		__OPTN=("${@:-}")
 		if file "${__PARM}" | grep -q 'with CRLF'; then
-			fnMsgout "failed" "with CRLF: [${__PARM}]"
+			fnMsgout "${_PROG_NAME:-}" "failed" "with CRLF: [${__PARM}]"
 			exit 1
 		fi
 
 		# --- file creation ---------------------------------------------------
 		__TGET="${__PARM//skel_/}"
-		fnMsgout "start" "create   : [${__TGET}]"
+		fnMsgout "${_PROG_NAME:-}" "start" "create   : [${__TGET}]"
 		__TEMP="$(mktemp -q -p "${_DIRS_TEMP:-/tmp}" "${__TGET##*/}.XXXXXX")"
 		: > "${__TEMP:?}"
 		__BLNK=""
@@ -249,12 +251,12 @@ function funcCreate() {
 		# --- complete --------------------------------------------------------
 		cp "${__TEMP}" "${__TGET}"
 		rm -f "${__TEMP:?}"
-		fnMsgout "complete" "create   : [${__TGET}]"
+		fnMsgout "${_PROG_NAME:-}" "complete" "create   : [${__TGET}]"
 	done
 	__NAME_REFR="${__OPTN[*]:-}"
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 }
@@ -273,7 +275,7 @@ function funcCreate() {
 function fnMain() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	declare       __PARM=""				# parameters
 	declare -a    __OPTN=()				# options
@@ -301,7 +303,7 @@ function fnMain() {
 	done
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 }
@@ -315,7 +317,7 @@ function fnMain() {
 
 	# --- start ---------------------------------------------------------------
 	__time_start=$(date +%s)
-	fnMsgout "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
+	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
 
 	# --- boot parameter selection --------------------------------------------
 	set -f -- "${_PROG_PARM[@]:-}"
@@ -345,8 +347,8 @@ function fnMain() {
 	# --- complete ------------------------------------------------------------
 	__time_end=$(date +%s)
 	__time_elapsed=$((__time_end - __time_start))
-	fnMsgout "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"
-	fnMsgout "elapsed" "$(printf "%dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60)) || true)"
+	fnMsgout "${_PROG_NAME:-}" "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"
+	fnMsgout "${_PROG_NAME:-}" "elapsed" "$(printf "%dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60)) || true)"
 
 	exit 0
 

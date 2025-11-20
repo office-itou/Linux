@@ -9,7 +9,7 @@
 # shellcheck disable=SC2148,SC2317,SC2329
 fnSetup_service() {
 	__FUNC_NAME="fnSetup_skel"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	set -f
 	set --
@@ -39,7 +39,7 @@ fnSetup_service() {
 		&& [ ! -e "${_DIRS_TGET:-}/usr/lib/systemd/system/${__LIST}" ]; then
 			continue
 		fi
-		fnMsgout "enable" "${__LIST}"
+		fnMsgout "${_PROG_NAME:-}" "enable" "${__LIST}"
 		set -- "$@" "${__LIST}"
 	done 
 	set +f
@@ -50,12 +50,12 @@ fnSetup_service() {
 			for __SRVC in "$@"
 			do
 				if systemctl --quiet is-active "${__SRVC}"; then
-					fnMsgout "restart" "${__SRVC}"
+					fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
 					systemctl --quiet daemon-reload
 					if systemctl --quiet restart "${__SRVC}"; then
-						fnMsgout "success" "${__SRVC}"
+						fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
 					else
-						fnMsgout "failed" "${__SRVC}"
+						fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
 					fi
 				fi
 			done
@@ -63,5 +63,5 @@ fnSetup_service() {
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }

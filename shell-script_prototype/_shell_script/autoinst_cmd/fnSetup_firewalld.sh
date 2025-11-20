@@ -9,11 +9,11 @@
 # shellcheck disable=SC2148,SC2317,SC2329
 fnSetup_firewalld() {
 	__FUNC_NAME="fnSetup_firewalld"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check command -------------------------------------------------------
 	if ! command -v firewall-cmd > /dev/null 2>&1; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- firewalld.service ---------------------------------------------------
@@ -40,7 +40,7 @@ fnSetup_firewalld() {
 	__LINK="${_LINK_UADR%%::}::/10"
 	__SRVC="${__SRVC##*/}"
 	if [ -z "${_TGET_CNTR:-}" ] && systemctl --quiet is-active "${__SRVC}"; then
-		fnMsgout "active" "${__SRVC}"
+		fnMsgout "${_PROG_NAME:-}" "active" "${__SRVC}"
 		firewall-cmd --quiet --permanent --set-default-zone="${_FWAL_ZONE}" || true
 		[ -n "${_NICS_NAME##-}" ] && { firewall-cmd --quiet --permanent --zone="${_FWAL_ZONE}" --change-interface="${_NICS_NAME}" || true; }
 		for __NAME in ${_FWAL_NAME}
@@ -66,7 +66,7 @@ fnSetup_firewalld() {
 			firewall-cmd --list-all --zone="${_FWAL_ZONE}"
 		fi
 	else
-		fnMsgout "inactive" "${__SRVC}"
+		fnMsgout "${_PROG_NAME:-}" "inactive" "${__SRVC}"
 		firewall-offline-cmd --quiet --set-default-zone="${_FWAL_ZONE}" || true
 		[ -n "${_NICS_NAME##-}" ] && { firewall-offline-cmd --quiet --zone="${_FWAL_ZONE}" --change-interface="${_NICS_NAME}" || true; }
 		for __NAME in ${_FWAL_NAME}
@@ -96,5 +96,5 @@ fnSetup_firewalld() {
 	fnFile_backup "${__PATH}" "init"	# backup initial file
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }

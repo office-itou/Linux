@@ -9,11 +9,11 @@
 # shellcheck disable=SC2148,SC2317,SC2329
 fnSetup_netplan() {
 	__FUNC_NAME="fnSetup_netplan"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check command -------------------------------------------------------
 	if ! command -v netplan > /dev/null 2>&1; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- configures ----------------------------------------------------------
@@ -84,12 +84,12 @@ _EOT_
 	# --- netplan -------------------------------------------------------------
 	if netplan status 2> /dev/null; then
 		if netplan apply; then
-			fnMsgout "success" "netplan apply"
+			fnMsgout "${_PROG_NAME:-}" "success" "netplan apply"
 		else
-			fnMsgout "failed" "netplan apply"
+			fnMsgout "${_PROG_NAME:-}" "failed" "netplan apply"
 		fi
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }

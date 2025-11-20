@@ -13,7 +13,7 @@
 # --- file backup -------------------------------------------------------------
 fnGet_conf_file() {
 	__FUNC_NAME="fnGet_conf_file"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	__LINE=""
 	__PATH=""
@@ -33,7 +33,7 @@ fnGet_conf_file() {
 	do
 		case "${__LINE}" in
 			http:*|https:*|ftp:*|tftp:*)
-				fnMsgout "download" "${__LINE}"
+				fnMsgout "${_PROG_NAME:-}" "download" "${__LINE}"
 				__PATH="$(fnFind_command 'wget' | sort | head -n 1)"
 				if [ -n "${__PATH:-}" ]; then
 					if ! wget \
@@ -46,7 +46,7 @@ fnGet_conf_file() {
 					  --output-document "${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}" \
 					  "${__LINE}" \
 					; then
-						fnMsgout "failed" "${__LINE}"
+						fnMsgout "${_PROG_NAME:-}" "failed" "${__LINE}"
 						__PATH="${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}"
 						rm -rf "${__PATH:?}"
 						continue
@@ -69,7 +69,7 @@ fnGet_conf_file() {
 					  --output "${__LINE##*/}" \
 					  "${__LINE}" \
 					; then
-						fnMsgout "failed" "${__LINE}"
+						fnMsgout "${_PROG_NAME:-}" "failed" "${__LINE}"
 						__PATH="${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}"
 						rm -rf "${__PATH:?}"
 						continue
@@ -77,9 +77,9 @@ fnGet_conf_file() {
 				fi
 				;;
 			file:*|/*)
-				fnMsgout "copy" "${__LINE}"
+				fnMsgout "${_PROG_NAME:-}" "copy" "${__LINE}"
 				if ! cp --preserve=timestamps "${__LINE#*:*//}" "${_DIRS_TGET:-}${_DIRS_INST}/"; then
-					fnMsgout "failed" "${__LINE}"
+					fnMsgout "${_PROG_NAME:-}" "failed" "${__LINE}"
 					__PATH="${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}"
 					rm -rf "${__PATH:?}"
 					continue
@@ -93,9 +93,9 @@ fnGet_conf_file() {
 			chmod +x "${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}"
 			chmod +x "${_DIRS_TGET:-}${_DIRS_INST%.*}/${__LINE##*/}"
 		fi
-		fnMsgout "success" "${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}"
+		fnMsgout "${_PROG_NAME:-}" "success" "${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}"
 	done
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }

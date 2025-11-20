@@ -1,0 +1,61 @@
+# shellcheck disable=SC2148
+
+	# === for creations =======================================================
+
+	# --- common data file (prefer non-empty current file) --------------------
+	declare       _DATA_CONF=":_DIRS_DATA_:/:_FILE_CONF_:"	# common configuration file
+	declare       _DATA_DIST=":_DIRS_DATA_:/:_FILE_DIST_:"	# distribution data file
+	declare       _DATA_MDIA=":_DIRS_DATA_:/:_FILE_MDIA_:"	# media data file
+	declare       _DATA_DSTP=":_DIRS_DATA_:/:_FILE_DSTP_:"	# debstrap data file
+	# --- pre-configuration file templates ------------------------------------
+	declare       _TMPL_KICK=":_DIRS_TMPL_:/:_FILE_KICK_:"	# for rhel
+	declare       _TMPL_CLUD=":_DIRS_TMPL_:/:_FILE_CLUD_:"	# for ubuntu cloud-init
+	declare       _TMPL_SEDD=":_DIRS_TMPL_:/:_FILE_SEDD_:"	# for debian
+	declare       _TMPL_SEDU=":_DIRS_TMPL_:/:_FILE_SEDU_:"	# for ubuntu
+	declare       _TMPL_YAST=":_DIRS_TMPL_:/:_FILE_YAST_:"	# for opensuse
+	declare       _TMPL_AGMA=":_DIRS_TMPL_:/:_FILE_AGMA_:"	# for opensuse
+	# --- shell script --------------------------------------------------------
+	declare       _SHEL_ERLY=":_DIRS_SHEL_:/:_FILE_ERLY_:"	# shell commands to run early
+	declare       _SHEL_LATE=":_DIRS_SHEL_:/:_FILE_LATE_:"	# "              to run late
+	declare       _SHEL_PART=":_DIRS_SHEL_:/:_FILE_PART_:"	# "              to run after partition
+	declare       _SHEL_RUNS=":_DIRS_SHEL_:/:_FILE_RUNS_:"	# "              to run preseed/run
+
+	# --- tftp / web server network parameter ---------------------------------
+	declare       _SRVR_HTTP="http"							# server connection protocol (http or https)
+	declare       _SRVR_PROT="http"							# server connection protocol (http or tftp)
+	declare       _SRVR_NICS="ens160"						# network device name   (ex. ens160)            (Set execution server setting to empty variable.)
+	declare       _SRVR_MADR="00:00:00:00:00:00"			#                mac    (ex. 00:00:00:00:00:00)
+	declare       _SRVR_ADDR="192.168.1.11"					# IPv4 address          (ex. 192.168.1.11)
+	declare       _SRVR_CIDR="24"							# IPv4 cidr             (ex. 24)
+	declare       _SRVR_MASK="255.255.255.0"				# IPv4 subnetmask       (ex. 255.255.255.0)
+	declare       _SRVR_GWAY="192.168.1.254"				# IPv4 gateway          (ex. 192.168.1.254)
+	declare       _SRVR_NSVR="192.168.1.254"				# IPv4 nameserver       (ex. 192.168.1.254)
+	declare       _SRVR_UADR="192.168.1"					# IPv4 address up       (ex. 192.168.1)
+
+	# --- network parameter ---------------------------------------------------
+	declare       _NWRK_HOST="sv-:_DISTRO_:"				# hostname              (ex. sv-server)
+	declare       _NWRK_WGRP="workgroup"					# domain                (ex. workgroup)
+	declare       _NICS_NAME="ens160"						# network device name   (ex. ens160)
+	declare       _NICS_MADR=""								#                mac    (ex. 00:00:00:00:00:00)
+	declare       _IPV4_ADDR="192.168.1.1"					# IPv4 address          (ex. 192.168.1.1)   (empty to dhcp)
+	declare       _IPV4_CIDR="24"							# IPv4 cidr             (ex. 24)            (empty to ipv4 subnetmask, if both to 24)
+	declare       _IPV4_MASK="255.255.255.0"				# IPv4 subnetmask       (ex. 255.255.255.0) (empty to ipv4 cidr)
+	declare       _IPV4_GWAY="192.168.1.254"				# IPv4 gateway          (ex. 192.168.1.254)
+	declare       _IPV4_NSVR="192.168.1.254"				# IPv4 nameserver       (ex. 192.168.1.254)
+	declare       _IPV4_UADR=""								# IPv4 address up       (ex. 192.168.1)
+	declare       _NMAN_NAME=""								# network manager name  (nm_config, ifupdown, loopback)
+	declare       _NTPS_ADDR="ntp.nict.jp"					# ntp server address    (ntp.nict.jp)
+	declare       _NTPS_IPV4="61.205.120.130"				# ntp server ipv4 addr  (61.205.120.130)
+
+	# --- menu parameter ------------------------------------------------------
+	declare       _MENU_TOUT="5"							# timeout (sec)
+	declare       _MENU_RESO="854x480"						# resolution (widht x hight)
+	declare       _MENU_DPTH="16"							# colors
+	declare       _MENU_MODE="864"							# screen mode (vga=nnn)
+	declare       _MENU_SPLS="splash.png"					# splash file
+
+	# --- list data -----------------------------------------------------------
+	declare -a    _LIST_CONF=()								# common configuration data
+	declare -a    _LIST_DIST=()								# distribution information
+	declare -a    _LIST_MDIA=()								# media information
+	declare -a    _LIST_DSTP=()								# debstrap information

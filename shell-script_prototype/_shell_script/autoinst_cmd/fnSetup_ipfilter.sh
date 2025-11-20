@@ -9,7 +9,7 @@
 # shellcheck disable=SC2148,SC2317,SC2329
 fnSetup_ipfilter() {
 	__FUNC_NAME="fnSetup_ipfilte"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- ipfilter.conf -------------------------------------------------------
 #	__PATH="${_DIRS_TGET:-}/usr/lib/systemd/system/systemd-logind.service.d/ipfilter.conf"
@@ -28,5 +28,5 @@ fnSetup_ipfilter() {
 #	fnFile_backup "${__PATH}" "init"	# backup initial file
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }

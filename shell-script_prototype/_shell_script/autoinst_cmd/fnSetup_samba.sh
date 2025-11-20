@@ -9,18 +9,18 @@
 # shellcheck disable=SC2148,SC2317,SC2329
 fnSetup_samba() {
 	__FUNC_NAME="fnSetup_samba"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check command -------------------------------------------------------
 	if ! command -v pdbedit > /dev/null 2>&1; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- check service -------------------------------------------------------
 	__SMBD="$(fnFind_serivce 'smbd.service' 'smb.service' | sort | head -n 1)"
 	__NMBD="$(fnFind_serivce 'nmbd.service' 'nmb.service' | sort | head -n 1)"
 	if [ -z "${__SMBD:-}" ] || [ -z "${__NMBD:-}" ]; then
-		fnMsgout "skip" "[${__FUNC_NAME}]"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
 	# --- create passdb.tdb ---------------------------------------------------
@@ -207,26 +207,26 @@ _EOT_
 	if [ -z "${_TGET_CNTR:-}" ]; then
 		__SRVC="${__SMBD##*/}"
 		if systemctl --quiet is-active "${__SRVC}"; then
-			fnMsgout "restart" "${__SRVC}"
+			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
 			systemctl --quiet daemon-reload
 			if systemctl --quiet restart "${__SRVC}"; then
-				fnMsgout "success" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
 			else
-				fnMsgout "failed" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
 			fi
 		fi
 		__SRVC="${__NMBD##*/}"
 		if systemctl --quiet is-active "${__SRVC}"; then
-			fnMsgout "restart" "${__SRVC}"
+			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
 			systemctl --quiet daemon-reload
 			if systemctl --quiet restart "${__SRVC}"; then
-				fnMsgout "success" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
 			else
-				fnMsgout "failed" "${__SRVC}"
+				fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
 			fi
 		fi
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }

@@ -31,7 +31,7 @@
 # shellcheck disable=SC2148,SC2317,SC2329
 fnMkdir_share(){
 	__FUNC_NAME="fnMkdir_share"
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- create system user id -----------------------------------------------
 	if ! id "${_SAMB_USER}" > /dev/null 2>&1; then
@@ -187,5 +187,5 @@ _EOT_
 	fi
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "complete" "[${__FUNC_NAME}]" 
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 }
