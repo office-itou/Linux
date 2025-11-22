@@ -81,10 +81,10 @@
     | _FILE_DIST | distribution data file                       | [distribution.dat]                                    |
     | _FILE_MDIA | media data file                              | [media.dat]                                           |
     | _FILE_DSTP | debstrap data file                           | [debstrap.dat]                                        |
-    | _DATA_CONF | common configuration file                    | [/srv/user/share/conf/_data/common.cfg]               |
-    | _DATA_DIST | distribution data file                       | [/srv/user/share/conf/_data/distribution.dat]         |
-    | _DATA_MDIA | media data file                              | [/srv/user/share/conf/_data/media.dat]                |
-    | _DATA_DSTP | debstrap data file                           | [/srv/user/share/conf/_data/debstrap.dat]             |
+    | _PATH_CONF | common configuration file                    | [/srv/user/share/conf/_data/common.cfg]               |
+    | _PATH_DIST | distribution data file                       | [/srv/user/share/conf/_data/distribution.dat]         |
+    | _PATH_MDIA | media data file                              | [/srv/user/share/conf/_data/media.dat]                |
+    | _PATH_DSTP | debstrap data file                           | [/srv/user/share/conf/_data/debstrap.dat]             |
 
   * ### **pre-configuration file templates**
 
@@ -96,12 +96,12 @@
     | _FILE_SEDU | for ubuntu                                   | [preseed_ubuntu.cfg]                                  |
     | _FILE_YAST | for opensuse                                 | [yast_opensuse.xml]                                   |
     | _FILE_AGMA | for opensuse                                 | [agama_opensuse.json]                                 |
-    | _TMPL_KICK | for rhel                                     | [/srv/user/share/conf/_template/kickstart_rhel.cfg]   |
-    | _TMPL_CLUD | for ubuntu cloud-init                        | [/srv/user/share/conf/_template/user-data_ubuntu]     |
-    | _TMPL_SEDD | for debian                                   | [/srv/user/share/conf/_template/preseed_debian.cfg]   |
-    | _TMPL_SEDU | for ubuntu                                   | [/srv/user/share/conf/_template/preseed_ubuntu.cfg]   |
-    | _TMPL_YAST | for opensuse                                 | [/srv/user/share/conf/_template/yast_opensuse.xml]    |
-    | _TMPL_AGMA | for opensuse                                 | [/srv/user/share/conf/_template/agama_opensuse.json]  |
+    | _PATH_KICK | for rhel                                     | [/srv/user/share/conf/_template/kickstart_rhel.cfg]   |
+    | _PATH_CLUD | for ubuntu cloud-init                        | [/srv/user/share/conf/_template/user-data_ubuntu]     |
+    | _PATH_SEDD | for debian                                   | [/srv/user/share/conf/_template/preseed_debian.cfg]   |
+    | _PATH_SEDU | for ubuntu                                   | [/srv/user/share/conf/_template/preseed_ubuntu.cfg]   |
+    | _PATH_YAST | for opensuse                                 | [/srv/user/share/conf/_template/yast_opensuse.xml]    |
+    | _PATH_AGMA | for opensuse                                 | [/srv/user/share/conf/_template/agama_opensuse.json]  |
 
   * ### **shell script**
 
@@ -111,10 +111,10 @@
     | _FILE_LATE | to run late                                  | [autoinst_cmd_late.sh]                                |
     | _FILE_PART | to run after partition                       | [autoinst_cmd_part.sh]                                |
     | _FILE_RUNS | to run preseed/run                           | [autoinst_cmd_run.sh]                                 |
-    | _SHEL_ERLY | to run early                                 | [/srv/user/share/conf/script/autoinst_cmd_early.sh]   |
-    | _SHEL_LATE | to run late                                  | [/srv/user/share/conf/script/autoinst_cmd_late.sh]    |
-    | _SHEL_PART | to run after partition                       | [/srv/user/share/conf/script/autoinst_cmd_part.sh]    |
-    | _SHEL_RUNS | to run preseed/run                           | [/srv/user/share/conf/script/autoinst_cmd_run.sh]     |
+    | _PATH_ERLY | to run early                                 | [/srv/user/share/conf/script/autoinst_cmd_early.sh]   |
+    | _PATH_LATE | to run late                                  | [/srv/user/share/conf/script/autoinst_cmd_late.sh]    |
+    | _PATH_PART | to run after partition                       | [/srv/user/share/conf/script/autoinst_cmd_part.sh]    |
+    | _PATH_RUNS | to run preseed/run                           | [/srv/user/share/conf/script/autoinst_cmd_run.sh]     |
 
   * ### **tftp / web server network parameter**
 
@@ -167,14 +167,14 @@
 
     |    name    |                   descript                   |                        example                        |
     | :--------: | :------------------------------------------- | :---------------------------------------------------- |
-    | _TGET_MDIA | format type (directory, tar, cpio, disk, uki, esp, oci, sysext, confext, portable, addon, none) | [directory] |
+    | _MKOS_TGET | format type (directory, tar, cpio, disk, uki, esp, oci, sysext, confext, portable, addon, none) | [directory] |
 
   * ### **live media parameter**
 
     |    name    |                   descript                   |                        example                        |
     | :--------: | :------------------------------------------- | :---------------------------------------------------- |
-    | _DIRS_LIVE | live / LiveOS                                | [LiveOS]                                              |
-    | _FILE_LIVE | filesystem.squashfs / squashfs.img           | [squashfs.img]                                        |
+    | _LIVE_DIRS | live / LiveOS                                | [LiveOS]                                              |
+    | _LIVE_SQFS | filesystem.squashfs / squashfs.img           | [squashfs.img]                                        |
 
 * ## **other variables**
 
