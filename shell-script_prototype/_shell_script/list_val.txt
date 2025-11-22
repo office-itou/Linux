@@ -4,12 +4,14 @@
 # --- debug parameter ---------------------------------------------------------
 _DBGS_FLAG=[]       # debug flag (empty: normal, else: debug)
 _DBGS_FAIL=[]       # for detecting errors
+_DBGS_PARM=""       # 
 # --- working directory (executable file information) -------------------------
 _PROG_PATH=[]       # $0
 _PROG_PARM=[]       # $@
 _PROG_DIRS=[]       # ${_PROG_PATH%/*}
 _PROG_NAME=[]       # ${_PROG_PATH##*/}
 _PROG_PROC=[]       # ${_PROG_NAME}.$$
+_DIRS_TEMP=""       # 
 # --- list data ---------------------------------------------------------------
 _LIST_CONF=()       # common configuration data
 _LIST_DIST=()       # distribution information
@@ -179,3 +181,53 @@ _IPV4_UADR=""       # IPv4 address up       (ex. 192.168.1)     (dual use)
 _NMAN_NAME=""       # network manager name  (nm_config, ifupdown, loopback)
 _NTPS_ADDR=""       # ntp server address    (ntp.nict.jp)    (dual use)
 _NTPS_IPV4=""       # ntp server ipv4 addr  (61.205.120.130) (dual use)
+# *** constant definitions ****************************************************
+# === color code ==============================================================
+_CODE_ESCP=""       	# escape codes
+_TEXT_RESET         	# reset all attributes		(\033[0m)
+_TEXT_BOLD				#                       	(\033[1m)
+_TEXT_FAINT				#							(\033[2m)
+_TEXT_ITALIC			#							(\033[3m)
+_TEXT_UNDERLINE			# set underline				(\033[4m)
+_TEXT_BLINK				#							(\033[5m)
+_TEXT_FAST_BLINK		#							(\033[6m)
+_TEXT_REVERSE			# set reverse display		(\033[7m)
+_TEXT_CONCEAL			#							(\033[8m)
+_TEXT_STRIKE			#							(\033[9m)
+_TEXT_GOTHIC			#							(\033[20m)
+_TEXT_DOUBLE_UNDERLINE	#							(\033[21m)
+_TEXT_NORMAL			#							(\033[22m)
+_TEXT_NO_ITALIC			#							(\033[23m)
+_TEXT_NO_UNDERLINE		# reset underline			(\033[24m)
+_TEXT_NO_BLINK			#							(\033[25m)
+_TEXT_NO_REVERSE		# reset reverse display		(\033[27m)
+_TEXT_NO_CONCEAL		#							(\033[28m)
+_TEXT_NO_STRIKE			#							(\033[29m)
+_TEXT_BLACK				# text dark black			(\033[30m)
+_TEXT_RED				# text dark red				(\033[31m)
+_TEXT_GREEN				# text dark green			(\033[32m)
+_TEXT_YELLOW			# text dark yellow			(\033[33m)
+_TEXT_BLUE				# text dark blue			(\033[34m)
+_TEXT_MAGENTA			# text dark purple			(\033[35m)
+_TEXT_CYAN				# text dark light blue		(\033[36m)
+_TEXT_WHITE				# text dark white			(\033[37m)
+_TEXT_DEFAULT			#							(\033[39m)
+_TEXT_BG_BLACK			# text reverse black		(\033[40m)
+_TEXT_BG_RED			# text reverse red			(\033[41m)
+_TEXT_BG_GREEN			# text reverse green		(\033[42m)
+_TEXT_BG_YELLOW			# text reverse yellow		(\033[43m)
+_TEXT_BG_BLUE			# text reverse blue			(\033[44m)
+_TEXT_BG_MAGENTA		# text reverse purple		(\033[45m)
+_TEXT_BG_CYAN			# text reverse light blue	(\033[46m)
+_TEXT_BG_WHITE			# text reverse white		(\033[47m)
+_TEXT_BG_DEFAULT		#							(\033[49m)
+_TEXT_BR_BLACK			# text black				(\033[90m)
+_TEXT_BR_RED			# text red					(\033[91m)
+_TEXT_BR_GREEN			# text green				(\033[92m)
+_TEXT_BR_YELLOW			# text yellow				(\033[93m)
+_TEXT_BR_BLUE			# text blue					(\033[94m)
+_TEXT_BR_MAGENTA		# text purple				(\033[95m)
+_TEXT_BR_CYAN			# text light blue			(\033[96m)
+_TEXT_BR_WHITE			# text white				(\033[97m)
+_TEXT_BR_DEFAULT		#							(\033[99m)
+# ### eof #####################################################################
