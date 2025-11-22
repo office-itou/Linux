@@ -38,26 +38,34 @@ function fnDec_conf_data() {
 		__VALU="${__VALU%"${__VALU##*[!"${IFS}"]}"}"	# rtrim
 		# --- store in a variable ---------------------------------------------
 		[[ -z "${__NAME:-}" ]] && continue
-		case "${__NAME}" in
-			PATH_*     ) ;;
-			DIRS_*     ) ;;
-			FILE_*     ) ;;
-			*          ) continue;;
-		esac
-		__NAME="_${__NAME}"
+#		case "${__NAME}" in
+#			PATH_*     ) ;;
+#			DIRS_*     ) ;;
+#			FILE_*     ) ;;
+#			*          ) continue;;
+#		esac
+		__WNAM="${__NAME:-}"
+		__NAME="_${__WNAM:-}"
 		__VALU="${__VALU#\"}"
 		__VALU="${__VALU%\"}"
 		# --- setting value conversion ----------------------------------------
-		while true
-		do
-			__WNAM="${__VALU#"${__VALU%%:_[[:alnum:]]*_[[:alnum:]]*_:*}"}"
-			__WNAM="${__WNAM%"${__WNAM##*:_[[:alnum:]]*_[[:alnum:]]*_:}"}"
-			__WNAM="${__WNAM%%[!:_[:alnum:]]*}"
-			__WNAM="${__WNAM#:_}"
-			__WNAM="${__WNAM%_:}"
-			[[ -z "${__WNAM:-}" ]] && break
-			__VALU="${__VALU/":_${__WNAM}_:"/"\${_${__WNAM}}"}"
-		done
+		case "${__WNAM}" in
+			PATH_*     | \
+			DIRS_*     | \
+			FILE_*     )
+				while true
+				do
+					__WNAM="${__VALU#"${__VALU%%:_[[:alnum:]]*_[[:alnum:]]*_:*}"}"
+					__WNAM="${__WNAM%"${__WNAM##*:_[[:alnum:]]*_[[:alnum:]]*_:}"}"
+					__WNAM="${__WNAM%%[!:_[:alnum:]]*}"
+					__WNAM="${__WNAM#:_}"
+					__WNAM="${__WNAM%_:}"
+					[[ -z "${__WNAM:-}" ]] && break
+					__VALU="${__VALU/":_${__WNAM}_:"/"\${_${__WNAM}}"}"
+				done
+				;;
+			*) ;;
+		esac
 		read -r "${__NAME:?}" < <(eval echo "${__VALU}" || true)
 	done
 

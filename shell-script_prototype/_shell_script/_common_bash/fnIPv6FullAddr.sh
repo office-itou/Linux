@@ -12,7 +12,7 @@ function fnIPv6FullAddr() {
 	declare -r    ___ADDR="${1:?}"
 	declare -r    ___FMAT="${2:+"%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x"}"
 	echo "${___ADDR}" |
-		awk -F '/' '{
+		awk -F / '{
 			str=$1
 			gsub("[^:]","",str)
 			sep=""
@@ -23,9 +23,9 @@ function fnIPv6FullAddr() {
 			gsub("::",sep,str)
 			split(str,arr,":")
 			for (i=0;i<length(arr);i++) {
-				num[i]="0x"arr[i]
+				num[i]=strtonum("0x"arr[i])
 			}
-			printf "'"${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}"'",
+			printf "%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x",
 				num[1],num[2],num[3],num[4],num[5],num[6],num[7],num[8]
 		}'
 }

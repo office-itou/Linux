@@ -28,9 +28,9 @@
 	declare -r    _SHEL_COMN="${_SHEL_TOPS:-}/_common_bash"
 	declare -r    _SHEL_COMD="${_SHEL_TOPS:-}/custom_cmd"
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD:?}"/fnGlobal_variables.sh			# global variables (for basic)
+#	source "${_SHEL_COMD:?}"/fnGlobal_variables.sh			# global variables (for basic)
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD:?}"/fnGlobal_common.sh				# global variables (for application)
+#	source "${_SHEL_COMD:?}"/fnGlobal_common.sh				# global variables (for application)
 
 # *** function section (common functions) *************************************
 
@@ -95,6 +95,58 @@
 
 # *** main section ************************************************************
 
+# --- set system parameter ------------------------------------------------
+if [[ -n "${TERM:-}" ]] \
+&& command -v tput > /dev/null 2>&1; then
+	_ROWS_SIZE=$(tput lines || true)
+	_COLS_SIZE=$(tput cols  || true)
+fi
+[[ "${_ROWS_SIZE:-"0"}" -lt 25 ]] && _ROWS_SIZE=25
+[[ "${_COLS_SIZE:-"0"}" -lt 80 ]] && _COLS_SIZE=80
+readonly _ROWS_SIZE
+readonly _COLS_SIZE
+
+__COLS="${_COLS_SIZE}"
+[[ -n "${_PROG_NAME:-}" ]] && __COLS=$((_COLS_SIZE-${#_PROG_NAME}-16))
+_TEXT_GAP1="$(fnString "${__COLS:-"${_COLS_SIZE}"}" '-')"
+_TEXT_GAP2="$(fnString "${__COLS:-"${_COLS_SIZE}"}" '=')"
+unset __COLS
+readonly _TEXT_GAP1
+readonly _TEXT_GAP2
+
+if realpath "$(command -v cp || true)" | grep 'busybox'; then
+	_COMD_BBOX="true"
+	_OPTN_COPY="-p"
+fi
+
+# --- target virtualization -----------------------------------------------
+__WORK="$(fnTargetsys)"
+case "${__WORK##*,}" in
+	offline) _TGET_CNTR="true";;
+	*      ) _TGET_CNTR="";;
+esac
+readonly _TGET_CNTR
+readonly _TGET_VIRT="${__WORK%,*}"
+
+_DIRS_TGET=""
+for __DIRS in \
+	/target \
+	/mnt/sysimage \
+	/mnt/
+do
+	[[ ! -e "${__DIRS}"/root/. ]] && continue
+	_DIRS_TGET="${__DIRS}"
+	break
+done
+readonly _DIRS_TGET
+
+# --- samba ---------------------------------------------------------------
+_SHEL_NLIN="$(fnFind_command 'nologin' | sort -r | head -n 1)"
+_SHEL_NLIN="${_SHEL_NLIN#*"${_DIRS_TGET:-}"}"
+_SHEL_NLIN="${_SHEL_NLIN:-"$(if [[ -e /usr/sbin/nologin ]]; then echo "/usr/sbin/nologin"; fi)"}"
+_SHEL_NLIN="${_SHEL_NLIN:-"$(if [[ -e /sbin/nologin     ]]; then echo "/sbin/nologin"; fi)"}"
+readonly _SHEL_NLIN
+
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnCmdline.sh		# command line
 
@@ -104,13 +156,53 @@
 	fi
 
 	fnSystem_param
-
+#set -x
+_LIST_CONF=()
 	fnGet_conf_data "$1"
-
-#fnDbgparameters_all
-
+#printf "[%s]\n" "${_LIST_CONF[@]:-}"
+#set +x
 	fnDec_conf_data
+#set -x
+	fnNetwork_param
+#set +x
 
+_NICS_FQDN="sv-${_DIST_NAME}.workgroup"
+_NICS_NAME="ens160"
+_NICS_MADR="00:11:22:33:44:55"
+_NICS_IPV4="192.168.1.11/24"
+_NICS_GATE="192.168.1.254"
+_NICS_DNS4="192.168.1.254 8.8.8.8 8.8.4.4"
+_IPV6_ADDR="2000::123/3"
+_LINK_ADDR="fe80::123/10"
+
+___WORK="$(echo "${_NICS_IPV4:-}" | sed 's/[^0-9./]\+//g')"
+_NICS_IPV4="$(echo "${___WORK}/" | cut -d '/' -f 1)"
+_NICS_BIT4="$(echo "${___WORK}/" | cut -d '/' -f 2)"
+if [ -z "${_NICS_BIT4}" ]; then
+	_NICS_BIT4="$(fnIPv4Netmask "${_NICS_MASK:-"255.255.255.0"}")"
+else
+	_NICS_MASK="$(fnIPv4Netmask "${_NICS_BIT4:-"24"}")"
+fi
+_NICS_HOST="$(echo "${_NICS_FQDN}." | cut -d '.' -f 1)"
+_NICS_WGRP="$(echo "${_NICS_FQDN}." | cut -d '.' -f 2)"
+_NICS_HOST="$(echo "${_NICS_HOST}" | tr '[:upper:]' '[:lower:]')"
+_NICS_WGRP="$(echo "${_NICS_WGRP}" | tr '[:upper:]' '[:lower:]')"
+_IPV4_UADR="${_NICS_IPV4%.*}"
+_IPV4_LADR="${_NICS_IPV4#"${_IPV4_UADR:-"*"}."}"
+_IPV6_CIDR="${_IPV6_ADDR##*/}"
+_IPV6_ADDR="${_IPV6_ADDR%/"${_IPV6_CIDR:-"*"}"}"
+_IPV6_FADR="$(fnIPv6FullAddr "${_IPV6_ADDR:-}" "true")"
+_IPV6_UADR="$(echo "${_IPV6_FADR:-}" | cut -d ':' -f 1-4 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
+_IPV6_LADR="$(echo "${_IPV6_FADR:-}" | cut -d ':' -f 5-8 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
+_IPV6_RADR="$(fnIPv6RevAddr "${_IPV6_FADR:-}")"
+_LINK_CIDR="${_LINK_ADDR##*/}"
+_LINK_ADDR="${_LINK_ADDR%/"${_LINK_CIDR:-"*"}"}"
+_LINK_FADR="$(fnIPv6FullAddr "${_LINK_ADDR:-}" "true")"
+_LINK_UADR="$(echo "${_LINK_FADR:-}" | cut -d ':' -f 1-4 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
+_LINK_LADR="$(echo "${_LINK_FADR:-}" | cut -d ':' -f 5-8 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
+_LINK_RADR="$(fnIPv6RevAddr "${_LINK_FADR:-}")"
+
+if false; then
 	for __NAME in $(eval printf "%q\\\n" "\${!"{{A..Z},{a..z},_}"@}")
 	do
 		__NAME="${__NAME#\'}"
@@ -134,8 +226,9 @@
 #_DIRS_SAMB="${_DIRS_TOPS:-}/samba"
 #_DIRS_TFTP="${_DIRS_TOPS:-}/tftp"
 #_DIRS_USER="${_DIRS_TOPS:-}/user"
+fi
 
-if false; then
+if true; then
 	for __NAME in $(eval printf "%q\\\n" "\${!"{{A..Z},{a..z},_}"@}")
 	do
 		__NAME="${__NAME#\'}"
@@ -148,7 +241,7 @@ if false; then
 			*) continue;;
 		esac
 		__VALU="${!__NAME:-}"
-		printf "${FUNCNAME[0]:-"top"}: %s=[%s]\n" "${__NAME}" "${__VALU/#\'\'/}"
+		printf "%s=[%s]\n" "${__NAME}" "${__VALU/#\'\'/}"
 	done
 fi
 
