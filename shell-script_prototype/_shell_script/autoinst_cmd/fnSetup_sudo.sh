@@ -12,7 +12,7 @@ fnSetup_sudo() {
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check command -------------------------------------------------------
-	__PATH="$(fnFind_command 'sudo' | sort | head -n 1)"
+	__PATH="$(fnFind_command 'sudo' | sort -V | head -n 1)"
 	if [ -z "${__PATH:-}" ]; then
 		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return

@@ -17,7 +17,7 @@ fnSetup_firewalld() {
 		return
 	fi
 	# --- firewalld.service ---------------------------------------------------
-	__SRVC="$(fnFind_serivce 'firewalld.service' | sort | head -n 1)"
+	__SRVC="$(fnFind_serivce 'firewalld.service' | sort -V | head -n 1)"
 	fnFile_backup "${__SRVC}"			# backup original file
 	mkdir -p "${__SRVC%/*}"
 	cp --preserve=timestamps "${_DIRS_ORIG}/${__SRVC#*"${_DIRS_TGET:-}/"}" "${__SRVC}"
@@ -29,7 +29,7 @@ fnSetup_firewalld() {
 	fnDbgdump "${__SRVC}"				# debugout
 	fnFile_backup "${__SRVC}" "init"	# backup initial file
 	# --- firewalld -----------------------------------------------------------
-	__ORIG="$(find "${_DIRS_TGET:-}"/lib/firewalld/zones/ "${_DIRS_TGET:-}"/usr/lib/firewalld/zones/ -name 'drop.xml' | sort | head -n 1)"
+	__ORIG="$(find "${_DIRS_TGET:-}"/lib/firewalld/zones/ "${_DIRS_TGET:-}"/usr/lib/firewalld/zones/ -name 'drop.xml' | sort -V | head -n 1)"
 	__PATH="${_DIRS_TGET:-}/etc/firewalld/zones/${_FWAL_ZONE}.xml"
 	cp --preserve=timestamps "${__ORIG}" "${__PATH}"
 	fnFile_backup "${__PATH}"			# backup original file

@@ -38,7 +38,7 @@ _EOT_
 		fnFile_backup "${__PATH}" "init"	# backup initial file
 	fi
 	# --- .bash_history -------------------------------------------------------
-	__PATH="$(fnFind_command 'apt-get' | sort | head -n 1)"
+	__PATH="$(fnFind_command 'apt-get' | sort -V | head -n 1)"
 	if [ -n "${__PATH:-}" ]; then
 		__PATH="${_DIRS_TGET:-}/etc/skel/.bash_history"
 		fnFile_backup "${__PATH}"			# backup original file
@@ -51,7 +51,7 @@ _EOT_
 		fnFile_backup "${__PATH}" "init"	# backup initial file
 	fi
 	# --- .vimrc --------------------------------------------------------------
-	__PATH="$(fnFind_command 'vim' | sort | head -n 1)"
+	__PATH="$(fnFind_command 'vim' | sort -V | head -n 1)"
 	if [ -n "${__PATH:-}" ]; then
 		__PATH="${_DIRS_TGET:-}/etc/skel/.vimrc"
 		fnFile_backup "${__PATH}"			# backup original file
@@ -72,7 +72,7 @@ _EOT_
 		fnFile_backup "${__PATH}" "init"	# backup initial file
 	fi
 	# --- .curlrc -------------------------------------------------------------
-	__PATH="$(fnFind_command 'curl' | sort | head -n 1)"
+	__PATH="$(fnFind_command 'curl' | sort -V | head -n 1)"
 	if [ -n "${__PATH:-}" ]; then
 		__PATH="${_DIRS_TGET:-}/etc/skel/.curlrc"
 		fnFile_backup "${__PATH}"			# backup original file

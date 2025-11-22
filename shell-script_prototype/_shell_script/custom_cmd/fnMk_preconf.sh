@@ -17,6 +17,10 @@ function fnMk_preconf() {
 	shift
 	declare -a    __OPTN=("${@:-}")		# options
 
+	fnSet_conf_data						# set default common configuration data
+	fnGet_conf_data						# get common configuration data
+	fnPut_conf_data						# put common configuration data
+
 	__NAME_REFR="${__OPTN[*]:-}"
 
 	# --- complete ------------------------------------------------------------

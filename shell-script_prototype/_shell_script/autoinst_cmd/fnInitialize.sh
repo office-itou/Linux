@@ -127,7 +127,7 @@ fnInitialize() {
 	readonly _DIRS_LOGS="${_DIRS_BACK}/logs"	# log file directory
 	mkdir -p "${_DIRS_TGET:-}${_DIRS_INST%.*}/"
 	chmod 600 "${_DIRS_TGET:-}${_DIRS_VADM:?}"
-	find "${_DIRS_TGET:-}${_DIRS_VADM:?}" -name "${_PROG_NAME%%_*}.[0-9]*" -type d | sort -r | tail -n +3 | \
+	find "${_DIRS_TGET:-}${_DIRS_VADM:?}" -name "${_PROG_NAME%%_*}.[0-9]*" -type d | sort -rV | tail -n +3 | \
 	while read -r __TGET
 	do
 		__PATH="${__TGET}.tgz"
@@ -141,7 +141,7 @@ fnInitialize() {
 	mkdir -p "${_DIRS_TGET:-}${_DIRS_INST:?}"
 	chmod 600 "${_DIRS_TGET:-}${_DIRS_INST:?}"
 	# --- samba ---------------------------------------------------------------
-	_SHEL_NLIN="$(fnFind_command 'nologin' | sort -r | head -n 1)"
+	_SHEL_NLIN="$(fnFind_command 'nologin' | sort -rV | head -n 1)"
 	_SHEL_NLIN="${_SHEL_NLIN#*"${_DIRS_TGET:-}"}"
 	_SHEL_NLIN="${_SHEL_NLIN:-"$(if [ -e /usr/sbin/nologin ]; then echo "/usr/sbin/nologin"; fi)"}"
 	_SHEL_NLIN="${_SHEL_NLIN:-"$(if [ -e /sbin/nologin     ]; then echo "/sbin/nologin"; fi)"}"

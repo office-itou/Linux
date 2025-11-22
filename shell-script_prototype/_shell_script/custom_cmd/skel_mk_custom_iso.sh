@@ -88,7 +88,11 @@
 	# shellcheck source=/dev/null
 	source "${_SHEL_TOPS}"/fnInitialize.sh					# initialize
 	# shellcheck source=/dev/null
+	source "${_SHEL_TOPS}"/fnSet_conf_data.sh				# set default common configuration data
+	# shellcheck source=/dev/null
 	source "${_SHEL_TOPS}"/fnGet_conf_file.sh				# get auto-installation configuration file
+	# shellcheck source=/dev/null
+	source "${_SHEL_TOPS}"/fnPut_conf_data.sh				# put common configuration data
 	# shellcheck source=/dev/null
 	source "${_SHEL_TOPS}"/fnMk_preconf.sh					# make preconfiguration files
 	# shellcheck source=/dev/null

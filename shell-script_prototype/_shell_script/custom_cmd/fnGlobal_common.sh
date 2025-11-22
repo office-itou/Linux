@@ -3,22 +3,22 @@
 	# === for creations =======================================================
 
 	# --- common data file (prefer non-empty current file) --------------------
-	declare       _DATA_CONF=":_DIRS_DATA_:/:_FILE_CONF_:"	# common configuration file
-	declare       _DATA_DIST=":_DIRS_DATA_:/:_FILE_DIST_:"	# distribution data file
-	declare       _DATA_MDIA=":_DIRS_DATA_:/:_FILE_MDIA_:"	# media data file
-	declare       _DATA_DSTP=":_DIRS_DATA_:/:_FILE_DSTP_:"	# debstrap data file
+	declare       _PATH_CONF=":_DIRS_DATA_:/:_FILE_CONF_:"	# common configuration file
+	declare       _PATH_DIST=":_DIRS_DATA_:/:_FILE_DIST_:"	# distribution data file
+	declare       _PATH_MDIA=":_DIRS_DATA_:/:_FILE_MDIA_:"	# media data file
+	declare       _PATH_DSTP=":_DIRS_DATA_:/:_FILE_DSTP_:"	# debstrap data file
 	# --- pre-configuration file templates ------------------------------------
-	declare       _TMPL_KICK=":_DIRS_TMPL_:/:_FILE_KICK_:"	# for rhel
-	declare       _TMPL_CLUD=":_DIRS_TMPL_:/:_FILE_CLUD_:"	# for ubuntu cloud-init
-	declare       _TMPL_SEDD=":_DIRS_TMPL_:/:_FILE_SEDD_:"	# for debian
-	declare       _TMPL_SEDU=":_DIRS_TMPL_:/:_FILE_SEDU_:"	# for ubuntu
-	declare       _TMPL_YAST=":_DIRS_TMPL_:/:_FILE_YAST_:"	# for opensuse
-	declare       _TMPL_AGMA=":_DIRS_TMPL_:/:_FILE_AGMA_:"	# for opensuse
+	declare       _PATH_KICK=":_DIRS_TMPL_:/:_FILE_KICK_:"	# for rhel
+	declare       _PATH_CLUD=":_DIRS_TMPL_:/:_FILE_CLUD_:"	# for ubuntu cloud-init
+	declare       _PATH_SEDD=":_DIRS_TMPL_:/:_FILE_SEDD_:"	# for debian
+	declare       _PATH_SEDU=":_DIRS_TMPL_:/:_FILE_SEDU_:"	# for ubuntu
+	declare       _PATH_YAST=":_DIRS_TMPL_:/:_FILE_YAST_:"	# for opensuse
+	declare       _PATH_AGMA=":_DIRS_TMPL_:/:_FILE_AGMA_:"	# for opensuse
 	# --- shell script --------------------------------------------------------
-	declare       _SHEL_ERLY=":_DIRS_SHEL_:/:_FILE_ERLY_:"	# shell commands to run early
-	declare       _SHEL_LATE=":_DIRS_SHEL_:/:_FILE_LATE_:"	# "              to run late
-	declare       _SHEL_PART=":_DIRS_SHEL_:/:_FILE_PART_:"	# "              to run after partition
-	declare       _SHEL_RUNS=":_DIRS_SHEL_:/:_FILE_RUNS_:"	# "              to run preseed/run
+	declare       _PATH_ERLY=":_DIRS_SHEL_:/:_FILE_ERLY_:"	# shell commands to run early
+	declare       _PATH_LATE=":_DIRS_SHEL_:/:_FILE_LATE_:"	# "              to run late
+	declare       _PATH_PART=":_DIRS_SHEL_:/:_FILE_PART_:"	# "              to run after partition
+	declare       _PATH_RUNS=":_DIRS_SHEL_:/:_FILE_RUNS_:"	# "              to run preseed/run
 
 	# --- tftp / web server network parameter ---------------------------------
 	declare       _SRVR_HTTP="http"							# server connection protocol (http or https)

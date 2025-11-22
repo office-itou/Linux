@@ -34,7 +34,7 @@ fnGet_conf_file() {
 		case "${__LINE}" in
 			http:*|https:*|ftp:*|tftp:*)
 				fnMsgout "${_PROG_NAME:-}" "download" "${__LINE}"
-				__PATH="$(fnFind_command 'wget' | sort | head -n 1)"
+				__PATH="$(fnFind_command 'wget' | sort -V | head -n 1)"
 				if [ -n "${__PATH:-}" ]; then
 					if ! wget \
 					  --tries=3 \

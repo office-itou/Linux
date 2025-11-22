@@ -19,7 +19,7 @@ function fnNetwork_param() {
 		fnMsgout "caution" "not exist: [${___DIRS}]"
 	else
 		if [ -z "${_NICS_NAME#*"*"}" ]; then
-			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | sort | head -n 1)"
+			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | sort -V | head -n 1)"
 			_NICS_NAME="${_NICS_NAME##*/}"
 		fi
 		if ! find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | grep -q "${_NICS_NAME}"; then
@@ -31,7 +31,7 @@ function fnNetwork_param() {
 				_NICS_AUTO="dhcp"
 			fi
 			if [ -z "${_NICS_DNS4:-}" ] || [ -z "${_NICS_WGRP:-}" ]; then
-				__PATH="$(fnFind_command 'resolvectl' | sort | head -n 1)"
+				__PATH="$(fnFind_command 'resolvectl' | sort -V | head -n 1)"
 				if [ -n "${__PATH:-}" ]; then
 					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/^Global:/            s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
 					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"

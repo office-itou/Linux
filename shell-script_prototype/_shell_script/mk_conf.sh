@@ -73,9 +73,15 @@ source "${_SHEL_COMN}"/fnMsgout.sh
 # shellcheck disable=SC1091
 source "${_SHEL_COMD}"/fnDbgparameters.sh
 # shellcheck disable=SC1091
-source "${_SHEL_COMD}"/fnPut_conf_data.sh
+source "${_SHEL_COMD}"/fnSet_conf_data.sh
+# shellcheck disable=SC1091
+source "${_SHEL_COMD}"/fnDec_conf_data.sh
+# shellcheck disable=SC1091
+source "${_SHEL_COMD}"/fnEnc_conf_data.sh
 # shellcheck disable=SC1091
 source "${_SHEL_COMD}"/fnGet_conf_data.sh
+# shellcheck disable=SC1091
+source "${_SHEL_COMD}"/fnPut_conf_data.sh
 
 declare -a    _LIST_CONF=()
 declare       __PROC=""
@@ -136,6 +142,13 @@ readonly _SHEL_NLIN
 
 fnNetwork_param
 
+fnSet_conf_data							# set default common configuration data
+fnGet_conf_data "${1:-}"				# get common configuration data
+fnDec_conf_data							# conversion common configuration data
+fnEnc_conf_data
+
+sleep 600
+
 # shellcheck disable=SC1091
 source "${_SHEL_COMD}"/fnCmdline.sh
 
@@ -162,6 +175,7 @@ do
 	__NAME="${__NAME%\'}"
 	case "${__NAME:-}" in
 		''        ) continue;;
+		_LIST_*   ) continue;;
 		_[A-Za-z]*) ;;
 		*         ) continue;;
 	esac

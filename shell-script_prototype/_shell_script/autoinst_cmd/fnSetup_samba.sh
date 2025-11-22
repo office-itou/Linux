@@ -17,8 +17,8 @@ fnSetup_samba() {
 		return
 	fi
 	# --- check service -------------------------------------------------------
-	__SMBD="$(fnFind_serivce 'smbd.service' 'smb.service' | sort | head -n 1)"
-	__NMBD="$(fnFind_serivce 'nmbd.service' 'nmb.service' | sort | head -n 1)"
+	__SMBD="$(fnFind_serivce 'smbd.service' 'smb.service' | sort -V | head -n 1)"
+	__NMBD="$(fnFind_serivce 'nmbd.service' 'nmb.service' | sort -V | head -n 1)"
 	if [ -z "${__SMBD:-}" ] || [ -z "${__NMBD:-}" ]; then
 		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return

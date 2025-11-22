@@ -12,7 +12,7 @@ fnSetup_ssh() {
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
-	__SRVC="$(fnFind_serivce 'ssh.service' 'sshd.service' | sort | head -n 1)"
+	__SRVC="$(fnFind_serivce 'ssh.service' 'sshd.service' | sort -V | head -n 1)"
 	if [ -z "${__SRVC:-}" ]; then
 		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return

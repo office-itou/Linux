@@ -14,15 +14,15 @@ fnClean_device() {
 	__DEVS="${1:-}"
 	# --- remove lvm ----------------------------------------------------------
 	if [ -n "${__DEVS:-}" ]; then
-		__PATH="$(fnFind_command 'pvs' | sort | head -n 1)"
+		__PATH="$(fnFind_command 'pvs' | sort -V | head -n 1)"
 		if [ -n "${__PATH:-}" ]; then
-			for __LINE in $(pvs --noheading --separator '|' | cut -d '|' -f 1-2 | grep "${__DEVS}" | sort -u)
+			for __LINE in $(pvs --noheading --separator '|' | cut -d '|' -f 1-2 | grep "${__DEVS}" | sort -uV)
 			do
 				__NAME="${__LINE#*\|}"		# vg
 				fnMsgout "${_PROG_NAME:-}" "remove" "vg=[${__NAME}]"
 				lvremove -q -y -ff "${__NAME}"
 			done
-			for __LINE in $(pvs --noheading --separator '|' | cut -d '|' -f 1-2 | grep "${__DEVS}" | sort -u)
+			for __LINE in $(pvs --noheading --separator '|' | cut -d '|' -f 1-2 | grep "${__DEVS}" | sort -uV)
 			do
 				__NAME="${__LINE%\|*}"		# pv
 				fnMsgout "${_PROG_NAME:-}" "remove" "pv=[${__NAME}]"

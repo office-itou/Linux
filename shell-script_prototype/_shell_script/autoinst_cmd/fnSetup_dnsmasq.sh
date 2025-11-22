@@ -17,7 +17,7 @@ fnSetup_dnsmasq() {
 		return
 	fi
 	# --- dnsmasq.service -----------------------------------------------------
-	__SRVC="$(fnFind_serivce 'dnsmasq.service' | sort | head -n 1)"
+	__SRVC="$(fnFind_serivce 'dnsmasq.service' | sort -V | head -n 1)"
 	fnFile_backup "${__SRVC}"			# backup original file
 	mkdir -p "${__SRVC%/*}"
 	cp --preserve=timestamps "${_DIRS_ORIG}/${__SRVC#*"${_DIRS_TGET:-}/"}" "${__SRVC}"
