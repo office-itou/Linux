@@ -1,4 +1,6 @@
+# ### global variables ########################################################
 # *** shell common ************************************************************
+# === for system sharing ======================================================
 # --- debug parameter ---------------------------------------------------------
 _DBGS_FLAG=[]       # debug flag (empty: normal, else: debug)
 _DBGS_FAIL=[]       # for detecting errors
