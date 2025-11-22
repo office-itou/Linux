@@ -1,0 +1,179 @@
+# *** shell common ************************************************************
+# --- debug parameter ---------------------------------------------------------
+_DBGS_FLAG=[]       # debug flag (empty: normal, else: debug)
+_DBGS_FAIL=[]       # for detecting errors
+# --- working directory (executable file information) -------------------------
+_PROG_PATH=[]       # $0
+_PROG_PARM=[]       # $@
+_PROG_DIRS=[]       # ${_PROG_PATH%/*}
+_PROG_NAME=[]       # ${_PROG_PATH##*/}
+_PROG_PROC=[]       # ${_PROG_NAME}.$$
+# --- list data ---------------------------------------------------------------
+_LIST_CONF=()       # common configuration data
+_LIST_DIST=()       # distribution information
+_LIST_MDIA=()       # media information
+_LIST_DSTP=()       # debstrap information
+# --- command line parameter --------------------------------------------------
+_COMD_LINE=""       # command line parameter
+_NICS_NAME=""       # nic if name   (ex. ens160)            (dual use)
+_NICS_MADR=""       # nic if mac    (ex. 00:00:00:00:00:00) (dual use)
+_NICS_AUTO=""       # ipv4 dhcp     (ex. empty or dhcp)
+_NICS_IPV4=""       # ipv4 address  (ex. 192.168.1.1)
+_NICS_MASK=""       # ipv4 netmask  (ex. 255.255.255.0)
+_NICS_BIT4=""       # ipv4 cidr     (ex. 24)
+_NICS_DNS4=""       # ipv4 dns      (ex. 192.168.1.254)
+_NICS_GATE=""       # ipv4 gateway  (ex. 192.168.1.254)
+_NICS_FQDN=""       # hostname fqdn (ex. sv-server.workgroup)
+_NICS_HOST=""       # hostname      (ex. sv-server)
+_NICS_WGRP=""       # domain        (ex. workgroup)
+_NMAN_FLAG=""       # nm_config, ifupdown, loopback
+_DIRS_TGET=""       # target directory
+_FILE_ISOS=""       # iso file name
+_FILE_SEED=""       # preseed file name
+# --- target ------------------------------------------------------------------
+_TGET_VIRT=""       # virtualization (ex. vmware)
+_TGET_CNTR=""       # is container   (empty: none, else: container)
+# --- set system parameter ----------------------------------------------------
+_DIST_NAME=""       # distribution name (ex. debian)
+_DIST_VERS=""       # release version   (ex. 13)
+_DIST_CODE=""       # code name         (ex. trixie)
+_ROWS_SIZE=""       # screen size: rows
+_COLS_SIZE=""       # screen size: columns
+_TEXT_GAP1=""       # gap1
+_TEXT_GAP2=""       # gap2
+_COMD_BBOX=""       # busybox (empty: inactive, else: active )
+_OPTN_COPY=""       # copy option
+# --- network parameter -------------------------------------------------------
+_NTPS_ADDR=""       # ntp server address
+_NTPS_IPV4=""       # ntp server ipv4 address
+_NTPS_FBAK=""       # ntp server fallback list
+_IPV6_LHST=""       # ipv6 local host address
+_IPV4_LHST=""       # ipv4 local host address
+_IPV4_DUMY=""       # ipv4 dummy address
+_IPV4_UADR=""       # IPv4 address up   (ex. 192.168.1)
+_IPV4_LADR=""       # IPv4 address low  (ex. 1)
+_IPV6_ADDR=""       # IPv6 address      (ex. ::1)
+_IPV6_CIDR=""       # IPv6 cidr         (ex. 64)
+_IPV6_FADR=""       # IPv6 full address (ex. 0000:0000:0000:0000:0000:0000:0000:0001)
+_IPV6_UADR=""       # IPv6 address up   (ex. 0000:0000:0000:0000)
+_IPV6_LADR=""       # IPv6 address low  (ex. 0000:0000:0000:0001)
+_IPV6_RADR=""       # IPv6 reverse addr (ex. ...)
+_LINK_ADDR=""       # LINK address      (ex. fe80::1)
+_LINK_CIDR=""       # LINK cidr         (ex. 64)
+_LINK_FADR=""       # LINK full address (ex. fe80:0000:0000:0000:0000:0000:0000:0001)
+_LINK_UADR=""       # LINK address up   (ex. fe80:0000:0000:0000)
+_LINK_LADR=""       # LINK address low  (ex. 0000:0000:0000:0001)
+_LINK_RADR=""       # LINK reverse addr (ex. ...)
+# --- firewalld ---------------------------------------------------------------
+_FWAL_ZONE=""       # firewalld default zone
+_FWAL_NAME=""       # firewalld service name
+_FWAL_PORT=""       # firewalld port
+# --- samba parameter ---------------------------------------------------------
+_SAMB_USER=""       # force user
+_SAMB_GRUP=""       # force group
+_SAMB_GADM=""       # admin group
+_SAMB_NSSW=""       # nsswitch.conf
+_SHEL_NLIN=""       # login shell (disallow system login to samba user)
+# === for server environments (common.cfg) ====================================
+# --- shared directory parameter ----------------------------------------------
+_DIRS_TOPS=""       # top of shared directory
+_DIRS_HGFS=""       # vmware shared
+_DIRS_HTML=""       # html contents#
+_DIRS_SAMB=""       # samba shared
+_DIRS_TFTP=""       # tftp contents
+_DIRS_USER=""       # user file
+# --- shared of user file -----------------------------------------------------
+_DIRS_PVAT=""       # private contents directory
+_DIRS_SHAR=""       # shared contents directory
+_DIRS_CONF=""       # configuration file
+_DIRS_DATA=""       # data file
+_DIRS_KEYS=""       # keyring file
+_DIRS_MKOS=""       # mkosi configuration files
+_DIRS_TMPL=""       # templates for various configuration files
+_DIRS_SHEL=""       # shell script file
+_DIRS_IMGS=""       # iso file extraction destination
+_DIRS_ISOS=""       # iso file
+_DIRS_LOAD=""       # load module
+_DIRS_RMAK=""       # remake file
+_DIRS_CACH=""       # cache file
+_DIRS_CTNR=""       # container file
+_DIRS_CHRT=""       # container file (chroot)
+# --- shell script ------------------------------------------------------------
+_FILE_ERLY=""       # shell commands to run early
+_FILE_LATE=""       # "              to run late
+_FILE_PART=""       # "              to run after partition
+_FILE_RUNS=""       # "              to run preseed/run
+_PATH_ERLY=""       # shell commands to run early
+_PATH_LATE=""       # "              to run late
+_PATH_PART=""       # "              to run after partition
+_PATH_RUNS=""       # "              to run preseed/run
+# --- common data file (prefer non-empty current file) ------------------------
+_FILE_CONF=""       # common configuration file
+_FILE_DIST=""       # distribution data file
+_FILE_MDIA=""       # media data file
+_FILE_DSTP=""       # debstrap data file
+_PATH_CONF=""       # common configuration file
+_PATH_DIST=""       # distribution data file
+_PATH_MDIA=""       # media data file
+_PATH_DSTP=""       # debstrap data file
+# --- pre-configuration file templates ----------------------------------------
+_FILE_KICK=""       # for rhel
+_FILE_CLUD=""       # for ubuntu cloud-init
+_FILE_SEDD=""       # for debian
+_FILE_SEDU=""       # for ubuntu
+_FILE_YAST=""       # for opensuse
+_FILE_AGMA=""       # for opensuse
+_PATH_KICK=""       # for rhel
+_PATH_CLUD=""       # for ubuntu cloud-init
+_PATH_SEDD=""       # for debian
+_PATH_SEDU=""       # for ubuntu
+_PATH_YAST=""       # for opensuse
+_PATH_AGMA=""       # for opensuse
+# --- tftp / web server network parameter -------------------------------------
+_SRVR_HTTP=""       # server connection protocol (http or https)
+_SRVR_PROT=""       # server connection protocol (http or tftp)
+_SRVR_NICS=""       # network device name   (ex. ens160)            (Set execution server setting to empty variable.)
+_SRVR_MADR=""       # "              mac    (ex. 00:00:00:00:00:00)
+_SRVR_ADDR=""       # IPv4 address          (ex. 192.168.1.11)
+_SRVR_CIDR=""       # IPv4 cidr             (ex. 24)
+_SRVR_MASK=""       # IPv4 subnetmask       (ex. 255.255.255.0)
+_SRVR_GWAY=""       # IPv4 gateway          (ex. 192.168.1.254)
+_SRVR_NSVR=""       # IPv4 nameserver       (ex. 192.168.1.254)
+_SRVR_UADR=""       # IPv4 address up       (ex. 192.168.1)
+# === for creations (common.cfg) ==============================================
+# --- menu parameter ----------------------------------------------------------
+_MENU_TOUT=""       # timeout (sec)
+_MENU_RESO=""       # resolution (widht x hight)
+_MENU_DPTH=""       # colors
+_MENU_MODE=""       # screen mode (vga=nnn)
+_MENU_SPLS=""       # splash file
+# === for mkosi (common.cfg) ==================================================
+# --- mkosi output image format type ------------------------------------------
+_MKOS_TGET=""       # format type (directory, tar, cpio, disk, uki, esp, oci, sysext, confext, portable, addon, none)
+# --- live media parameter ----------------------------------------------------
+_LIVE_DIRS=""       # live / LiveOS
+_LIVE_SQFS=""       # filesystem.squashfs / squashfs.img
+# === other variables =========================================================
+# --- working directory (shared use) ------------------------------------------
+_DIRS_VADM=""       # top of admin working directory
+_DIRS_INST=""       # auto-install working directory
+_DIRS_BACK=""       # top of backup directory
+_DIRS_ORIG=""       # original file directory
+_DIRS_INIT=""       # initial file directory
+_DIRS_SAMP=""       # sample file directory
+_DIRS_LOGS=""       # log file directory
+# *** for installation setup **************************************************
+# --- network parameter (shared use) ------------------------------------------
+_NWRK_HOST=""       # hostname              (ex. sv-server)
+_NWRK_WGRP=""       # domain                (ex. workgroup)
+_NICS_NAME=""       # network device name   (ex. ens160)
+_NICS_MADR=""       # "              mac    (ex. 00:00:00:00:00:00)
+_IPV4_ADDR=""       # IPv4 address          (ex. 192.168.1.1)   (empty to dhcp)
+_IPV4_CIDR=""       # IPv4 cidr             (ex. 24)            (empty to ipv4 subnetmask, if both to 24)
+_IPV4_MASK=""       # IPv4 subnetmask       (ex. 255.255.255.0) (empty to ipv4 cidr)
+_IPV4_GWAY=""       # IPv4 gateway          (ex. 192.168.1.254)
+_IPV4_NSVR=""       # IPv4 nameserver       (ex. 192.168.1.254)
+_IPV4_UADR=""       # IPv4 address up       (ex. 192.168.1)     (dual use)
+_NMAN_NAME=""       # network manager name  (nm_config, ifupdown, loopback)
+_NTPS_ADDR=""       # ntp server address    (ntp.nict.jp)    (dual use)
+_NTPS_IPV4=""       # ntp server ipv4 addr  (61.205.120.130) (dual use)
