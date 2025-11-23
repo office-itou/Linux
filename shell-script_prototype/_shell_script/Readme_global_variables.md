@@ -16,11 +16,11 @@
 
       |    name    |                             descript                             |                        example                        |
       | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
-      | _PROG_PATH | \$0                                                              | []                                                    |
-      | _PROG_PARM | \$@                                                              | []                                                    |
-      | _PROG_DIRS | \${_PROG_PATH%/*}                                                | []                                                    |
-      | _PROG_NAME | \${_PROG_PATH##*/}                                               | []                                                    |
-      | _PROG_PROC | \${_PROG_NAME}.&dollar;&dollar;                                  | []                                                    |
+      | _PROG_PATH | &dollar;0                                                        | []                                                    |
+      | _PROG_PARM | &dollar;@                                                        | []                                                    |
+      | _PROG_DIRS | &dollar;\\{_PROG_PATH%/*\\}                                      | []                                                    |
+      | _PROG_NAME | &dollar;\\{_PROG_PATH##*/\\}                                     | []                                                    |
+      | _PROG_PROC | &dollar;\\{_PROG_NAME\\}.&dollar;&dollar;                        | []                                                    |
       | _DIRS_TEMP | temporary directory                                              | []                                                    |
       | _LIST_RMOV | list remove directory / file                                     | []                                                    |
 
