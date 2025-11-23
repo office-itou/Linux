@@ -10,8 +10,8 @@
 #   g-var : _TEXT_GAP1 : read
 # shellcheck disable=SC2148,SC2317,SC2329
 function fnDbgdump() {
-	[ -z "${_DBGS_FLAG:-}" ] && return
-	if [ ! -e "${1:?}" ]; then
+	[[ -z "${_DBGS_FLAG:-}" ]] && return
+	if [[ ! -e "${1:?}" ]]; then
 		fnMsgout "${_PROG_NAME:-}" "failed" "not exist: [${1:-}]"
 		return
 	fi

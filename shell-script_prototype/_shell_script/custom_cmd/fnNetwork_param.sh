@@ -1,4 +1,5 @@
 # shellcheck disable=SC2148
+set -o pipefail		# debug: End with in pipe error
 
 # -----------------------------------------------------------------------------
 # descript: get network parameter
@@ -15,10 +16,10 @@ function fnNetwork_param() {
 	declare       ___WORK=""
 	declare       ___PATH=""
 	_NICS_NAME="${_NICS_NAME:-"ens160"}"
-	if [ ! -e "${___DIRS}"/. ]; then
+	if [[ ! -e "${___DIRS}"/. ]]; then
 		fnMsgout "caution" "not exist: [${___DIRS}]"
 	else
-		if [ -z "${_NICS_NAME#*"*"}" ]; then
+		if [[ -z "${_NICS_NAME#*"*"}" ]]; then
 			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | sort -V | head -n 1)"
 			_NICS_NAME="${_NICS_NAME##*/}"
 		fi
@@ -30,16 +31,16 @@ function fnNetwork_param() {
 			if ip -4 -oneline address show dev "${_NICS_NAME}" 2> /dev/null | grep -qE '[ \t]dynamic[ \t]'; then
 				_NICS_AUTO="dhcp"
 			fi
-			if [ -z "${_NICS_DNS4:-}" ] || [ -z "${_NICS_WGRP:-}" ]; then
+			if [[ -z "${_NICS_DNS4:-}" ]] || [[ -z "${_NICS_WGRP:-}" ]]; then
 				__PATH="$(fnFind_command 'resolvectl' | sort -V | head -n 1)"
-				if [ -n "${__PATH:-}" ]; then
+				if [[ -n "${__PATH:-}" ]]; then
 					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/^Global:/            s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
 					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
 					_NICS_WGRP="${_NICS_WGRP:-"$(resolvectl domain 2> /dev/null | sed -ne '/^Global:/            s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
 					_NICS_WGRP="${_NICS_WGRP:-"$(resolvectl domain 2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
 				fi
 				___PATH="${_DIRS_TGET:-}/etc/resolv.conf"
-				if [ -e "${___PATH}" ]; then
+				if [[ -e "${___PATH}" ]]; then
 					_NICS_DNS4="${_NICS_DNS4:-"$(sed -ne '/^nameserver/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' "${___PATH}")"}"
 					_NICS_WGRP="${_NICS_WGRP:-"$(sed -ne '/^search/     s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p'                      "${___PATH}")"}"
 				fi
@@ -51,13 +52,13 @@ function fnNetwork_param() {
 	___WORK="$(echo "${_NICS_IPV4:-}" | sed 's/[^0-9./]\+//g')"
 	_NICS_IPV4="$(echo "${___WORK}/" | cut -d '/' -f 1)"
 	_NICS_BIT4="$(echo "${___WORK}/" | cut -d '/' -f 2)"
-	if [ -z "${_NICS_BIT4}" ]; then
+	if [[ -z "${_NICS_BIT4}" ]]; then
 		_NICS_BIT4="$(fnIPv4Netmask "${_NICS_MASK:-"255.255.255.0"}")"
 	else
 		_NICS_MASK="$(fnIPv4Netmask "${_NICS_BIT4:-"24"}")"
 	fi
 	_NICS_GATE="${_NICS_GATE:-"$(ip -4 -brief route list match default | awk '{print $3;}' | uniq)"}"
-	if [ -e "${_DIRS_TGET:-}/etc/hostname" ]; then
+	if [[ -e "${_DIRS_TGET:-}/etc/hostname" ]]; then
 		_NICS_FQDN="${_NICS_FQDN:-"$(cat "${_DIRS_TGET:-}/etc/hostname" || true)"}"
 	fi
 	_NICS_FQDN="${_NICS_FQDN:-"${_DIST_NAME:+"sv-${_DIST_NAME}.workgroup"}"}"
@@ -66,7 +67,7 @@ function fnNetwork_param() {
 	_NICS_WGRP="${_NICS_WGRP:-"$(echo "${_NICS_FQDN}." | cut -d '.' -f 2)"}"
 	_NICS_HOST="$(echo "${_NICS_HOST}" | tr '[:upper:]' '[:lower:]')"
 	_NICS_WGRP="$(echo "${_NICS_WGRP}" | tr '[:upper:]' '[:lower:]')"
-	if [ "${_NICS_FQDN}" = "${_NICS_HOST}" ] && [ -n "${_NICS_HOST}" ] && [ -n "${_NICS_WGRP}" ]; then
+	if [[ "${_NICS_FQDN}" = "${_NICS_HOST}" ]] && [[ -n "${_NICS_HOST}" ]] && [[ -n "${_NICS_WGRP}" ]]; then
 		_NICS_FQDN="${_NICS_HOST}.${_NICS_WGRP}"
 	fi
 	_IPV6_ADDR="${_IPV6_ADDR:-"2000::0/3"}"

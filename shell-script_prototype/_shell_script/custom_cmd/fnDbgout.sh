@@ -15,9 +15,9 @@ function fnDbgout() {
 	declare -r    ___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${1:-}")"
 	shift
 	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___STRT}"
-	while [ -n "${1:-}" ]
+	while [[ -n "${1:-}" ]]
 	do
-		if [ "${1%%,*}" != "debug" ] || [ -n "${_DBGS_FLAG:-}" ]; then
+		if [[ "${1%%,*}" != "debug" ]] || [[ -n "${_DBGS_FLAG:-}" ]]; then
 			fnMsgout "${_PROG_NAME:-}" "${1%%,*}" "${1#*,}"
 		fi
 		shift

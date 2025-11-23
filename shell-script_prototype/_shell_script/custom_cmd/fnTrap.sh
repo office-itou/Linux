@@ -10,6 +10,7 @@
 #   g-var : _LIST_RMOV : read
 #   g-var : _DIRS_TEMP : read
 # shellcheck disable=SC2148,SC2317,SC2329
+#*shellcheck disable=SC2329,SC2317
 function fnTrap() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"

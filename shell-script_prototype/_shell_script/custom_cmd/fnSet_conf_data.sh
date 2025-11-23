@@ -1,4 +1,5 @@
 # shellcheck disable=SC2148
+set -o pipefail		# debug: End with in pipe error
 
 # -----------------------------------------------------------------------------
 # descript: set default common configuration data
@@ -89,15 +90,16 @@
 #   g-var : _MENU_RESO : read
 #   g-var : _MENU_DPTH : read
 #   g-var : _MENU_MODE : read
-#   g-var : _TGET_MDIA : read
-#   g-var : _DIRS_LIVE : read
-#   g-var : _FILE_LIVE : read
+#   g-var : _MKOS_TGET : read
+#   g-var : _LIVE_DIRS : read
+#   g-var : _LIVE_SQFS : read
 # shellcheck disable=SC2148,SC2317,SC2329
 function fnSet_conf_data() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
+	__WORK="$(date +"%Y/%m/%d %H:%M:%S")"
 	_LIST_CONF=("$(cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 		###############################################################################
 		#
@@ -110,7 +112,7 @@ function fnSet_conf_data() {
 		#      data    version    developer     point
 		#   ---------- -------- --------------- ---------------------------------------
 		#   2025/11/01 000.0000 J.Itou          first release
-		#   $(date +"%Y/%m/%d %H:%M:%S") J.Itou          application output
+		#   ${__WORK:-"xxxx/xx/xx xxx.xxxx"} J.Itou          application output
 		#
 		###############################################################################
 
@@ -218,11 +220,11 @@ function fnSet_conf_data() {
 		# === for mkosi ===============================================================
 
 		# --- mkosi output image format type ------------------------------------------
-		$(printf "%-39s %s" "TGET_MDIA=\"${_TGET_MDIA:-"directory"}\"" "# format type (directory, tar, cpio, disk, uki, esp, oci, sysext, confext, portable, addon, none)")
+		$(printf "%-39s %s" "TGET_MDIA=\"${_MKOS_TGET:-"directory"}\"" "# format type (directory, tar, cpio, disk, uki, esp, oci, sysext, confext, portable, addon, none)")
 
 		# --- live media parameter ----------------------------------------------------
-		$(printf "%-39s %s" "DIRS_LIVE=\"${_DIRS_LIVE:-"LiveOS"}\""       "# live / LiveOS"                     )
-		$(printf "%-39s %s" "FILE_LIVE=\"${_FILE_LIVE:-"squashfs.img"}\"" "# filesystem.squashfs / squashfs.img")
+		$(printf "%-39s %s" "DIRS_LIVE=\"${_LIVE_DIRS:-"LiveOS"}\""       "# live / LiveOS"                     )
+		$(printf "%-39s %s" "FILE_LIVE=\"${_LIVE_SQFS:-"squashfs.img"}\"" "# filesystem.squashfs / squashfs.img")
 
 		### eof #######################################################################
 _EOT_

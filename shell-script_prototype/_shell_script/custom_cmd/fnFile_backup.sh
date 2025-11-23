@@ -18,11 +18,11 @@ function fnFile_backup() {
 	declare       ___DIRS=""
 	declare       ___BACK=""
 	# --- check ---------------------------------------------------------------
-	if [ ! -e "${___PATH}" ]; then
+	if [[ ! -e "${___PATH}" ]]; then
 		fnMsgout "caution" "not exist: [${___PATH}]"
 		mkdir -p "${___PATH%/*}"
 		___REAL="$(realpath --canonicalize-missing "${___PATH}")"
-		if [ ! -e "${___REAL}" ]; then
+		if [[ ! -e "${___REAL}" ]]; then
 			mkdir -p "${___REAL%/*}"
 		fi
 		: > "${___PATH}"
@@ -38,7 +38,7 @@ function fnFile_backup() {
 	___BACK="${___DIRS}/${___BACK#/}"
 	mkdir -p "${___BACK%/*}"
 	chmod 600 "${___DIRS%/*}"
-	if [ -e "${___BACK}" ] || [ -L "${___BACK}" ]; then
+	if [[ -e "${___BACK}" ]] || [[ -L "${___BACK}" ]]; then
 		___BACK="${___BACK}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
 	fi
 	fnMsgout "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"

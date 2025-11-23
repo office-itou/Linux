@@ -194,37 +194,52 @@ function funcCreate() {
 		__TEMP="$(mktemp -q -p "${_DIRS_TEMP:-/tmp}" "${__TGET##*/}.XXXXXX")"
 		: > "${__TEMP:?}"
 		__BLNK=""
+		__TOPS=""
+		__COMN=""
+		__COMD=""
 		while IFS= read -r __LINE
 		do
 			__WORK="${__LINE#"${__LINE%%[!"${IFS}"]*}"}"	# ltrim
 			__WORK="${__WORK%"${__WORK##*[!"${IFS}"]}"}"	# rtrim
 			case "${__WORK:-}" in
+				"set"[${IFS}]*"#"[${IFS}]*"debug:"*) continue;;
 				"#"[${IFS}]*"shellcheck"[${IFS}]*"source="* ) continue;;
 				"#"[${IFS}]*"shellcheck"[${IFS}]*"disable="*) continue;;
-				"readonly"[${IFS}]*"_SHEL_TOPS="*) continue;;
-				"readonly"[${IFS}]*"_SHEL_COMN="*) continue;;
-				"declare"[${IFS}]*"-r"[${IFS}]*"_SHEL_TOPS="*) continue;;
-				"declare"[${IFS}]*"-r"[${IFS}]*"_SHEL_COMN="*) continue;;
-				*) ;;
-			esac
-			__WORK="${__WORK%%["${IFS}"]*}"
-			case "${__WORK}" in
-				'.' | 'source')
-					__PATH="${__LINE}"
-					__PATH="${__PATH%%#*}"
-					__PATH="${__PATH#*[!"${IFS}"]}"
-					__PATH="${__PATH#"${__PATH%%[!"${IFS}"]*}"}"	# ltrim
-					__PATH="${__PATH%"${__PATH##*[!"${IFS}"]}"}"	# rtrim
-					__PATH="${__PATH//\"\$\{_SHEL_TOPS*\}\"/${__PARM%/*}}"
-					case "${__WORK}" in
-						'.'     ) __PATH="${__PATH//\"\$\{_SHEL_COMN*\}\"/${__PARM%/*}\/..\/_common_sh}"  ;;
-						'source') __PATH="${__PATH//\"\$\{_SHEL_COMN*\}\"/${__PARM%/*}\/..\/_common_bash}";;
-						*       ) ;;
+				"#"[${IFS}]*"."[${IFS}]*) continue;;
+				"#"[${IFS}]*"source"[${IFS}]*) continue;;
+				*"_SHEL_TOPS="*| \
+				*"_SHEL_COMN="*| \
+				*"_SHEL_COMD="*)
+					__INCL="${__WORK#*_SHEL_*=}"
+					__INCL="${__INCL%%\#*}"
+					__INCL="${__INCL//\"/}"
+					__INCL="${__INCL#"${__INCL%%[!"${IFS}"]*}"}"	# ltrim
+					__INCL="${__INCL%"${__INCL##*[!"${IFS}"]}"}"	# rtrim
+					case "${__WORK:-}" in
+						*"_SHEL_TOPS="*) __TOPS="$(realpath "${__INCL//\$\{_PROG_DIRS*\}/${__PARM%/*}}")";;
+						*"_SHEL_COMN="*) __COMN="$(realpath "${__INCL//\$\{_SHEL_TOPS*\}/${__TOPS:?}}")";;
+						*"_SHEL_COMD="*) __COMD="$(realpath "${__INCL//\$\{_SHEL_TOPS*\}/${__TOPS:?}}")";;
+						*) ;;
 					esac
+					continue
+					;;
+				'.'["${IFS}"]*     |\
+				'source'["${IFS}"]*)
+					__INCL="${__WORK#*["${IFS}"]}"
+					__INCL="${__INCL%%\#*}"
+					__INCL="${__INCL//\"/}"
+					__INCL="${__INCL#"${__INCL%%[!"${IFS}"]*}"}"	# ltrim
+					__INCL="${__INCL%"${__INCL##*[!"${IFS}"]}"}"	# rtrim
+					__PATH="${__INCL//\$\{_SHEL_TOPS*\}/${__TOPS}}"
+					__PATH="${__PATH//\$\{_SHEL_COMN*\}/${__COMN}}"
+					__PATH="${__PATH//\$\{_SHEL_COMD*\}/${__COMD}}"
+					__PATH="$(realpath "${__PATH}")"
 					__FLAG=""
 					while IFS= read -r __TEXT
 					do
 						case "${__TEXT#"${__TEXT%%[!"${IFS}"]*}"}" in
+							"#*shellcheck"*) __TEXT="${__TEXT/\#\*/\# }";;
+							"set"[${IFS}]*"#"[${IFS}]*"debug:"*) continue;;
 							"#"[${IFS}]*"g-var"[${IFS}]*                ) continue;;
 							"#"[${IFS}]*"shellcheck"[${IFS}]*"source="* ) continue;;
 							"#"[${IFS}]*"shellcheck"[${IFS}]*"disable="*) continue;;
@@ -236,6 +251,7 @@ function funcCreate() {
 					done < "${__PATH}"
 					echo "" >> "${__TEMP}"
 					__BLNK="true"
+					continue
 					;;
 				*)
 					if [[ -n "${__BLNK:-}" ]] && [[ -z "${__LINE:-}" ]]; then
@@ -244,6 +260,7 @@ function funcCreate() {
 						echo "${__LINE:-}" >> "${__TEMP}"
 					fi
 					__BLNK=""
+					continue
 					;;
 			esac
 		done < "${__PARM}"

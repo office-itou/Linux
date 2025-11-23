@@ -11,7 +11,8 @@ _PROG_PARM=[]       # $@
 _PROG_DIRS=[]       # ${_PROG_PATH%/*}
 _PROG_NAME=[]       # ${_PROG_PATH##*/}
 _PROG_PROC=[]       # ${_PROG_NAME}.$$
-_DIRS_TEMP=""       # 
+_DIRS_TEMP=""       # temporary directory
+_LIST_RMOV=""       # list remove directory / file
 # --- list data ---------------------------------------------------------------
 _LIST_CONF=()       # common configuration data
 _LIST_DIST=()       # distribution information

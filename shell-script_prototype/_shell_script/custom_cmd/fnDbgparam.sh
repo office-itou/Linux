@@ -97,7 +97,7 @@
 #   g-var : _FILE_YAST : read
 #   g-var : _FILE_AGMA : read
 # shellcheck disable=SC2148,SC2317,SC2329
-function fnDbgout() {
+function fnDbgparam() {
 	[[ -z "${_DBGS_PARM:-}" ]] && return
 
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
