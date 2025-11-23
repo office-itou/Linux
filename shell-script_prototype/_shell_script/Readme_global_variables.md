@@ -18,9 +18,9 @@
       | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
       | _PROG_PATH | &#x24;0                                                          | []                                                    |
       | _PROG_PARM | &#x24;@                                                          | []                                                    |
-      | _PROG_DIRS | &#x24;\\{\\_PROG\\_PATH%/*\\}                                    | []                                                    |
-      | _PROG_NAME | &#x24;\\{\\_PROG\\_PATH##*/\\}                                   | []                                                    |
-      | _PROG_PROC | &#x24;\\{\\_PROG\\_NAME\\}.&#x24;&#x24;                          | []                                                    |
+      | _PROG_DIRS | &#x24;{_PROG_PATH%/*}                                            | []                                                    |
+      | _PROG_NAME | &#x24;{_PROG_PATH##*/}                                           | []                                                    |
+      | _PROG_PROC | &#x24;\\{\\\_PROG\\\_NAME\\}.&#x24;&#x24;                        | []                                                    |
       | _DIRS_TEMP | temporary directory                                              | []                                                    |
       | _LIST_RMOV | list remove directory / file                                     | []                                                    |
 
