@@ -76,15 +76,15 @@
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnInitialize.sh					# initialize
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnSet_conf_data.sh				# set default common configuration data
+	source "${_SHEL_COMD}"/fnList_conf_Set.sh				# set default common configuration data
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnEnc_conf_data.sh				# encoding common configuration data
+	source "${_SHEL_COMD}"/fnList_conf_Enc.sh				# encoding common configuration data
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnDec_conf_data.sh				# decoding common configuration data
+	source "${_SHEL_COMD}"/fnList_conf_Dec.sh				# decoding common configuration data
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnGet_conf_data.sh				# get auto-installation configuration file
+	source "${_SHEL_COMD}"/fnList_conf_Get.sh				# get auto-installation configuration file
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnPut_conf_data.sh				# put common configuration data
+	source "${_SHEL_COMD}"/fnList_conf_Put.sh				# put common configuration data
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_preconf.sh					# make preconfiguration files
 	# shellcheck source=/dev/null

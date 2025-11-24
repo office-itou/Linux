@@ -339,7 +339,7 @@ function fnIPv6FullAddr() {
 			for (i=0;i<length(arr);i++) {
 				num[i]=strtonum("0x"arr[i])
 			}
-			printf "%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x",
+			printf "'"${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}"'",
 				num[1],num[2],num[3],num[4],num[5],num[6],num[7],num[8]
 		}'
 }
@@ -894,7 +894,7 @@ function fnInitialize() {
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
-function fnSet_conf_data() {
+function fnList_conf_Set() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
@@ -1042,7 +1042,7 @@ _EOT_
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
-function fnEnc_conf_data() {
+function fnList_conf_Enc() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
@@ -1140,7 +1140,7 @@ function fnEnc_conf_data() {
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
-function fnDec_conf_data() {
+function fnList_conf_Dec() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
@@ -1211,7 +1211,7 @@ function fnDec_conf_data() {
 #   input :     $1     : target file name
 #   output:   stdout   : message
 #   return:            : unused
-function fnGet_conf_data() {
+function fnList_conf_Get() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
@@ -1233,7 +1233,7 @@ function fnGet_conf_data() {
 #   input :     $1     : target file name
 #   output:   stdout   : message
 #   return:            : unused
-function fnPut_conf_data() {
+function fnList_conf_Put() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
@@ -1262,9 +1262,9 @@ function fnMk_preconf() {
 	shift
 	declare -a    __OPTN=("${@:-}")		# options
 
-	fnSet_conf_data						# set default common configuration data
-	fnGet_conf_data						# get common configuration data
-	fnPut_conf_data						# put common configuration data
+	fnList_conf_Set						# set default common configuration data
+	fnList_conf_Get						# get common configuration data
+	fnList_conf_Put						# put common configuration data
 
 	__NAME_REFR="${__OPTN[*]:-}"
 

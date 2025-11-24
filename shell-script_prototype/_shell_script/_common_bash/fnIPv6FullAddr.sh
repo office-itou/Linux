@@ -25,7 +25,7 @@ function fnIPv6FullAddr() {
 			for (i=0;i<length(arr);i++) {
 				num[i]=strtonum("0x"arr[i])
 			}
-			printf "%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x",
+			printf "'"${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}"'",
 				num[1],num[2],num[3],num[4],num[5],num[6],num[7],num[8]
 		}'
 }

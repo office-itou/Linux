@@ -94,7 +94,7 @@ set -o pipefail		# debug: End with in pipe error
 #   g-var : _LIVE_DIRS : read
 #   g-var : _LIVE_SQFS : read
 # shellcheck disable=SC2148,SC2317,SC2329
-function fnSet_conf_data() {
+function fnList_conf_Set() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"

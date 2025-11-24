@@ -30,7 +30,5 @@ fnRtrim() {
 #   g-var :            : unused
 # shellcheck disable=SC2148,SC2317,SC2329
 fnTrim() {
-	declare       ___WORK=""
-	___WORK="$(fnLtrim "$1")"
-	fnRtrim "${___WORK}"
+	fnRtrim "$(fnLtrim "$1")"
 }

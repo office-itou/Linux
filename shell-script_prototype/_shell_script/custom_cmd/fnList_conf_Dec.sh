@@ -10,7 +10,7 @@
 #   g-var : _PROG_NAME : read
 #   g-var : _LIST_CONF : read
 # shellcheck disable=SC2148,SC2317,SC2329
-function fnDec_conf_data() {
+function fnList_conf_Dec() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"

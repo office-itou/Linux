@@ -23,7 +23,7 @@ fnIPv6FullAddr() {
 			gsub("::",sep,str)
 			split(str,arr,":")
 			for (i=0;i<length(arr);i++) {
-				num[i]="0x"arr[i]
+				num[i]=strtonum("0x"arr[i])
 			}
 			printf "'"${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}"'",
 				num[1],num[2],num[3],num[4],num[5],num[6],num[7],num[8]

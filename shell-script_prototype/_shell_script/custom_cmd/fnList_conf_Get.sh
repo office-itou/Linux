@@ -7,7 +7,7 @@
 #   return:            : unused
 #   g-var : _LIST_CONF : write
 # shellcheck disable=SC2148,SC2317,SC2329
-function fnGet_conf_data() {
+function fnList_conf_Get() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"

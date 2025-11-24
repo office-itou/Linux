@@ -1,27 +1,21 @@
 # shellcheck disable=SC2148
 
 # -----------------------------------------------------------------------------
-# descript: make preconfiguration files
-#   n-ref :     $1     : return value : serialized target data
-#   input :     $@     : option parameter
+# descript: get media information data
+#   input :     $1     : target file name
 #   output:   stdout   : message
 #   return:            : unused
-#   g-var :  FUNCNAME  : read
-#   g-var : _PROG_NAME : read
-function fnMk_preconf() {
+#   g-var : _LIST_MDIA : write
+# shellcheck disable=SC2148,SC2317,SC2329
+function fnList_mdia_Get() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
-	declare -n    __NAME_REFR="${1:-}"	# name reference
-	shift
-	declare -a    __OPTN=("${@:-}")		# options
-
-	fnList_conf_Set						# set default common configuration data
-	fnList_conf_Get						# get common configuration data
-	fnList_conf_Put						# put common configuration data
-
-	__NAME_REFR="${__OPTN[*]:-}"
+	if [[ -e "${1:?}" ]]; then
+		_LIST_MDIA=()
+		IFS= mapfile -d $'\n' -t _LIST_MDIA < <(expand -t 4 "$1" || true)
+	fi
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
