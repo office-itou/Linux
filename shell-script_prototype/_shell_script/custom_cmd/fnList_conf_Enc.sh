@@ -27,6 +27,7 @@ function fnList_conf_Enc() {
 	declare -i    I=0					# work
 	declare -i    J=0					# work
 
+	__ARRY=()
 	for I in $(printf "%d\n" "${!_LIST_CONF[@]}" | sort -rV)
 	do
 		__LINE="${_LIST_CONF[I]:-}"

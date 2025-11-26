@@ -15,9 +15,8 @@ function fnMk_isofile() {
 
 	declare -n    __NAME_REFR="${1:-}"	# name reference
 	shift
-	declare -a    __OPTN=("${@:-}")		# options
-
-	__NAME_REFR="${__OPTN[*]:-}"
+	              __NAME_REFR="${*:-}"
+#	declare -a    __OPTN=("${@:-}")		# options
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"

@@ -5,6 +5,7 @@
 #   input :     $1     : target file name
 #   output:   stdout   : message
 #   return:            : unused
+#   g-var : _DBGS_FAIL : write
 #   g-var : _LIST_MDIA : write
 # shellcheck disable=SC2148,SC2317,SC2329
 function fnList_mdia_Get() {

@@ -2,7 +2,7 @@
 
 	# --- color code ----------------------------------------------------------
 	# https://qiita.com/ko1nksm/items/095bdb8f0eca6d327233
-	         _CODE_ESCP="$(printf '\033')"
+	         _CODE_ESCP="$(printf '\x1b')"
 	readonly _CODE_ESCP
 	readonly _TEXT_RESET="${_CODE_ESCP}[0m"					# reset all attributes
 	readonly _TEXT_BOLD="${_CODE_ESCP}[1m"					#

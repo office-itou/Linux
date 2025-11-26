@@ -769,7 +769,7 @@ function fnFile_backup() {
 	___BACK="${___DIRS}/${___BACK#/}"
 	mkdir -p "${___BACK%/*}"
 	chmod 600 "${___DIRS%/*}"
-	if [[ -e "${___BACK}" ]] || [[ -L "${___BACK}" ]]; then
+	if [[ -e "${___BACK}" ]] || [[ -h "${___BACK}" ]]; then
 		___BACK="${___BACK}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
 	fi
 	fnMsgout "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
@@ -834,7 +834,9 @@ function fnTrap() {
 function fnInitialize() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
-	fnMsgout "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	declare       __PATH=""				# full path
 
 	# --- set system parameter ------------------------------------------------
 	if [[ -n "${TERM:-}" ]] \
@@ -859,6 +861,8 @@ function fnInitialize() {
 		_COMD_BBOX="true"
 		_OPTN_COPY="-p"
 	fi
+	readonly _COMD_BBOX
+	readonly _OPTN_COPY
 
 	# --- target virtualization -----------------------------------------------
 	__WORK="$(fnTargetsys)"
@@ -887,6 +891,37 @@ function fnInitialize() {
 	_SHEL_NLIN="${_SHEL_NLIN:-"$(if [[ -e /usr/sbin/nologin ]]; then echo "/usr/sbin/nologin"; fi)"}"
 	_SHEL_NLIN="${_SHEL_NLIN:-"$(if [[ -e /sbin/nologin     ]]; then echo "/sbin/nologin"; fi)"}"
 	readonly _SHEL_NLIN
+
+	# --- common configuration data -------------------------------------------
+	fnList_conf_Set						# set default common configuration data
+	_PATH_CONF="${_PATH_CONF:-"/srv/user/share/conf/_data/${_FILE_CONF:?}"}"
+	for __PATH in \
+		"${PWD:+"${PWD}/${_FILE_CONF}"}" \
+		"${_PATH_CONF}"
+	do
+		[[ ! -e "${__PATH}" ]] && continue
+		_PATH_CONF="${__PATH}"
+		break
+	done
+	if [[ -e "${_PATH_CONF}" ]]; then
+		fnList_conf_Get "${_PATH_CONF}"	# get common configuration data
+	else
+		mkdir -p "${_PATH_CONF%"${_FILE_CONF:?}"}"
+		fnList_conf_Put "${_PATH_CONF}"	# put common configuration data
+	fi
+	fnList_conf_Dec						# decoding common configuration data
+
+	# --- media information data ----------------------------------------------
+	if [[ -e "${_PATH_MDIA:?}" ]]; then
+		fnList_mdia_Get "${_PATH_MDIA}"	# get media information data
+	fi
+	fnList_mdia_Dec						# decoding media information data
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+	fnDbgparameters
 }
 
 # -----------------------------------------------------------------------------
@@ -1248,6 +1283,497 @@ function fnList_conf_Put() {
 }
 
 # -----------------------------------------------------------------------------
+# descript: get media information data
+#   input :     $1     : target file name
+#   output:   stdout   : message
+#   return:            : unused
+function fnList_mdia_Get() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	if [[ -e "${1:?}" ]]; then
+		_LIST_MDIA=()
+		IFS= mapfile -d $'\n' -t _LIST_MDIA < <(expand -t 4 "$1" || true)
+	fi
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+	fnDbgparameters
+}
+
+# -----------------------------------------------------------------------------
+# descript: decoding common configuration data
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+function fnList_mdia_Dec() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	declare       __NAME=""				# variable name
+	declare       __VALU=""				# setting value
+#	declare       __CMNT=""				# comment
+	declare       __WNAM=""				# work: variable name
+#	declare       __WVAL=""				# work: setting value
+	declare       __WORK=""				# work
+	declare       __LINE=""				# work
+	declare -i    I=0					# work
+
+	for I in "${!_LIST_MDIA[@]}"
+	do
+		__LINE="${_LIST_MDIA[I]:-}"
+		read -r -a __LIST < <(echo "${__LINE:-}")
+		__VALU="${__LIST[*]:-}"
+		while true
+		do
+			__WNAM="${__VALU#"${__VALU%%:_[[:alnum:]]*_[[:alnum:]]*_:*}"}"
+			__WNAM="${__WNAM%"${__WNAM##*:_[[:alnum:]]*_[[:alnum:]]*_:}"}"
+			__WNAM="${__WNAM%%[!:_[:alnum:]]*}"
+			__WNAM="${__WNAM#:_}"
+			__WNAM="${__WNAM%_:}"
+			[[ -z "${__WNAM:-}" ]] && break
+			__NAME="_${__WNAM}"
+			__VALU="${__VALU/":_${__WNAM}_:"/"${!__NAME}"}"
+		done
+		_LIST_MDIA[I]="${__VALU:-}"
+#		read -r -a __LIST < <(echo "${__VALU:-}")
+#		_LIST_MDIA[I]="${__LIST[*]:-}"
+	done
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+	fnDbgparameters
+}
+
+# -----------------------------------------------------------------------------
+# descript: make directory
+#   n-ref :     $1     : return value : serialized target data
+#   input :     $@     : option parameter
+#   output:   stdout   : message
+#   return:            : unused
+function fnMk_symlink_dir() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	# --- create directory ----------------------------------------------------
+	mkdir -p \
+		"${_DIRS_TOPS:?}" \
+		"${_DIRS_HGFS:?}" \
+		"${_DIRS_HTML:?}" \
+		"${_DIRS_SAMB:?}"/{adm/{commands,profiles},pub/{_license,contents/{disc,dlna/{movies,others,photos,sounds}},hardware,software,resource/{image/{linux,windows},source/git}},usr} \
+		"${_DIRS_TFTP:?}"/{boot/grub/{fonts,locale,i386-pc,i386-efi,x86_64-efi},ipxe,menu-bios/pxelinux.cfg,menu-efi64/pxelinux.cfg} \
+		"${_DIRS_USER:?}"/private \
+		"${_DIRS_SHAR:?}" \
+		"${_DIRS_CONF:?}"/{_repository,agama,autoyast,kickstart,nocloud,preseed,windows} \
+		"${_DIRS_DATA:?}" \
+		"${_DIRS_KEYS:?}" \
+		"${_DIRS_MKOS:?}"/{mkosi.build.d,mkosi.clean.d,mkosi.conf.d,mkosi.extra,mkosi.finalize.d,mkosi.postinst.d,mkosi.postoutput.d,mkosi.prepare.d,mkosi.repart,mkosi.sync.d} \
+		"${_DIRS_TMPL:?}" \
+		"${_DIRS_SHEL:?}" \
+		"${_DIRS_IMGS:?}" \
+		"${_DIRS_ISOS:?}" \
+		"${_DIRS_LOAD:?}" \
+		"${_DIRS_RMAK:?}" \
+		"${_DIRS_CACH:?}" \
+		"${_DIRS_CTNR:?}" \
+		"${_DIRS_CHRT:?}"
+	# --- change file mode ------------------------------------------------
+	chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_SAMB}/"*
+	chmod -R  770 "${_DIRS_SAMB}/"*
+	chmod    1777 "${_DIRS_SAMB}/adm/profiles"
+	# --- create symbolic link --------------------------------------------
+	[[ ! -h "${_DIRS_HTML:?}/${_DIRS_CONF##*/}"               ]] && ln -s "${_DIRS_CONF#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[[ ! -h "${_DIRS_HTML:?}/${_DIRS_IMGS##*/}"               ]] && ln -s "${_DIRS_IMGS#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[[ ! -h "${_DIRS_HTML:?}/${_DIRS_ISOS##*/}"               ]] && ln -s "${_DIRS_ISOS#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[[ ! -h "${_DIRS_HTML:?}/${_DIRS_LOAD##*/}"               ]] && ln -s "${_DIRS_LOAD#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[[ ! -h "${_DIRS_HTML:?}/${_DIRS_RMAK##*/}"               ]] && ln -s "${_DIRS_RMAK#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[[ ! -h "${_DIRS_HTML:?}/${_DIRS_TFTP##*/}"               ]] && ln -s "${_DIRS_TFTP#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[[ ! -h "${_DIRS_TFTP:?}/${_DIRS_CONF##*/}"               ]] && ln -s "${_DIRS_CONF#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
+	[[ ! -h "${_DIRS_TFTP:?}/${_DIRS_IMGS##*/}"               ]] && ln -s "${_DIRS_IMGS#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
+	[[ ! -h "${_DIRS_TFTP:?}/${_DIRS_ISOS##*/}"               ]] && ln -s "${_DIRS_ISOS#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
+	[[ ! -h "${_DIRS_TFTP:?}/${_DIRS_LOAD##*/}"               ]] && ln -s "${_DIRS_LOAD#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
+	[[ ! -h "${_DIRS_TFTP:?}/${_DIRS_RMAK##*/}"               ]] && ln -s "${_DIRS_RMAK#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
+	[[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_CONF##*/}"     ]] && ln -s "../${_DIRS_CONF##*/}"            "${_DIRS_TFTP:?}/menu-bios/"
+	[[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_IMGS##*/}"     ]] && ln -s "../${_DIRS_IMGS##*/}"            "${_DIRS_TFTP:?}/menu-bios/"
+	[[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_ISOS##*/}"     ]] && ln -s "../${_DIRS_ISOS##*/}"            "${_DIRS_TFTP:?}/menu-bios/"
+	[[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_LOAD##*/}"     ]] && ln -s "../${_DIRS_LOAD##*/}"            "${_DIRS_TFTP:?}/menu-bios/"
+	[[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_RMAK##*/}"     ]] && ln -s "../${_DIRS_RMAK##*/}"            "${_DIRS_TFTP:?}/menu-bios/"
+	[[ ! -h "${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"  ]] && ln -s "../syslinux.cfg"                 "${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"
+	[[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_CONF##*/}"     ]] && ln -s "../${_DIRS_CONF##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
+	[[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_IMGS##*/}"     ]] && ln -s "../${_DIRS_IMGS##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
+	[[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_ISOS##*/}"     ]] && ln -s "../${_DIRS_ISOS##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
+	[[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_LOAD##*/}"     ]] && ln -s "../${_DIRS_LOAD##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
+	[[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_RMAK##*/}"     ]] && ln -s "../${_DIRS_RMAK##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
+	[[ ! -h "${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default" ]] && ln -s "../syslinux.cfg"                 "${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default"
+	# --- create autoexec.ipxe ------------------------------------------------
+	[[ ! -e "${_DIRS_TFTP:?}/menu-bios/syslinux.cfg"  ]] && touch "${_DIRS_TFTP:?}/menu-bios/syslinux.cfg"
+	[[ ! -e "${_DIRS_TFTP:?}/menu-efi64/syslinux.cfg" ]] && touch "${_DIRS_TFTP:?}/menu-efi64/syslinux.cfg"
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+	fnDbgparameters
+}
+
+# -----------------------------------------------------------------------------
+# descript: make symlink
+#   n-ref :     $1     : return value : serialized target data
+#   input :     $@     : option parameter
+#   output:   stdout   : message
+#   return:            : unused
+function fnMk_symlink() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	declare -n    __NAME_REFR="${1:-}"	# name reference
+	shift
+	              __NAME_REFR="${*:-}"
+#	declare -a    __OPTN=("${@:-}")		# options
+	declare       __FORC=""				# force parameter
+	declare       __LINE=""				# work
+	declare -a    __LIST=()				# work
+	declare -i    I=0
+
+	# --- get target ----------------------------------------------------------
+	__PTRN=""
+	set -f -- "${@:-}"
+	set +f
+	while [[ -n "${1:-}" ]]
+	do
+		case "$1" in
+			create   ) __FORC="true"; shift; break;;
+			update   ) __FORC=""    ; shift; break;;
+			*) break;;
+		esac
+		shift
+	done
+	__NAME_REFR="${*:-}"
+
+	# --- create directory ----------------------------------------------------
+	[[ -n "${__FORC:-}" ]] && fnMk_symlink_dir
+
+	# --- create symbolic link [iso files] ------------------------------------
+	for I in "${!_LIST_MDIA[@]}"
+	do
+		__LINE="${_LIST_MDIA[I]:-}"
+		read -r -a __LIST < <(echo "${__LINE:-}")
+		case "${__LIST[1]##-}" in		# entry_flag
+			'') continue;;
+			o ) ;;
+			* ) continue;;
+		esac
+		case "${__LIST[13]##-}" in		# iso_path
+			'') continue;;
+			- ) continue;;
+			* ) ;;
+		esac
+		case "${__LIST[25]##-}" in		# lnk_path
+			'') continue;;
+			- ) continue;;
+			* ) ;;
+		esac
+		[[ -h "${__LIST[13]}" ]] && continue
+		fnMsgout "${_PROG_NAME:-}" "create" "${__LIST[13]}"
+		mkdir -p "${__LIST[13]%/*}"
+		ln -s "${__LIST[25]}/${__LIST[13]##*/}" "${__LIST[13]}"
+	done
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+	fnDbgparameters
+}
+
+# -----------------------------------------------------------------------------
+# descript: make preseed.cfg
+#   input :     $1     : input value
+#   output:   stdout   : message
+#   return:            : unused
+function fnMk_preconf_preseed() {
+	declare -r    __TGET_PATH="${1:?}"	# file name
+
+	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
+	mkdir -p "${__TGET_PATH%/*}"
+	cp --backup "${_PATH_SEDD}" "${__TGET_PATH}"
+	# --- server or desktop ---------------------------------------------------
+	case "${__TGET_PATH}" in
+		*_desktop*)
+			sed -i "${__TGET_PATH}"                                             \
+			    -e '\%^[ \t]*d-i[ \t]\+pkgsel/include[ \t]\+%,\%^#.*[^\\]$% { ' \
+			    -e '/^[^#].*[^\\]$/ s/$/ \\/g'                                  \
+			    -e 's/^#/ /g'                                                   \
+			    -e 's/connman/network-manager/                              } '
+			;;
+		*)	;;
+	esac
+	# -------------------------------------------------------------------------
+	chmod ugo-x "${__TGET_PATH}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: make nocloud
+#   input :     $1     : input value
+#   output:   stdout   : message
+#   return:            : unused
+function fnMk_preconf_nocloud() {
+	declare -r    __TGET_PATH="${1:?}"	# file name
+
+	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
+	mkdir -p "${__TGET_PATH%/*}"
+	cp --backup "${_PATH_CLUD}" "${__TGET_PATH}"
+	# --- server or desktop ---------------------------------------------------
+	case "${__TGET_PATH}" in
+		*_desktop*)
+			sed -i "${__TGET_PATH}"                                            \
+			    -e '/^[ \t]*packages:$/,/\([[:graph:]]\+:$\|^#[ \t]*--\+\)/ {' \
+			    -e '/^#[ \t]*--\+/! s/^#/ /g                                }'
+			;;
+		*)	;;
+	esac
+	# -------------------------------------------------------------------------
+	touch -m "${__TGET_PATH%/*}/meta-data"      --reference "${__TGET_PATH}"
+	touch -m "${__TGET_PATH%/*}/network-config" --reference "${__TGET_PATH}"
+#	touch -m "${__TGET_PATH%/*}/user-data"      --reference "${__TGET_PATH}"
+	touch -m "${__TGET_PATH%/*}/vendor-data"    --reference "${__TGET_PATH}"
+	# -------------------------------------------------------------------------
+	chmod --recursive ugo-x "${__TGET_PATH%/*}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: make kickstart.cfg
+#   input :     $1     : input value
+#   output:   stdout   : message
+#   return:            : unused
+function fnMk_preconf_kickstart() {
+	declare -r    __TGET_PATH="${1:?}"	# file name
+	declare       __VERS=""				# distribution version
+	declare       __NUMS=""				# "            number
+	declare       __NAME=""				# "            name
+	declare       __SECT=""				# "            section
+	declare -r    __ARCH="x86_64"		# base architecture
+	declare -r    __ADDR="${_SRVR_PROT:+"${_SRVR_PROT}:/"}/${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}"
+
+	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
+	mkdir -p "${__TGET_PATH%/*}"
+	cp --backup "${_PATH_KICK}" "${__TGET_PATH}"
+	# -------------------------------------------------------------------------
+	__VERS="${__TGET_PATH#*_}"			# ks_(name)-(nums)_ ...: (ex: ks_fedora-42_dvd_desktop.cfg)
+	__VERS="${__VERS%%_*}"				# vers="(name)-(nums)"
+	__NUMS="${__VERS##*-}"
+	__NAME="${__VERS%-*}"
+	__SECT="${__NAME/-/ }"
+	# --- initializing the settings -------------------------------------------
+	sed -i "${__TGET_PATH}"                     \
+	    -e "/^cdrom$/      s/^/#/             " \
+	    -e "/^url[ \t]\+/  s/^/#/g            " \
+	    -e "/^repo[ \t]\+/ s/^/#/g            " \
+	    -e "s/:_HOST_NAME_:/${__NAME}/        " \
+	    -e "s%:_WEBS_ADDR_:%${__ADDR}%g       " \
+	    -e "s%:_DISTRO_:%${__NAME}-${__NUMS}%g"
+	# --- cdrom, repository ---------------------------------------------------
+	case "${__TGET_PATH}" in
+		*_dvd*)		# --- cdrom install ---------------------------------------
+			sed -i "${__TGET_PATH}"                 \
+			    -e "/^#cdrom$/ s/^#//             " \
+			    -e "/^#.*(${__SECT}).*$/,/^$/   { " \
+			    -e "/^#url[ \t]\+/  s/^#//g       " \
+			    -e "/^#repo[ \t]\+/ s/^#//g       " \
+			    -e "s/\$releasever/${__NUMS}/g    " \
+			    -e "s/\$basearch/${__ARCH}/g      " \
+			    -e "s/\$stream/${__NUMS}/g      } "
+			;;
+		*_net*)		# --- network install -------------------------------------
+			sed -i "${__TGET_PATH}"                 \
+			    -e "/^cdrom$/ s/^/#/              " \
+			    -e "/^#.*(${__SECT}).*$/,/^$/   { " \
+			    -e "/^#url[ \t]\+/  s/^#//g       " \
+			    -e "/^#repo[ \t]\+/ s/^#//g       " \
+			    -e "s/\$releasever/${__NUMS}/g    " \
+			    -e "s/\$basearch/${__ARCH}/g    } "
+			;;
+		*_web*)		# --- network install [ for pxeboot ] ---------------------
+			sed -i "${__TGET_PATH}"                 \
+			    -e "/^cdrom$/ s/^/#/              " \
+			    -e "/^#.*(web address).*$/,/^$/ { " \
+			    -e "/^#url[ \t]\+/  s/^#//g       " \
+			    -e "/^#repo[ \t]\+/ s/^#//g       " \
+			    -e "s/\$releasever/${__NUMS}/g    " \
+			    -e "s/\$basearch/${__ARCH}/g      " \
+			    -e "s/\$stream/${__NUMS}/g      } "
+			;;
+		*)	;;
+	esac
+	case "${__TGET_PATH}" in
+		*_fedora*)
+			sed -i "${__TGET_PATH}"                 \
+			    -e "/%packages/,/%end/          { " \
+			    -e "/^epel-release/ s/^/#/      } "
+			;;
+		*)
+			sed -i "${__TGET_PATH}"                 \
+			    -e "/^#.*(EPEL).*$/,/^$/        { " \
+			    -e "/^#url[ \t]\+/  s/^#//g       " \
+			    -e "/^#repo[ \t]\+/ s/^#//g       " \
+			    -e "s/\$releasever/${__NUMS}/g    " \
+			    -e "s/\$basearch/${__ARCH}/g      " \
+			    -e "s/\$stream/${__NUMS}/g      } "
+			;;
+	esac
+	# --- desktop -------------------------------------------------------------
+	sed -e "/%packages/,/%end/                      {" \
+	    -e "/#@.*-desktop/,/^[^#]/ s/^#//g          }" \
+	    "${__TGET_PATH}"                               \
+	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
+	case "${__NUMS}" in
+		[1-9]) ;;
+		*    )
+			sed -i "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}" \
+			    -e "/%packages/,/%end/                         {" \
+			    -e "/^kpipewire$/ s/^/#/g                      }"
+			;;
+	esac
+	# -------------------------------------------------------------------------
+	chmod ugo-x "${__TGET_PATH}" "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: make autoyast.xml
+#   input :     $1     : input value
+#   output:   stdout   : message
+#   return:            : unused
+function fnMk_preconf_autoyast() {
+	declare -r    __TGET_PATH="${1:?}"	# file name
+	declare       __VERS=""				# distribution version
+	declare       __NUMS=""				# "            number
+
+	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
+	mkdir -p "${__TGET_PATH%/*}"
+	cp --backup "${_PATH_YAST}" "${__TGET_PATH}"
+	# -------------------------------------------------------------------------
+	__VERS="${__TGET_PATH#*_}"			# autoinst_(name)-(nums)_ ...: (ex: autoinst_tumbleweed_net_desktop.xml)
+	__VERS="${__VERS%%_*}"				# vers="(name)-(nums)"
+	__NUMS="${__VERS##*-}"
+	# --- by media ------------------------------------------------------------
+	case "${__TGET_PATH}" in
+		*_web*|\
+		*_dvd*)
+			sed -i "${__TGET_PATH}"                                   \
+			    -e '/<image_installation t="boolean">/ s/false/true/'
+			;;
+		*)
+			sed -i "${__TGET_PATH}"                                   \
+			    -e '/<image_installation t="boolean">/ s/true/false/'
+			;;
+	esac
+	# --- by version ----------------------------------------------------------
+	case "${__TGET_PATH}" in
+		*tumbleweed*)
+			sed -i "${__TGET_PATH}"                                    \
+			    -e '\%<add_on_products .*>%,\%</add_on_products>%  { ' \
+			    -e '/<!-- tumbleweed/,/tumbleweed -->/             { ' \
+			    -e '/<!-- tumbleweed$/ s/$/ -->/g                  } ' \
+			    -e '/^tumbleweed -->/  s/^/<!-- /g                 } ' \
+			    -e '\%<packages .*>%,\%</packages>%                { ' \
+			    -e '/<!-- tumbleweed/,/tumbleweed -->/             { ' \
+			    -e '/<!-- tumbleweed$/ s/$/ -->/g                  } ' \
+			    -e '/^tumbleweed -->/  s/^/<!-- /g                 } ' \
+			    -e 's%\(<product>\).*\(</product>\)%\1openSUSE\2%    '
+			;;
+		*           )
+			sed -i "${__TGET_PATH}"                                          \
+			    -e '\%<add_on_products .*>%,\%</add_on_products>%        { ' \
+			    -e '/<!-- leap/,/leap -->/                               { ' \
+			    -e "/<media_url>/ s%/\(leap\)/[0-9.]\+/%/\1/${__NUMS}/%g   " \
+			    -e '/<!-- leap$/ s/$/ -->/g                              } ' \
+			    -e '/^leap -->/  s/^/<!-- /g                             } ' \
+			    -e '\%<packages .*>%,\%</packages>%                      { ' \
+			    -e '/<!-- leap/,/leap -->/                               { ' \
+			    -e '/<!-- leap$/ s/$/ -->/g                              } ' \
+			    -e '/^leap -->/  s/^/<!-- /g                             } ' \
+			    -e 's%\(<product>\).*\(</product>\)%\1Leap\2%              '
+			;;
+	esac
+	# --- desktop -------------------------------------------------------------
+	sed -e '/<!-- desktop$/       s/$/ -->/g '         \
+	    -e '/^desktop -->/        s/^/<!-- /g'         \
+	    -e '/<!-- desktop gnome$/ s/$/ -->/g '         \
+	    -e '/^desktop gnome -->/  s/^/<!-- /g'         \
+	    "${__TGET_PATH}"                               \
+	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
+	# -------------------------------------------------------------------------
+	chmod ugo-x "${__TGET_PATH}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: make autoinst.json
+#   input :     $1     : input value
+#   output:   stdout   : message
+#   return:            : unused
+function fnMk_preconf_agama() {
+	declare -r    __TGET_PATH="${1:?}"	# file name
+	declare       __VERS=""				# distribution version
+	declare       __NUMS=""				# "            number
+#	declare       __PDCT=""				# product name
+	declare       __PDID=""				# "       id
+	declare       __WORK=""				# work variables
+
+	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
+	mkdir -p "${__TGET_PATH%/*}"
+	cp --backup "${_PATH_YAST}" "${__TGET_PATH}"
+	# -------------------------------------------------------------------------
+	__VERS="${__TGET_PATH#*_}"			# autoinst_(name)-(nums)_ ...: (ex: autoinst_leap-16.0_desktop.json)
+	__VERS="${__VERS%%_*}"				# vers="(name)-(nums)"
+	__VERS="${__VERS,,}"
+	__NUMS="${__VERS##*-}"
+#	__PDCT="${__VERS%%-*}"
+	__PDID="${__VERS//-/_}"
+	__PDID="${__PDID^}"
+	# --- by product id -------------------------------------------------------
+	case "${__TGET_PATH}" in
+		*_tumbleweed_*) __PDID="Tumbleweed";;
+		*             ) __PDID="openSUSE_Leap";;
+	esac
+	# --- by media ------------------------------------------------------------
+	# --- by version ----------------------------------------------------------
+	case "${__TGET_PATH}" in
+		*_tumbleweed_*) __WORK="leap";;
+		*             ) __WORK="tumbleweed";;
+	esac
+	sed -i "${__TGET_PATH}"                                   \
+	    -e '/"product": {/,/}/                             {' \
+	    -e '/"id":/ s/"[^ ]\+"$/"'"${__PDID}"'"/           }' \
+	    -e '/"extraRepositories": \[/,/\]/                 {' \
+	    -e '\%^// '"${__WORK}"'%,\%^// '"${__WORK}"'%d      ' \
+	    -e '\%^//.*$%d                                     }' \
+	    -e '\%^// fixed parameter%,\%^// fixed parameter%d  '
+	# --- desktop -------------------------------------------------------------
+	__WORK="${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
+	cp "${__TGET_PATH}" "${__WORK}"
+	sed -i "${__TGET_PATH}"                   \
+	    -e '/"patterns": \[/,/\]/          {' \
+	    -e '\%^// desktop%,\%^// desktop%d }' \
+	    -e '/"packages": \[/,/\]/          {' \
+	    -e '\%^// desktop%,\%^// desktop%d }'
+	sed -i "${__WORK}"                        \
+	    -e '/"patterns": \[/,/\]/          {' \
+	    -e '\%^//.*$%d                     }' \
+	    -e '/"packages": \[/,/\]/          {' \
+	    -e '\%^//.*$%d                     }'
+	# -------------------------------------------------------------------------
+	chmod ugo-x "${__TGET_PATH}" "${__WORK}"
+}
+
+# -----------------------------------------------------------------------------
 # descript: make preconfiguration files
 #   n-ref :     $1     : return value : serialized target data
 #   input :     $@     : option parameter
@@ -1260,14 +1786,71 @@ function fnMk_preconf() {
 
 	declare -n    __NAME_REFR="${1:-}"	# name reference
 	shift
-	declare -a    __OPTN=("${@:-}")		# options
+	              __NAME_REFR="${*:-}"
+#	declare -a    __OPTN=("${@:-}")		# options
+	declare       __PTRN=""				# pattern
+	declare -a    __TGET=()				# target
+	declare       __LINE=""				# data line
+	declare -a    __LIST=()				# data list
+	declare       __PATH=""				# full path
+set -x
+	# --- get target ----------------------------------------------------------
+	__PTRN=""
+	set -f -- "${@:-}"
+	set +f
+	while [[ -n "${1:-}" ]]
+	do
+		case "$1" in
+			all      ) __PTRN="*"; shift; break;;
+			agama    ) ;;
+			autoyast ) ;;
+			kickstart) ;;
+			nocloud  ) ;;
+			preseed  ) ;;
+			*) break;;
+		esac
+		__PTRN="${__PTRN:+"${__PTRN}|"}$1"
+		shift
+	done
+	__NAME_REFR="${*:-}"
 
-	fnList_conf_Set						# set default common configuration data
-	fnList_conf_Get						# get common configuration data
-	fnList_conf_Put						# put common configuration data
-
-	__NAME_REFR="${__OPTN[*]:-}"
-
+	# --- create a file  ------------------------------------------------------
+	if [[ -n "${__PTRN:-}" ]]; then
+		__TGET=()
+		for I in "${!_LIST_MDIA[@]}"
+		do
+			__LINE="${_LIST_MDIA[I]:-}"
+			read -r -a __LIST < <(echo "${__LINE:-}")
+			case "${__LIST[1]}" in			# entry_flag
+				o) ;;
+				*) continue;;
+			esac
+			case "${__LIST[23]##*/}" in		# cfg_path
+				-) continue;;
+				*) ;;
+			esac
+			__PATH="${__LIST[23]}"
+			__TGET+=("${__PATH}")
+			case "${__PATH}" in
+				*/agama/*    ) __TGET+=("${__PATH/_leap-*_/_tumbleweed_}");;
+				*/kickstart/*) __TGET+=("${__PATH/_dvd/_web}");;
+				*            ) ;;
+			esac
+		done
+		IFS= mapfile -d $'\n' -t __TGET < <(IFS= printf "%s\n" "${__TGET[@]}" | grep -E "'${__PTRN}'" | sort -uV || true)
+		for __PATH in "${__TGET[@]}"
+		do
+			case "${__PATH}" in
+				*/preseed/*  ) fnPreconf_Put_preseed   "${__PATH}";;
+				*/nocloud/*  ) fnPreconf_Put_nocloud   "${__PATH}/user-data";;
+				*/kickstart/*) fnPreconf_Put_kickstart "${__PATH}";;
+				*/autoyast/* ) fnPreconf_Put_autoyast  "${__PATH}";;
+				*/agama/*    ) fnPreconf_Put_agama     "${__PATH}";;
+				*)	;;
+			esac
+		done
+	fi
+set +x
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
@@ -1288,9 +1871,8 @@ function fnMk_pxeboot() {
 
 	declare -n    __NAME_REFR="${1:-}"	# name reference
 	shift
-	declare -a    __OPTN=("${@:-}")		# options
-
-	__NAME_REFR="${__OPTN[*]:-}"
+	              __NAME_REFR="${*:-}"
+#	declare -a    __OPTN=("${@:-}")		# options
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -1312,9 +1894,8 @@ function fnMk_isofile() {
 
 	declare -n    __NAME_REFR="${1:-}"	# name reference
 	shift
-	declare -a    __OPTN=("${@:-}")		# options
-
-	__NAME_REFR="${__OPTN[*]:-}"
+	              __NAME_REFR="${*:-}"
+#	declare -a    __OPTN=("${@:-}")		# options
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -1351,11 +1932,12 @@ function fnMain() {
 		shift
 		__OPTN=("${@:-}")
 		case "${__PROC:-}" in
-			help    ) fnHelp; break;;
-			reconf  ) fnMk_preconf "__RSLT" "${__OPTN[@]:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
-			pxeboot ) fnMk_pxeboot "__RSLT" "${__OPTN[@]:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
-			create  ) fnMk_isofile "__RSLT" "${__OPTN[@]:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
-			*       ) ;;
+			-h|--help) fnHelp; break;;
+			-l|--link) fnMk_symlink "__RSLT" "${__OPTN[@]:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
+			-c|--conf) fnMk_preconf "__RSLT" "${__OPTN[@]:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
+			-p|--pxe ) fnMk_pxeboot "__RSLT" "${__OPTN[@]:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
+			-m|--make) fnMk_isofile "__RSLT" "${__OPTN[@]:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
+			*        ) ;;
 		esac
 		set -f -- "${__OPTN[@]}"
 		set +f
@@ -1378,16 +1960,21 @@ function fnMain() {
 	__time_start=$(date +%s)
 	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
 
-	declare       __LINE=""
-	# --- boot parameter selection --------------------------------------------
-	for __LINE in ${_COMD_LINE:-} ${_PROG_PARM:-}
+	set -f -- "${_PROG_PARM[@]:-}"
+	set +f
+	while [[ -n "${1:-}" ]]
 	do
-		case "${__LINE}" in
-			debug     | dbg               ) _DBGS_FLAG="true"; set -x;;
-			debugout  | dbgout            ) _DBGS_FLAG="true";;
-			debugparm | dbgparm           ) _DBGS_PARM="true";;
-			*) ;;
+		__PROC="${1:-}"
+		shift
+		__OPTN=("${@:-}")
+		case "${__PROC:-}" in
+			-h|--help             ) fnHelp; break;;
+			-D|--debug   |--dbg   ) _DBGS_FLAG="true"; set -x;;
+			-O|--debugout|--dbgout) _DBGS_FLAG="true";;
+			*                     ) ;;
 		esac
+		set -f -- "${__OPTN[@]}"
+		set +f
 	done
 
 	# --- debug output redirection --------------------------------------------

@@ -207,6 +207,7 @@ function funcCreate() {
 				"#"[${IFS}]*"shellcheck"[${IFS}]*"disable="*) continue;;
 				"#"[${IFS}]*"."[${IFS}]*) continue;;
 				"#"[${IFS}]*"source"[${IFS}]*) continue;;
+				*"_SHEL_PATH="*| \
 				*"_SHEL_TOPS="*| \
 				*"_SHEL_COMN="*| \
 				*"_SHEL_COMD="*)

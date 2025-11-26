@@ -20,6 +20,8 @@
 
 # *** global section **********************************************************
 
+# *** global section **********************************************************
+
 	# --- include -------------------------------------------------------------
 	declare -r    _SHEL_TOPS="${_PROG_DIRS:?}"/..
 	declare -r    _SHEL_COMN="${_SHEL_TOPS:-}/_common_bash"
@@ -38,36 +40,36 @@
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMN}"/fnString.sh						# string output
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMN}"/fnStrmsg.sh						# string output with message
+	source "${_SHEL_COMN}"/fnStrmsg.sh						# string output with message
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMN}"/fnTargetsys.sh					# target system state
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMN}"/fnIPv6FullAddr.sh				# IPv6 full address
+	source "${_SHEL_COMN}"/fnIPv6FullAddr.sh				# IPv6 full address
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMN}"/fnIPv6RevAddr.sh					# IPv6 reverse address
+	source "${_SHEL_COMN}"/fnIPv6RevAddr.sh					# IPv6 reverse address
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMN}"/fnIPv4Netmask.sh					# IPv4 netmask conversion
+	source "${_SHEL_COMN}"/fnIPv4Netmask.sh					# IPv4 netmask conversion
 
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnDbgout.sh						# message output (debug out)
+	source "${_SHEL_COMD}"/fnDbgout.sh						# message output (debug out)
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnDbgdump.sh						# dump output (debug out)
+	source "${_SHEL_COMD}"/fnDbgdump.sh						# dump output (debug out)
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnDbgparam.sh					# parameter debug output
+	source "${_SHEL_COMD}"/fnDbgparam.sh					# parameter debug output
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnDbgparameters.sh				# print out of internal variables
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnDbgparameters_all.sh			# print out of all variables
+	source "${_SHEL_COMD}"/fnDbgparameters_all.sh			# print out of all variables
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnFind_command.sh				# find command
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnFind_service.sh				# find service
+	source "${_SHEL_COMD}"/fnFind_service.sh				# find service
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnSystem_param.sh				# get system parameter
+	source "${_SHEL_COMD}"/fnSystem_param.sh				# get system parameter
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnNetwork_param.sh				# get network parameter
+	source "${_SHEL_COMD}"/fnNetwork_param.sh				# get network parameter
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnFile_backup.sh					# file backup
+	source "${_SHEL_COMD}"/fnFile_backup.sh					# file backup
 
 # *** function section (subroutine functions) *********************************
 
@@ -75,11 +77,41 @@
 	source "${_SHEL_COMD}"/fnTrap.sh						# trap
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnInitialize.sh					# initialize
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnList_conf_Set.sh				# set default common configuration data
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnList_conf_Enc.sh				# encoding common configuration data
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnList_conf_Dec.sh				# decoding common configuration data
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnList_conf_Get.sh				# get auto-installation configuration file
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnList_conf_Put.sh				# put common configuration data
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_symlink_dir.sh				# make directory
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_symlink.sh					# make symlink
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_preconf_preseed.sh			# make preseed.cfg
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_preconf_nocloud.sh			# make nocloud
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_preconf_kickstart.sh		# make kickstart.cfg
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_preconf_autoyast.sh			# make autoyast.xml
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_preconf_agama.sh			# make autoinst.json
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_preconf.sh					# make preconfiguration files
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot.sh					# make pxeboot files
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_isofile.sh					# make iso files
 
 # *** main section ************************************************************
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fn_main_mk_custom_iso.sh			# main routine
+	source "${_SHEL_COMD}"/fnMain_mk_custom_iso.sh			# main routine
 
 	declare -i    __time_start=0
 	declare -i    __time_end=0
@@ -89,8 +121,22 @@
 	__time_start=$(date +%s)
 	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
 
-	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fncmdline.sh		# command line
+	set -f -- "${_PROG_PARM[@]:-}"
+	set +f
+	while [[ -n "${1:-}" ]]
+	do
+		__PROC="${1:-}"
+		shift
+		__OPTN=("${@:-}")
+		case "${__PROC:-}" in
+			-h|--help             ) fnHelp; break;;
+			-D|--debug   |--dbg   ) _DBGS_FLAG="true"; set -x;;
+			-O|--debugout|--dbgout) _DBGS_FLAG="true";;
+			*                     ) ;;
+		esac
+		set -f -- "${__OPTN[@]}"
+		set +f
+	done
 
 	# --- debug output redirection --------------------------------------------
 	if set -o | grep "^xtrace\s*on$"; then

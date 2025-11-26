@@ -1,7 +1,7 @@
 # shellcheck disable=SC2148
 
 # -----------------------------------------------------------------------------
-# descript: print out of all variables
+# descript: Print all global variables (_[A..Z]*)
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
@@ -10,19 +10,16 @@
 # shellcheck disable=SC2148,SC2317,SC2329
 function fnDbgparameters_all() {
 #	[[ -z "${_DBGS_PARM:-}" ]] && return
+
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
 	declare       __NAME=""				# variable name
-	declare       __VALU=""				# "        value
-	for __NAME in $(eval printf "%q\\\n" "\${!"{{A..Z},{a..z},_}"@}")
+	eval printf "%q\\\n" "\${!_"{{A..Z},{a..z}}"@}" | while read -r __NAME
 	do
-		__NAME="${__NAME#\'}"
-		__NAME="${__NAME%\'}"
-		case "${__NAME}" in
-			''     | \
-			__NAME | \
-			__VALU ) continue;;
-			*) ;;
-		esac
-		__VALU="${!__NAME:-}"
-		printf "%s=[%s]\n" "${__NAME:-}" "${__VALU:-}"
+		[[ -n "${__NAME:-}" ]] && declare -p "${__NAME}"
 	done
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }

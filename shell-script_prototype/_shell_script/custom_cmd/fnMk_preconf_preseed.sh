@@ -1,14 +1,14 @@
 # shellcheck disable=SC2148
 
 # -----------------------------------------------------------------------------
-# descript: create preseed.cfg
+# descript: make preseed.cfg
 #   input :     $1     : input value
 #   output:   stdout   : message
 #   return:            : unused
 #   g-var : _PROG_NAME : read
 #   g-var : _PATH_SEDD : read
 # shellcheck disable=SC2317,SC2329
-function fnPreconf_Put_preseed() {
+function fnMk_preconf_preseed() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"

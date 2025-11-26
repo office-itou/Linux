@@ -1,14 +1,14 @@
 # shellcheck disable=SC2148
 
 # -----------------------------------------------------------------------------
-# descript: create kickstart.cfg
+# descript: make kickstart.cfg
 #   input :     $1     : input value
 #   output:   stdout   : message
 #   return:            : unused
 #   g-var : _PROG_NAME : read
-#   g-var : _PATH_SEDD : read
+#   g-var : _PATH_KICK : read
 # shellcheck disable=SC2317,SC2329
-function fnPreconf_Put_kickstart() {
+function fnMk_preconf_kickstart() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare       __VERS=""				# distribution version
 	declare       __NUMS=""				# "            number
@@ -16,12 +16,14 @@ function fnPreconf_Put_kickstart() {
 	declare       __SECT=""				# "            section
 	declare -r    __ARCH="x86_64"		# base architecture
 	declare -r    __ADDR="${_SRVR_PROT:+"${_SRVR_PROT}:/"}/${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}"
+	declare       __WORK=""				# work
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
 	mkdir -p "${__TGET_PATH%/*}"
 	cp --backup "${_PATH_KICK}" "${__TGET_PATH}"
 	# -------------------------------------------------------------------------
-	__VERS="${__TGET_PATH#*_}"			# ks_(name)-(nums)_ ...: (ex: ks_fedora-42_dvd_desktop.cfg)
+	__WORK="${__TGET_PATH##*/}"			# file name
+	__VERS="${__WORK#*_}"				# ks_(name)-(nums)_ ...: (ex: ks_fedora-42_dvd_desktop.cfg)
 	__VERS="${__VERS%%_*}"				# vers="(name)-(nums)"
 	__NUMS="${__VERS##*-}"
 	__NAME="${__VERS%-*}"

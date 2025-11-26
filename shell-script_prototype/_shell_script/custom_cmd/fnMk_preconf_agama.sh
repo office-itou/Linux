@@ -1,14 +1,14 @@
 # shellcheck disable=SC2148
 
 # -----------------------------------------------------------------------------
-# descript: create autoinst.json
+# descript: make autoinst.json
 #   input :     $1     : input value
 #   output:   stdout   : message
 #   return:            : unused
 #   g-var : _PROG_NAME : read
-#   g-var : _PATH_SEDD : read
+#   g-var : _PATH_AGMA : read
 # shellcheck disable=SC2317,SC2329
-function fnPreconf_Put_agama() {
+function fnMk_preconf_agama() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare       __VERS=""				# distribution version
 	declare       __NUMS=""				# "            number
@@ -18,9 +18,10 @@ function fnPreconf_Put_agama() {
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
 	mkdir -p "${__TGET_PATH%/*}"
-	cp --backup "${_PATH_YAST}" "${__TGET_PATH}"
+	cp --backup "${_PATH_AGMA}" "${__TGET_PATH}"
 	# -------------------------------------------------------------------------
-	__VERS="${__TGET_PATH#*_}"			# autoinst_(name)-(nums)_ ...: (ex: autoinst_leap-16.0_desktop.json)
+	__WORK="${__TGET_PATH##*/}"			# file name
+	__VERS="${__WORK#*_}"				# autoinst_(name)-(nums)_ ...: (ex: autoinst_leap-16.0_desktop.json)
 	__VERS="${__VERS%%_*}"				# vers="(name)-(nums)"
 	__VERS="${__VERS,,}"
 	__NUMS="${__VERS##*-}"

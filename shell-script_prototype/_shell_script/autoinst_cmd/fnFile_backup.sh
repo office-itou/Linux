@@ -35,7 +35,7 @@ fnFile_backup() {
 	___BACK="${___DIRS}/${___BACK#/}"
 	mkdir -p "${___BACK%/*}"
 	chmod 600 "${___DIRS%/*}"
-	if [ -e "${___BACK}" ] || [ -L "${___BACK}" ]; then
+	if [ -e "${___BACK}" ] || [ -h "${___BACK}" ]; then
 		___BACK="${___BACK}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
 	fi
 	fnMsgout "${_PROG_NAME:-}" "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"

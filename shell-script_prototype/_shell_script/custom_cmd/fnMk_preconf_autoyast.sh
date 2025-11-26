@@ -1,23 +1,25 @@
 # shellcheck disable=SC2148
 
 # -----------------------------------------------------------------------------
-# descript: create autoyast.xml
+# descript: make autoyast.xml
 #   input :     $1     : input value
 #   output:   stdout   : message
 #   return:            : unused
 #   g-var : _PROG_NAME : read
-#   g-var : _PATH_SEDD : read
+#   g-var : _PATH_YAST : read
 # shellcheck disable=SC2317,SC2329
-function fnPreconf_Put_autoyast() {
+function fnMk_preconf_autoyast() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare       __VERS=""				# distribution version
 	declare       __NUMS=""				# "            number
+	declare       __WORK=""				# work
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
 	mkdir -p "${__TGET_PATH%/*}"
 	cp --backup "${_PATH_YAST}" "${__TGET_PATH}"
 	# -------------------------------------------------------------------------
-	__VERS="${__TGET_PATH#*_}"			# autoinst_(name)-(nums)_ ...: (ex: autoinst_tumbleweed_net_desktop.xml)
+	__WORK="${__TGET_PATH##*/}"			# file name
+	__VERS="${__WORK#*_}"				# autoinst_(name)-(nums)_ ...: (ex: autoinst_tumbleweed_net_desktop.xml)
 	__VERS="${__VERS%%_*}"				# vers="(name)-(nums)"
 	__NUMS="${__VERS##*-}"
 	# --- by media ------------------------------------------------------------

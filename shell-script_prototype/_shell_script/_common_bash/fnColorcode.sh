@@ -3,7 +3,7 @@
 	# --- color code ----------------------------------------------------------
 	# https://qiita.com/ko1nksm/items/095bdb8f0eca6d327233
 	declare       _CODE_ESCP=""
-	              _CODE_ESCP="$(printf '\033')"
+	              _CODE_ESCP="$(printf '\x1b')"
 	readonly      _CODE_ESCP
 	declare -r    _TEXT_RESET="${_CODE_ESCP}[0m"				# reset all attributes
 	declare -r    _TEXT_BOLD="${_CODE_ESCP}[1m"					#

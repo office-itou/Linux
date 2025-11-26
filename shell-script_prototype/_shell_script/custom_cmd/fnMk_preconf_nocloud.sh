@@ -1,14 +1,14 @@
 # shellcheck disable=SC2148
 
 # -----------------------------------------------------------------------------
-# descript: create nocloud
+# descript: make nocloud
 #   input :     $1     : input value
 #   output:   stdout   : message
 #   return:            : unused
 #   g-var : _PROG_NAME : read
 #   g-var : _PATH_CLUD : read
 # shellcheck disable=SC2317,SC2329
-function fnPreconf_Put_nocloud() {
+function fnMk_preconf_nocloud() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
@@ -29,5 +29,5 @@ function fnPreconf_Put_nocloud() {
 #	touch -m "${__TGET_PATH%/*}/user-data"      --reference "${__TGET_PATH}"
 	touch -m "${__TGET_PATH%/*}/vendor-data"    --reference "${__TGET_PATH}"
 	# -------------------------------------------------------------------------
-	chmod --recursive ugo-x "${__TGET_PATH%/*}"
+	chmod ugo-x "${__TGET_PATH%/*}"/*
 }

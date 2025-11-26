@@ -1,29 +1,11 @@
 #!/bin/bash
 
-###############################################################################
-#
-#	
-#	  developed for debian
-#
-#	developer   : J.Itou
-#	release     : 2025/11/01
-#
-#	history     :
-#	   data    version    developer    point
-#	---------- -------- -------------- ----------------------------------------
-#	2025/11/01 000.0000 J.Itou         first release
-#
-#	shell check : shellcheck -o all "filename"
-#	            : shellcheck -o all -e SC2154 *.sh
-#
-###############################################################################
-
-# *** global section **********************************************************
-
 # *** global section **********************************************************
 
 	# --- include -------------------------------------------------------------
-	declare -r    _SHEL_TOPS="${_PROG_DIRS:?}"/..
+	declare       _SHEL_PATH="${0:?}"
+	declare -r    _SHEL_TOPS="${_SHEL_PATH%/*}"
+#	declare -r    _SHEL_TOPS="${_SHEL_PATH%/*}"/..
 	declare -r    _SHEL_COMN="${_SHEL_TOPS:-}/_common_bash"
 	declare -r    _SHEL_COMD="${_SHEL_TOPS:-}/custom_cmd"
 	# shellcheck source=/dev/null
@@ -59,7 +41,7 @@
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnDbgparameters.sh				# print out of internal variables
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnDbgparameters_all.sh			# print out of all variables
+	source "${_SHEL_COMD}"/fnDbgparameters_all.sh			# Print all global variables (_[A..Z]*)
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnFind_command.sh				# find command
 	# shellcheck source=/dev/null
@@ -88,6 +70,12 @@
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnList_conf_Put.sh				# put common configuration data
 	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnList_mdia_Get.sh				# get media information data
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnList_mdia_Enc.sh				# encoding common configuration data
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnList_mdia_Dec.sh				# decoding common configuration data
+	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_symlink_dir.sh				# make directory
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_symlink.sh					# make symlink
@@ -111,16 +99,12 @@
 # *** main section ************************************************************
 
 	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnHelp_mk_custom_iso.sh			# help
+	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMain_mk_custom_iso.sh			# main routine
 
-	declare -i    __time_start=0
-	declare -i    __time_end=0
-	declare -i    __time_elapsed=0
-
-	# --- start ---------------------------------------------------------------
-	__time_start=$(date +%s)
-	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
-
+	# --- help / debug --------------------------------------------------------
+	[[ -z "${_PROG_PARM[*]:-}" ]] && fnHelp
 	set -f -- "${_PROG_PARM[@]:-}"
 	set +f
 	while [[ -n "${1:-}" ]]
@@ -129,7 +113,7 @@
 		shift
 		__OPTN=("${@:-}")
 		case "${__PROC:-}" in
-			-h|--help             ) fnHelp; break;;
+			-h|--help             ) fnHelp;;
 			-D|--debug   |--dbg   ) _DBGS_FLAG="true"; set -x;;
 			-O|--debugout|--dbgout) _DBGS_FLAG="true";;
 			*                     ) ;;
@@ -148,6 +132,14 @@
 		fnDbgout "command line" \
 			"debug,_COMD_LINE=[${_COMD_LINE:-}]"
 	fi
+
+	# --- start ---------------------------------------------------------------
+	declare -i    __time_start=0
+	declare -i    __time_end=0
+	declare -i    __time_elapsed=0
+
+	__time_start=$(date +%s)
+	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
 
 	# --- main processing -----------------------------------------------------
 	fnMain
