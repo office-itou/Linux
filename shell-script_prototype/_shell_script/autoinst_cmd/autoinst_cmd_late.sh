@@ -242,7 +242,7 @@ fnIPv6FullAddr() {
 			gsub("::",sep,str)
 			split(str,arr,":")
 			for (i=0;i<length(arr);i++) {
-				num[i]="0x"arr[i]
+				num[i]=strtonum("0x"arr[i])
 			}
 			printf "'"${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}"'",
 				num[1],num[2],num[3],num[4],num[5],num[6],num[7],num[8]
@@ -522,11 +522,9 @@ fnNetwork_param() {
 		fnMsgout "${_PROG_NAME:-}" "caution" "not exist: [${___DIRS}]"
 	else
 		if [ -z "${_NICS_NAME#*"*"}" ]; then
-#			_NICS_NAME="$(find "${___DIRS}" -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -E "${_NICS_NAME}" | sort | head -n 1)"
-			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | sort | head -n 1)"
+			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | sort -V | head -n 1)"
 			_NICS_NAME="${_NICS_NAME##*/}"
 		fi
-#		if ! find "${___DIRS}" -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -qE '^'"${_NICS_NAME}"'$'; then
 		if ! find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | grep -q "${_NICS_NAME}"; then
 			fnMsgout "${_PROG_NAME:-}" "failed" "not exist: [${_NICS_NAME}]"
 		else
@@ -536,7 +534,7 @@ fnNetwork_param() {
 				_NICS_AUTO="dhcp"
 			fi
 			if [ -z "${_NICS_DNS4:-}" ] || [ -z "${_NICS_WGRP:-}" ]; then
-				__PATH="$(fnFind_command 'resolvectl' | sort | head -n 1)"
+				__PATH="$(fnFind_command 'resolvectl' | sort -V | head -n 1)"
 				if [ -n "${__PATH:-}" ]; then
 					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/^Global:/            s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
 					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
@@ -652,7 +650,7 @@ fnFile_backup() {
 	___BACK="${___DIRS}/${___BACK#/}"
 	mkdir -p "${___BACK%/*}"
 	chmod 600 "${___DIRS%/*}"
-	if [ -e "${___BACK}" ] || [ -L "${___BACK}" ]; then
+	if [ -e "${___BACK}" ] || [ -h "${___BACK}" ]; then
 		___BACK="${___BACK}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
 	fi
 	fnMsgout "${_PROG_NAME:-}" "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
@@ -753,7 +751,7 @@ fnInitialize() {
 	readonly _DIRS_LOGS="${_DIRS_BACK}/logs"	# log file directory
 	mkdir -p "${_DIRS_TGET:-}${_DIRS_INST%.*}/"
 	chmod 600 "${_DIRS_TGET:-}${_DIRS_VADM:?}"
-	find "${_DIRS_TGET:-}${_DIRS_VADM:?}" -name "${_PROG_NAME%%_*}.[0-9]*" -type d | sort -r | tail -n +3 | \
+	find "${_DIRS_TGET:-}${_DIRS_VADM:?}" -name "${_PROG_NAME%%_*}.[0-9]*" -type d | sort -rV | tail -n +3 | \
 	while read -r __TGET
 	do
 		__PATH="${__TGET}.tgz"
@@ -767,7 +765,7 @@ fnInitialize() {
 	mkdir -p "${_DIRS_TGET:-}${_DIRS_INST:?}"
 	chmod 600 "${_DIRS_TGET:-}${_DIRS_INST:?}"
 	# --- samba ---------------------------------------------------------------
-	_SHEL_NLIN="$(fnFind_command 'nologin' | sort -r | head -n 1)"
+	_SHEL_NLIN="$(fnFind_command 'nologin' | sort -rV | head -n 1)"
 	_SHEL_NLIN="${_SHEL_NLIN#*"${_DIRS_TGET:-}"}"
 	_SHEL_NLIN="${_SHEL_NLIN:-"$(if [ -e /usr/sbin/nologin ]; then echo "/usr/sbin/nologin"; fi)"}"
 	_SHEL_NLIN="${_SHEL_NLIN:-"$(if [ -e /sbin/nologin     ]; then echo "/sbin/nologin"; fi)"}"
@@ -897,29 +895,29 @@ fnMkdir_share(){
 	chmod    1777 "${_DIRS_SAMB}/adm/profiles"
 
 	# --- create symbolic link ------------------------------------------------
-	[ ! -L "${_DIRS_HTML:?}/${_DIRS_CONF##*/}"               ] && ln -s "${_DIRS_CONF#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
-	[ ! -L "${_DIRS_HTML:?}/${_DIRS_IMGS##*/}"               ] && ln -s "${_DIRS_IMGS#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
-	[ ! -L "${_DIRS_HTML:?}/${_DIRS_ISOS##*/}"               ] && ln -s "${_DIRS_ISOS#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
-	[ ! -L "${_DIRS_HTML:?}/${_DIRS_LOAD##*/}"               ] && ln -s "${_DIRS_LOAD#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
-	[ ! -L "${_DIRS_HTML:?}/${_DIRS_RMAK##*/}"               ] && ln -s "${_DIRS_RMAK#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
-	[ ! -L "${_DIRS_HTML:?}/${_DIRS_TFTP##*/}"               ] && ln -s "${_DIRS_TFTP#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
-	[ ! -L "${_DIRS_HTML:?}/${_DIRS_CONF##*/}"               ] && ln -s "${_DIRS_CONF#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
-	[ ! -L "${_DIRS_HTML:?}/${_DIRS_IMGS##*/}"               ] && ln -s "${_DIRS_IMGS#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
-	[ ! -L "${_DIRS_HTML:?}/${_DIRS_ISOS##*/}"               ] && ln -s "${_DIRS_ISOS#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
-	[ ! -L "${_DIRS_HTML:?}/${_DIRS_LOAD##*/}"               ] && ln -s "${_DIRS_LOAD#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
-	[ ! -L "${_DIRS_HTML:?}/${_DIRS_RMAK##*/}"               ] && ln -s "${_DIRS_RMAK#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
-	[ ! -L "${_DIRS_TFTP:?}/menu-bios/${_DIRS_CONF##*/}"     ] && ln -s "../${_DIRS_CONF##*/}"             "${_DIRS_TFTP:?}/menu-bios/"
-	[ ! -L "${_DIRS_TFTP:?}/menu-bios/${_DIRS_IMGS##*/}"     ] && ln -s "../${_DIRS_IMGS##*/}"             "${_DIRS_TFTP:?}/menu-bios/"
-	[ ! -L "${_DIRS_TFTP:?}/menu-bios/${_DIRS_ISOS##*/}"     ] && ln -s "../${_DIRS_ISOS##*/}"             "${_DIRS_TFTP:?}/menu-bios/"
-	[ ! -L "${_DIRS_TFTP:?}/menu-bios/${_DIRS_LOAD##*/}"     ] && ln -s "../${_DIRS_LOAD##*/}"             "${_DIRS_TFTP:?}/menu-bios/"
-	[ ! -L "${_DIRS_TFTP:?}/menu-bios/${_DIRS_RMAK##*/}"     ] && ln -s "../${_DIRS_RMAK##*/}"             "${_DIRS_TFTP:?}/menu-bios/"
-	[ ! -L "${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"  ] && ln -s "../menu-bios/syslinux.cfg"        "${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"
-	[ ! -L "${_DIRS_TFTP:?}/menu-bios/${_DIRS_CONF##*/}"     ] && ln -s "../${_DIRS_CONF##*/}"             "${_DIRS_TFTP:?}/menu-efi64/"
-	[ ! -L "${_DIRS_TFTP:?}/menu-bios/${_DIRS_IMGS##*/}"     ] && ln -s "../${_DIRS_IMGS##*/}"             "${_DIRS_TFTP:?}/menu-efi64/"
-	[ ! -L "${_DIRS_TFTP:?}/menu-bios/${_DIRS_ISOS##*/}"     ] && ln -s "../${_DIRS_ISOS##*/}"             "${_DIRS_TFTP:?}/menu-efi64/"
-	[ ! -L "${_DIRS_TFTP:?}/menu-bios/${_DIRS_LOAD##*/}"     ] && ln -s "../${_DIRS_LOAD##*/}"             "${_DIRS_TFTP:?}/menu-efi64/"
-	[ ! -L "${_DIRS_TFTP:?}/menu-bios/${_DIRS_RMAK##*/}"     ] && ln -s "../${_DIRS_RMAK##*/}"             "${_DIRS_TFTP:?}/menu-efi64/"
-	[ ! -L "${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default" ] && ln -s "../menu-efi64/syslinux.cfg"       "${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_CONF##*/}"               ] && ln -s "${_DIRS_CONF#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_IMGS##*/}"               ] && ln -s "${_DIRS_IMGS#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_ISOS##*/}"               ] && ln -s "${_DIRS_ISOS#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_LOAD##*/}"               ] && ln -s "${_DIRS_LOAD#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_RMAK##*/}"               ] && ln -s "${_DIRS_RMAK#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_TFTP##*/}"               ] && ln -s "${_DIRS_TFTP#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_CONF##*/}"               ] && ln -s "${_DIRS_CONF#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
+	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_IMGS##*/}"               ] && ln -s "${_DIRS_IMGS#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
+	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_ISOS##*/}"               ] && ln -s "${_DIRS_ISOS#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
+	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_LOAD##*/}"               ] && ln -s "${_DIRS_LOAD#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
+	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_RMAK##*/}"               ] && ln -s "${_DIRS_RMAK#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_CONF##*/}"     ] && ln -s "../${_DIRS_CONF##*/}"            "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_IMGS##*/}"     ] && ln -s "../${_DIRS_IMGS##*/}"            "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_ISOS##*/}"     ] && ln -s "../${_DIRS_ISOS##*/}"            "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_LOAD##*/}"     ] && ln -s "../${_DIRS_LOAD##*/}"            "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_RMAK##*/}"     ] && ln -s "../${_DIRS_RMAK##*/}"            "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"  ] && ln -s "../syslinux.cfg"                 "${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_CONF##*/}"     ] && ln -s "../${_DIRS_CONF##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_IMGS##*/}"     ] && ln -s "../${_DIRS_IMGS##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_ISOS##*/}"     ] && ln -s "../${_DIRS_ISOS##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_LOAD##*/}"     ] && ln -s "../${_DIRS_LOAD##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_RMAK##*/}"     ] && ln -s "../${_DIRS_RMAK##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default" ] && ln -s "../syslinux.cfg"                 "${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default"
 
 	# --- create autoexec.ipxe ------------------------------------------------
 	touch "${_DIRS_TFTP:?}/menu-bios/syslinux.cfg"
@@ -995,7 +993,7 @@ fnSetup_connman() {
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
-	__SRVC="$(fnFind_serivce 'connman.service' | sort | head -n 1)"
+	__SRVC="$(fnFind_serivce 'connman.service' | sort -V | head -n 1)"
 	if [ -z "${__SRVC:-}" ]; then
 		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
@@ -1183,7 +1181,7 @@ fnSetup_netman() {
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
-	__SRVC="$(fnFind_serivce 'NetworkManager.service' | sort | head -n 1)"
+	__SRVC="$(fnFind_serivce 'NetworkManager.service' | sort -V | head -n 1)"
 	if [ -z "${__SRVC:-}" ]; then
 		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
@@ -1414,7 +1412,7 @@ fnSetup_firewalld() {
 		return
 	fi
 	# --- firewalld.service ---------------------------------------------------
-	__SRVC="$(fnFind_serivce 'firewalld.service' | sort | head -n 1)"
+	__SRVC="$(fnFind_serivce 'firewalld.service' | sort -V | head -n 1)"
 	fnFile_backup "${__SRVC}"			# backup original file
 	mkdir -p "${__SRVC%/*}"
 	cp --preserve=timestamps "${_DIRS_ORIG}/${__SRVC#*"${_DIRS_TGET:-}/"}" "${__SRVC}"
@@ -1426,7 +1424,7 @@ fnSetup_firewalld() {
 	fnDbgdump "${__SRVC}"				# debugout
 	fnFile_backup "${__SRVC}" "init"	# backup initial file
 	# --- firewalld -----------------------------------------------------------
-	__ORIG="$(find "${_DIRS_TGET:-}"/lib/firewalld/zones/ "${_DIRS_TGET:-}"/usr/lib/firewalld/zones/ -name 'drop.xml' | sort | head -n 1)"
+	__ORIG="$(find "${_DIRS_TGET:-}"/lib/firewalld/zones/ "${_DIRS_TGET:-}"/usr/lib/firewalld/zones/ -name 'drop.xml' | sort -V | head -n 1)"
 	__PATH="${_DIRS_TGET:-}/etc/firewalld/zones/${_FWAL_ZONE}.xml"
 	cp --preserve=timestamps "${__ORIG}" "${__PATH}"
 	fnFile_backup "${__PATH}"			# backup original file
@@ -1511,7 +1509,7 @@ fnSetup_dnsmasq() {
 		return
 	fi
 	# --- dnsmasq.service -----------------------------------------------------
-	__SRVC="$(fnFind_serivce 'dnsmasq.service' | sort | head -n 1)"
+	__SRVC="$(fnFind_serivce 'dnsmasq.service' | sort -V | head -n 1)"
 	fnFile_backup "${__SRVC}"			# backup original file
 	mkdir -p "${__SRVC%/*}"
 	cp --preserve=timestamps "${_DIRS_ORIG}/${__SRVC#*"${_DIRS_TGET:-}/"}" "${__SRVC}"
@@ -1705,7 +1703,7 @@ fnSetup_resolv() {
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
 	if ! command -v resolvectl > /dev/null 2>&1; then
-		if [ ! -L "${__PATH}" ]; then
+		if [ ! -h "${__PATH}" ]; then
 			cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
 				# Generated by user script
@@ -1724,7 +1722,7 @@ _EOT_
 #		else
 #			mkdir -p "${__CONF%/*}"
 #			cp --preserve=timestamps "${_DIRS_ORIG}/${__CONF#*"${_DIRS_TGET:-}/"}" "${__CONF}"
-			if [ ! -L "${__PATH}" ]; then
+			if [ ! -h "${__PATH}" ]; then
 				rm -f "${__PATH}"
 				ln -s "../${__CONF#"${_DIRS_TGET:-}/"}" "${__PATH}"
 			fi
@@ -1782,7 +1780,7 @@ fnSetup_apache() {
 	fnMsgout "${_PROG_NAME:-}" "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
-	__SRVC="$(fnFind_serivce 'apache2.service' 'httpd.service' | sort | head -n 1)"
+	__SRVC="$(fnFind_serivce 'apache2.service' 'httpd.service' | sort -V | head -n 1)"
 	if [ -z "${__SRVC:-}" ]; then
 		fnMsgout "${_PROG_NAME:-}" "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
@@ -1863,8 +1861,8 @@ fnSetup_samba() {
 		return
 	fi
 	# --- check service -------------------------------------------------------
-	__SMBD="$(fnFind_serivce 'smbd.service' 'smb.service' | sort | head -n 1)"
-	__NMBD="$(fnFind_serivce 'nmbd.service' 'nmb.service' | sort | head -n 1)"
+	__SMBD="$(fnFind_serivce 'smbd.service' 'smb.service' | sort -V | head -n 1)"
+	__NMBD="$(fnFind_serivce 'nmbd.service' 'nmb.service' | sort -V | head -n 1)"
 	if [ -z "${__SMBD:-}" ] || [ -z "${__NMBD:-}" ]; then
 		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
@@ -1876,7 +1874,7 @@ fnSetup_samba() {
 	if [ -e "${__PATH}" ]; then
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
-		if [ ! -L "${__PATH}" ]; then
+		if [ ! -h "${__PATH}" ]; then
 			cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 		fi
 		sed -i "${__PATH}"                \
@@ -2087,7 +2085,7 @@ fnSetup_timesyncd() {
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
-	__SRVC="$(fnFind_serivce 'systemd-timesyncd.service' | sort | head -n 1)"
+	__SRVC="$(fnFind_serivce 'systemd-timesyncd.service' | sort -V | head -n 1)"
 	if [ -z "${__SRVC:-}" ]; then
 		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
@@ -2136,7 +2134,7 @@ fnSetup_chronyd() {
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
-	__SRVC="$(fnFind_serivce 'chronyd.service' | sort | head -n 1)"
+	__SRVC="$(fnFind_serivce 'chronyd.service' | sort -V | head -n 1)"
 	if [ -z "${__SRVC:-}" ]; then
 		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
@@ -2178,7 +2176,7 @@ fnSetup_ssh() {
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
-	__SRVC="$(fnFind_serivce 'ssh.service' 'sshd.service' | sort | head -n 1)"
+	__SRVC="$(fnFind_serivce 'ssh.service' 'sshd.service' | sort -V | head -n 1)"
 	if [ -z "${__SRVC:-}" ]; then
 		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
@@ -2313,7 +2311,7 @@ fnSetup_wireplumber() {
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
-	__SRVC="$(fnFind_serivce 'wireplumber.service' | sort | head -n 1)"
+	__SRVC="$(fnFind_serivce 'wireplumber.service' | sort -V | head -n 1)"
 	if [ -z "${__SRVC:-}" ]; then
 		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
@@ -2490,7 +2488,7 @@ _EOT_
 		fnFile_backup "${__PATH}" "init"	# backup initial file
 	fi
 	# --- .bash_history -------------------------------------------------------
-	__PATH="$(fnFind_command 'apt-get' | sort | head -n 1)"
+	__PATH="$(fnFind_command 'apt-get' | sort -V | head -n 1)"
 	if [ -n "${__PATH:-}" ]; then
 		__PATH="${_DIRS_TGET:-}/etc/skel/.bash_history"
 		fnFile_backup "${__PATH}"			# backup original file
@@ -2503,7 +2501,7 @@ _EOT_
 		fnFile_backup "${__PATH}" "init"	# backup initial file
 	fi
 	# --- .vimrc --------------------------------------------------------------
-	__PATH="$(fnFind_command 'vim' | sort | head -n 1)"
+	__PATH="$(fnFind_command 'vim' | sort -V | head -n 1)"
 	if [ -n "${__PATH:-}" ]; then
 		__PATH="${_DIRS_TGET:-}/etc/skel/.vimrc"
 		fnFile_backup "${__PATH}"			# backup original file
@@ -2524,7 +2522,7 @@ _EOT_
 		fnFile_backup "${__PATH}" "init"	# backup initial file
 	fi
 	# --- .curlrc -------------------------------------------------------------
-	__PATH="$(fnFind_command 'curl' | sort | head -n 1)"
+	__PATH="$(fnFind_command 'curl' | sort -V | head -n 1)"
 	if [ -n "${__PATH:-}" ]; then
 		__PATH="${_DIRS_TGET:-}/etc/skel/.curlrc"
 		fnFile_backup "${__PATH}"			# backup original file
@@ -2577,7 +2575,7 @@ fnSetup_sudo() {
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check command -------------------------------------------------------
-	__PATH="$(fnFind_command 'sudo' | sort | head -n 1)"
+	__PATH="$(fnFind_command 'sudo' | sort -V | head -n 1)"
 	if [ -z "${__PATH:-}" ]; then
 		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return

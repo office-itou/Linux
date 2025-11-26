@@ -217,7 +217,8 @@ function funcCreate() {
 					__INCL="${__INCL#"${__INCL%%[!"${IFS}"]*}"}"	# ltrim
 					__INCL="${__INCL%"${__INCL##*[!"${IFS}"]}"}"	# rtrim
 					case "${__WORK:-}" in
-						*"_SHEL_TOPS="*) __TOPS="$(realpath "${__INCL//\$\{_PROG_DIRS*\}/${__PARM%/*}}")";;
+						*"_SHEL_PATH="*) ;;
+						*"_SHEL_TOPS="*) __TOPS="$(realpath "${__INCL//\$\{*\}/${__PARM%/*}}")";;
 						*"_SHEL_COMN="*) __COMN="$(realpath "${__INCL//\$\{_SHEL_TOPS*\}/${__TOPS:?}}")";;
 						*"_SHEL_COMD="*) __COMD="$(realpath "${__INCL//\$\{_SHEL_TOPS*\}/${__TOPS:?}}")";;
 						*) ;;

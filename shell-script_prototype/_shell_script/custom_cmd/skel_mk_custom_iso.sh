@@ -21,7 +21,7 @@
 # *** global section **********************************************************
 
 	# --- include -------------------------------------------------------------
-	declare       _SHEL_PATH="${0:?}"
+	declare -r    _SHEL_PATH="${0:?}"
 	declare -r    _SHEL_TOPS="${_SHEL_PATH%/*}"/..
 	declare -r    _SHEL_COMN="${_SHEL_TOPS:-}/_common_bash"
 	declare -r    _SHEL_COMD="${_SHEL_TOPS:-}/custom_cmd"

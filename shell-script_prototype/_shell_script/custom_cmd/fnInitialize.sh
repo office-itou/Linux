@@ -83,10 +83,12 @@ function fnInitialize() {
 
 	# --- common configuration data -------------------------------------------
 	fnList_conf_Set						# set default common configuration data
+	fnList_conf_Dec						# decoding common configuration data
+	_PATH_CONF="${_PATH_CONF##*:_*_:*}"
 	_PATH_CONF="${_PATH_CONF:-"/srv/user/share/conf/_data/${_FILE_CONF:?}"}"
 	for __PATH in \
-		"${PWD:+"${PWD}/${_FILE_CONF}"}" \
-		"${_PATH_CONF}"
+		"${PWD:+"${PWD}/${_FILE_CONF:?}"}" \
+		"${_PATH_CONF:-}"
 	do
 		[[ ! -e "${__PATH}" ]] && continue
 		_PATH_CONF="${__PATH}"
@@ -96,6 +98,7 @@ function fnInitialize() {
 		fnList_conf_Get "${_PATH_CONF}"	# get common configuration data
 	else
 		mkdir -p "${_PATH_CONF%"${_FILE_CONF:?}"}"
+		fnList_conf_Enc					# encoding common configuration data
 		fnList_conf_Put "${_PATH_CONF}"	# put common configuration data
 	fi
 	fnList_conf_Dec						# decoding common configuration data

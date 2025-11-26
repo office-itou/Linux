@@ -586,28 +586,25 @@ function fnDbgparameters() {
 }
 
 # -----------------------------------------------------------------------------
-# descript: print out of all variables
+# descript: Print all global variables (_[A..Z]*)
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
 #   memo  : https://qiita.com/t_nakayama0714/items/80b4c94de43643f4be51#%E5%AD%A6%E3%81%B3%E3%81%AE%E6%88%90%E6%9E%9C%E3%82%92%E6%84%9F%E3%81%98%E3%82%8B%E3%83%AF%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%8A%E3%83%BC
 function fnDbgparameters_all() {
 #	[[ -z "${_DBGS_PARM:-}" ]] && return
+
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
 	declare       __NAME=""				# variable name
-	declare       __VALU=""				# "        value
-	for __NAME in $(eval printf "%q\\\n" "\${!"{{A..Z},{a..z},_}"@}")
+	eval printf "%q\\\n" "\${!_"{{A..Z},{a..z}}"@}" | while read -r __NAME
 	do
-		__NAME="${__NAME#\'}"
-		__NAME="${__NAME%\'}"
-		case "${__NAME}" in
-			''     | \
-			__NAME | \
-			__VALU ) continue;;
-			*) ;;
-		esac
-		__VALU="${!__NAME:-}"
-		printf "%s=[%s]\n" "${__NAME:-}" "${__VALU:-}"
+		[[ -n "${__NAME:-}" ]] && declare -p "${__NAME}"
 	done
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
 # -----------------------------------------------------------------------------
@@ -894,10 +891,12 @@ function fnInitialize() {
 
 	# --- common configuration data -------------------------------------------
 	fnList_conf_Set						# set default common configuration data
+	fnList_conf_Dec						# decoding common configuration data
+	_PATH_CONF="${_PATH_CONF##*:_*_:*}"
 	_PATH_CONF="${_PATH_CONF:-"/srv/user/share/conf/_data/${_FILE_CONF:?}"}"
 	for __PATH in \
-		"${PWD:+"${PWD}/${_FILE_CONF}"}" \
-		"${_PATH_CONF}"
+		"${PWD:+"${PWD}/${_FILE_CONF:?}"}" \
+		"${_PATH_CONF:-}"
 	do
 		[[ ! -e "${__PATH}" ]] && continue
 		_PATH_CONF="${__PATH}"
@@ -907,6 +906,7 @@ function fnInitialize() {
 		fnList_conf_Get "${_PATH_CONF}"	# get common configuration data
 	else
 		mkdir -p "${_PATH_CONF%"${_FILE_CONF:?}"}"
+		fnList_conf_Enc					# encoding common configuration data
 		fnList_conf_Put "${_PATH_CONF}"	# put common configuration data
 	fi
 	fnList_conf_Dec						# decoding common configuration data
@@ -935,7 +935,7 @@ function fnList_conf_Set() {
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	__WORK="$(date +"%Y/%m/%d %H:%M:%S")"
-	_LIST_CONF=("$(cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+	IFS= mapfile -d $'\n' -t _LIST_CONF < <(cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		###############################################################################
 		#
 		#   common configuration file
@@ -1055,15 +1055,15 @@ function fnList_conf_Set() {
 		# === for mkosi ===============================================================
 
 		# --- mkosi output image format type ------------------------------------------
-		$(printf "%-39s %s" "TGET_MDIA=\"${_MKOS_TGET:-"directory"}\"" "# format type (directory, tar, cpio, disk, uki, esp, oci, sysext, confext, portable, addon, none)")
+		$(printf "%-39s %s" "MKOS_TGET=\"${_MKOS_TGET:-"directory"}\"" "# format type (directory, tar, cpio, disk, uki, esp, oci, sysext, confext, portable, addon, none)")
 
 		# --- live media parameter ----------------------------------------------------
-		$(printf "%-39s %s" "DIRS_LIVE=\"${_LIVE_DIRS:-"LiveOS"}\""       "# live / LiveOS"                     )
-		$(printf "%-39s %s" "FILE_LIVE=\"${_LIVE_SQFS:-"squashfs.img"}\"" "# filesystem.squashfs / squashfs.img")
+		$(printf "%-39s %s" "LIVE_DIRS=\"${_LIVE_DIRS:-"LiveOS"}\""       "# live / LiveOS"                     )
+		$(printf "%-39s %s" "LIVE_SQFS=\"${_LIVE_SQFS:-"squashfs.img"}\"" "# filesystem.squashfs / squashfs.img")
 
 		### eof #######################################################################
 _EOT_
-	)")
+	)
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -1094,6 +1094,7 @@ function fnList_conf_Enc() {
 	declare -i    I=0					# work
 	declare -i    J=0					# work
 
+	__ARRY=()
 	for I in $(printf "%d\n" "${!_LIST_CONF[@]}" | sort -rV)
 	do
 		__LINE="${_LIST_CONF[I]:-}"
@@ -1314,11 +1315,8 @@ function fnList_mdia_Dec() {
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
-	declare       __NAME=""				# variable name
-	declare       __VALU=""				# setting value
-#	declare       __CMNT=""				# comment
 	declare       __WNAM=""				# work: variable name
-#	declare       __WVAL=""				# work: setting value
+	declare       __WVAL=""				# work: setting value
 	declare       __WORK=""				# work
 	declare       __LINE=""				# work
 	declare -i    I=0					# work
@@ -1327,21 +1325,19 @@ function fnList_mdia_Dec() {
 	do
 		__LINE="${_LIST_MDIA[I]:-}"
 		read -r -a __LIST < <(echo "${__LINE:-}")
-		__VALU="${__LIST[*]:-}"
+		__WVAL="${__LIST[*]:-}"
 		while true
 		do
-			__WNAM="${__VALU#"${__VALU%%:_[[:alnum:]]*_[[:alnum:]]*_:*}"}"
+			__WNAM="${__WVAL#"${__WVAL%%:_[[:alnum:]]*_[[:alnum:]]*_:*}"}"
 			__WNAM="${__WNAM%"${__WNAM##*:_[[:alnum:]]*_[[:alnum:]]*_:}"}"
 			__WNAM="${__WNAM%%[!:_[:alnum:]]*}"
 			__WNAM="${__WNAM#:_}"
 			__WNAM="${__WNAM%_:}"
 			[[ -z "${__WNAM:-}" ]] && break
-			__NAME="_${__WNAM}"
-			__VALU="${__VALU/":_${__WNAM}_:"/"${!__NAME}"}"
+			__WORK="_${__WNAM}"
+			__WVAL="${__WVAL/":_${__WNAM}_:"/"${!__WORK}"}"
 		done
-		_LIST_MDIA[I]="${__VALU:-}"
-#		read -r -a __LIST < <(echo "${__VALU:-}")
-#		_LIST_MDIA[I]="${__LIST[*]:-}"
+		_LIST_MDIA[I]="${__WVAL}"
 	done
 
 	# --- complete ------------------------------------------------------------
@@ -1546,7 +1542,7 @@ function fnMk_preconf_nocloud() {
 #	touch -m "${__TGET_PATH%/*}/user-data"      --reference "${__TGET_PATH}"
 	touch -m "${__TGET_PATH%/*}/vendor-data"    --reference "${__TGET_PATH}"
 	# -------------------------------------------------------------------------
-	chmod --recursive ugo-x "${__TGET_PATH%/*}"
+	chmod ugo-x "${__TGET_PATH%/*}"/*
 }
 
 # -----------------------------------------------------------------------------
@@ -1562,12 +1558,14 @@ function fnMk_preconf_kickstart() {
 	declare       __SECT=""				# "            section
 	declare -r    __ARCH="x86_64"		# base architecture
 	declare -r    __ADDR="${_SRVR_PROT:+"${_SRVR_PROT}:/"}/${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}"
+	declare       __WORK=""				# work
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
 	mkdir -p "${__TGET_PATH%/*}"
 	cp --backup "${_PATH_KICK}" "${__TGET_PATH}"
 	# -------------------------------------------------------------------------
-	__VERS="${__TGET_PATH#*_}"			# ks_(name)-(nums)_ ...: (ex: ks_fedora-42_dvd_desktop.cfg)
+	__WORK="${__TGET_PATH##*/}"			# file name
+	__VERS="${__WORK#*_}"				# ks_(name)-(nums)_ ...: (ex: ks_fedora-42_dvd_desktop.cfg)
 	__VERS="${__VERS%%_*}"				# vers="(name)-(nums)"
 	__NUMS="${__VERS##*-}"
 	__NAME="${__VERS%-*}"
@@ -1630,10 +1628,10 @@ function fnMk_preconf_kickstart() {
 			;;
 	esac
 	# --- desktop -------------------------------------------------------------
-	sed -e "/%packages/,/%end/                      {" \
-	    -e "/#@.*-desktop/,/^[^#]/ s/^#//g          }" \
-	    "${__TGET_PATH}"                               \
-	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
+	cp --backup "${__TGET_PATH}" "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
+	sed -i "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}" \
+	    -e "/%packages/,/%end/                         {" \
+	    -e "/#@.*-desktop/,/^[^#]/ s/^#//g             }"
 	case "${__NUMS}" in
 		[1-9]) ;;
 		*    )
@@ -1655,12 +1653,14 @@ function fnMk_preconf_autoyast() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare       __VERS=""				# distribution version
 	declare       __NUMS=""				# "            number
+	declare       __WORK=""				# work
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
 	mkdir -p "${__TGET_PATH%/*}"
 	cp --backup "${_PATH_YAST}" "${__TGET_PATH}"
 	# -------------------------------------------------------------------------
-	__VERS="${__TGET_PATH#*_}"			# autoinst_(name)-(nums)_ ...: (ex: autoinst_tumbleweed_net_desktop.xml)
+	__WORK="${__TGET_PATH##*/}"			# file name
+	__VERS="${__WORK#*_}"				# autoinst_(name)-(nums)_ ...: (ex: autoinst_tumbleweed_net_desktop.xml)
 	__VERS="${__VERS%%_*}"				# vers="(name)-(nums)"
 	__NUMS="${__VERS##*-}"
 	# --- by media ------------------------------------------------------------
@@ -1729,9 +1729,10 @@ function fnMk_preconf_agama() {
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
 	mkdir -p "${__TGET_PATH%/*}"
-	cp --backup "${_PATH_YAST}" "${__TGET_PATH}"
+	cp --backup "${_PATH_AGMA}" "${__TGET_PATH}"
 	# -------------------------------------------------------------------------
-	__VERS="${__TGET_PATH#*_}"			# autoinst_(name)-(nums)_ ...: (ex: autoinst_leap-16.0_desktop.json)
+	__WORK="${__TGET_PATH##*/}"			# file name
+	__VERS="${__WORK#*_}"				# autoinst_(name)-(nums)_ ...: (ex: autoinst_leap-16.0_desktop.json)
 	__VERS="${__VERS%%_*}"				# vers="(name)-(nums)"
 	__VERS="${__VERS,,}"
 	__NUMS="${__VERS##*-}"
@@ -1793,7 +1794,7 @@ function fnMk_preconf() {
 	declare       __LINE=""				# data line
 	declare -a    __LIST=()				# data list
 	declare       __PATH=""				# full path
-set -x
+
 	# --- get target ----------------------------------------------------------
 	__PTRN=""
 	set -f -- "${@:-}"
@@ -1801,7 +1802,7 @@ set -x
 	while [[ -n "${1:-}" ]]
 	do
 		case "$1" in
-			all      ) __PTRN="*"; shift; break;;
+			all      ) __PTRN="agama|autoyast|kickstart|nocloud|preseed"; shift; break;;
 			agama    ) ;;
 			autoyast ) ;;
 			kickstart) ;;
@@ -1837,20 +1838,20 @@ set -x
 				*            ) ;;
 			esac
 		done
-		IFS= mapfile -d $'\n' -t __TGET < <(IFS= printf "%s\n" "${__TGET[@]}" | grep -E "'${__PTRN}'" | sort -uV || true)
+		IFS= mapfile -d $'\n' -t __TGET < <(IFS= printf "%s\n" "${__TGET[@]}" | grep -E "${__PTRN}" | sort -uV || true)
 		for __PATH in "${__TGET[@]}"
 		do
 			case "${__PATH}" in
-				*/preseed/*  ) fnPreconf_Put_preseed   "${__PATH}";;
-				*/nocloud/*  ) fnPreconf_Put_nocloud   "${__PATH}/user-data";;
-				*/kickstart/*) fnPreconf_Put_kickstart "${__PATH}";;
-				*/autoyast/* ) fnPreconf_Put_autoyast  "${__PATH}";;
-				*/agama/*    ) fnPreconf_Put_agama     "${__PATH}";;
+				*/preseed/*  ) fnMk_preconf_preseed   "${__PATH}";;
+				*/nocloud/*  ) fnMk_preconf_nocloud   "${__PATH}/user-data";;
+				*/kickstart/*) fnMk_preconf_kickstart "${__PATH}";;
+				*/autoyast/* ) fnMk_preconf_autoyast  "${__PATH}";;
+				*/agama/*    ) fnMk_preconf_agama     "${__PATH}";;
 				*)	;;
 			esac
 		done
 	fi
-set +x
+
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
@@ -1907,6 +1908,29 @@ function fnMk_isofile() {
 # *** main section ************************************************************
 
 # -----------------------------------------------------------------------------
+# descript: help
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+function fnHelp() {
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' 1>&2 || true
+		usage: [sudo] ${_PROG_PATH:-"$0"} (options) [command]
+		  commands:
+		    -h|--help   : this message output
+		    -l|--link   : making directories and symbolic links
+		    -c|--conf   : making preconfiguration files
+		    -p|--pxe    : making pxeboot menu
+		    -m|--make   : making iso files
+		    -P|--DBGP   : debug output for internal global variables
+		    -T|--TREE   : debug output in a directory tree-like format
+		  options:
+		    -D|--debug   |--dbg     : debug output with code
+		    -O|--debugout|--dbgout  : debug output without code
+_EOT_
+	exit 0
+}
+
+# -----------------------------------------------------------------------------
 # descript: main routine
 #   input :            : unused
 #   output:   stdout   : message
@@ -1937,6 +1961,8 @@ function fnMain() {
 			-c|--conf) fnMk_preconf "__RSLT" "${__OPTN[@]:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
 			-p|--pxe ) fnMk_pxeboot "__RSLT" "${__OPTN[@]:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
 			-m|--make) fnMk_isofile "__RSLT" "${__OPTN[@]:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
+			-P|--DBGP) fnDbgparameters_all; break;;
+			-T|--TREE) tree --charset C -x -a --filesfirst "${_DIRS_TOPS:-}"; break;;
 			*        ) ;;
 		esac
 		set -f -- "${__OPTN[@]}"
@@ -1952,14 +1978,8 @@ function fnMain() {
 	fnDbgparameters
 }
 
-	declare -i    __time_start=0
-	declare -i    __time_end=0
-	declare -i    __time_elapsed=0
-
-	# --- start ---------------------------------------------------------------
-	__time_start=$(date +%s)
-	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
-
+	# --- help / debug --------------------------------------------------------
+	[[ -z "${_PROG_PARM[*]:-}" ]] && fnHelp
 	set -f -- "${_PROG_PARM[@]:-}"
 	set +f
 	while [[ -n "${1:-}" ]]
@@ -1968,7 +1988,7 @@ function fnMain() {
 		shift
 		__OPTN=("${@:-}")
 		case "${__PROC:-}" in
-			-h|--help             ) fnHelp; break;;
+			-h|--help             ) fnHelp;;
 			-D|--debug   |--dbg   ) _DBGS_FLAG="true"; set -x;;
 			-O|--debugout|--dbgout) _DBGS_FLAG="true";;
 			*                     ) ;;
@@ -1987,6 +2007,14 @@ function fnMain() {
 		fnDbgout "command line" \
 			"debug,_COMD_LINE=[${_COMD_LINE:-}]"
 	fi
+
+	# --- start ---------------------------------------------------------------
+	declare -i    __time_start=0
+	declare -i    __time_end=0
+	declare -i    __time_elapsed=0
+
+	__time_start=$(date +%s)
+	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
 
 	# --- main processing -----------------------------------------------------
 	fnMain

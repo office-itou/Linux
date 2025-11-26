@@ -42,10 +42,12 @@
 	readonly _PROG_NAME="${_PROG_PATH##*/}"
 #	readonly _PROG_PROC="${_PROG_NAME}.$$"
 
-	readonly _SHEL_TOPS="${_PROG_DIRS:?}"
-	readonly _SHEL_COMN="${_PROG_DIRS:?}/../_common_sh"
+	readonly _SHEL_PATH="${0:?}"
+	readonly _SHEL_TOPS="${_SHEL_PATH%/*}"/..
+	readonly _SHEL_COMN="${_SHEL_TOPS:-}/_common_sh"
+	readonly _SHEL_COMD="${_SHEL_TOPS:-}/autoinst_cmd"
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS:?}"/fnGlobal_variables.sh				# global variables (for basic)
+	. "${_SHEL_COMD:?}"/fnGlobal_variables.sh				# global variables (for basic)
 
 # *** function section (common functions) *************************************
 
@@ -65,78 +67,78 @@
 	. "${_SHEL_COMN}"/fnIPv4Netmask.sh						# IPv4 netmask conversion
 
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnDbgout.sh							# message output (debug out)
+	. "${_SHEL_COMD}"/fnDbgout.sh							# message output (debug out)
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnDbgdump.sh							# dump output (debug out)
+	. "${_SHEL_COMD}"/fnDbgdump.sh							# dump output (debug out)
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnDbgparam.sh							# parameter debug output
+	. "${_SHEL_COMD}"/fnDbgparam.sh							# parameter debug output
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnFind_command.sh						# find command
+	. "${_SHEL_COMD}"/fnFind_command.sh						# find command
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnFind_service.sh						# find service
+	. "${_SHEL_COMD}"/fnFind_service.sh						# find service
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSystem_param.sh						# get system parameter
+	. "${_SHEL_COMD}"/fnSystem_param.sh						# get system parameter
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnNetwork_param.sh					# get network parameter
+	. "${_SHEL_COMD}"/fnNetwork_param.sh					# get network parameter
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnFile_backup.sh						# file backup
+	. "${_SHEL_COMD}"/fnFile_backup.sh						# file backup
 
 # *** function section (subroutine functions) *********************************
 
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnInitialize.sh						# initialize
+	. "${_SHEL_COMD}"/fnInitialize.sh						# initialize
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnPackage_update.sh					# package updates
+	. "${_SHEL_COMD}"/fnPackage_update.sh					# package updates
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnMkdir_share.sh						# creating a shared directory
+	. "${_SHEL_COMD}"/fnMkdir_share.sh						# creating a shared directory
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_connman.sh					# connman
+	. "${_SHEL_COMD}"/fnSetup_connman.sh					# connman
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_netplan.sh					# netplan
+	. "${_SHEL_COMD}"/fnSetup_netplan.sh					# netplan
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_netman.sh						# network manager
+	. "${_SHEL_COMD}"/fnSetup_netman.sh						# network manager
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_hostname.sh					# hostname
+	. "${_SHEL_COMD}"/fnSetup_hostname.sh					# hostname
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_hosts.sh						# hosts
+	. "${_SHEL_COMD}"/fnSetup_hosts.sh						# hosts
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_firewalld.sh					# firewalld
+	. "${_SHEL_COMD}"/fnSetup_firewalld.sh					# firewalld
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_dnsmasq.sh					# dnsmasq
+	. "${_SHEL_COMD}"/fnSetup_dnsmasq.sh					# dnsmasq
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_resolv.sh						# resolv.conf
+	. "${_SHEL_COMD}"/fnSetup_resolv.sh						# resolv.conf
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_apache.sh						# apache
+	. "${_SHEL_COMD}"/fnSetup_apache.sh						# apache
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_samba.sh						# samba
+	. "${_SHEL_COMD}"/fnSetup_samba.sh						# samba
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_timesyncd.sh					# timesyncd
+	. "${_SHEL_COMD}"/fnSetup_timesyncd.sh					# timesyncd
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_chronyd.sh					# chronyd
+	. "${_SHEL_COMD}"/fnSetup_chronyd.sh					# chronyd
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_ssh.sh						# openssh-server
+	. "${_SHEL_COMD}"/fnSetup_ssh.sh						# openssh-server
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_vmware.sh						# vmware shared directory
+	. "${_SHEL_COMD}"/fnSetup_vmware.sh						# vmware shared directory
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_wireplumber.sh				# wireplumber
+	. "${_SHEL_COMD}"/fnSetup_wireplumber.sh				# wireplumber
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_skel.sh						# skeleton
+	. "${_SHEL_COMD}"/fnSetup_skel.sh						# skeleton
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_sudo.sh						# sudoers
+	. "${_SHEL_COMD}"/fnSetup_sudo.sh						# sudoers
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_blacklist.sh					# blacklist
+	. "${_SHEL_COMD}"/fnSetup_blacklist.sh					# blacklist
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetupModule_ipxe.sh					# ipxe module
+	. "${_SHEL_COMD}"/fnSetupModule_ipxe.sh					# ipxe module
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_apparmor.sh					# apparmor
+	. "${_SHEL_COMD}"/fnSetup_apparmor.sh					# apparmor
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_selinux.sh					# selinux
+	. "${_SHEL_COMD}"/fnSetup_selinux.sh					# selinux
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_ipfilter.sh					# ipfilter
+	. "${_SHEL_COMD}"/fnSetup_ipfilter.sh					# ipfilter
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_service.sh					# service
+	. "${_SHEL_COMD}"/fnSetup_service.sh					# service
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fnSetup_grub_menu.sh					# grub menu settings
+	. "${_SHEL_COMD}"/fnSetup_grub_menu.sh					# grub menu settings
 
 # *** main section ************************************************************
 
@@ -202,7 +204,7 @@ fnMain() {
 	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
 
 	# shellcheck source=/dev/null
-	. "${_SHEL_TOPS}"/fncmdline.sh		# command line
+	. "${_SHEL_COMD}"/fncmdline.sh		# command line
 
 	# --- debug output redirection --------------------------------------------
 	if set -o | grep "^xtrace\s*on$"; then

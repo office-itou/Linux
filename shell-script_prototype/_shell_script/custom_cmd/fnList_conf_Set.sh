@@ -100,7 +100,7 @@ function fnList_conf_Set() {
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	__WORK="$(date +"%Y/%m/%d %H:%M:%S")"
-	_LIST_CONF=("$(cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+	IFS= mapfile -d $'\n' -t _LIST_CONF < <(cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		###############################################################################
 		#
 		#   common configuration file
@@ -220,15 +220,15 @@ function fnList_conf_Set() {
 		# === for mkosi ===============================================================
 
 		# --- mkosi output image format type ------------------------------------------
-		$(printf "%-39s %s" "TGET_MDIA=\"${_MKOS_TGET:-"directory"}\"" "# format type (directory, tar, cpio, disk, uki, esp, oci, sysext, confext, portable, addon, none)")
+		$(printf "%-39s %s" "MKOS_TGET=\"${_MKOS_TGET:-"directory"}\"" "# format type (directory, tar, cpio, disk, uki, esp, oci, sysext, confext, portable, addon, none)")
 
 		# --- live media parameter ----------------------------------------------------
-		$(printf "%-39s %s" "DIRS_LIVE=\"${_LIVE_DIRS:-"LiveOS"}\""       "# live / LiveOS"                     )
-		$(printf "%-39s %s" "FILE_LIVE=\"${_LIVE_SQFS:-"squashfs.img"}\"" "# filesystem.squashfs / squashfs.img")
+		$(printf "%-39s %s" "LIVE_DIRS=\"${_LIVE_DIRS:-"LiveOS"}\""       "# live / LiveOS"                     )
+		$(printf "%-39s %s" "LIVE_SQFS=\"${_LIVE_SQFS:-"squashfs.img"}\"" "# filesystem.squashfs / squashfs.img")
 
 		### eof #######################################################################
 _EOT_
-	)")
+	)
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"

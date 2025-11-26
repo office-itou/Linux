@@ -86,10 +86,10 @@ function fnMk_preconf_kickstart() {
 			;;
 	esac
 	# --- desktop -------------------------------------------------------------
-	sed -e "/%packages/,/%end/                      {" \
-	    -e "/#@.*-desktop/,/^[^#]/ s/^#//g          }" \
-	    "${__TGET_PATH}"                               \
-	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
+	cp --backup "${__TGET_PATH}" "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
+	sed -i "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}" \
+	    -e "/%packages/,/%end/                         {" \
+	    -e "/#@.*-desktop/,/^[^#]/ s/^#//g             }"
 	case "${__NUMS}" in
 		[1-9]) ;;
 		*    )

@@ -242,7 +242,7 @@ fnIPv6FullAddr() {
 			gsub("::",sep,str)
 			split(str,arr,":")
 			for (i=0;i<length(arr);i++) {
-				num[i]="0x"arr[i]
+				num[i]=strtonum("0x"arr[i])
 			}
 			printf "'"${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}"'",
 				num[1],num[2],num[3],num[4],num[5],num[6],num[7],num[8]
@@ -318,7 +318,6 @@ fnDbgout() {
 	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
 }
 
-#	. "${_SHEL_TOPS}"/fnDbgdump.sh							# dump output (debug out)
 # -----------------------------------------------------------------------------
 # descript: parameter debug output
 #   input :            : unused
@@ -459,7 +458,6 @@ fnFind_command() {
 	find "${_DIRS_TGET:-}"/bin/ "${_DIRS_TGET:-}"/sbin/ "${_DIRS_TGET:-}"/usr/bin/ "${_DIRS_TGET:-}"/usr/sbin/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \)
 }
 
-#	. "${_SHEL_TOPS}"/fnFind_service.sh						# find service
 # -----------------------------------------------------------------------------
 # descript: get system parameter
 #   input :            : unused
@@ -496,11 +494,9 @@ fnNetwork_param() {
 		fnMsgout "${_PROG_NAME:-}" "caution" "not exist: [${___DIRS}]"
 	else
 		if [ -z "${_NICS_NAME#*"*"}" ]; then
-#			_NICS_NAME="$(find "${___DIRS}" -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -E "${_NICS_NAME}" | sort | head -n 1)"
-			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | sort | head -n 1)"
+			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | sort -V | head -n 1)"
 			_NICS_NAME="${_NICS_NAME##*/}"
 		fi
-#		if ! find "${___DIRS}" -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -qE '^'"${_NICS_NAME}"'$'; then
 		if ! find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | grep -q "${_NICS_NAME}"; then
 			fnMsgout "${_PROG_NAME:-}" "failed" "not exist: [${_NICS_NAME}]"
 		else
@@ -510,7 +506,7 @@ fnNetwork_param() {
 				_NICS_AUTO="dhcp"
 			fi
 			if [ -z "${_NICS_DNS4:-}" ] || [ -z "${_NICS_WGRP:-}" ]; then
-				__PATH="$(fnFind_command 'resolvectl' | sort | head -n 1)"
+				__PATH="$(fnFind_command 'resolvectl' | sort -V | head -n 1)"
 				if [ -n "${__PATH:-}" ]; then
 					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/^Global:/            s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
 					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
@@ -626,7 +622,7 @@ fnFile_backup() {
 	___BACK="${___DIRS}/${___BACK#/}"
 	mkdir -p "${___BACK%/*}"
 	chmod 600 "${___DIRS%/*}"
-	if [ -e "${___BACK}" ] || [ -L "${___BACK}" ]; then
+	if [ -e "${___BACK}" ] || [ -h "${___BACK}" ]; then
 		___BACK="${___BACK}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
 	fi
 	fnMsgout "${_PROG_NAME:-}" "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
@@ -727,7 +723,7 @@ fnInitialize() {
 	readonly _DIRS_LOGS="${_DIRS_BACK}/logs"	# log file directory
 	mkdir -p "${_DIRS_TGET:-}${_DIRS_INST%.*}/"
 	chmod 600 "${_DIRS_TGET:-}${_DIRS_VADM:?}"
-	find "${_DIRS_TGET:-}${_DIRS_VADM:?}" -name "${_PROG_NAME%%_*}.[0-9]*" -type d | sort -r | tail -n +3 | \
+	find "${_DIRS_TGET:-}${_DIRS_VADM:?}" -name "${_PROG_NAME%%_*}.[0-9]*" -type d | sort -rV | tail -n +3 | \
 	while read -r __TGET
 	do
 		__PATH="${__TGET}.tgz"
@@ -741,7 +737,7 @@ fnInitialize() {
 	mkdir -p "${_DIRS_TGET:-}${_DIRS_INST:?}"
 	chmod 600 "${_DIRS_TGET:-}${_DIRS_INST:?}"
 	# --- samba ---------------------------------------------------------------
-	_SHEL_NLIN="$(fnFind_command 'nologin' | sort -r | head -n 1)"
+	_SHEL_NLIN="$(fnFind_command 'nologin' | sort -rV | head -n 1)"
 	_SHEL_NLIN="${_SHEL_NLIN#*"${_DIRS_TGET:-}"}"
 	_SHEL_NLIN="${_SHEL_NLIN:-"$(if [ -e /usr/sbin/nologin ]; then echo "/usr/sbin/nologin"; fi)"}"
 	_SHEL_NLIN="${_SHEL_NLIN:-"$(if [ -e /sbin/nologin     ]; then echo "/sbin/nologin"; fi)"}"
