@@ -8,7 +8,13 @@
 #   g-var :            : unused
 # shellcheck disable=SC2148,SC2317,SC2329
 fnTargetsys() {
-	___VIRT="$(systemd-detect-virt)"
-	___CNTR="$(systemctl is-system-running)"
+	___VIRT=""
+	___CNTR=""
+	if command -v systemctl > /dev/null 2>&1; then
+		___VIRT="$(systemd-detect-virt || true)"
+		___CNTR="$(systemctl is-system-running || true)"
+	fi
 	printf "%s,%s" "${___VIRT:-}" "${___CNTR:-}"
+	unset ___VIRT
+	unset ___CNTR
 }

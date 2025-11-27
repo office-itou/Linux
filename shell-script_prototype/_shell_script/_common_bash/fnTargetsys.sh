@@ -10,7 +10,11 @@
 function fnTargetsys() {
 	declare       ___VIRT=""
 	declare       ___CNTR=""
-	___VIRT="$(systemd-detect-virt)"
-	___CNTR="$(systemctl is-system-running)"
+	if command -v systemctl > /dev/null 2>&1; then
+		___VIRT="$(systemd-detect-virt || true)"
+		___CNTR="$(systemctl is-system-running || true)"
+	fi
 	printf "%s,%s" "${___VIRT:-}" "${___CNTR:-}"
+	unset ___VIRT
+	unset ___CNTR
 }

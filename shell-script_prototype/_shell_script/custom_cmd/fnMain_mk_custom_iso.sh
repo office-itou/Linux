@@ -29,7 +29,7 @@ function fnMain() {
 		shift
 		__OPTN=("${@:-}")
 		case "${__PROC:-}" in
-			-h|--help) fnHelp; break;;
+			-h|--help) fnHelp;;
 			-l|--link) fnMk_symlink "__RSLT" "${__OPTN[@]:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
 			-c|--conf) fnMk_preconf "__RSLT" "${__OPTN[@]:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
 			-p|--pxe ) fnMk_pxeboot "__RSLT" "${__OPTN[@]:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;

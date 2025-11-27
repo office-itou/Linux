@@ -12,4 +12,6 @@ function fnStrmsg() {
 	declare -r   ___TXT1="$(echo "${1:-}" | cut -c -3)"
 	declare -r   ___TXT2="$(echo "${1:-}" | cut -c "$((${#___TXT1}+2+${#2}+1))"-)"
 	printf "%s %s %s" "${___TXT1}" "${2:-}" "${___TXT2}"
+	unset ___TXT1
+	unset ___TXT2
 }

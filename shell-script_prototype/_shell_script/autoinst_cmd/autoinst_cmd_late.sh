@@ -208,6 +208,8 @@ fnStrmsg() {
 	___TXT1="$(echo "${1:-}" | cut -c -3)"
 	___TXT2="$(echo "${1:-}" | cut -c "$((${#___TXT1}+2+${#2}+1))"-)"
 	printf "%s %s %s" "${___TXT1}" "${2:-}" "${___TXT2}"
+	unset ___TXT1
+	unset ___TXT2
 }
 
 # -----------------------------------------------------------------------------
@@ -216,9 +218,15 @@ fnStrmsg() {
 #   output:   stdout   : result
 #   return:            : unused
 fnTargetsys() {
-	___VIRT="$(systemd-detect-virt)"
-	___CNTR="$(systemctl is-system-running)"
+	___VIRT=""
+	___CNTR=""
+	if command -v systemctl > /dev/null 2>&1; then
+		___VIRT="$(systemd-detect-virt || true)"
+		___CNTR="$(systemctl is-system-running || true)"
+	fi
 	printf "%s,%s" "${___VIRT:-}" "${___CNTR:-}"
+	unset ___VIRT
+	unset ___CNTR
 }
 
 # -----------------------------------------------------------------------------
@@ -227,6 +235,7 @@ fnTargetsys() {
 #   input :     $2     : format (not empty: zero padding)
 #   output:   stdout   : output
 #   return:            : unused
+# https://www.gnu.org/software/gawk/manual/html_node/Strtonum-Function.html
 fnIPv6FullAddr() {
 	___ADDR="${1:?}"
 	___FMAT="${2:+"%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x"}"
@@ -242,7 +251,17 @@ fnIPv6FullAddr() {
 			gsub("::",sep,str)
 			split(str,arr,":")
 			for (i=0;i<length(arr);i++) {
-				num[i]=strtonum("0x"arr[i])
+				str="0x"arr[i]
+				str=substr(str,3)
+				n=length(str)
+				ret=0
+				for (j=1;j<=n;j++){
+					c=substr(str,j,1)
+					c=tolower(c)
+					k=index("123456789abcdef",c)
+					ret=ret*16+k
+				}
+				num[i]=ret
 			}
 			printf "'"${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}"'",
 				num[1],num[2],num[3],num[4],num[5],num[6],num[7],num[8]
@@ -473,7 +492,7 @@ fnDbgparam() {
 #   return:            : unused
 # --- file backup -------------------------------------------------------------
 fnFind_command() {
-	find "${_DIRS_TGET:-}"/bin/ "${_DIRS_TGET:-}"/sbin/ "${_DIRS_TGET:-}"/usr/bin/ "${_DIRS_TGET:-}"/usr/sbin/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \)
+	find "${_DIRS_TGET:-}"/bin/ "${_DIRS_TGET:-}"/sbin/ "${_DIRS_TGET:-}"/usr/bin/ "${_DIRS_TGET:-}"/usr/sbin/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \) 2> /dev/null || true
 }
 
 # -----------------------------------------------------------------------------
@@ -483,7 +502,7 @@ fnFind_command() {
 #   return:            : unused
 # --- file backup -------------------------------------------------------------
 fnFind_serivce() {
-	find "${_DIRS_TGET:-}"/lib/systemd/system/ "${_DIRS_TGET:-}"/usr/lib/systemd/system/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \)
+	find "${_DIRS_TGET:-}"/lib/systemd/system/ "${_DIRS_TGET:-}"/usr/lib/systemd/system/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \) 2> /dev/null || true
 }
 
 # -----------------------------------------------------------------------------
@@ -687,7 +706,8 @@ fnInitialize() {
 	readonly _TEXT_GAP1
 	readonly _TEXT_GAP2
 
-	if realpath "$(command -v cp || true)" | grep 'busybox'; then
+	if realpath "$(command -v cp 2> /dev/null || true)" | grep -q 'busybox'; then
+		fnMsgout "${_PROG_NAME:-}" "info" "busybox"
 		_COMD_BBOX="true"
 		_OPTN_COPY="-p"
 	fi

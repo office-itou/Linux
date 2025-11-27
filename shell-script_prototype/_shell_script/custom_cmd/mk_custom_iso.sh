@@ -301,6 +301,8 @@ function fnStrmsg() {
 	declare -r   ___TXT1="$(echo "${1:-}" | cut -c -3)"
 	declare -r   ___TXT2="$(echo "${1:-}" | cut -c "$((${#___TXT1}+2+${#2}+1))"-)"
 	printf "%s %s %s" "${___TXT1}" "${2:-}" "${___TXT2}"
+	unset ___TXT1
+	unset ___TXT2
 }
 
 # -----------------------------------------------------------------------------
@@ -311,9 +313,13 @@ function fnStrmsg() {
 function fnTargetsys() {
 	declare       ___VIRT=""
 	declare       ___CNTR=""
-	___VIRT="$(systemd-detect-virt)"
-	___CNTR="$(systemctl is-system-running)"
+	if command -v systemctl > /dev/null 2>&1; then
+		___VIRT="$(systemd-detect-virt)"
+		___CNTR="$(systemctl is-system-running)"
+	fi
 	printf "%s,%s" "${___VIRT:-}" "${___CNTR:-}"
+	unset ___VIRT
+	unset ___CNTR
 }
 
 # -----------------------------------------------------------------------------
@@ -326,7 +332,7 @@ function fnIPv6FullAddr() {
 	declare -r    ___ADDR="${1:?}"
 	declare -r    ___FMAT="${2:+"%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x"}"
 	echo "${___ADDR}" |
-		awk -F / '{
+		awk -F '/' '{
 			str=$1
 			gsub("[^:]","",str)
 			sep=""
@@ -337,7 +343,17 @@ function fnIPv6FullAddr() {
 			gsub("::",sep,str)
 			split(str,arr,":")
 			for (i=0;i<length(arr);i++) {
-				num[i]=strtonum("0x"arr[i])
+				str="0x"arr[i]
+				str=substr(str,3)
+				n=length(str)
+				ret=0
+				for (j=1;j<=n;j++){
+					c=substr(str,j,1)
+					c=tolower(c)
+					k=index("123456789abcdef",c)
+					ret=ret*16+k
+				}
+				num[i]=ret
 			}
 			printf "'"${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}"'",
 				num[1],num[2],num[3],num[4],num[5],num[6],num[7],num[8]
@@ -1956,7 +1972,7 @@ function fnMain() {
 		shift
 		__OPTN=("${@:-}")
 		case "${__PROC:-}" in
-			-h|--help) fnHelp; break;;
+			-h|--help) fnHelp;;
 			-l|--link) fnMk_symlink "__RSLT" "${__OPTN[@]:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
 			-c|--conf) fnMk_preconf "__RSLT" "${__OPTN[@]:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
 			-p|--pxe ) fnMk_pxeboot "__RSLT" "${__OPTN[@]:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;

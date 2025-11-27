@@ -7,6 +7,7 @@
 #   output:   stdout   : output
 #   return:            : unused
 #   g-var :            : unused
+# https://www.gnu.org/software/gawk/manual/html_node/Strtonum-Function.html
 # shellcheck disable=SC2148,SC2317,SC2329
 fnIPv6FullAddr() {
 	___ADDR="${1:?}"
@@ -23,7 +24,17 @@ fnIPv6FullAddr() {
 			gsub("::",sep,str)
 			split(str,arr,":")
 			for (i=0;i<length(arr);i++) {
-				num[i]=strtonum("0x"arr[i])
+				str="0x"arr[i]
+				str=substr(str,3)
+				n=length(str)
+				ret=0
+				for (j=1;j<=n;j++){
+					c=substr(str,j,1)
+					c=tolower(c)
+					k=index("123456789abcdef",c)
+					ret=ret*16+k
+				}
+				num[i]=ret
 			}
 			printf "'"${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}"'",
 				num[1],num[2],num[3],num[4],num[5],num[6],num[7],num[8]

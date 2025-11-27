@@ -47,6 +47,7 @@ function fnInitialize() {
 	readonly _TEXT_GAP2
 
 	if realpath "$(command -v cp 2> /dev/null || true)" | grep -q 'busybox'; then
+		fnMsgout "${_PROG_NAME:-}" "info" "busybox"
 		_COMD_BBOX="true"
 		_OPTN_COPY="-p"
 	fi
