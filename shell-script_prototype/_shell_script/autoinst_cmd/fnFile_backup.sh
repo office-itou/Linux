@@ -40,4 +40,5 @@ fnFile_backup() {
 	fi
 	fnMsgout "${_PROG_NAME:-}" "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
 	cp --archive "${___PATH}" "${___BACK}"
+	unset ___PATH ___MODE ___REAL ___DIRS ___BACK
 }

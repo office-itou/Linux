@@ -36,7 +36,9 @@ fnClean_device() {
 	if mount | grep -q '/media'; then
 		umount /media || umount -l /media || true
 	fi
+	unset __DEVS __PATH __LINE __NAME
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }

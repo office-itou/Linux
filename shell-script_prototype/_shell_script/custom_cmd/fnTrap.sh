@@ -47,8 +47,10 @@ function fnTrap() {
 			*) ;;
 		esac
 	done
+	unset __PATH __MPNT I
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	fnDbgparameters
+#	unset __FUNC_NAME
 }

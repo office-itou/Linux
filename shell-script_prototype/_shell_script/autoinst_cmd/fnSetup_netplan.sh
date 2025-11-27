@@ -89,7 +89,9 @@ _EOT_
 			fnMsgout "${_PROG_NAME:-}" "failed" "netplan apply"
 		fi
 	fi
+	unset __PATH
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }

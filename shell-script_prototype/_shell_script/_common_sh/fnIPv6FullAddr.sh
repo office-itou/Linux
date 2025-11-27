@@ -39,4 +39,5 @@ fnIPv6FullAddr() {
 			printf "'"${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}"'",
 				num[1],num[2],num[3],num[4],num[5],num[6],num[7],num[8]
 		}'
+	unset ___ADDR ___FMAT
 }

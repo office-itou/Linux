@@ -31,7 +31,7 @@ function fnMk_preconf() {
 	while [[ -n "${1:-}" ]]
 	do
 		case "$1" in
-			all      ) __PTRN="agama|autoyast|kickstart|nocloud|preseed"; shift; break;;
+			a|all    ) __PTRN="agama|autoyast|kickstart|nocloud|preseed"; shift; break;;
 			agama    ) ;;
 			autoyast ) ;;
 			kickstart) ;;
@@ -80,10 +80,12 @@ function fnMk_preconf() {
 			esac
 		done
 	fi
+	unset __NAME_REFR __OPTN __PTRN __TGET __LINE __LIST __PATH
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 	fnDbgparameters
+#	unset __FUNC_NAME
 }

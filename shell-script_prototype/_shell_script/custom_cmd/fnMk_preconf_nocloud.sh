@@ -30,4 +30,5 @@ function fnMk_preconf_nocloud() {
 	touch -m "${__TGET_PATH%/*}/vendor-data"    --reference "${__TGET_PATH}"
 	# -------------------------------------------------------------------------
 	chmod ugo-x "${__TGET_PATH%/*}"/*
+#	unset __TGET_PATH
 }

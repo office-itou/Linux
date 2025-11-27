@@ -23,4 +23,6 @@ fnDbgout() {
 		shift
 	done
 	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
+	unset ___STRT
+	unset ___ENDS
 }

@@ -220,4 +220,5 @@ function fnDbgparam() {
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+#	unset __FUNC_NAME
 }

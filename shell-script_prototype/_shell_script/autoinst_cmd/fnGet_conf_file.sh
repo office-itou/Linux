@@ -95,6 +95,7 @@ fnGet_conf_file() {
 		fi
 		fnMsgout "${_PROG_NAME:-}" "success" "${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}"
 	done
+	unset __LINE __PATH __DIRS
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 

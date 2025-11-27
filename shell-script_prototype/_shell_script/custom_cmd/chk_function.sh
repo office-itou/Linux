@@ -300,8 +300,10 @@ function fnString() {
 #   output:   stdout   : output
 #   return:            : unused
 function fnStrmsg() {
-	declare -r   ___TXT1="$(echo "${1:-}" | cut -c -3)"
-	declare -r   ___TXT2="$(echo "${1:-}" | cut -c "$((${#___TXT1}+2+${#2}+1))"-)"
+	declare      ___TXT1=""
+	declare      ___TXT2=""
+	___TXT1="$(echo "${1:-}" | cut -c -3)"
+	___TXT2="$(echo "${1:-}" | cut -c "$((${#___TXT1}+2+${#2}+1))"-)"
 	printf "%s %s %s" "${___TXT1}" "${2:-}" "${___TXT2}"
 	unset ___TXT1
 	unset ___TXT2
@@ -316,8 +318,8 @@ function fnTargetsys() {
 	declare       ___VIRT=""
 	declare       ___CNTR=""
 	if command -v systemctl > /dev/null 2>&1; then
-		___VIRT="$(systemd-detect-virt)"
-		___CNTR="$(systemctl is-system-running)"
+		___VIRT="$(systemd-detect-virt || true)"
+		___CNTR="$(systemctl is-system-running || true)"
 	fi
 	printf "%s,%s" "${___VIRT:-}" "${___CNTR:-}"
 	unset ___VIRT
@@ -330,9 +332,10 @@ function fnTargetsys() {
 #   input :     $2     : format (not empty: zero padding)
 #   output:   stdout   : output
 #   return:            : unused
+# https://www.gnu.org/software/gawk/manual/html_node/Strtonum-Function.html
 function fnIPv6FullAddr() {
-	declare -r    ___ADDR="${1:?}"
-	declare -r    ___FMAT="${2:+"%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x"}"
+	declare       ___ADDR="${1:?}"
+	declare       ___FMAT="${2:+"%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x"}"
 	echo "${___ADDR}" |
 		awk -F '/' '{
 			str=$1
@@ -360,6 +363,7 @@ function fnIPv6FullAddr() {
 			printf "'"${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}"'",
 				num[1],num[2],num[3],num[4],num[5],num[6],num[7],num[8]
 		}'
+	unset ___ADDR ___FMAT
 }
 
 # -----------------------------------------------------------------------------
@@ -417,8 +421,10 @@ function fnIPv4Netmask() {
 #   output:   stdout   : message
 #   return:            : unused
 function fnDbgout() {
-	declare -r    ___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${1:-}")"
-	declare -r    ___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${1:-}")"
+	declare       ___STRT=""
+	declare       ___ENDS=""
+	___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${1:-}")"
+	___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${1:-}")"
 	shift
 	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___STRT}"
 	while [[ -n "${1:-}" ]]
@@ -429,6 +435,8 @@ function fnDbgout() {
 		shift
 	done
 	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
+	unset ___STRT
+	unset ___ENDS
 }
 
 # -----------------------------------------------------------------------------
@@ -442,11 +450,15 @@ function fnDbgdump() {
 		fnMsgout "${_PROG_NAME:-}" "failed" "not exist: [${1:-}]"
 		return
 	fi
-	declare -r    ___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${1:-}")"
-	declare -r    ___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${1:-}")"
+	declare       ___STRT=""
+	declare       ___ENDS=""
+	___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${1:-}")"
+	___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${1:-}")"
 	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___STRT}"
 	cat "${1:-}"
 	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
+	unset ___STRT
+	unset ___ENDS
 }
 
 # -----------------------------------------------------------------------------
@@ -577,6 +589,7 @@ function fnDbgparam() {
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+#	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -601,6 +614,7 @@ function fnDbgparameters() {
 		__VALU="${!__NAME:-}"
 		printf "${FUNCNAME[1]}: %s=[%s]\n" "${__NAME}" "${__VALU/#\'\'/}"
 	done
+#	unset __NAME __VALU
 }
 
 # -----------------------------------------------------------------------------
@@ -620,9 +634,11 @@ function fnDbgparameters_all() {
 	do
 		[[ -n "${__NAME:-}" ]] && declare -p "${__NAME}"
 	done
+	unset __NAME
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+#	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -631,7 +647,7 @@ function fnDbgparameters_all() {
 #   output:   stdout   : output
 #   return:            : unused
 function fnFind_command() {
-	find "${_DIRS_TGET:-}"/bin/ "${_DIRS_TGET:-}"/sbin/ "${_DIRS_TGET:-}"/usr/bin/ "${_DIRS_TGET:-}"/usr/sbin/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \)
+	find "${_DIRS_TGET:-}"/bin/ "${_DIRS_TGET:-}"/sbin/ "${_DIRS_TGET:-}"/usr/bin/ "${_DIRS_TGET:-}"/usr/sbin/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \) 2> /dev/null || true
 }
 
 # -----------------------------------------------------------------------------
@@ -641,7 +657,7 @@ function fnFind_command() {
 #   return:            : unused
 # --- file backup -------------------------------------------------------------
 function fnFind_serivce() {
-	find "${_DIRS_TGET:-}"/lib/systemd/system/ "${_DIRS_TGET:-}"/usr/lib/systemd/system/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \)
+	find "${_DIRS_TGET:-}"/lib/systemd/system/ "${_DIRS_TGET:-}"/usr/lib/systemd/system/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \) 2> /dev/null || true
 }
 
 # -----------------------------------------------------------------------------
@@ -667,6 +683,7 @@ function fnSystem_param() {
 	readonly _DIST_NAME
 	readonly _DIST_CODE
 	readonly _DIST_VERS
+	unset ___PATH
 }
 
 # -----------------------------------------------------------------------------
@@ -675,10 +692,11 @@ function fnSystem_param() {
 #   output:   stdout   : message
 #   return:            : unused
 function fnNetwork_param() {
-	declare -r    ___DIRS="${_DIRS_TGET:-}/sys/devices"
-	declare       ___WORK=""
-	declare       ___PATH=""
+	declare       ___PATH=""			# full path
+	declare       ___DIRS=""			# directory
+	declare       ___WORK=""			# work
 	_NICS_NAME="${_NICS_NAME:-"ens160"}"
+	___DIRS="${_DIRS_TGET:-}/sys/devices"
 	if [[ ! -e "${___DIRS}"/. ]]; then
 		fnMsgout "caution" "not exist: [${___DIRS}]"
 	else
@@ -749,6 +767,7 @@ function fnNetwork_param() {
 	_LINK_UADR="$(echo "${_LINK_FADR:-}" | cut -d ':' -f 1-4 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
 	_LINK_LADR="$(echo "${_LINK_FADR:-}" | cut -d ':' -f 5-8 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
 	_LINK_RADR="$(fnIPv6RevAddr "${_LINK_FADR:-}")"
+	unset ___DIRS ___PATH ___WORK
 }
 
 # -----------------------------------------------------------------------------
@@ -758,37 +777,38 @@ function fnNetwork_param() {
 #   return:            : unused
 # --- file backup -------------------------------------------------------------
 function fnFile_backup() {
-	declare -r    ___PATH="${1:?}"
-	declare -r    ___MODE="${2:-}"
+	declare -r    __TGET_PATH="${1:?}"
+	declare -r    __BKUP_MODE="${2:-}"
 	declare       ___REAL=""
 	declare       ___DIRS=""
 	declare       ___BACK=""
 	# --- check ---------------------------------------------------------------
-	if [[ ! -e "${___PATH}" ]]; then
-		fnMsgout "caution" "not exist: [${___PATH}]"
-		mkdir -p "${___PATH%/*}"
-		___REAL="$(realpath --canonicalize-missing "${___PATH}")"
+	if [[ ! -e "${__TGET_PATH}" ]]; then
+		fnMsgout "caution" "not exist: [${__TGET_PATH}]"
+		mkdir -p "${__TGET_PATH%/*}"
+		___REAL="$(realpath --canonicalize-missing "${__TGET_PATH}")"
 		if [[ ! -e "${___REAL}" ]]; then
 			mkdir -p "${___REAL%/*}"
 		fi
-		: > "${___PATH}"
+		: > "${__TGET_PATH}"
 	fi
 	# --- backup --------------------------------------------------------------
-	case "${___MODE:-}" in
+	case "${__BKUP_MODE:-}" in
 		samp) ___DIRS="${_DIRS_SAMP:-}";;
 		init) ___DIRS="${_DIRS_INIT:-}";;
 		*   ) ___DIRS="${_DIRS_ORIG:-}";;
 	esac
 	___DIRS="${_DIRS_TGET:-}${___DIRS}"
-	___BACK="${___PATH#"${_DIRS_TGET:-}/"}"
+	___BACK="${__TGET_PATH#"${_DIRS_TGET:-}/"}"
 	___BACK="${___DIRS}/${___BACK#/}"
 	mkdir -p "${___BACK%/*}"
 	chmod 600 "${___DIRS%/*}"
 	if [[ -e "${___BACK}" ]] || [[ -h "${___BACK}" ]]; then
 		___BACK="${___BACK}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
 	fi
-	fnMsgout "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
-	cp --archive "${___PATH}" "${___BACK}"
+	fnMsgout "backup" "[${__TGET_PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
+	cp --archive "${__TGET_PATH}" "${___BACK}"
+	unset ___REAL ___DIRS ___BACK
 }
 
 # *** function section (subroutine functions) *********************************
@@ -835,10 +855,12 @@ function fnTrap() {
 			*) ;;
 		esac
 	done
+	unset __PATH __MPNT I
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	fnDbgparameters
+#	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -852,6 +874,8 @@ function fnInitialize() {
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	declare       __PATH=""				# full path
+	declare       __DIRS=""				# directory
+	declare       __WORK=""				# work
 
 	# --- set system parameter ------------------------------------------------
 	if [[ -n "${TERM:-}" ]] \
@@ -873,6 +897,7 @@ function fnInitialize() {
 	readonly _TEXT_GAP2
 
 	if realpath "$(command -v cp 2> /dev/null || true)" | grep -q 'busybox'; then
+		fnMsgout "${_PROG_NAME:-}" "info" "busybox"
 		_COMD_BBOX="true"
 		_OPTN_COPY="-p"
 	fi
@@ -934,12 +959,14 @@ function fnInitialize() {
 		fnList_mdia_Get "${_PATH_MDIA}"	# get media information data
 	fi
 	fnList_mdia_Dec						# decoding media information data
+	unset __PATH __DIRS __WORK
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 	fnDbgparameters
+#	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -951,6 +978,8 @@ function fnList_conf_Set() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	declare       __WORK=""				# work
 
 	__WORK="$(date +"%Y/%m/%d %H:%M:%S")"
 	IFS= mapfile -d $'\n' -t _LIST_CONF < <(cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
@@ -1082,12 +1111,14 @@ function fnList_conf_Set() {
 		### eof #######################################################################
 _EOT_
 	)
+	unset __WORK
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 	fnDbgparameters
+#	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -1181,12 +1212,14 @@ function fnList_conf_Enc() {
 		__LIST[${#__LIST[@]}-1]="$(printf "%-39s %s" "${__NAME:-}=\"${__VALU:-}\"" "${__CMNT:-}")"
 	done
 	_LIST_CONF=("${__LIST[@]}")
+	unset __NAME __VALU __CMNT __WNAM __WVAL __WORK __LINE __LIST __ARRY I J
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 	fnDbgparameters
+#	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -1252,12 +1285,14 @@ function fnList_conf_Dec() {
 		esac
 		read -r "${__NAME:?}" < <(eval echo "${__VALU}" || true)
 	done
+	unset __NAME __VALU __CMNT __WNAM __WVAL __WORK __LINE I
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 	fnDbgparameters
+#	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -1280,6 +1315,7 @@ function fnList_conf_Get() {
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 	fnDbgparameters
+#	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -1299,6 +1335,7 @@ function fnList_conf_Put() {
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 	fnDbgparameters
+#	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -1371,6 +1408,7 @@ function fnMk_symlink_dir() {
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 	fnDbgparameters
+#	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -1389,6 +1427,7 @@ function fnMk_symlink() {
 	              __NAME_REFR="${*:-}"
 #	declare -a    __OPTN=("${@:-}")		# options
 	declare       __FORC=""				# force parameter
+	declare       __PTRN=""				# pattern
 	declare       __LINE=""				# work
 	declare -a    __LIST=()				# work
 	declare -i    I=0
@@ -1436,12 +1475,14 @@ function fnMk_symlink() {
 		mkdir -p "${__LIST[13]%/*}"
 		ln -s "${__LIST[25]}/${__LIST[13]##*/}" "${__LIST[13]}"
 	done
+	unset __NAME_REFR __OPTN __FORC __PTRN __LINE __LIST I
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 	fnDbgparameters
+#	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -1468,6 +1509,7 @@ function fnMk_preconf_preseed() {
 	esac
 	# -------------------------------------------------------------------------
 	chmod ugo-x "${__TGET_PATH}"
+#	unset __TGET_PATH
 }
 
 # -----------------------------------------------------------------------------
@@ -1497,8 +1539,10 @@ function fnMk_preconf_nocloud() {
 	touch -m "${__TGET_PATH%/*}/vendor-data"    --reference "${__TGET_PATH}"
 	# -------------------------------------------------------------------------
 	chmod ugo-x "${__TGET_PATH%/*}"/*
+#	unset __TGET_PATH
 }
 
+ shellcheck disable=SC2148
 # -----------------------------------------------------------------------------
 # descript: make kickstart.cfg
 #   input :     $1     : input value
@@ -1510,8 +1554,8 @@ function fnMk_preconf_kickstart() {
 	declare       __NUMS=""				# "            number
 	declare       __NAME=""				# "            name
 	declare       __SECT=""				# "            section
+	declare       __ADDR=""				# repository
 	declare -r    __ARCH="x86_64"		# base architecture
-	declare -r    __ADDR="${_SRVR_PROT:+"${_SRVR_PROT}:/"}/${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}"
 	declare       __WORK=""				# work
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
@@ -1524,6 +1568,7 @@ function fnMk_preconf_kickstart() {
 	__NUMS="${__VERS##*-}"
 	__NAME="${__VERS%-*}"
 	__SECT="${__NAME/-/ }"
+	__ADDR="${_SRVR_PROT:+"${_SRVR_PROT}:/"}/${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}"
 	# --- initializing the settings -------------------------------------------
 	sed -i "${__TGET_PATH}"                     \
 	    -e "/^cdrom$/      s/^/#/             " \
@@ -1596,6 +1641,7 @@ function fnMk_preconf_kickstart() {
 	esac
 	# -------------------------------------------------------------------------
 	chmod ugo-x "${__TGET_PATH}" "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
+	unset __VERS __NUMS __NAME __SECT __ADDR __WORK
 }
 
 # -----------------------------------------------------------------------------
@@ -1666,6 +1712,7 @@ function fnMk_preconf_autoyast() {
 	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
 	# -------------------------------------------------------------------------
 	chmod ugo-x "${__TGET_PATH}"
+	unset __VERS __NUMS __WORK
 }
 
 # -----------------------------------------------------------------------------
@@ -1726,6 +1773,7 @@ function fnMk_preconf_agama() {
 	    -e '\%^//.*$%d                     }'
 	# -------------------------------------------------------------------------
 	chmod ugo-x "${__TGET_PATH}" "${__WORK}"
+	unset __VERS __NUMS __PDCT __PDID __WORK
 }
 
 # -----------------------------------------------------------------------------
@@ -1756,7 +1804,7 @@ function fnMk_preconf() {
 	while [[ -n "${1:-}" ]]
 	do
 		case "$1" in
-			all      ) __PTRN="agama|autoyast|kickstart|nocloud|preseed"; shift; break;;
+			a|all    ) __PTRN="agama|autoyast|kickstart|nocloud|preseed"; shift; break;;
 			agama    ) ;;
 			autoyast ) ;;
 			kickstart) ;;
@@ -1805,12 +1853,14 @@ function fnMk_preconf() {
 			esac
 		done
 	fi
+	unset __NAME_REFR __OPTN __PTRN __TGET __LINE __LIST __PATH
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 	fnDbgparameters
+#	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -1828,12 +1878,80 @@ function fnMk_pxeboot() {
 	shift
 	              __NAME_REFR="${*:-}"
 #	declare -a    __OPTN=("${@:-}")		# options
+	declare -a    __PTRN=()				# pattern
+	declare -a    __TGET=()				# target
+	declare       __LINE=""				# data line
+	declare -a    __LIST=()				# data list
+	declare       __PATH=""				# full path
+
+	# --- get target ----------------------------------------------------------
+	__PTRN=()
+	set -f -- "${@:-}"
+	set +f
+	while [[ -n "${1:-}" ]]
+	do
+		case "${1%%:*}" in
+			a|all    ) __PTRN=("mini:all" "netinst:all" "dvd:all" "liveinst:all" "live:all" "tool:all" "clive:all" "cnetinst:all" "system:all"); shift; break;;
+			mini     ) ;;
+			netinst  ) ;;
+			dvd      ) ;;
+			liveinst ) ;;
+			live     ) ;;
+			tool     ) ;;
+			clive    ) ;;
+			cnetinst ) ;;
+			system   ) ;;
+			*) break;;
+		esac
+		__PTRN+=("${1:-}")
+		shift
+	done
+	__NAME_REFR="${*:-}"
+
+	# --- create a file  ------------------------------------------------------
+	if [[ -n "${__PTRN:-}" ]]; then
+		__TGET=()
+		for I in "${!_LIST_MDIA[@]}"
+		do
+			__LINE="${_LIST_MDIA[I]:-}"
+			read -r -a __LIST < <(echo "${__LINE:-}")
+			case "${__LIST[1]}" in			# entry_flag
+				o) ;;
+				*) continue;;
+			esac
+			case "${__LIST[23]##*/}" in		# cfg_path
+				-) continue;;
+				*) ;;
+			esac
+			__PATH="${__LIST[23]}"
+			__TGET+=("${__PATH}")
+			case "${__PATH}" in
+				*/agama/*    ) __TGET+=("${__PATH/_leap-*_/_tumbleweed_}");;
+				*/kickstart/*) __TGET+=("${__PATH/_dvd/_web}");;
+				*            ) ;;
+			esac
+		done
+		IFS= mapfile -d $'\n' -t __TGET < <(IFS= printf "%s\n" "${__TGET[@]}" | grep -E "${__PTRN}" | sort -uV || true)
+		for __PATH in "${__TGET[@]}"
+		do
+			case "${__PATH}" in
+				*/preseed/*  ) fnMk_preconf_preseed   "${__PATH}";;
+				*/nocloud/*  ) fnMk_preconf_nocloud   "${__PATH}/user-data";;
+				*/kickstart/*) fnMk_preconf_kickstart "${__PATH}";;
+				*/autoyast/* ) fnMk_preconf_autoyast  "${__PATH}";;
+				*/agama/*    ) fnMk_preconf_agama     "${__PATH}";;
+				*)	;;
+			esac
+		done
+	fi
+	unset __NAME_REFR __OPTN __PTRN __TGET __LINE __LIST __PATH
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 	fnDbgparameters
+#	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -1851,12 +1969,14 @@ function fnMk_isofile() {
 	shift
 	              __NAME_REFR="${*:-}"
 #	declare -a    __OPTN=("${@:-}")		# options
+	unset __NAME_REFR
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 	fnDbgparameters
+#	unset __FUNC_NAME
 }
 
 # *** main section ************************************************************
@@ -1867,9 +1987,9 @@ function fnMk_isofile() {
 #   output:   stdout   : message
 #   return:            : unused
 function fnMain() {
-	declare -r    _FUNC_NAME="${FUNCNAME[0]}"
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
-	fnMsgout "${_PROG_NAME:-}" "start" "[${_FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	declare       __PROC=""
 	declare -a    __OPTN=()
@@ -1899,14 +2019,14 @@ function fnMain() {
 		set -f -- "${__OPTN[@]}"
 		set +f
 	done
-
-	# --- debug output --------------------------------------------------------
+	unset __PROC __OPTN __RSLT
 
 	# --- complete ------------------------------------------------------------
-	fnMsgout "${_PROG_NAME:-}" "complete" "[${_FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 	fnDbgparameters
+#	unset __FUNC_NAME
 }
 
 	declare -i    __time_start=0

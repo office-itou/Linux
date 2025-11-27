@@ -94,7 +94,9 @@ fnSetup_firewalld() {
 	fi
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
+	unset __SRVC __ORIG __PATH __IPV4 __IPV6 __LINK __NAME __PORT
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }

@@ -71,4 +71,5 @@ function fnMk_preconf_autoyast() {
 	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
 	# -------------------------------------------------------------------------
 	chmod ugo-x "${__TGET_PATH}"
+	unset __VERS __NUMS __WORK
 }

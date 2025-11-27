@@ -17,10 +17,12 @@ function fnMk_isofile() {
 	shift
 	              __NAME_REFR="${*:-}"
 #	declare -a    __OPTN=("${@:-}")		# options
+	unset __NAME_REFR
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 	fnDbgparameters
+#	unset __FUNC_NAME
 }

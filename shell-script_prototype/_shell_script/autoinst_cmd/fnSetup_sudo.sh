@@ -74,7 +74,9 @@ _EOT_
 	fi
 	fnDbgdump "${__CONF}"				# debugout
 	fnFile_backup "${__CONF}" "init"	# backup initial file
+	unset __PATH __CONF __WORK
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }

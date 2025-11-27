@@ -155,7 +155,9 @@ _EOT_
 			fi
 		fi
 	fi
+	unset __SRVC __CONF __PATH __UUID __CNID
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }

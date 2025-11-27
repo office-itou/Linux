@@ -19,6 +19,7 @@ function fnMk_symlink() {
 	              __NAME_REFR="${*:-}"
 #	declare -a    __OPTN=("${@:-}")		# options
 	declare       __FORC=""				# force parameter
+	declare       __PTRN=""				# pattern
 	declare       __LINE=""				# work
 	declare -a    __LIST=()				# work
 	declare -i    I=0
@@ -66,10 +67,12 @@ function fnMk_symlink() {
 		mkdir -p "${__LIST[13]%/*}"
 		ln -s "${__LIST[25]}/${__LIST[13]##*/}" "${__LIST[13]}"
 	done
+	unset __NAME_REFR __OPTN __FORC __PTRN __LINE __LIST I
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 	fnDbgparameters
+#	unset __FUNC_NAME
 }

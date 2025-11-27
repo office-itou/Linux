@@ -19,7 +19,9 @@ function fnDbgparameters_all() {
 	do
 		[[ -n "${__NAME:-}" ]] && declare -p "${__NAME}"
 	done
+	unset __NAME
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+#	unset __FUNC_NAME
 }

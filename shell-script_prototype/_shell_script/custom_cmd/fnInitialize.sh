@@ -26,6 +26,8 @@ function fnInitialize() {
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	declare       __PATH=""				# full path
+	declare       __DIRS=""				# directory
+	declare       __WORK=""				# work
 
 	# --- set system parameter ------------------------------------------------
 	if [[ -n "${TERM:-}" ]] \
@@ -109,10 +111,12 @@ function fnInitialize() {
 		fnList_mdia_Get "${_PATH_MDIA}"	# get media information data
 	fi
 	fnList_mdia_Dec						# decoding media information data
+	unset __PATH __DIRS __WORK
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 	fnDbgparameters
+#	unset __FUNC_NAME
 }

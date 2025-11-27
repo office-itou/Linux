@@ -311,7 +311,7 @@ function fnMain() {
 		shift
 		__OPTN=("${@:-}")
 		case "${__PARM}" in
-			create)
+			--create)
 				funcCreate __REFR "${__OPTN[@]:-}"
 				read -r -a __OPTN < <(echo "${__REFR}")
 				;;
@@ -338,18 +338,20 @@ function fnMain() {
 	__time_start=$(date +%s)
 	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
 
-	# --- boot parameter selection --------------------------------------------
+	# --- help / debug --------------------------------------------------------
+#	[[ -z "${_PROG_PARM[*]:-}" ]] && fnHelp
 	set -f -- "${_PROG_PARM[@]:-}"
 	set +f
 	while [[ -n "${1:-}" ]]
 	do
-		__PARM="$1"
+		__PROC="${1:-}"
 		shift
 		__OPTN=("${@:-}")
-		case "${__PARM}" in
-			debug    | dbg                ) _DBGS_FLAG="true"; set -x;;
-			debugout | dbgout             ) _DBGS_FLAG="true";;
-			*) ;;
+		case "${__PROC:-}" in
+#			-h|--help             ) fnHelp;;
+			-D|--debug   |--dbg   ) _DBGS_FLAG="true"; set -x;;
+			-O|--debugout|--dbgout) _DBGS_FLAG="true";;
+			*                     ) ;;
 		esac
 		set -f -- "${__OPTN[@]}"
 		set +f

@@ -148,7 +148,9 @@ _EOT_
 			done
 		fi
 	fi
+	unset __SRVC __CONF __PATH __USER
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }

@@ -1,4 +1,4 @@
-# shellcheck disable=SC2148
+ shellcheck disable=SC2148
 
 # -----------------------------------------------------------------------------
 # descript: make kickstart.cfg
@@ -14,8 +14,8 @@ function fnMk_preconf_kickstart() {
 	declare       __NUMS=""				# "            number
 	declare       __NAME=""				# "            name
 	declare       __SECT=""				# "            section
+	declare       __ADDR=""				# repository
 	declare -r    __ARCH="x86_64"		# base architecture
-	declare -r    __ADDR="${_SRVR_PROT:+"${_SRVR_PROT}:/"}/${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}"
 	declare       __WORK=""				# work
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
@@ -28,6 +28,7 @@ function fnMk_preconf_kickstart() {
 	__NUMS="${__VERS##*-}"
 	__NAME="${__VERS%-*}"
 	__SECT="${__NAME/-/ }"
+	__ADDR="${_SRVR_PROT:+"${_SRVR_PROT}:/"}/${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}"
 	# --- initializing the settings -------------------------------------------
 	sed -i "${__TGET_PATH}"                     \
 	    -e "/^cdrom$/      s/^/#/             " \
@@ -100,4 +101,5 @@ function fnMk_preconf_kickstart() {
 	esac
 	# -------------------------------------------------------------------------
 	chmod ugo-x "${__TGET_PATH}" "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
+	unset __VERS __NUMS __NAME __SECT __ADDR __WORK
 }

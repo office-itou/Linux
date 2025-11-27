@@ -25,4 +25,5 @@ function fnDbgparameters() {
 		__VALU="${!__NAME:-}"
 		printf "${FUNCNAME[1]}: %s=[%s]\n" "${__NAME}" "${__VALU/#\'\'/}"
 	done
+#	unset __NAME __VALU
 }

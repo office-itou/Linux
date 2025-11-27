@@ -61,4 +61,5 @@ function fnMk_preconf_agama() {
 	    -e '\%^//.*$%d                     }'
 	# -------------------------------------------------------------------------
 	chmod ugo-x "${__TGET_PATH}" "${__WORK}"
+	unset __VERS __NUMS __PDCT __PDID __WORK
 }

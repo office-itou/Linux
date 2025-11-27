@@ -110,7 +110,9 @@ _EOT_
 			fnFile_backup "${__PATH}" "init"	# backup initial file
 		done
 	done
+	unset __PATH __CONF __DIRS
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }

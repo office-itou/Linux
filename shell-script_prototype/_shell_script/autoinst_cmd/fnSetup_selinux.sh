@@ -68,7 +68,9 @@ fnSetup_selinux() {
 		semanage fcontext -l | grep -E '^/srv' || true
 		fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
 	fi
+	unset __DIRS __PATH ___STRT ___ENDS
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }

@@ -24,7 +24,9 @@ fnSetup_hostname() {
 	echo "${_NICS_FQDN:-}" > "${__PATH}"
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
+	unset __PATH
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }

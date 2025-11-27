@@ -12,10 +12,11 @@ set -o pipefail		# debug: End with in pipe error
 #   g-var : _DIST_CODE : write
 # shellcheck disable=SC2148,SC2317,SC2329
 function fnNetwork_param() {
-	declare -r    ___DIRS="${_DIRS_TGET:-}/sys/devices"
-	declare       ___WORK=""
-	declare       ___PATH=""
+	declare       ___PATH=""			# full path
+	declare       ___DIRS=""			# directory
+	declare       ___WORK=""			# work
 	_NICS_NAME="${_NICS_NAME:-"ens160"}"
+	___DIRS="${_DIRS_TGET:-}/sys/devices"
 	if [[ ! -e "${___DIRS}"/. ]]; then
 		fnMsgout "caution" "not exist: [${___DIRS}]"
 	else
@@ -86,4 +87,5 @@ function fnNetwork_param() {
 	_LINK_UADR="$(echo "${_LINK_FADR:-}" | cut -d ':' -f 1-4 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
 	_LINK_LADR="$(echo "${_LINK_FADR:-}" | cut -d ':' -f 5-8 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
 	_LINK_RADR="$(fnIPv6RevAddr "${_LINK_FADR:-}")"
+	unset ___DIRS ___PATH ___WORK
 }

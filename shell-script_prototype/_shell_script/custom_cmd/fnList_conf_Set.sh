@@ -99,6 +99,8 @@ function fnList_conf_Set() {
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
+	declare       __WORK=""				# work
+
 	__WORK="$(date +"%Y/%m/%d %H:%M:%S")"
 	IFS= mapfile -d $'\n' -t _LIST_CONF < <(cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		###############################################################################
@@ -229,10 +231,12 @@ function fnList_conf_Set() {
 		### eof #######################################################################
 _EOT_
 	)
+	unset __WORK
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 	fnDbgparameters
+#	unset __FUNC_NAME
 }

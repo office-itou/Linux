@@ -96,10 +96,12 @@ function fnList_conf_Enc() {
 		__LIST[${#__LIST[@]}-1]="$(printf "%-39s %s" "${__NAME:-}=\"${__VALU:-}\"" "${__CMNT:-}")"
 	done
 	_LIST_CONF=("${__LIST[@]}")
+	unset __NAME __VALU __CMNT __WNAM __WVAL __WORK __LINE __LIST __ARRY I J
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 	fnDbgparameters
+#	unset __FUNC_NAME
 }

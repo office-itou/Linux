@@ -39,10 +39,12 @@ function fnList_mdia_Dec() {
 		done
 		_LIST_MDIA[I]="${__WVAL}"
 	done
+	unset __WNAM __WVAL __WORK __LINE I
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 	fnDbgparameters
+#	unset __FUNC_NAME
 }

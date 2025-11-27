@@ -266,6 +266,7 @@ fnIPv6FullAddr() {
 			printf "'"${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}"'",
 				num[1],num[2],num[3],num[4],num[5],num[6],num[7],num[8]
 		}'
+	unset ___ADDR ___FMAT
 }
 
 # -----------------------------------------------------------------------------
@@ -335,6 +336,8 @@ fnDbgout() {
 		shift
 	done
 	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
+	unset ___STRT
+	unset ___ENDS
 }
 
 # -----------------------------------------------------------------------------
@@ -353,6 +356,8 @@ fnDbgdump() {
 	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___STRT}"
 	cat "${1:-}"
 	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
+	unset ___STRT
+	unset ___ENDS
 }
 
 # -----------------------------------------------------------------------------
@@ -483,6 +488,7 @@ fnDbgparam() {
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -527,6 +533,7 @@ fnSystem_param() {
 	readonly _DIST_NAME
 	readonly _DIST_CODE
 	readonly _DIST_VERS
+	unset ___PATH
 }
 
 # -----------------------------------------------------------------------------
@@ -637,6 +644,7 @@ fnNetwork_param() {
 	readonly _LINK_UADR
 	readonly _LINK_LADR
 	readonly _LINK_RADR
+	unset ___DIRS ___PATH ___WORK
 }
 
 # -----------------------------------------------------------------------------
@@ -674,6 +682,7 @@ fnFile_backup() {
 	fi
 	fnMsgout "${_PROG_NAME:-}" "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
 	cp --archive "${___PATH}" "${___BACK}"
+	unset ___PATH ___MODE ___REAL ___DIRS ___BACK
 }
 
 # *** function section (subroutine functions) *********************************
@@ -795,9 +804,11 @@ fnInitialize() {
 	fnFile_backup "/proc/cmdline"
 	fnFile_backup "/proc/mounts"
 	fnFile_backup "/proc/self/mounts"
+	unset __COLS __WORK __DIRS __PATH __TGET
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -835,6 +846,7 @@ fnPackage_update() {
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -1001,6 +1013,7 @@ _EOT_
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -1094,9 +1107,11 @@ _EOT_
 			fi
 		fi
 	fi
+	unset __SRVC __PATH __WORK
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -1186,9 +1201,11 @@ _EOT_
 			fnMsgout "${_PROG_NAME:-}" "failed" "netplan apply"
 		fi
 	fi
+	unset __PATH
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -1343,9 +1360,11 @@ _EOT_
 			fi
 		fi
 	fi
+	unset __SRVC __CONF __PATH __UUID __CNID
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -1370,9 +1389,11 @@ fnSetup_hostname() {
 	echo "${_NICS_FQDN:-}" > "${__PATH}"
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
+	unset __PATH
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -1412,9 +1433,11 @@ fnSetup_hosts() {
 _EOT_
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
+	unset __PATH __WORK
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -1509,9 +1532,11 @@ fnSetup_firewalld() {
 	fi
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
+	unset __SRVC __ORIG __PATH __IPV4 __IPV6 __LINK __NAME __PORT
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -1704,9 +1729,11 @@ _EOT_
 			fi
 		fi
 	fi
+	unset __SRVC __PATH __CONF __WORK
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -1785,9 +1812,11 @@ _EOT_
 			fi
 		fi
 	fi
+	unset __PATH __CONF __SRVC __SVEX
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -2090,9 +2119,11 @@ _EOT_
 			fi
 		fi
 	fi
+	unset __SMBD __NMBD __PATH __CONF __SRVC
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -2142,6 +2173,7 @@ _EOT_
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -2181,9 +2213,11 @@ fnSetup_chronyd() {
 			hwclock --test
 		fi
 	fi
+	unset __SRVC __PATH
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -2255,9 +2289,11 @@ _EOT_
 			fi
 		fi
 	fi
+	unset __SRVC __PATH
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -2316,9 +2352,11 @@ _EOT_
 	fi
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
+	unset __PATH __FSYS __FSTB
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -2467,9 +2505,11 @@ _EOT_
 			done
 		fi
 	fi
+	unset __SRVC __CONF __PATH __USER
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -2580,9 +2620,11 @@ _EOT_
 			fnFile_backup "${__PATH}" "init"	# backup initial file
 		done
 	done
+	unset __PATH __CONF __DIRS
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -2657,9 +2699,11 @@ _EOT_
 	fi
 	fnDbgdump "${__CONF}"				# debugout
 	fnFile_backup "${__CONF}" "init"	# backup initial file
+	unset __PATH __CONF __WORK
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -2700,6 +2744,7 @@ fnSetup_apparmor() {
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -2768,9 +2813,11 @@ fnSetup_selinux() {
 		semanage fcontext -l | grep -E '^/srv' || true
 		fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
 	fi
+	unset __DIRS __PATH ___STRT ___ENDS
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -2800,6 +2847,7 @@ fnSetup_ipfilter() {
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -2861,9 +2909,11 @@ fnSetup_service() {
 			done
 		fi
 	fi
+	unset __LIST __SRVC
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -2931,6 +2981,7 @@ fnMain() {
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${_FUNC_NAME}]"
+	unset _FUNC_NAME
 }
 
 	# --- start ---------------------------------------------------------------
@@ -3023,6 +3074,7 @@ fnMain() {
 	__time_elapsed=$((__time_end - __time_start))
 	fnMsgout "${_PROG_NAME:-}" "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"
 	fnMsgout "${_PROG_NAME:-}" "elapsed" "$(printf "%dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60)) || true)"
+	unset __time_start __time_end __time_elapsed
 
 	exit 0
 

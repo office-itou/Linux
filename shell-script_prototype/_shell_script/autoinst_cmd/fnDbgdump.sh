@@ -19,4 +19,6 @@ fnDbgdump() {
 	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___STRT}"
 	cat "${1:-}"
 	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
+	unset ___STRT
+	unset ___ENDS
 }

@@ -113,4 +113,5 @@ fnNetwork_param() {
 	readonly _LINK_UADR
 	readonly _LINK_LADR
 	readonly _LINK_RADR
+	unset ___DIRS ___PATH ___WORK
 }

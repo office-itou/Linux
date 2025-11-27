@@ -27,4 +27,5 @@ fnSystem_param() {
 	readonly _DIST_NAME
 	readonly _DIST_CODE
 	readonly _DIST_VERS
+	unset ___PATH
 }

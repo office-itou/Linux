@@ -152,7 +152,9 @@ fnInitialize() {
 	fnFile_backup "/proc/cmdline"
 	fnFile_backup "/proc/mounts"
 	fnFile_backup "/proc/self/mounts"
+	unset __COLS __WORK __DIRS __PATH __TGET
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset __FUNC_NAME
 }

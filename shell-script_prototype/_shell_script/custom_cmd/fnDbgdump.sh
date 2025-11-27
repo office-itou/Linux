@@ -15,9 +15,13 @@ function fnDbgdump() {
 		fnMsgout "${_PROG_NAME:-}" "failed" "not exist: [${1:-}]"
 		return
 	fi
-	declare -r    ___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${1:-}")"
-	declare -r    ___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${1:-}")"
+	declare       ___STRT=""
+	declare       ___ENDS=""
+	___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${1:-}")"
+	___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${1:-}")"
 	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___STRT}"
 	cat "${1:-}"
 	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
+	unset ___STRT
+	unset ___ENDS
 }
