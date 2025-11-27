@@ -266,6 +266,7 @@ fnIPv6FullAddr() {
 			printf "'"${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}"'",
 				num[1],num[2],num[3],num[4],num[5],num[6],num[7],num[8]
 		}'
+	unset ___ADDR ___FMAT
 }
 
 # -----------------------------------------------------------------------------
@@ -335,6 +336,8 @@ fnDbgout() {
 		shift
 	done
 	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
+	unset ___STRT
+	unset ___ENDS
 }
 
 # -----------------------------------------------------------------------------
@@ -353,6 +356,8 @@ fnDbgdump() {
 	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___STRT}"
 	cat "${1:-}"
 	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
+	unset ___STRT
+	unset ___ENDS
 }
 
 # -----------------------------------------------------------------------------
@@ -483,6 +488,7 @@ fnDbgparam() {
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -527,6 +533,7 @@ fnSystem_param() {
 	readonly _DIST_NAME
 	readonly _DIST_CODE
 	readonly _DIST_VERS
+	unset ___PATH
 }
 
 # -----------------------------------------------------------------------------
@@ -637,6 +644,7 @@ fnNetwork_param() {
 	readonly _LINK_UADR
 	readonly _LINK_LADR
 	readonly _LINK_RADR
+	unset ___DIRS ___PATH ___WORK
 }
 
 # -----------------------------------------------------------------------------
@@ -674,6 +682,7 @@ fnFile_backup() {
 	fi
 	fnMsgout "${_PROG_NAME:-}" "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
 	cp --archive "${___PATH}" "${___BACK}"
+	unset ___PATH ___MODE ___REAL ___DIRS ___BACK
 }
 
 # *** function section (subroutine functions) *********************************
@@ -795,9 +804,11 @@ fnInitialize() {
 	fnFile_backup "/proc/cmdline"
 	fnFile_backup "/proc/mounts"
 	fnFile_backup "/proc/self/mounts"
+	unset __COLS __WORK __DIRS __PATH __TGET
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -946,9 +957,11 @@ _EOT_
 			done
 		fi
 	fi
+	unset __SRVC __CONF __PATH __USER
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
 }
 
 # -----------------------------------------------------------------------------
@@ -1041,6 +1054,7 @@ fnGet_conf_file() {
 		fi
 		fnMsgout "${_PROG_NAME:-}" "success" "${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}"
 	done
+	unset __LINE __PATH __DIRS
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
@@ -1075,6 +1089,7 @@ fnMain() {
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${_FUNC_NAME}]"
+	unset _FUNC_NAME
 }
 
 	# --- start ---------------------------------------------------------------
@@ -1167,6 +1182,7 @@ fnMain() {
 	__time_elapsed=$((__time_end - __time_start))
 	fnMsgout "${_PROG_NAME:-}" "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"
 	fnMsgout "${_PROG_NAME:-}" "elapsed" "$(printf "%dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60)) || true)"
+	unset __time_start __time_end __time_elapsed
 
 	exit 0
 
