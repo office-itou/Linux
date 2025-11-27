@@ -14,6 +14,7 @@
 
 	# --- debug parameter -----------------------------------------------------
 	declare       _DBGS_FLAG=""			# debug flag (empty: normal, else: debug)
+	declare       _DBGS_PARM=""			# debug flag (empty: normal, else: debug out parameter)
 
 	# --- working directory ---------------------------------------------------
 	declare -r    _PROG_PATH="$0"
