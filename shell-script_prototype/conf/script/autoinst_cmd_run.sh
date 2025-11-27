@@ -34,6 +34,7 @@
 
 	# --- debug parameter -----------------------------------------------------
 	_DBGS_FLAG=""						# debug flag (empty: normal, else: debug)
+	_DBGS_PARM="true"					# debug flag (empty: normal, else: debug out parameter)
 
 	# --- working directory ---------------------------------------------------
 	readonly _PROG_PATH="$0"
