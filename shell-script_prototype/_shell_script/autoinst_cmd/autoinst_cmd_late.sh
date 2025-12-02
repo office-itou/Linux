@@ -206,9 +206,11 @@ fnString() {
 #   output:   stdout   : output
 #   return:            : unused
 fnStrmsg() {
-	___TXT1="$(echo "${1:-}" | cut -c -3)"
-	___TXT2="$(echo "${1:-}" | cut -c "$((${#___TXT1}+2+${#2}+1))"-)"
+	___TEXT="${1:-}"
+	___TXT1="$(echo "${___TEXT:-}" | cut -c -3)"
+	___TXT2="$(echo "${___TEXT:-}" | cut -c "$((${#___TXT1}+2+${#2}+1+${#_PROG_NAME}+16))"-)"
 	printf "%s %s %s" "${___TXT1}" "${2:-}" "${___TXT2}"
+	unset ___TEXT
 	unset ___TXT1
 	unset ___TXT2
 }
@@ -708,11 +710,8 @@ fnInitialize() {
 	readonly _ROWS_SIZE
 	readonly _COLS_SIZE
 
-	__COLS="${_COLS_SIZE}"
-	[ -n "${_PROG_NAME:-}" ] && __COLS=$((_COLS_SIZE-${#_PROG_NAME}-16))
-	_TEXT_GAP1="$(fnString "${__COLS:-"${_COLS_SIZE}"}" '-')"
-	_TEXT_GAP2="$(fnString "${__COLS:-"${_COLS_SIZE}"}" '=')"
-	unset __COLS
+	_TEXT_GAP1="$(fnString "${_COLS_SIZE}" '-')"
+	_TEXT_GAP2="$(fnString "${_COLS_SIZE}" '=')"
 	readonly _TEXT_GAP1
 	readonly _TEXT_GAP2
 

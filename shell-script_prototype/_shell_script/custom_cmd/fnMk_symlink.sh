@@ -67,7 +67,7 @@ function fnMk_symlink() {
 		mkdir -p "${__LIST[13]%/*}"
 		ln -s "${__LIST[25]}/${__LIST[13]##*/}" "${__LIST[13]}"
 	done
-	unset __NAME_REFR __OPTN __FORC __PTRN __LINE __LIST I
+	unset __OPTN __FORC __PTRN __LINE __LIST I
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"

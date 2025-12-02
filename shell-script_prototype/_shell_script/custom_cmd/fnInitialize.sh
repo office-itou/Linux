@@ -40,11 +40,8 @@ function fnInitialize() {
 	readonly _ROWS_SIZE
 	readonly _COLS_SIZE
 
-	__COLS="${_COLS_SIZE}"
-	[[ -n "${_PROG_NAME:-}" ]] && __COLS=$((_COLS_SIZE-${#_PROG_NAME}-16))
-	_TEXT_GAP1="$(fnString "${__COLS:-"${_COLS_SIZE}"}" '-')"
-	_TEXT_GAP2="$(fnString "${__COLS:-"${_COLS_SIZE}"}" '=')"
-	unset __COLS
+	_TEXT_GAP1="$(fnString "${_COLS_SIZE}" '-')"
+	_TEXT_GAP2="$(fnString "${_COLS_SIZE}" '=')"
 	readonly _TEXT_GAP1
 	readonly _TEXT_GAP2
 
@@ -107,10 +104,8 @@ function fnInitialize() {
 	fnList_conf_Dec						# decoding common configuration data
 
 	# --- media information data ----------------------------------------------
-	if [[ -e "${_PATH_MDIA:?}" ]]; then
-		fnList_mdia_Get "${_PATH_MDIA}"	# get media information data
-	fi
-	fnList_mdia_Dec						# decoding media information data
+	fnList_mdia_Get "${_PATH_MDIA}"		# get media information data
+
 	unset __PATH __DIRS __WORK
 
 	# --- complete ------------------------------------------------------------

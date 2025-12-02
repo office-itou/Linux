@@ -1,22 +1,16 @@
 #!/bin/bash
 
-###############################################################################
-#
-#	custom iso image creation and pxeboot configuration shell
-#	  developed for debian
-#
-#	developer   : J.Itou
-#	release     : 2025/11/01
-#
-#	history     :
-#	   data    version    developer    point
-#	---------- -------- -------------- ----------------------------------------
-#	2025/11/01 000.0000 J.Itou         first release
-#
-#	shell check : shellcheck -o all "filename"
-#	            : shellcheck -o all -e SC2154 *.sh
-#
-###############################################################################
+	export LANG=C
+
+#	set -n								# Check for syntax errors
+#	set -x								# Show command and argument expansion
+	set -o ignoreeof					# Do not exit with Ctrl+D
+	set +m								# Disable job control
+	set -e								# End with status other than 0
+	set -u								# End with undefined variable reference
+	set -o pipefail						# End with in pipe error
+
+	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
 
 # *** global section **********************************************************
 
@@ -89,7 +83,9 @@
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnList_mdia_Get.sh				# get media information data
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnList_mdia_Dec.sh				# decoding common configuration data
+	source "${_SHEL_COMD}"/fnList_mdia_Put.sh				# put media information data
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD}"/fnList_mdia_Dec.sh				# decoding common configuration data
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_symlink_dir.sh				# make directory
 	# shellcheck source=/dev/null
@@ -163,7 +159,39 @@
 	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
 
 	# --- main processing -----------------------------------------------------
-	fnMain
+	fnInitialize
+
+	declare       __REFR=""				# name reference
+	declare       __PTRN=""				# pattern
+	declare -a    __LIST=()				# list
+
+	__MDIA=()
+	for __TGET in "${_LIST_TYPE[@]}"
+	do
+		IFS= mapfile -d $'\n' -t __LIST < <(printf "%s\n" "${_LIST_MDIA[@]}" | \
+			awk -v type="${__TGET}" '
+				BEGIN {
+					printf "%s %s %s %s %s %s\n", "NR", "ID", "Target%20file%20name", "ReleaseDay", "SupportEnd", "Memo"
+				}
+				$1==type && $2=="o" {
+					sub(/^.*\//, "", $14)
+					sub(/^.*\//, "", $24)
+					sub(/^-+/, "", $14)
+					sub(/^-+/, "", $15)
+					sub(/^-+/, "", $8)
+					sub(/^-+/, "", $24)
+					printf "%d %s %s %s %s %s\n", NR, ++id, $14, $15, $8, $24
+				}
+			' || true
+		)
+		__MDIA+=("${__LIST[@]}")
+	done
+	fnScreen_output "${__MDIA[@]}"
+
+#printf "%s\n" "${_LIST_MDIA[@]}"
+
+	fnList_mdia_Put "work.txt"
+
 
 	# --- complete ------------------------------------------------------------
 	__time_end=$(date +%s)
@@ -175,3 +203,30 @@
 	exit 0
 
 # ### eof #####################################################################
+#    0: type        ( 11)   TEXT            NOT NULL    media type
+#    1: entry_flag  ( 11)   TEXT            NOT NULL    [m] menu, [o] output, [else] hidden
+#    2: entry_name  ( 39)   TEXT            NOT NULL    entry name (unique)
+#    3: entry_disp  ( 39)   TEXT            NOT NULL    entry name for display
+#    4: version     ( 23)   TEXT                        version id
+#    5: latest      ( 23)   TEXT                        latest version
+#    6: release     ( 15)   TEXT                        release date
+#    7: support     ( 15)   TEXT                        support end date
+#    8: web_regexp  (143)   TEXT                        web file  regexp
+#    9: web_path    (143)   TEXT                        "         path
+#   10: web_tstamp  ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
+#   11: web_size    ( 15)   BIGINT                      "         file size
+#   12: web_status  ( 15)   TEXT                        "         download status
+#   13: iso_path    ( 87)   TEXT                        iso image file path
+#   14: iso_tstamp  ( 47)   TEXT                        "         time stamp
+#   15: iso_size    ( 15)   BIGINT                      "         file size
+#   16: iso_volume  ( 43)   TEXT                        "         volume id
+#   17: rmk_path    ( 87)   TEXT                        remaster  file path
+#   18: rmk_tstamp  ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
+#   19: rmk_size    ( 15)   BIGINT                      "         file size
+#   20: rmk_volume  ( 43)   TEXT                        "         volume id
+#   21: ldr_initrd  ( 87)   TEXT                        initrd    file path
+#   22: ldr_kernel  ( 87)   TEXT                        kernel    file path
+#   23: cfg_path    ( 87)   TEXT                        config    file path
+#   24: cfg_tstamp  ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
+#   25: lnk_path    ( 87)   TEXT                        symlink   directory or file path
+#   26: create_flag ( 11)   TEXT                        create flag

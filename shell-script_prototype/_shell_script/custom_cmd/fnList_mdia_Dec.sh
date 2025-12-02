@@ -15,31 +15,35 @@ function fnList_mdia_Dec() {
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
-	declare       __WNAM=""				# work: variable name
-	declare       __WVAL=""				# work: setting value
-	declare       __WORK=""				# work
-	declare       __LINE=""				# work
-	declare -i    I=0					# work
-
-	for I in "${!_LIST_MDIA[@]}"
-	do
-		__LINE="${_LIST_MDIA[I]:-}"
-		read -r -a __LIST < <(echo "${__LINE:-}")
-		__WVAL="${__LIST[*]:-}"
-		while true
-		do
-			__WNAM="${__WVAL#"${__WVAL%%:_[[:alnum:]]*_[[:alnum:]]*_:*}"}"
-			__WNAM="${__WNAM%"${__WNAM##*:_[[:alnum:]]*_[[:alnum:]]*_:}"}"
-			__WNAM="${__WNAM%%[!:_[:alnum:]]*}"
-			__WNAM="${__WNAM#:_}"
-			__WNAM="${__WNAM%_:}"
-			[[ -z "${__WNAM:-}" ]] && break
-			__WORK="_${__WNAM}"
-			__WVAL="${__WVAL/":_${__WNAM}_:"/"${!__WORK}"}"
-		done
-		_LIST_MDIA[I]="${__WVAL}"
-	done
-	unset __WNAM __WVAL __WORK __LINE I
+	IFS= mapfile -d $'\n' -t _LIST_MDIA < <(printf "%s\n" "${_LIST_MDIA[@]:-}" | \
+		awk -v list="${_LIST_PARM[*]}" '
+			BEGIN {
+				split(list, _arry, " ")
+				delete _parm
+				for (i = 0; i < length(_arry); i++) {
+					_name=_arry[i]
+					sub("=.*", "", _name)
+					_valu=_arry[i]
+					sub(_name, "", _valu)
+					sub("^=", "", _valu)
+					_parm[_name]=_valu
+				}
+			}
+			{
+				_line=$0
+				while (1) {
+					match(_line, /:_[[:alnum:]]+_[[:alnum:]]+_:/)
+					if (RSTART == 0) {
+						break
+					}
+					_ptrn=substr(_line, RSTART, RLENGTH)
+					_name="_"substr(_line, RSTART+2, RLENGTH-4)
+					gsub(_ptrn, _parm[_name], _line)
+				}
+				printf "%s\n", _line
+			}
+		'
+	)
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"

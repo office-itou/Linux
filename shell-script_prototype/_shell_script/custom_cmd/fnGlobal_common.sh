@@ -55,7 +55,10 @@
 	declare       _MENU_SPLS="splash.png"					# splash file
 
 	# --- list data -----------------------------------------------------------
+	declare -a    _LIST_PARM=()								# PARAMETER LIST
 	declare -a    _LIST_CONF=()								# common configuration data
 	declare -a    _LIST_DIST=()								# distribution information
 	declare -a    _LIST_MDIA=()								# media information
 	declare -a    _LIST_DSTP=()								# debstrap information
+															# media type
+	declare -a    _LIST_TYPE=("mini" "netinst" "dvd" "liveinst" "live" "tool" "clive" "cnetinst" "system")

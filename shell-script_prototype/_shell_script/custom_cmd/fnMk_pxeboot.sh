@@ -83,7 +83,7 @@ function fnMk_pxeboot() {
 			esac
 		done
 	fi
-	unset __NAME_REFR __OPTN __PTRN __TGET __LINE __LIST __PATH
+	unset __OPTN __PTRN __TGET __LINE __LIST __PATH
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"

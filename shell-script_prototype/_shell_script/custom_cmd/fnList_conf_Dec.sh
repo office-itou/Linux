@@ -24,6 +24,7 @@ function fnList_conf_Dec() {
 	declare       __LINE=""				# work
 	declare -i    I=0					# work
 
+	_LIST_PARM=()
 	for I in "${!_LIST_CONF[@]}"
 	do
 		__LINE="${_LIST_CONF[I]}"
@@ -38,12 +39,6 @@ function fnList_conf_Dec() {
 		__VALU="${__VALU%"${__VALU##*[!"${IFS}"]}"}"	# rtrim
 		# --- store in a variable ---------------------------------------------
 		[[ -z "${__NAME:-}" ]] && continue
-#		case "${__NAME}" in
-#			PATH_*     ) ;;
-#			DIRS_*     ) ;;
-#			FILE_*     ) ;;
-#			*          ) continue;;
-#		esac
 		__WNAM="${__NAME:-}"
 		__NAME="_${__WNAM:-}"
 		__VALU="${__VALU#\"}"
@@ -67,6 +62,7 @@ function fnList_conf_Dec() {
 			*) ;;
 		esac
 		read -r "${__NAME:?}" < <(eval echo "${__VALU}" || true)
+		_LIST_PARM+=("${__NAME}=${!__NAME}")
 	done
 	unset __NAME __VALU __CMNT __WNAM __WVAL __WORK __LINE I
 
