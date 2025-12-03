@@ -171,7 +171,7 @@
 	declare       __PTRN=""				# pattern
 	declare -a    __LIST=()				# list
 
-	for __TGET in "${_LIST_TYPE[@]}"
+time	for __TGET in "${_LIST_TYPE[@]}"
 	do
 		IFS= mapfile -d $'\n' -t __MDIA < <(printf "%s\n" "${_LIST_MDIA[@]}" | \
 			awk -v type="${__TGET}" '
