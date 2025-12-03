@@ -18,8 +18,8 @@ function fnList_mdia_Put() {
 		BEGIN {
 			split(list, _arry, " ")
 			delete _parm
-			j = 0
-			for (i = length(_arry); i > 0; i--) {
+			j = length(_arry)
+			for (i in _arry) {
 				_name=_arry[i]
 				sub(/=.*$/, "", _name)
 				_work=_name
@@ -36,12 +36,12 @@ function fnList_mdia_Put() {
 				_valu=_arry[i]
 				sub(_name, "", _valu)
 				sub(/^=/, "", _valu)
-				_parm[j++]=_name"="_valu
+				_parm[j--]=_name"="_valu
 			}
 		}
 		{
 			_line=$0
-			for (j = 0; j < length(_parm); j++) {
+			for (j in _parm) {
 				_name=_parm[j]
 				sub(/=.*$/, "", _name)
 				_valu=_parm[j]
@@ -52,7 +52,7 @@ function fnList_mdia_Put() {
 				gsub(_valu, ":_"_work"_:", _line)
 			}
 			split(_line, _arry, "\n")
-			for (i = 1; i <= length(_arry); i++) {
+			for (i in _arry) {
 				split(_arry[i], _list, " ")
 				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-11s \n", \
 					_list[1], _list[2], _list[3], _list[4], _list[5], _list[6], _list[7], _list[8], _list[9], _list[10], \

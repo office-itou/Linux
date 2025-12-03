@@ -71,11 +71,11 @@
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnInitialize.sh					# initialize
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnList_conf_Set.sh				# set default common configuration data
+#	source "${_SHEL_COMD}"/fnList_conf_Set.sh				# set default common configuration data
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnList_conf_Enc.sh				# encoding common configuration data
+#	source "${_SHEL_COMD}"/fnList_conf_Enc.sh				# encoding common configuration data
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnList_conf_Dec.sh				# decoding common configuration data
+#	source "${_SHEL_COMD}"/fnList_conf_Dec.sh				# decoding common configuration data
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnList_conf_Get.sh				# get auto-installation configuration file
 	# shellcheck source=/dev/null
@@ -161,32 +161,27 @@
 	# --- main processing -----------------------------------------------------
 	fnInitialize
 
+#printf "%s\n" "${_LIST_CONF[@]}"
+#printf "%s\n" "${_LIST_PARM[@]}"
+
+#fnList_conf_Put "test.cfg"
+#sleep 600
+
 	declare       __REFR=""				# name reference
 	declare       __PTRN=""				# pattern
 	declare -a    __LIST=()				# list
 
-	__MDIA=()
 	for __TGET in "${_LIST_TYPE[@]}"
 	do
-		IFS= mapfile -d $'\n' -t __LIST < <(printf "%s\n" "${_LIST_MDIA[@]}" | \
+		IFS= mapfile -d $'\n' -t __MDIA < <(printf "%s\n" "${_LIST_MDIA[@]}" | \
 			awk -v type="${__TGET}" '
-				BEGIN {
-					printf "%s %s %s %s %s %s\n", "NR", "ID", "Target%20file%20name", "ReleaseDay", "SupportEnd", "Memo"
-				}
 				$1==type && $2=="o" {
-					sub(/^.*\//, "", $14)
-					sub(/^.*\//, "", $24)
-					sub(/^-+/, "", $14)
-					sub(/^-+/, "", $15)
-					sub(/^-+/, "", $8)
-					sub(/^-+/, "", $24)
-					printf "%d %s %s %s %s %s\n", NR, ++id, $14, $15, $8, $24
+					printf "%d %d %s\n", NR, ++id, $0
 				}
 			' || true
 		)
-		__MDIA+=("${__LIST[@]}")
+		fnScreen_output "${__MDIA[@]}"
 	done
-	fnScreen_output "${__MDIA[@]}"
 
 #printf "%s\n" "${_LIST_MDIA[@]}"
 

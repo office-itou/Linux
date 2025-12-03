@@ -21,13 +21,19 @@ function fnScreen_output() {
 	printf "%c${__FMTG}%c\n" "#" "${_TEXT_GAP2}" "#"
 	set -f -- "${@:-}"
 	set +f
-	while [[ -n "${1:-}" ]]
-	do
-		read -r -a __LIST < <(echo "${1:-}")
-		shift
-		__LIST=("${__LIST[@]//%20/ }")
-		printf "%c${__FMTT}%c\n" "#" "${__LIST[1]:-}" "${__LIST[2]:-}" "${__LIST[3]:-}" "${__LIST[4]:-}" "${__LIST[5]:-}" "#"
-	done
+	if [[ "$#" -gt 0 ]]; then
+		printf "%c${__FMTT}%c\n" "#" "ID" "Target file name" "ReleaseDay" "SupportEnd" "Memo" "#"
+		while [[ -n "${1:-}" ]]
+		do
+			read -r -a __LIST < <(echo "${1:-}")
+			shift
+			__LIST=("${__LIST[@]//%20/ }")
+			__LIST[15]="${__LIST[15]##*/}"
+			__LIST[25]="${__LIST[25]##*/}"
+			__LIST=("${__LIST[@]##-}")
+			printf "%c${__FMTT}%c\n" "#" "${__LIST[1]:-}" "${__LIST[15]:-}" "${__LIST[16]:-}" "${__LIST[9]:-}" "${__LIST[25]:-}" "#"
+		done
+	fi
 	printf "%c${__FMTG}%c\n" "#" "${_TEXT_GAP2}" "#"
 	unset __FMTG __FMTT __LIST
 }

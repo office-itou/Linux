@@ -18,7 +18,7 @@ function fnList_mdia_Get() {
 		BEGIN {
 			split(list, _arry, " ")
 			delete _parm
-			for (i = 1; i <= length(_arry); i++) {
+			for (i in _arry) {
 				_name=_arry[i]
 				sub(/=.*$/, "", _name)
 				_work=_name

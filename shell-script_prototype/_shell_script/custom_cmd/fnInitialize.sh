@@ -82,8 +82,6 @@ function fnInitialize() {
 	readonly _SHEL_NLIN
 
 	# --- common configuration data -------------------------------------------
-	fnList_conf_Set						# set default common configuration data
-	fnList_conf_Dec						# decoding common configuration data
 	_PATH_CONF="${_PATH_CONF##*:_*_:*}"
 	_PATH_CONF="${_PATH_CONF:-"/srv/user/share/conf/_data/${_FILE_CONF:?}"}"
 	for __PATH in \
@@ -94,14 +92,7 @@ function fnInitialize() {
 		_PATH_CONF="${__PATH}"
 		break
 	done
-	if [[ -e "${_PATH_CONF}" ]]; then
-		fnList_conf_Get "${_PATH_CONF}"	# get common configuration data
-	else
-		mkdir -p "${_PATH_CONF%"${_FILE_CONF:?}"}"
-		fnList_conf_Enc					# encoding common configuration data
-		fnList_conf_Put "${_PATH_CONF}"	# put common configuration data
-	fi
-	fnList_conf_Dec						# decoding common configuration data
+	fnList_conf_Get "${_PATH_CONF}"		# get common configuration data
 
 	# --- media information data ----------------------------------------------
 	fnList_mdia_Get "${_PATH_MDIA}"		# get media information data
