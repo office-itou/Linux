@@ -1,34 +1,27 @@
 # shellcheck disable=SC2148
 
 # -----------------------------------------------------------------------------
-# descript: ltrim
+# descript: dirname
 #   input :     $1     : input
 #   output:   stdout   : output
 #   return:            : unused
 #   g-var :            : unused
 # shellcheck disable=SC2148,SC2317,SC2329
-function fnLtrim() {
-	echo -n "${1#"${1%%[!"${2:-"${IFS}"}"]*}"}"	# ltrim
+function fnDirname() {
+	declare       __WORK=""				# work
+	__WORK="${1##*/}"
+	echo -n "${1%"${__WORK:+"/${__WORK}"}"}"
 }
 
 # -----------------------------------------------------------------------------
-# descript: rtrim
+# descript: basename
 #   input :     $1     : input
 #   output:   stdout   : output
 #   return:            : unused
 #   g-var :            : unused
 # shellcheck disable=SC2148,SC2317,SC2329
-function fnRtrim() {
-	echo -n "${1%"${1##*[!"${2:-"${IFS}"}"]}"}"	# rtrim
-}
-
-# -----------------------------------------------------------------------------
-# descript: trim
-#   input :     $1     : input
-#   output:   stdout   : output
-#   return:            : unused
-#   g-var :            : unused
-# shellcheck disable=SC2148,SC2317,SC2329
-function fnTrim() {
-	fnRtrim "$(fnLtrim "${1:?}" "${2:-}")" "${2:-}"
+function fnBasename() {
+	declare       __WORK=""				# work
+	__WORK="${1%/*}"
+	echo -n "${1#"${__WORK:+"${__WORK}/"}"}"
 }

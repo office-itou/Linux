@@ -29,6 +29,10 @@
 # *** function section (common functions) *************************************
 
 	# shellcheck source=/dev/null
+	source "${_SHEL_COMN}"/fnTrim.sh						# ltrim/rtrim/trim
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMN}"/fnBasename.sh					# dirname/basename
+	# shellcheck source=/dev/null
 	source "${_SHEL_COMN}"/fnMsgout.sh						# message output
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMN}"/fnString.sh						# string output
@@ -42,6 +46,10 @@
 	source "${_SHEL_COMN}"/fnIPv6RevAddr.sh					# IPv6 reverse address
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMN}"/fnIPv4Netmask.sh					# IPv4 netmask conversion
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMN}"/fnGetWebinfo.sh					# get web information data
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMN}"/fnGetFileinfo.sh					# get file information data
 
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnDbgout.sh						# message output (debug out)
@@ -171,16 +179,59 @@
 	declare       __PTRN=""				# pattern
 	declare -a    __LIST=()				# list
 
-time	for __TGET in "${_LIST_TYPE[@]}"
+time	for __TYPE in "${_LIST_TYPE[@]}"
 	do
-		IFS= mapfile -d $'\n' -t __MDIA < <(printf "%s\n" "${_LIST_MDIA[@]}" | \
-			awk -v type="${__TGET}" '
-				$1==type && $2=="o" {
-					printf "%d %d %s\n", NR, ++id, $0
-				}
-			' || true
+		IFS= mapfile -d $'\n' -t __TGET < <(\
+			printf "%s\n" "${_LIST_MDIA[@]}" | \
+			awk -v type="${__TYPE}" '$1==type && $2=="o" {print FNR-1, $0;}' \
 		)
-		fnScreen_output "${__MDIA[@]}"
+		for I in "${!__TGET[@]}"
+		do
+			read -r -a __MDIA < <(echo "${__TGET[I]}")
+			__MDIA=("${__MDIA[@]//%20/ }")
+			if [[ -n "$(fnTrim "${__MDIA[9]}" "-")" ]]; then
+				__RETN="$(fnGetWebinfo "${__MDIA[9]}")"
+				read -r -a __LIST < <(echo "${__RETN}")
+				__MDIA[10]="${__LIST[0]}"	# web_path
+				__MDIA[11]="${__LIST[3]}"	# web_tstamp
+				__MDIA[12]="${__LIST[2]}"	# web_size
+				__MDIA[13]="${__LIST[1]}"	# web_status
+				case "${__MDIA[13]}" in
+					2[0-9][0-9])
+						__FILE="$(fnBasename "${__MDIA[10]}")"
+						if [[ -n "${__FILE:-}" ]]; then
+							case "${__FILE}" in
+								mini.iso) ;;
+								*       )
+									__DIRS="$(fnDirname "${__MDIA[14]}")"
+									__MDIA[14]="${__DIRS:-}/${__FILE}"	# iso_path
+									;;
+							esac
+							# --- iso file ------------------------------------
+							__RETN="$(fnGetFileinfo "${__MDIA[14]}")"
+							read -r -a __LIST < <(echo "${__RETN}")
+							__MDIA[15]="${__LIST[1]:-}"	# iso_tstamp
+							__MDIA[16]="${__LIST[2]:-}"	# iso_size
+							__MDIA[17]="${__LIST[3]:-}"	# iso_volume
+							# --- rmk file ------------------------------------
+							__RETN="$(fnGetFileinfo "${__MDIA[18]}")"
+							read -r -a __LIST < <(echo "${__RETN}")
+							__MDIA[19]="${__LIST[1]:-}"	# rmk_tstamp
+							__MDIA[20]="${__LIST[2]:-}"	# rmk_size
+							__MDIA[21]="${__LIST[3]:-}"	# rmk_volume
+						fi
+						;;
+					*) ;;
+				esac
+			fi
+			__MDIA=("${__MDIA[@]// /%20}")
+			I="${__MDIA[0]}"
+			_LIST_MDIA[I]="$(
+				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-11s \n" \
+				"${__MDIA[@]:1}"
+			)"
+printf "%s\n" "${_LIST_MDIA[I]:-}"
+		done
 	done
 
 #printf "%s\n" "${_LIST_MDIA[@]}"

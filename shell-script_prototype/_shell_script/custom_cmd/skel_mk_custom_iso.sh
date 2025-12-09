@@ -48,6 +48,8 @@
 	source "${_SHEL_COMN}"/fnIPv6RevAddr.sh					# IPv6 reverse address
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMN}"/fnIPv4Netmask.sh					# IPv4 netmask conversion
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMN}"/fnGetWebdata.sh					# get web information data
 
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnDbgout.sh						# message output (debug out)
@@ -77,11 +79,11 @@
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnInitialize.sh					# initialize
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnList_conf_Set.sh				# set default common configuration data
+#	source "${_SHEL_COMD}"/fnList_conf_Set.sh				# set default common configuration data
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnList_conf_Enc.sh				# encoding common configuration data
+#	source "${_SHEL_COMD}"/fnList_conf_Enc.sh				# encoding common configuration data
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnList_conf_Dec.sh				# decoding common configuration data
+#	source "${_SHEL_COMD}"/fnList_conf_Dec.sh				# decoding common configuration data
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnList_conf_Get.sh				# get auto-installation configuration file
 	# shellcheck source=/dev/null
@@ -89,7 +91,9 @@
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnList_mdia_Get.sh				# get media information data
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnList_mdia_Dec.sh				# decoding common configuration data
+	source "${_SHEL_COMD}"/fnList_mdia_Put.sh				# put media information data
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD}"/fnList_mdia_Dec.sh				# decoding common configuration data
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_symlink_dir.sh				# make directory
 	# shellcheck source=/dev/null
