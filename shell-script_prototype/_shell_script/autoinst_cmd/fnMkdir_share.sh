@@ -72,15 +72,15 @@ fnMkdir_share(){
 	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_data
 	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_keyring
 	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.build.d
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosimkosi.clean.d
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosimkosi.conf.d
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosimkosi.extra
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosimkosi.finalize.d
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosimkosi.postinst.d
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosimkosi.postoutput.d
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosimkosi.prepare.d
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosimkosi.repart
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosimkosi.sync.d
+	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.clean.d
+	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.conf.d
+	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.extra
+	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.finalize.d
+	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.postinst.d
+	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.postoutput.d
+	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.prepare.d
+	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.repart
+	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.sync.d
 	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_repository/opensuse
 	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_template
 	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/agama
