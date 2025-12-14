@@ -26,7 +26,7 @@
   |-- sudoers
   |-- apache2
   |   `-- sites-available
-  |       `-- 999-site.conf ------------- virtual host configuration file for users
+  |       `-- 999-site.conf ------------ virtual host configuration file for users
   |-- apt
   |   |-- sources.list
   |   `-- sources.list.d
@@ -37,18 +37,18 @@
   |   |-- dnsmasq
   |   `-- grub
   |-- dnsmasq.d
-  |   |-- default.conf ------------------ dnsmasq configuration file
-  |   `-- pxeboot.conf ------------------ pxeboot configuration file
+  |   |-- default.conf ----------------- dnsmasq configuration file
+  |   `-- pxeboot.conf ----------------- pxeboot configuration file
   |-- firewalld
   |   `-- zones
   |       `-- home_use.xml
-  |-- postgresql ------------------------ postgresql
+  |-- postgresql ----------------------- postgresql
   |   `-- 18
   |       `-- main
-  |           |-- pg_hba.conf     ------- client authentication configuration file
-  |           `-- postgresql.conf ------- postgresql configuration file
+  |           |-- pg_hba.conf     ------ client authentication configuration file
+  |           `-- postgresql.conf ------ postgresql configuration file
   |-- samba
-  |   `-- smb.conf ---------------------- samba configuration file
+  |   `-- smb.conf --------------------- samba configuration file
   |-- skel
   |   |-- .bash_history
   |   |-- .bashrc
@@ -56,7 +56,7 @@
   |   `-- .vimrc
   |-- ssh
   |   `-- sshd_config.d
-  |       `-- default.conf -------------- ssh configuration file
+  |       `-- default.conf ------------- ssh configuration file
   `-- systemd
       |-- resolved.conf.d
       |   `-- default.conf
@@ -113,18 +113,18 @@
 * ## **/srv/**
 
   ``` bash:
-  /srv/
-  |-- hgfs ------------------------------ vmware shared directory
+/srv/
+  |-- hgfs ----------------------------- vmware shared directory
   |-- http
-  |   `-- html -------------------------- html contents
-  |       |-- index.html
+  |   `-- html ------------------------- html contents
   |       |-- conf -> /srv/user/share/conf
   |       |-- imgs -> /srv/user/share/imgs
   |       |-- isos -> /srv/user/share/isos
   |       |-- load -> /srv/user/share/load
   |       |-- rmak -> /srv/user/share/rmak
   |       `-- tftp -> /srv/tftp
-  |-- samba ----------------------------- samba shared directory
+  |-- lost+found
+  |-- samba ---------------------------- samba shared directory
   |   |-- adm
   |   |   |-- commands
   |   |   `-- profiles
@@ -140,145 +140,151 @@
   |   |   |-- hardware
   |   |   |-- resource
   |   |   |   |-- image
+  |   |   |   |   |-- creations
+  |   |   |   |   |   `-- rmak --------- remake file
   |   |   |   |   |-- linux
+  |   |   |   |   |   |-- almalinux
+  |   |   |   |   |   |-- centos
+  |   |   |   |   |   |-- debian
+  |   |   |   |   |   |-- fedora
+  |   |   |   |   |   |-- memtest86plus
+  |   |   |   |   |   |-- miraclelinux
+  |   |   |   |   |   |-- opensuse
+  |   |   |   |   |   |-- rockylinux
+  |   |   |   |   |   `-- ubuntu
   |   |   |   |   `-- windows
+  |   |   |   |       |-- aomei
+  |   |   |   |       |-- ati
+  |   |   |   |       |-- windows-10
+  |   |   |   |       |-- windows-11
+  |   |   |   |       `-- winpe
   |   |   |   `-- source
   |   |   |       `-- git
+  |   |   |           `-- office-itou
+  |   |   |               |-- linux
+  |   |   |               |   `-- conf --------- configuration file
+  |   |   |               |       |-- _data ------- common data files
+  |   |   |               |       |   |-- common.cfg ----------- configuration file of common
+  |   |   |               |       |   |-- distribution.dat ----- data file of distribution
+  |   |   |               |       |   `-- media.dat ------------ data file of media
+  |   |   |               |       |-- _keyring ---- keyring file
+  |   |   |               |       |-- _mkosi
+  |   |   |               |       |   |-- mkosi.build.d
+  |   |   |               |       |   |-- mkosi.clean.d
+  |   |   |               |       |   |-- mkosi.conf.d
+  |   |   |               |       |   |-- mkosi.extra
+  |   |   |               |       |   |-- mkosi.finalize.d
+  |   |   |               |       |   |-- mkosi.postinst.d
+  |   |   |               |       |   |-- mkosi.postoutput.d
+  |   |   |               |       |   |-- mkosi.prepare.d
+  |   |   |               |       |   |-- mkosi.repart
+  |   |   |               |       |   `-- mkosi.sync.d
+  |   |   |               |       |-- _repository
+  |   |   |               |       |-- _template --- templates for various configuration files
+  |   |   |               |       |   |-- agama_opensuse.json -- for opensuse agama installer
+  |   |   |               |       |   |-- kickstart_rhel.cfg --- for rhel
+  |   |   |               |       |   |-- preseed_debian.cfg --- for debian
+  |   |   |               |       |   |-- preseed_ubuntu.cfg --- for ubuntu
+  |   |   |               |       |   |-- user-data_ubuntu ----- for ubuntu cloud-init
+  |   |   |               |       |   `-- yast_opensuse.xml ---- for opensuse
+  |   |   |               |       |-- agama ------- configuration files for opensuse agama installer
+  |   |   |               |       |-- autoyast ---- "                   for opensuse
+  |   |   |               |       |-- kickstart --- "                   for rhel
+  |   |   |               |       |-- nocloud ----- "                   for ubuntu cloud-init
+  |   |   |               |       |-- preseed ----- "                   for debian/ubuntu preseed
+  |   |   |               |       |-- script ------ script files
+  |   |   |               |       |   |-- autoinst_cmd_early.sh ---- for auto install early command
+  |   |   |               |       |   |-- autoinst_cmd_late.sh ----- "                late command
+  |   |   |               |       |   |-- autoinst_cmd_part.sh ----- "                early command after partman
+  |   |   |               |       |   `-- autoinst_cmd_run.sh ------ "                preseed/run
+  |   |   |               |       `-- windows
+  |   |   |               `-- windows --------------- configuration files for windows
+  |   |   |                   |-- WinREexpand.cmd ---------- hotfix for windows 10
+  |   |   |                   |-- WinREexpand_bios.sub ----- "
+  |   |   |                   |-- WinREexpand_uefi.sub ----- "
+  |   |   |                   |-- bypass.cmd --------------- installation restriction bypass command for windows 11
+  |   |   |                   |-- inst_w10.cmd ------------- installation batch file for windows 10
+  |   |   |                   |-- inst_w11.cmd ------------- "                       for windows 11
+  |   |   |                   |-- shutdown.cmd ------------- shutdown command for winpe
+  |   |   |                   |-- startnet.cmd ------------- startup command for winpe
+  |   |   |                   |-- unattend.xml ------------- auto-installation configuration file for windows 10/11
+  |   |   |                   `-- winpeshl.ini -------------
   |   |   `-- software
   |   `-- usr
-  |       `-- administrator
-  |           |-- app
-  |           |-- dat
-  |           `-- web
-  |               `-- public_html
-  |                   `-- index.html
-  |-- tftp ------------------------------ tftp contents
-  |   |-- autoexec.ipxe ----------------- ipxe script file (menu file)
+  |-- tftp ----------------------------- tftp contents
+  |   |-- autoexec.ipxe ---------------- ipxe script file (menu file)
   |   |-- boot
   |   |   `-- grub
-  |   |       |-- bootx64.efi ----------- bootloader (x86_64-efi)
-  |   |       |-- grub.cfg -------------- menu base
-  |   |       |-- pxegrub.0 ------------- bootloader (i386-pc-pxe)
+  |   |       |-- bootx64.efi ---------- bootloader (x86_64-efi)
+  |   |       |-- grub.cfg ------------- menu base
+  |   |       |-- pxegrub.0 ------------ bootloader (i386-pc-pxe)
   |   |       |-- fonts
-  |   |       |   `-- unicode.pf2
   |   |       |-- i386-efi
   |   |       |-- i386-pc
   |   |       |-- locale
   |   |       `-- x86_64-efi
   |   |-- conf -> /srv/user/share/conf
   |   |-- imgs -> /srv/user/share/imgs
-  |   |-- ipxe -------------------------- ipxe module
-  |   |   |-- ipxe.efi -------------------------- for efi boot mode
-  |   |   |-- undionly.kpxe --------------------- for mbr boot mode
-  |   |   `-- wimboot --------------------------- for windows media
+  |   |-- ipxe ------------------------- ipxe module
+  |   |   |-- ipxe.efi --------------------- for efi boot mode
+  |   |   |-- undionly.kpxe ---------------- for mbr boot mode
+  |   |   `-- wimboot ---------------------- for windows media
   |   |-- isos -> /srv/user/share/isos
   |   |-- load -> /srv/user/share/load
   |   |-- menu-bios
-  |   |   |-- lpxelinux.0 --------------- bootloader (i386-pc)
-  |   |   |-- syslinux.cfg -------------- syslinux configuration for mbr environment
+  |   |   |-- lpxelinux.0 -------------- bootloader (i386-pc)
+  |   |   |-- syslinux.cfg ------------- syslinux configuration for mbr environment
   |   |   |-- conf -> ../conf
   |   |   |-- imgs -> ../imgs
   |   |   |-- isos -> ../isos
   |   |   |-- load -> ../load
   |   |   |-- pxelinux.cfg
   |   |   |   `-- default -> ../syslinux.cfg
-  |   |   `-- rmak -> ../rmak
+  |   |   |-- rmak -> ../rmak
+  |   |   `-- syslinux.cfg
   |   |-- menu-efi64
-  |   |   |-- syslinux.cfg -------------- syslinux configuration for uefi(x86_64) environment
-  |   |   |-- syslinux.efi -------------- bootloader (x86_64-efi)
+  |   |   |-- syslinux.cfg ------------- syslinux configuration for uefi(x86_64) environment
+  |   |   |-- syslinux.efi ------------- bootloader (x86_64-efi)
   |   |   |-- conf -> ../conf
   |   |   |-- imgs -> ../imgs
   |   |   |-- isos -> ../isos
   |   |   |-- load -> ../load
   |   |   |-- pxelinux.cfg
   |   |   |   `-- default -> ../syslinux.cfg
-  |   |   `-- rmak -> ../rmak
+  |   |   |-- rmak -> ../rmak
+  |   |   `-- syslinux.cfg
   |   `-- rmak -> /srv/user/share/rmak
-  `-- user ------------------------------ user file
-      |-- private ----------------------- personal use
-      `-- share ------------------------- shared
+  `-- user ----------------------------- user file
+      |-- private ---------------------- personal use
+      `-- share ------------------------ shared
           |-- cache
-          |-- chroot -------------------- change route directory
-          |-- conf ---------------------- configuration file
-          |   |-- _data ----------------- common data files
-          |   |   |-- common.cfg ---------------- configuration file of common
-          |   |   |-- distribution.dat ---------- data file of distribution
-          |   |   `-- media.dat ----------------- data file of media
-          |   |-- _fixed_address
-          |   |   |-- autoinst.xml
-          |   |   |-- kickstart.cfg
-          |   |   |-- preseed.cfg
-          |   |   `-- user-data
-          |   |-- _keyring -------------- keyring file
-          |   |   |-- debian-keyring.gpg
-          |   |   `-- ubuntu-archive-keyring.gpg
-          |   |-- _repository
-          |   |   |-- almalinux.repo
-          |   |   |-- centos-stream.repo
-          |   |   |-- fedora.repo
-          |   |   |-- miraclelinux.repo
-          |   |   `-- rockylinux.repo
-          |   |-- _template ------------- templates for various configuration files
-          |   |   |-- agama_opensuse.json ------- for opensuse agama installer
-          |   |   |-- kickstart_rhel.cfg -------- for rhel
-          |   |   |-- live-debian.yaml
-          |   |   |-- live-ubuntu.yaml
-          |   |   |-- preseed_debian.cfg -------- for debian
-          |   |   |-- preseed_ubuntu.cfg -------- for ubuntu
-          |   |   |-- user-data_ubuntu ---------- for ubuntu cloud-init
-          |   |   `-- yast_opensuse.xml --------- for opensuse
-          |   |-- agama ----------------- configuration files for opensuse agama installer
-          |   |-- autoyast -------------- "                   for opensuse
-          |   |-- kickstart ------------- "                   for rhel
-          |   |-- nocloud --------------- "                   for ubuntu cloud-init
-          |   |-- preseed --------------- "                   for debian/ubuntu preseed
-          |   |-- script ---------------- script files
-          |   |   |-- autoinst_cmd_early.sh ----- for auto install early command
-          |   |   |-- autoinst_cmd_late.sh ------ "                late command
-          |   |   |-- autoinst_cmd_part.sh ------ "                early command after partman
-          |   |   `-- autoinst_cmd_run.sh ------- "                preseed/run
-          |   `-- windows --------------- configuration files for windows
-          |       |-- WinREexpand.cmd ----------- hotfix for windows 10
-          |       |-- WinREexpand_bios.sub ------ "
-          |       |-- WinREexpand_uefi.sub ------ "
-          |       |-- bypass.cmd ---------------- installation restriction bypass command for windows 11
-          |       |-- inst_w10.cmd -------------- installation batch file for windows 10
-          |       |-- inst_w11.cmd -------------- "                       for windows 11
-          |       |-- shutdown.cmd -------------- shutdown command for winpe
-          |       |-- startnet.cmd -------------- startup command for winpe
-          |       |-- unattend.xml -------------- auto-installation configuration file for windows 10/11
-          |       `-- winpeshl.ini --------------
+          |-- chroot ------------------- change route directory
+          |-- conf -> /srv/samba/pub/resource/source/git/office-itou/linux/conf
+          |-- conf.orig
           |-- containers
-          |-- imgs ---------------------- iso file extraction destination
-          |-- isos ---------------------- iso file
-          |-- load ---------------------- load module
-          `-- rmak ---------------------- remake file
+          |-- imgs --------------------- iso file extraction destination
+          |-- isos --------------------- iso file
+          |   |-- linux -> /srv/samba/pub/resource/image/linux
+          |   `-- windows -> /srv/samba/pub/resource/image/windows
+          |-- load --------------------- load module
+          |-- rmak -> /srv/samba/pub/resource/image/creations/rmak
+          `-- rmak.orig
   ```
 
 * ## **/var/**
 
   ``` bash:
   /var/
-  |-- adm
+  |-- admin
   |   `-- autoinst
   |       |-- autoinst_cmd_early.sh
+  |       |-- autoinst_cmd_early.sh.log
   |       |-- autoinst_cmd_late.sh
+  |       |-- autoinst_cmd_late.sh.log
   |       |-- autoinst_cmd_part.sh
+  |       |-- autoinst_cmd_part.sh.log
   |       |-- autoinst_cmd_run.sh
-  |       |-- early_command.log
-  |       |-- get_module_ipxe.sh
-  |       |-- late_command.log
-  |       |-- partman_early_command.log
-  |       |-- ps_debian_server.cfg
-  |       |-- questions.dat
-  |       |-- init
-  |       |-- orig
-  |       `-- samp
-  |           `-- etc
-  |               `-- dnsmasq.d
-  |                   |-- pxeboot_grub.conf
-  |                   |-- pxeboot_ipxe.conf
-  |                   `-- pxeboot_syslinux.conf
+  |       `-- ps_debian_server.cfg
   `-- lib
       `-- connman
           `-- ethernet_[mac address]_cable
