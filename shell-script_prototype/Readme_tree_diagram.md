@@ -113,7 +113,7 @@
 * ## **/srv/**
 
   ``` bash:
-/srv/
+  /srv/
   |-- hgfs ----------------------------- vmware shared directory
   |-- http
   |   `-- html ------------------------- html contents
