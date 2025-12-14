@@ -248,10 +248,12 @@
 	declare       _MENU_SPLS="splash.png"					# splash file
 
 	# --- list data -----------------------------------------------------------
+	declare -a    _LIST_PARM=()								# PARAMETER LIST
 	declare -a    _LIST_CONF=()								# common configuration data
 	declare -a    _LIST_DIST=()								# distribution information
 	declare -a    _LIST_MDIA=()								# media information
 	declare -a    _LIST_DSTP=()								# debstrap information
+															# media type
 
 # *** function section (common functions) *************************************
 
@@ -301,11 +303,13 @@ function fnString() {
 #   output:   stdout   : output
 #   return:            : unused
 function fnStrmsg() {
+	declare      ___TEXT="${1:-}"
 	declare      ___TXT1=""
 	declare      ___TXT2=""
-	___TXT1="$(echo "${1:-}" | cut -c -3)"
-	___TXT2="$(echo "${1:-}" | cut -c "$((${#___TXT1}+2+${#2}+1))"-)"
+	___TXT1="$(echo "${___TEXT:-}" | cut -c -3)"
+	___TXT2="$(echo "${___TEXT:-}" | cut -c "$((${#___TXT1}+2+${#2}+1+${#_PROG_NAME}+16))"-)"
 	printf "%s %s %s" "${___TXT1}" "${2:-}" "${___TXT2}"
+	unset ___TEXT
 	unset ___TXT1
 	unset ___TXT2
 }
@@ -889,11 +893,8 @@ function fnInitialize() {
 	readonly _ROWS_SIZE
 	readonly _COLS_SIZE
 
-	__COLS="${_COLS_SIZE}"
-	[[ -n "${_PROG_NAME:-}" ]] && __COLS=$((_COLS_SIZE-${#_PROG_NAME}-16))
-	_TEXT_GAP1="$(fnString "${__COLS:-"${_COLS_SIZE}"}" '-')"
-	_TEXT_GAP2="$(fnString "${__COLS:-"${_COLS_SIZE}"}" '=')"
-	unset __COLS
+	_TEXT_GAP1="$(fnString "${_COLS_SIZE}" '-')"
+	_TEXT_GAP2="$(fnString "${_COLS_SIZE}" '=')"
 	readonly _TEXT_GAP1
 	readonly _TEXT_GAP2
 
@@ -934,8 +935,6 @@ function fnInitialize() {
 	readonly _SHEL_NLIN
 
 	# --- common configuration data -------------------------------------------
-	fnList_conf_Set						# set default common configuration data
-	fnList_conf_Dec						# decoding common configuration data
 	_PATH_CONF="${_PATH_CONF##*:_*_:*}"
 	_PATH_CONF="${_PATH_CONF:-"/srv/user/share/conf/_data/${_FILE_CONF:?}"}"
 	for __PATH in \
@@ -946,20 +945,11 @@ function fnInitialize() {
 		_PATH_CONF="${__PATH}"
 		break
 	done
-	if [[ -e "${_PATH_CONF}" ]]; then
-		fnList_conf_Get "${_PATH_CONF}"	# get common configuration data
-	else
-		mkdir -p "${_PATH_CONF%"${_FILE_CONF:?}"}"
-		fnList_conf_Enc					# encoding common configuration data
-		fnList_conf_Put "${_PATH_CONF}"	# put common configuration data
-	fi
-	fnList_conf_Dec						# decoding common configuration data
+	fnList_conf_Get "${_PATH_CONF}"		# get common configuration data
 
 	# --- media information data ----------------------------------------------
-	if [[ -e "${_PATH_MDIA:?}" ]]; then
-		fnList_mdia_Get "${_PATH_MDIA}"	# get media information data
-	fi
-	fnList_mdia_Dec						# decoding media information data
+	fnList_mdia_Get "${_PATH_MDIA}"		# get media information data
+
 	unset __PATH __DIRS __WORK
 
 	# --- complete ------------------------------------------------------------
@@ -1242,6 +1232,7 @@ function fnList_conf_Dec() {
 	declare       __LINE=""				# work
 	declare -i    I=0					# work
 
+	_LIST_PARM=()
 	for I in "${!_LIST_CONF[@]}"
 	do
 		__LINE="${_LIST_CONF[I]}"
@@ -1256,12 +1247,6 @@ function fnList_conf_Dec() {
 		__VALU="${__VALU%"${__VALU##*[!"${IFS}"]}"}"	# rtrim
 		# --- store in a variable ---------------------------------------------
 		[[ -z "${__NAME:-}" ]] && continue
-#		case "${__NAME}" in
-#			PATH_*     ) ;;
-#			DIRS_*     ) ;;
-#			FILE_*     ) ;;
-#			*          ) continue;;
-#		esac
 		__WNAM="${__NAME:-}"
 		__NAME="_${__WNAM:-}"
 		__VALU="${__VALU#\"}"
@@ -1285,6 +1270,7 @@ function fnList_conf_Dec() {
 			*) ;;
 		esac
 		read -r "${__NAME:?}" < <(eval echo "${__VALU}" || true)
+		_LIST_PARM+=("${__NAME}=${!__NAME}")
 	done
 	unset __NAME __VALU __CMNT __WNAM __WVAL __WORK __LINE I
 
@@ -1306,10 +1292,56 @@ function fnList_conf_Get() {
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
-	if [[ -e "${1:?}" ]]; then
-		_LIST_CONF=()
-		IFS= mapfile -d $'\n' -t _LIST_CONF < <(expand -t 4 "$1" || true)
-	fi
+	IFS= mapfile -d $'\n' -t _LIST_CONF < <(awk '
+		{
+			delete _parm
+			do {
+				_line=$0
+				match(_line, /^[[:alnum:]]+_[[:alnum:]]+=/)
+				if (RSTART > 0) {
+					_name=substr(_line, RSTART, RLENGTH)
+					sub(/=.*$/, "", _name)
+					_cmnt=_line
+					sub(/^[^#]+/, "", _cmnt)
+					_valu=_line
+					_start=index(_valu, _name)
+					if (_start > 0) {
+						_valu=substr(_valu, _start+length(_name))
+					}
+					_start=index(_valu, _cmnt)
+					if (_start > 0) {
+						_valu=substr(_valu, 1, _start-1)
+					}
+					sub(/^="*/, "", _valu)
+					sub(/"* *$/, "", _valu)
+					_wval=_valu
+					while (1) {
+						match(_wval, /:_[[:alnum:]]+_[[:alnum:]]+_:/)
+						if (RSTART == 0) {
+						break
+						}
+						_ptrn=substr(_wval, RSTART, RLENGTH)
+						_wnam=substr(_ptrn, 3, length(_ptrn)-4)
+						sub(_ptrn, _parm[_wnam], _wval)
+					}
+					_parm[_name]=_wval
+					_start=index(_line, _valu)
+					if (_start > 0) {
+						_line=sprintf("%s%s%s", substr(_line, 1, _start-1), _wval, substr(_line, _start+length(_valu)))
+					}
+				}
+				printf "%s\n", _line
+			} while ((getline) > 0)
+		}
+	' "$1" || true)
+	while read -r __LINE
+	do
+		__NAME="${__LINE%%=*}"
+		__VALU="${__LINE#"${__NAME}="}"
+		__NAME="${__NAME:+"_${__NAME}"}"
+		read -r "${__NAME:?}" < <(eval echo "${__VALU}" || true)
+		_LIST_PARM+=("${__NAME}=${!__NAME}")
+	done < <(printf "%s\n" "${_LIST_CONF[@]:-}" | grep -E '^[[:alnum:]]+_[[:alnum:]]+=')
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -1329,7 +1361,69 @@ function fnList_conf_Put() {
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
-	printf "%s\n" "${_LIST_CONF[@]}" > "${1:?}"
+	printf "%s\n" "${_LIST_CONF[@]}" | awk -v list="${_LIST_PARM[*]}" '
+		BEGIN {
+			split(list, _arry, " ")
+			delete _parm
+			j = length(_arry)
+			for (i in _arry) {
+				_name=_arry[i]
+				sub(/=.*$/, "", _name)
+				_work=_name
+				sub(/[[:alnum:]]+$/, "", _work)
+				switch (_work) {
+					case "_PATH_":
+					case "_DIRS_":
+					case "_FILE_":
+						break
+					default:
+						continue
+						break
+				}
+				_valu=_arry[i]
+				sub(_name, "", _valu)
+				sub(/^=/, "", _valu)
+				_parm[j--]=_name"="_valu
+			}
+		}
+		{
+			do {
+				_line=$0
+				match(_line, /^[[:alnum:]]+_[[:alnum:]]+=/)
+				if (RSTART > 0) {
+					_name=substr(_line, RSTART, RLENGTH)
+					sub(/=.*$/, "", _name)
+					_cmnt=_line
+					sub(/^[^#]+/, "", _cmnt)
+					_valu=_line
+					_start=index(_valu, _name)
+					if (_start > 0) {
+						_valu=substr(_valu, _start+length(_name))
+					}
+					_start=index(_valu, _cmnt)
+					if (_start > 0) {
+						_valu=substr(_valu, 1, _start-1)
+					}
+					sub(/^=*/, "", _valu)
+					sub(/ *$/, "", _valu)
+					for (j in _parm) {
+						_wnam=_parm[j]
+						sub(/=.*$/, "", _wnam)
+						_wval=_parm[j]
+						sub(_wnam, "", _wval)
+						sub(/^=/, "", _wval)
+						_work=_wnam
+						sub(/^_/, "", _work)
+						if (_work != _name) {
+							gsub(_wval, ":_"_work"_:", _valu)
+						}
+					}
+					_line=sprintf("%-39s %s",_name"="_valu, _cmnt)
+				}
+				printf "%s\n", _line
+			} while ((getline) > 0)
+		}
+	' > "$1"
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -1476,7 +1570,7 @@ function fnMk_symlink() {
 		mkdir -p "${__LIST[13]%/*}"
 		ln -s "${__LIST[25]}/${__LIST[13]##*/}" "${__LIST[13]}"
 	done
-	unset __NAME_REFR __OPTN __FORC __PTRN __LINE __LIST I
+	unset __OPTN __FORC __PTRN __LINE __LIST I
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -1543,7 +1637,6 @@ function fnMk_preconf_nocloud() {
 #	unset __TGET_PATH
 }
 
- shellcheck disable=SC2148
 # -----------------------------------------------------------------------------
 # descript: make kickstart.cfg
 #   input :     $1     : input value
@@ -1854,7 +1947,7 @@ function fnMk_preconf() {
 			esac
 		done
 	fi
-	unset __NAME_REFR __OPTN __PTRN __TGET __LINE __LIST __PATH
+	unset __OPTN __PTRN __TGET __LINE __LIST __PATH
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -1945,7 +2038,7 @@ function fnMk_pxeboot() {
 			esac
 		done
 	fi
-	unset __NAME_REFR __OPTN __PTRN __TGET __LINE __LIST __PATH
+	unset __OPTN __PTRN __TGET __LINE __LIST __PATH
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -1970,7 +2063,6 @@ function fnMk_isofile() {
 	shift
 	              __NAME_REFR="${*:-}"
 #	declare -a    __OPTN=("${@:-}")		# options
-	unset __NAME_REFR
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"

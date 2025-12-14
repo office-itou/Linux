@@ -22,7 +22,7 @@
 
 	# --- include -------------------------------------------------------------
 	declare -r    _SHEL_PATH="${0:?}"
-	declare -r    _SHEL_TOPS="${_SHEL_PATH%/*}"
+	declare -r    _SHEL_TOPS="${_SHEL_PATH%/*}"/..
 	declare -r    _SHEL_COMN="${_SHEL_TOPS:-}/_common_bash"
 	declare -r    _SHEL_COMD="${_SHEL_TOPS:-}/custom_cmd"
 	# shellcheck source=/dev/null
@@ -34,6 +34,10 @@
 
 # *** function section (common functions) *************************************
 
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMN}"/fnTrim.sh						# ltrim/rtrim/trim
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMN}"/fnBasename.sh					# dirname/basename
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMN}"/fnMsgout.sh						# message output
 	# shellcheck source=/dev/null
@@ -49,7 +53,9 @@
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMN}"/fnIPv4Netmask.sh					# IPv4 netmask conversion
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnGetWebdata.sh					# get web information data
+	source "${_SHEL_COMN}"/fnGetWebinfo.sh					# get web information data
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMN}"/fnGetFileinfo.sh					# get file information data
 
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnDbgout.sh						# message output (debug out)

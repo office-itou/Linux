@@ -125,7 +125,7 @@ fnMain() {
 	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
 
 	# shellcheck source=/dev/null
-	. "${_SHEL_COMD}"/fncmdline.sh		# command line
+	. "${_SHEL_COMD}"/fnCmdline.sh		# command line
 
 	# --- debug output redirection --------------------------------------------
 	if set -o | grep "^xtrace\s*on$"; then

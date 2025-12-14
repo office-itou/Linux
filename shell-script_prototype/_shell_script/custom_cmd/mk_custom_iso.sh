@@ -246,12 +246,63 @@
 	declare       _MENU_SPLS="splash.png"					# splash file
 
 	# --- list data -----------------------------------------------------------
+	declare -a    _LIST_PARM=()								# PARAMETER LIST
 	declare -a    _LIST_CONF=()								# common configuration data
 	declare -a    _LIST_DIST=()								# distribution information
 	declare -a    _LIST_MDIA=()								# media information
 	declare -a    _LIST_DSTP=()								# debstrap information
+															# media type
 
 # *** function section (common functions) *************************************
+
+# -----------------------------------------------------------------------------
+# descript: ltrim
+#   input :     $1     : input
+#   output:   stdout   : output
+#   return:            : unused
+function fnLtrim() {
+	echo -n "${1#"${1%%[!"${2:-"${IFS}"}"]*}"}"	# ltrim
+}
+
+# -----------------------------------------------------------------------------
+# descript: rtrim
+#   input :     $1     : input
+#   output:   stdout   : output
+#   return:            : unused
+function fnRtrim() {
+	echo -n "${1%"${1##*[!"${2:-"${IFS}"}"]}"}"	# rtrim
+}
+
+# -----------------------------------------------------------------------------
+# descript: trim
+#   input :     $1     : input
+#   output:   stdout   : output
+#   return:            : unused
+function fnTrim() {
+	fnRtrim "$(fnLtrim "${1:?}" "${2:-}")" "${2:-}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: dirname
+#   input :     $1     : input
+#   output:   stdout   : output
+#   return:            : unused
+function fnDirname() {
+	declare       __WORK=""				# work
+	__WORK="${1##*/}"
+	echo -n "${1%"${__WORK:+"/${__WORK}"}"}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: basename
+#   input :     $1     : input
+#   output:   stdout   : output
+#   return:            : unused
+function fnBasename() {
+	declare       __WORK=""				# work
+	__WORK="${1%/*}"
+	echo -n "${1#"${__WORK:+"${__WORK}/"}"}"
+}
 
 # -----------------------------------------------------------------------------
 # descript: message output
@@ -299,11 +350,13 @@ function fnString() {
 #   output:   stdout   : output
 #   return:            : unused
 function fnStrmsg() {
+	declare      ___TEXT="${1:-}"
 	declare      ___TXT1=""
 	declare      ___TXT2=""
-	___TXT1="$(echo "${1:-}" | cut -c -3)"
-	___TXT2="$(echo "${1:-}" | cut -c "$((${#___TXT1}+2+${#2}+1))"-)"
+	___TXT1="$(echo "${___TEXT:-}" | cut -c -3)"
+	___TXT2="$(echo "${___TEXT:-}" | cut -c "$((${#___TXT1}+2+${#2}+1+${#_PROG_NAME}+16))"-)"
 	printf "%s %s %s" "${___TXT1}" "${2:-}" "${___TXT2}"
+	unset ___TEXT
 	unset ___TXT1
 	unset ___TXT2
 }
@@ -411,6 +464,195 @@ function fnIPv4Netmask() {
 				printf "%d",(32-c)
 			}
 		}'
+}
+
+# -----------------------------------------------------------------------------
+# descript: get web information data
+#   input :     $1     : target url
+#   output:   stdout   : output (url,code,content-length,last-modified,message)
+#   return:            : unused
+function fnGetWebinfo() {
+	awk -v _urls="${1:?}" '
+		function fnAwk_GetWebstatus(_retn, _code,  _mesg) {
+			# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
+			_mesg="Unknown Code"
+			switch (_code) {
+				case 100: _mesg="Continue"; break
+				case 101: _mesg="Switching Protocols"; break
+				case 200: _mesg="OK"; break
+				case 201: _mesg="Created"; break
+				case 202: _mesg="Accepted"; break
+				case 203: _mesg="Non-Authoritative Information"; break
+				case 204: _mesg="No Content"; break
+				case 205: _mesg="Reset Content"; break
+				case 206: _mesg="Partial Content"; break
+				case 300: _mesg="Multiple Choices"; break
+				case 301: _mesg="Moved Permanently"; break
+				case 302: _mesg="Found"; break
+				case 303: _mesg="See Other"; break
+				case 304: _mesg="Not Modified"; break
+				case 305: _mesg="Use Proxy"; break
+				case 306: _mesg="(Unused)"; break
+				case 307: _mesg="Temporary Redirect"; break
+				case 308: _mesg="Permanent Redirect"; break
+				case 400: _mesg="Bad Request"; break
+				case 401: _mesg="Unauthorized"; break
+				case 402: _mesg="Payment Required"; break
+				case 403: _mesg="Forbidden"; break
+				case 404: _mesg="Not Found"; break
+				case 405: _mesg="Method Not Allowed"; break
+				case 406: _mesg="Not Acceptable"; break
+				case 407: _mesg="Proxy Authentication Required"; break
+				case 408: _mesg="Request Timeout"; break
+				case 409: _mesg="Conflict"; break
+				case 410: _mesg="Gone"; break
+				case 411: _mesg="Length Required"; break
+				case 412: _mesg="Precondition Failed"; break
+				case 413: _mesg="Content Too Large"; break
+				case 414: _mesg="URI Too Long"; break
+				case 415: _mesg="Unsupported Media Type"; break
+				case 416: _mesg="Range Not Satisfiable"; break
+				case 417: _mesg="Expectation Failed"; break
+				case 418: _mesg="(Unused)"; break
+				case 421: _mesg="Misdirected Request"; break
+				case 422: _mesg="Unprocessable Content"; break
+				case 426: _mesg="Upgrade Required"; break
+				case 500: _mesg="Internal Server Error"; break
+				case 501: _mesg="Not Implemented"; break
+				case 502: _mesg="Bad Gateway"; break
+				case 503: _mesg="Service Unavailable"; break
+				case 504: _mesg="Gateway Timeout"; break
+				case 505: _mesg="HTTP Version Not Supported"; break
+				default : break
+			}
+			gsub(" ", "%20", _mesg)
+			_retn[1]=_mesg
+		}
+		function fnAwk_GetWebdata(_retn, _urls,  i, j, _list, _line, _code, _leng, _lmod, _date, _lcat, _ptrn, _dirs, _file, _rear, _mesg) {
+			# --- set pattern part --------------------------------------------
+			_ptrn=""
+			_dirs=""
+			_rear=""
+			match(_urls, "/[^/ \t]*\\[[^/ \t]+\\][^/ \t]*")
+			if (RSTART == 0) {
+				_comd="wget --tries=3 --timeout=60 --quiet --spider --server-response --output-document=- "_urls" 2>&1"
+			} else {
+				_ptrn=substr(_urls, RSTART+1, RLENGTH-1)
+				_dirs=substr(_urls, 1, RSTART-1)
+				_rear=substr(_urls, RSTART+RLENGTH+1)
+				_comd="wget --tries=3 --timeout=60 --quiet --server-response --output-document=- "_dirs" 2>&1"
+			}
+			# --- get web data ------------------------------------------------
+			delete _list
+			i=0
+			while (_comd | getline) {
+				_line=$0
+				_list[i++]=_line
+			}
+			close(_comd)
+			# --- get results -------------------------------------------------
+			_code=""
+			_leng=""
+			_lmod=""
+			_date=""
+			_lcat=""
+			_file=""
+			for (i in _list) {
+				_line=_list[i]
+				sub("^[ \t]+", "", _line)
+				sub("[ \t]+$", "", _line)
+				switch (tolower(_line)) {
+					case /^http\/[0-9]+.[0-9]+/:
+						sub("[^ \t]+[ \t]+", "", _line)
+						sub("[^0-9]*$", "", _line)
+						_code=_line
+						break
+					case /^content-length:/:
+						sub("[[:graph:]]+[ \t]+", "", _line)
+						_leng=_line
+						break
+					case /^last-modified:/:
+						sub("[[:graph:]]+[ \t]+", "", _line)
+						_date="TZ=UTC date -d \""_line"\" \"+%Y-%m-%d%%20%H:%M:%S%z\""
+						_date | getline _lmod
+						break
+					case /^location:/:
+						sub("[[:graph:]]+[ \t]+", "", _line)
+						_lcat=_line
+						break
+					default:
+						break
+				}
+				if (length(_ptrn) == 0) {
+					continue
+				}
+				match(_line, "<a href=\""_ptrn"/*\".*>")
+				if (RSTART == 0) {
+					continue
+				}
+				match(_line, "\""_ptrn"/*\"")
+				if (RSTART == 0) {
+					continue
+				}
+				_file=substr(_line, RSTART, RLENGTH)
+				sub("^\"", "", _file)
+				sub("\"$", "", _file)
+				sub("^/", "", _file)
+				sub("/$", "", _file)
+			}
+			# --- get url -----------------------------------------------------
+			delete _mesg
+			fnAwk_GetWebstatus(_mesg, _code)
+			_retn[1]=_urls
+			_retn[2]=_code
+			_retn[3]="-"
+			_retn[4]="-"
+			_retn[5]=_mesg[1]
+			# --- check the results -------------------------------------------
+			if (_code < 200 || _code > 299) {
+				return							# other than success
+			}
+			# --- get file information ----------------------------------------
+			if (length(_ptrn) == 0) {
+				_retn[3]=_leng
+				_retn[4]=_lmod
+				return
+			}
+			# --- pattern completion ------------------------------------------
+			_urls=_dirs
+			if (length(_file) > 0) {
+				_urls=_urls"/"_file
+			}
+			if (length(_rear) > 0) {
+				_urls=_urls"/"_rear
+			}
+			fnAwk_GetWebdata(_retn, _urls)
+			return
+		}
+		BEGIN {
+			fnAwk_GetWebdata(_retn, _urls)
+			printf("%s %s %s %s %s", _retn[1], _retn[2], _retn[3], _retn[4], _retn[5])
+		}
+	' || true
+}
+
+# -----------------------------------------------------------------------------
+# descript: get file information data
+#   input :     $1     : file name
+#   output:   stdout   : output (path,time stamp,size,volume id)
+#   return:            : unused
+function fnGetFileinfo() {
+	declare       __INFO=""				# file path / size / timestamp
+	declare       __VLID=""				# volume id
+	declare -a    __LIST=()				# data list
+	__LIST=("-" "-" "-")
+	__VLID="-"
+	__INFO="$(LANG=C find "${1%/*}" -name "${1##*/}" -follow -printf "%p %TY-%Tm-%Td%%20%TH:%TM:%TS%Tz %s")"
+	if [[ -n "${__INFO:-}" ]]; then
+		read -r -a __LIST < <(echo "${__INFO}")
+		__VLID="$(blkid -s LABEL -o value "${1}")"
+	fi
+	printf "%s %s %s %s" "${__LIST[0]// /%20}" "${__LIST[1]// /%20}" "${__LIST[2]// /%20}" "${__VLID// /%20}"
 }
 
 # -----------------------------------------------------------------------------
@@ -887,11 +1129,8 @@ function fnInitialize() {
 	readonly _ROWS_SIZE
 	readonly _COLS_SIZE
 
-	__COLS="${_COLS_SIZE}"
-	[[ -n "${_PROG_NAME:-}" ]] && __COLS=$((_COLS_SIZE-${#_PROG_NAME}-16))
-	_TEXT_GAP1="$(fnString "${__COLS:-"${_COLS_SIZE}"}" '-')"
-	_TEXT_GAP2="$(fnString "${__COLS:-"${_COLS_SIZE}"}" '=')"
-	unset __COLS
+	_TEXT_GAP1="$(fnString "${_COLS_SIZE}" '-')"
+	_TEXT_GAP2="$(fnString "${_COLS_SIZE}" '=')"
 	readonly _TEXT_GAP1
 	readonly _TEXT_GAP2
 
@@ -932,8 +1171,6 @@ function fnInitialize() {
 	readonly _SHEL_NLIN
 
 	# --- common configuration data -------------------------------------------
-	fnList_conf_Set						# set default common configuration data
-	fnList_conf_Dec						# decoding common configuration data
 	_PATH_CONF="${_PATH_CONF##*:_*_:*}"
 	_PATH_CONF="${_PATH_CONF:-"/srv/user/share/conf/_data/${_FILE_CONF:?}"}"
 	for __PATH in \
@@ -944,347 +1181,12 @@ function fnInitialize() {
 		_PATH_CONF="${__PATH}"
 		break
 	done
-	if [[ -e "${_PATH_CONF}" ]]; then
-		fnList_conf_Get "${_PATH_CONF}"	# get common configuration data
-	else
-		mkdir -p "${_PATH_CONF%"${_FILE_CONF:?}"}"
-		fnList_conf_Enc					# encoding common configuration data
-		fnList_conf_Put "${_PATH_CONF}"	# put common configuration data
-	fi
-	fnList_conf_Dec						# decoding common configuration data
+	fnList_conf_Get "${_PATH_CONF}"		# get common configuration data
 
 	# --- media information data ----------------------------------------------
-	if [[ -e "${_PATH_MDIA:?}" ]]; then
-		fnList_mdia_Get "${_PATH_MDIA}"	# get media information data
-	fi
-	fnList_mdia_Dec						# decoding media information data
+	fnList_mdia_Get "${_PATH_MDIA}"		# get media information data
+
 	unset __PATH __DIRS __WORK
-
-	# --- complete ------------------------------------------------------------
-	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
-	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
-	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
-	fnDbgparameters
-#	unset __FUNC_NAME
-}
-
-# -----------------------------------------------------------------------------
-# descript: set default common configuration data
-#   input :            : unused
-#   output:   stdout   : message
-#   return:            : unused
-function fnList_conf_Set() {
-	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
-	_DBGS_FAIL+=("${__FUNC_NAME:-}")
-	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
-
-	declare       __WORK=""				# work
-
-	__WORK="$(date +"%Y/%m/%d %H:%M:%S")"
-	IFS= mapfile -d $'\n' -t _LIST_CONF < <(cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
-		###############################################################################
-		#
-		#   common configuration file
-		#
-		#   developer   : J.Itou
-		#   release     : 2025/11/01
-		#
-		#   history     :
-		#      data    version    developer     point
-		#   ---------- -------- --------------- ---------------------------------------
-		#   2025/11/01 000.0000 J.Itou          first release
-		#   ${__WORK:-"xxxx/xx/xx xxx.xxxx"} J.Itou          application output
-		#
-		###############################################################################
-
-		# === for server environments =================================================
-
-		# --- shared directory parameter ----------------------------------------------
-		$(printf "%-39s %s" "DIRS_TOPS=\"${_DIRS_TOPS:-"/srv"}\""                    "# top of shared directory")
-		$(printf "%-39s %s" "DIRS_HGFS=\"${_DIRS_HGFS:-":_DIRS_TOPS_:/hgfs"}\""      "# vmware shared"          )
-		$(printf "%-39s %s" "DIRS_HTML=\"${_DIRS_HTML:-":_DIRS_TOPS_:/http/html"}\"" "# html contents"          )
-		$(printf "%-39s %s" "DIRS_SAMB=\"${_DIRS_SAMB:-":_DIRS_TOPS_:/samba"}\""     "# samba shared"           )
-		$(printf "%-39s %s" "DIRS_TFTP=\"${_DIRS_TFTP:-":_DIRS_TOPS_:/tftp"}\""      "# tftp contents"          )
-		$(printf "%-39s %s" "DIRS_USER=\"${_DIRS_USER:-":_DIRS_TOPS_:/user"}\""      "# user file"              )
-
-		# --- shared of user file -----------------------------------------------------
-		$(printf "%-39s %s" "DIRS_SHAR=\"${_DIRS_SHAR:-":_DIRS_USER_:/share"}\""      "# shared of user file"                      )
-		$(printf "%-39s %s" "DIRS_CONF=\"${_DIRS_CONF:-":_DIRS_SHAR_:/conf"}\""       "# configuration file"                       )
-		$(printf "%-39s %s" "DIRS_DATA=\"${_DIRS_DATA:-":_DIRS_CONF_:/_data"}\""      "# data file"                                )
-		$(printf "%-39s %s" "DIRS_KEYS=\"${_DIRS_KEYS:-":_DIRS_CONF_:/_keyring"}\""   "# keyring file"                             )
-		$(printf "%-39s %s" "DIRS_MKOS=\"${_DIRS_MKOS:-":_DIRS_CONF_:/_mkosi"}\""     "# mkosi configuration files"                )
-		$(printf "%-39s %s" "DIRS_TMPL=\"${_DIRS_TMPL:-":_DIRS_CONF_:/_template"}\""  "# templates for various configuration files")
-		$(printf "%-39s %s" "DIRS_SHEL=\"${_DIRS_SHEL:-":_DIRS_CONF_:/script"}\""     "# shell script file"                        )
-		$(printf "%-39s %s" "DIRS_IMGS=\"${_DIRS_IMGS:-":_DIRS_SHAR_:/imgs"}\""       "# iso file extraction destination"          )
-		$(printf "%-39s %s" "DIRS_ISOS=\"${_DIRS_ISOS:-":_DIRS_SHAR_:/isos"}\""       "# iso file"                                 )
-		$(printf "%-39s %s" "DIRS_LOAD=\"${_DIRS_LOAD:-":_DIRS_SHAR_:/load"}\""       "# load module"                              )
-		$(printf "%-39s %s" "DIRS_RMAK=\"${_DIRS_RMAK:-":_DIRS_SHAR_:/rmak"}\""       "# remake file"                              )
-		$(printf "%-39s %s" "DIRS_CACH=\"${_DIRS_CACH:-":_DIRS_SHAR_:/cache"}\""      "# cache file"                               )
-		$(printf "%-39s %s" "DIRS_CTNR=\"${_DIRS_CTNR:-":_DIRS_SHAR_:/containers"}\"" "# container file"                           )
-		$(printf "%-39s %s" "DIRS_CHRT=\"${_DIRS_CHRT:-":_DIRS_SHAR_:/chroot"}\""     "# container file (chroot)"                  )
-
-		# --- common data file (prefer non-empty current file) ------------------------
-		$(printf "%-39s %s" "FILE_CONF=\"${_FILE_CONF:-"common.cfg"}\""                  "# common configuration file")
-		$(printf "%-39s %s" "FILE_DIST=\"${_FILE_DIST:-"distribution.dat"}\""            "# distribution data file"   )
-		$(printf "%-39s %s" "FILE_MDIA=\"${_FILE_MDIA:-"media.dat"}\""                   "# media data file"          )
-		$(printf "%-39s %s" "FILE_DSTP=\"${_FILE_DSTP:-"debstrap.dat"}\""                "# debstrap data file"       )
-		$(printf "%-39s %s" "PATH_CONF=\"${_PATH_CONF:-":_DIRS_DATA_:/:_FILE_CONF_:"}\"" "# common configuration file")
-		$(printf "%-39s %s" "PATH_DIST=\"${_PATH_DIST:-":_DIRS_DATA_:/:_FILE_DIST_:"}\"" "# distribution data file"   )
-		$(printf "%-39s %s" "PATH_MDIA=\"${_PATH_MDIA:-":_DIRS_DATA_:/:_FILE_MDIA_:"}\"" "# media data file"          )
-		$(printf "%-39s %s" "PATH_DSTP=\"${_PATH_DSTP:-":_DIRS_DATA_:/:_FILE_DSTP_:"}\"" "# debstrap data file"       )
-
-		# --- pre-configuration file templates ----------------------------------------
-		$(printf "%-39s %s" "FILE_KICK=\"${_FILE_KICK:-"kickstart_rhel.cfg"}\""          "# for rhel"             )
-		$(printf "%-39s %s" "FILE_CLUD=\"${_FILE_CLUD:-"user-data_ubuntu"}\""            "# for ubuntu cloud-init")
-		$(printf "%-39s %s" "FILE_SEDD=\"${_FILE_SEDD:-"preseed_debian.cfg"}\""          "# for debian"           )
-		$(printf "%-39s %s" "FILE_SEDU=\"${_FILE_SEDU:-"preseed_ubuntu.cfg"}\""          "# for ubuntu"           )
-		$(printf "%-39s %s" "FILE_YAST=\"${_FILE_YAST:-"yast_opensuse.xml"}\""           "# for opensuse"         )
-		$(printf "%-39s %s" "FILE_AGMA=\"${_FILE_AGMA:-"agama_opensuse.json"}\""         "# for opensuse"         )
-		$(printf "%-39s %s" "PATH_KICK=\"${_PATH_KICK:-":_DIRS_TMPL_:/:_FILE_KICK_:"}\"" "# for rhel"             )
-		$(printf "%-39s %s" "PATH_CLUD=\"${_PATH_CLUD:-":_DIRS_TMPL_:/:_FILE_CLUD_:"}\"" "# for ubuntu cloud-init")
-		$(printf "%-39s %s" "PATH_SEDD=\"${_PATH_SEDD:-":_DIRS_TMPL_:/:_FILE_SEDD_:"}\"" "# for debian"           )
-		$(printf "%-39s %s" "PATH_SEDU=\"${_PATH_SEDU:-":_DIRS_TMPL_:/:_FILE_SEDU_:"}\"" "# for ubuntu"           )
-		$(printf "%-39s %s" "PATH_YAST=\"${_PATH_YAST:-":_DIRS_TMPL_:/:_FILE_YAST_:"}\"" "# for opensuse"         )
-		$(printf "%-39s %s" "PATH_AGMA=\"${_PATH_AGMA:-":_DIRS_TMPL_:/:_FILE_AGMA_:"}\"" "# for opensuse"         )
-
-		# --- shell script ------------------------------------------------------------
-		$(printf "%-39s %s" "FILE_ERLY=\"${_FILE_ERLY:-"autoinst_cmd_early.sh"}\""       "# shell commands to run early"           )
-		$(printf "%-39s %s" "FILE_LATE=\"${_FILE_LATE:-"autoinst_cmd_late.sh"}\""        "# \"              to run late"           )
-		$(printf "%-39s %s" "FILE_PART=\"${_FILE_PART:-"autoinst_cmd_part.sh"}\""        "# \"              to run after partition")
-		$(printf "%-39s %s" "FILE_RUNS=\"${_FILE_RUNS:-"autoinst_cmd_run.sh"}\""         "# \"              to run preseed/run"    )
-		$(printf "%-39s %s" "PATH_ERLY=\"${_PATH_ERLY:-":_DIRS_SHEL_:/:_FILE_ERLY_:"}\"" "# shell commands to run early"           )
-		$(printf "%-39s %s" "PATH_LATE=\"${_PATH_LATE:-":_DIRS_SHEL_:/:_FILE_LATE_:"}\"" "# \"              to run late"           )
-		$(printf "%-39s %s" "PATH_PART=\"${_PATH_PART:-":_DIRS_SHEL_:/:_FILE_PART_:"}\"" "# \"              to run after partition")
-		$(printf "%-39s %s" "PATH_RUNS=\"${_PATH_RUNS:-":_DIRS_SHEL_:/:_FILE_RUNS_:"}\"" "# \"              to run preseed/run"    )
-
-		# --- tftp / web server network parameter -------------------------------------
-		$(printf "%-39s %s" "SRVR_HTTP=\"${_SRVR_HTTP:-"http"}\""              "# server connection protocol (http or https)"                                                     )
-		$(printf "%-39s %s" "SRVR_PROT=\"${_SRVR_PROT:-"http"}\""              "# server connection protocol (http or tftp)"                                                      )
-		$(printf "%-39s %s" "SRVR_NICS=\"${_SRVR_NICS:-"ens160"}\""            "# network device name   (ex. ens160)            (Set execution server setting to empty variable.)")
-		$(printf "%-39s %s" "SRVR_MADR=\"${_SRVR_MADR:-"00:00:00:00:00:00"}\"" "#                mac    (ex. 00:00:00:00:00:00)"                                                  )
-		$(printf "%-39s %s" "SRVR_ADDR=\"${_SRVR_ADDR:-"192.168.1.14"}\""      "# IPv4 address          (ex. 192.168.1.11)"                                                       )
-		$(printf "%-39s %s" "SRVR_CIDR=\"${_SRVR_CIDR:-"24"}\""                "# IPv4 cidr             (ex. 24)"                                                                 )
-		$(printf "%-39s %s" "SRVR_MASK=\"${_SRVR_MASK:-"255.255.255.0"}\""     "# IPv4 subnetmask       (ex. 255.255.255.0)"                                                      )
-		$(printf "%-39s %s" "SRVR_GWAY=\"${_SRVR_GWAY:-"192.168.1.254"}\""     "# IPv4 gateway          (ex. 192.168.1.254)"                                                      )
-		$(printf "%-39s %s" "SRVR_NSVR=\"${_SRVR_NSVR:-"192.168.1.254"}\""     "# IPv4 nameserver       (ex. 192.168.1.254)"                                                      )
-		$(printf "%-39s %s" "SRVR_UADR=\"${_SRVR_UADR:-"192.168.1"}\""         "# IPv4 address up       (ex. 192.168.1)"                                                          )
-
-		# === for creations ===========================================================
-
-		# --- network parameter -------------------------------------------------------
-		$(printf "%-39s %s" "NWRK_HOST=\"${_NWRK_HOST:-"sv-:_DISTRO_:"}\""  "# hostname              (ex. sv-server)"                                              )
-		$(printf "%-39s %s" "NWRK_WGRP=\"${_NWRK_WGRP:-"workgroup"}\""      "# domain                (ex. workgroup)"                                              )
-		$(printf "%-39s %s" "NICS_NAME=\"${_NICS_NAME:-"ens160"}\""         "# network device name   (ex. ens160)"                                                 )
-		$(printf "%-39s %s" "NICS_MADR=\"${_NICS_MADR:-""}\""               "#                mac    (ex. 00:00:00:00:00:00)"                                      )
-		$(printf "%-39s %s" "IPV4_ADDR=\"${_IPV4_ADDR:-"192.168.1.1"}\""    "# IPv4 address          (ex. 192.168.1.1)   (empty to dhcp)"                          )
-		$(printf "%-39s %s" "IPV4_CIDR=\"${_IPV4_CIDR:-"24"}\""             "# IPv4 cidr             (ex. 24)            (empty to ipv4 subnetmask, if both to 24)")
-		$(printf "%-39s %s" "IPV4_MASK=\"${_IPV4_MASK:-"255.255.255.0"}\""  "# IPv4 subnetmask       (ex. 255.255.255.0) (empty to ipv4 cidr)"                     )
-		$(printf "%-39s %s" "IPV4_GWAY=\"${_IPV4_GWAY:-"192.168.1.254"}\""  "# IPv4 gateway          (ex. 192.168.1.254)"                                          )
-		$(printf "%-39s %s" "IPV4_NSVR=\"${_IPV4_NSVR:-"192.168.1.254"}\""  "# IPv4 nameserver       (ex. 192.168.1.254)"                                          )
-		$(printf "%-39s %s" "IPV4_UADR=\"${_IPV4_UADR:-""}\""               "# IPv4 address up       (ex. 192.168.1)"                                              )
-		$(printf "%-39s %s" "NMAN_NAME=\"${_NMAN_NAME:-""}\""               "# network manager name  (nm_config, ifupdown, loopback)"                              )
-		$(printf "%-39s %s" "NTPS_ADDR=\"${_NTPS_ADDR:-"ntp.nict.jp"}\""    "# ntp server address    (ntp.nict.jp)"                                                )
-		$(printf "%-39s %s" "NTPS_IPV4=\"${_NTPS_IPV4:-"61.205.120.130"}\"" "# ntp server ipv4 addr  (61.205.120.130)"                                             )
-
-		# --- menu parameter ----------------------------------------------------------
-		$(printf "%-39s %s" "MENU_TOUT=\"${_MENU_TOUT:-"5"}\""          "# timeout (sec)"                                 )
-		$(printf "%-39s %s" "MENU_RESO=\"${_MENU_RESO:-"854x480"}\""    "# resolution (widht x hight)"                    )
-		$(printf "%-39s %s" "MENU_DPTH=\"${_MENU_DPTH:-"16"}\""         "# colors"                                        )
-		$(printf "%-39s %s" "MENU_MODE=\"${_MENU_MODE:-"864"}\""        "# screen mode (vga=nnn)"                         )
-		$(printf "%-39s %s" "MENU_SPLS=\"${_MENU_SPLS:-"splash.png"}\"" "# splash file"                                   )
-		$(printf "%-39s %s" "#MENU_RESO=\"${_MENU_RESO:-"1280x720"}\""  "# resolution (widht x hight): 16:9"              )
-		$(printf "%-39s %s" "#MENU_RESO=\"${_MENU_RESO:-"854x480"}\""   "# \"                         : 16:9 (for vmware)")
-		$(printf "%-39s %s" "#MENU_RESO=\"${_MENU_RESO:-"1024x768"}\""  "# \"                         :  4:3"             )
-		$(printf "%-39s %s" "#MENU_DPTH=\"${_MENU_DPTH:-"16"}\""        "# colors"                                        )
-		$(printf "%-39s %s" "#MENU_MODE=\"${_MENU_MODE:-"864"}\""       "# screen mode (vga=nnn)"                         )
-
-		# === for mkosi ===============================================================
-
-		# --- mkosi output image format type ------------------------------------------
-		$(printf "%-39s %s" "MKOS_TGET=\"${_MKOS_TGET:-"directory"}\"" "# format type (directory, tar, cpio, disk, uki, esp, oci, sysext, confext, portable, addon, none)")
-
-		# --- live media parameter ----------------------------------------------------
-		$(printf "%-39s %s" "LIVE_DIRS=\"${_LIVE_DIRS:-"LiveOS"}\""       "# live / LiveOS"                     )
-		$(printf "%-39s %s" "LIVE_SQFS=\"${_LIVE_SQFS:-"squashfs.img"}\"" "# filesystem.squashfs / squashfs.img")
-
-		### eof #######################################################################
-_EOT_
-	)
-	unset __WORK
-
-	# --- complete ------------------------------------------------------------
-	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
-	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
-	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
-	fnDbgparameters
-#	unset __FUNC_NAME
-}
-
-# -----------------------------------------------------------------------------
-# descript: encoding common configuration data
-#   input :            : unused
-#   output:   stdout   : message
-#   return:            : unused
-function fnList_conf_Enc() {
-	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
-	_DBGS_FAIL+=("${__FUNC_NAME:-}")
-	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
-
-	declare       __NAME=""				# variable name
-	declare       __VALU=""				# setting value
-	declare       __CMNT=""				# comment
-	declare       __WNAM=""				# work: variable name
-	declare       __WVAL=""				# work: setting value
-	declare       __WORK=""				# work
-	declare       __LINE=""				# work
-	declare -a    __LIST=()				# work
-	declare -a    __ARRY=()				# work
-	declare -i    I=0					# work
-	declare -i    J=0					# work
-
-	__ARRY=()
-	for I in $(printf "%d\n" "${!_LIST_CONF[@]}" | sort -rV)
-	do
-		__LINE="${_LIST_CONF[I]:-}"
-		__NAME="${__LINE%%[!_[:alnum:]]*}"
-		[[ -z "${__NAME:-}" ]] && continue
-		case "${__NAME}" in
-			PATH_*     ) ;;
-			DIRS_*     ) ;;
-			FILE_*     ) ;;
-			*          ) continue;;
-		esac
-		__ARRY+=("${__NAME}")
-	done
-	__LIST=()
-	for I in "${!_LIST_CONF[@]}"
-	do
-		__LINE="${_LIST_CONF[I]:-}"
-		__LIST+=("${__LINE:-}")
-		# comments with "#" do not work
-		# --- get variable name -----------------------------------------------
-		__NAME="${__LINE%%[!_[:alnum:]]*}"
-		# --- get setting value -----------------------------------------------
-		__VALU="${__LINE#"${__NAME:-}="}"
-		__VALU="${__VALU%"#${__VALU##*#}"}"
-		__VALU="${__VALU#"${__VALU%%[!"${IFS}"]*}"}"	# ltrim
-		__VALU="${__VALU%"${__VALU##*[!"${IFS}"]}"}"	# rtrim
-		# --- get comment -----------------------------------------------------
-		__CMNT="${__LINE#"${__NAME:+"${__NAME}="}${__VALU:-}"}"
-		__CMNT="${__CMNT#"${__CMNT%%[!"${IFS}"]*}"}"	# ltrim
-		__CMNT="${__CMNT%"${__CMNT##*[!"${IFS}"]}"}"	# rtrim
-		# --- store in a variable ---------------------------------------------
-		case "${__CMNT:-}" in
-			*"application output"*)
-				__LIST+=("#   $(date +"%Y/%m/%d %H:%M:%S") J.Itou          application output")
-				continue
-				;;
-			*) ;;
-		esac
-		[[ -z "${__NAME:-}" ]] && continue
-		case "${__NAME}" in
-			PATH_*     ) ;;
-			DIRS_*     ) ;;
-			FILE_*     ) ;;
-			*          ) continue;;
-		esac
-		__WNAM="_${__NAME}"
-		__VALU="${!__WNAM:-}"
-		# --- setting value conversion ----------------------------------------
-		for J in "${!__ARRY[@]}"
-		do
-			__WNAM="${__ARRY[J]}"
-			case "${__WNAM}" in
-				"${__NAME}") continue;;
-				PATH_*     ) ;;
-				DIRS_*     ) ;;
-				FILE_*     ) ;;
-				*          ) continue;;
-			esac
-			__WORK="_${__WNAM}"
-			__WVAL="${!__WORK:-}"
-			__WVAL="${__WVAL#\"}"
-			__WVAL="${__WVAL%\"}"
-			[[ -z "${__WVAL:-}" ]] && continue
-			__VALU="${__VALU//"${__WVAL}"/"${__WNAM:+":_${__WNAM}_:"}"}"
-		done
-		__LIST[${#__LIST[@]}-1]="$(printf "%-39s %s" "${__NAME:-}=\"${__VALU:-}\"" "${__CMNT:-}")"
-	done
-	_LIST_CONF=("${__LIST[@]}")
-	unset __NAME __VALU __CMNT __WNAM __WVAL __WORK __LINE __LIST __ARRY I J
-
-	# --- complete ------------------------------------------------------------
-	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
-	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
-	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
-	fnDbgparameters
-#	unset __FUNC_NAME
-}
-
-# -----------------------------------------------------------------------------
-# descript: decoding common configuration data
-#   input :            : unused
-#   output:   stdout   : message
-#   return:            : unused
-function fnList_conf_Dec() {
-	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
-	_DBGS_FAIL+=("${__FUNC_NAME:-}")
-	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
-
-	declare       __NAME=""				# variable name
-	declare       __VALU=""				# setting value
-	declare       __CMNT=""				# comment
-	declare       __WNAM=""				# work: variable name
-	declare       __WVAL=""				# work: setting value
-	declare       __WORK=""				# work
-	declare       __LINE=""				# work
-	declare -i    I=0					# work
-
-	for I in "${!_LIST_CONF[@]}"
-	do
-		__LINE="${_LIST_CONF[I]}"
-		# comments with "#" do not work
-		__NAME="${__LINE%%[!_[:alnum:]]*}"
-		__VALU="${__LINE#"${__NAME:-}="}"
-		__CMNT="${__VALU#"${__VALU%%\#*}"}"
-		__CMNT="${__CMNT#"${__CMNT%%[!"${IFS}"]*}"}"	# ltrim
-		__CMNT="${__CMNT%"${__CMNT##*[!"${IFS}"]}"}"	# rtrim
-		__VALU="${__VALU%"${__CMNT:-}"}"
-		__VALU="${__VALU#"${__VALU%%[!"${IFS}"]*}"}"	# ltrim
-		__VALU="${__VALU%"${__VALU##*[!"${IFS}"]}"}"	# rtrim
-		# --- store in a variable ---------------------------------------------
-		[[ -z "${__NAME:-}" ]] && continue
-#		case "${__NAME}" in
-#			PATH_*     ) ;;
-#			DIRS_*     ) ;;
-#			FILE_*     ) ;;
-#			*          ) continue;;
-#		esac
-		__WNAM="${__NAME:-}"
-		__NAME="_${__WNAM:-}"
-		__VALU="${__VALU#\"}"
-		__VALU="${__VALU%\"}"
-		# --- setting value conversion ----------------------------------------
-		case "${__WNAM}" in
-			PATH_*     | \
-			DIRS_*     | \
-			FILE_*     )
-				while true
-				do
-					__WNAM="${__VALU#"${__VALU%%:_[[:alnum:]]*_[[:alnum:]]*_:*}"}"
-					__WNAM="${__WNAM%"${__WNAM##*:_[[:alnum:]]*_[[:alnum:]]*_:}"}"
-					__WNAM="${__WNAM%%[!:_[:alnum:]]*}"
-					__WNAM="${__WNAM#:_}"
-					__WNAM="${__WNAM%_:}"
-					[[ -z "${__WNAM:-}" ]] && break
-					__VALU="${__VALU/":_${__WNAM}_:"/"\${_${__WNAM}}"}"
-				done
-				;;
-			*) ;;
-		esac
-		read -r "${__NAME:?}" < <(eval echo "${__VALU}" || true)
-	done
-	unset __NAME __VALU __CMNT __WNAM __WVAL __WORK __LINE I
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -1304,10 +1206,56 @@ function fnList_conf_Get() {
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
-	if [[ -e "${1:?}" ]]; then
-		_LIST_CONF=()
-		IFS= mapfile -d $'\n' -t _LIST_CONF < <(expand -t 4 "$1" || true)
-	fi
+	IFS= mapfile -d $'\n' -t _LIST_CONF < <(awk '
+		{
+			delete _parm
+			do {
+				_line=$0
+				match(_line, /^[[:alnum:]]+_[[:alnum:]]+=/)
+				if (RSTART > 0) {
+					_name=substr(_line, RSTART, RLENGTH)
+					sub(/=.*$/, "", _name)
+					_cmnt=_line
+					sub(/^[^#]+/, "", _cmnt)
+					_valu=_line
+					_start=index(_valu, _name)
+					if (_start > 0) {
+						_valu=substr(_valu, _start+length(_name))
+					}
+					_start=index(_valu, _cmnt)
+					if (_start > 0) {
+						_valu=substr(_valu, 1, _start-1)
+					}
+					sub(/^="*/, "", _valu)
+					sub(/"* *$/, "", _valu)
+					_wval=_valu
+					while (1) {
+						match(_wval, /:_[[:alnum:]]+_[[:alnum:]]+_:/)
+						if (RSTART == 0) {
+						break
+						}
+						_ptrn=substr(_wval, RSTART, RLENGTH)
+						_wnam=substr(_ptrn, 3, length(_ptrn)-4)
+						sub(_ptrn, _parm[_wnam], _wval)
+					}
+					_parm[_name]=_wval
+					_start=index(_line, _valu)
+					if (_start > 0) {
+						_line=sprintf("%s%s%s", substr(_line, 1, _start-1), _wval, substr(_line, _start+length(_valu)))
+					}
+				}
+				printf "%s\n", _line
+			} while ((getline) > 0)
+		}
+	' "$1" || true)
+	while read -r __LINE
+	do
+		__NAME="${__LINE%%=*}"
+		__VALU="${__LINE#"${__NAME}="}"
+		__NAME="${__NAME:+"_${__NAME}"}"
+		read -r "${__NAME:?}" < <(eval echo "${__VALU}" || true)
+		_LIST_PARM+=("${__NAME}=${!__NAME}")
+	done < <(printf "%s\n" "${_LIST_CONF[@]:-}" | grep -E '^[[:alnum:]]+_[[:alnum:]]+=')
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -1327,7 +1275,69 @@ function fnList_conf_Put() {
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
-	printf "%s\n" "${_LIST_CONF[@]}" > "${1:?}"
+	printf "%s\n" "${_LIST_CONF[@]}" | awk -v list="${_LIST_PARM[*]}" '
+		BEGIN {
+			split(list, _arry, " ")
+			delete _parm
+			j = length(_arry)
+			for (i in _arry) {
+				_name=_arry[i]
+				sub(/=.*$/, "", _name)
+				_work=_name
+				sub(/[[:alnum:]]+$/, "", _work)
+				switch (_work) {
+					case "_PATH_":
+					case "_DIRS_":
+					case "_FILE_":
+						break
+					default:
+						continue
+						break
+				}
+				_valu=_arry[i]
+				sub(_name, "", _valu)
+				sub(/^=/, "", _valu)
+				_parm[j--]=_name"="_valu
+			}
+		}
+		{
+			do {
+				_line=$0
+				match(_line, /^[[:alnum:]]+_[[:alnum:]]+=/)
+				if (RSTART > 0) {
+					_name=substr(_line, RSTART, RLENGTH)
+					sub(/=.*$/, "", _name)
+					_cmnt=_line
+					sub(/^[^#]+/, "", _cmnt)
+					_valu=_line
+					_start=index(_valu, _name)
+					if (_start > 0) {
+						_valu=substr(_valu, _start+length(_name))
+					}
+					_start=index(_valu, _cmnt)
+					if (_start > 0) {
+						_valu=substr(_valu, 1, _start-1)
+					}
+					sub(/^=*/, "", _valu)
+					sub(/ *$/, "", _valu)
+					for (j in _parm) {
+						_wnam=_parm[j]
+						sub(/=.*$/, "", _wnam)
+						_wval=_parm[j]
+						sub(_wnam, "", _wval)
+						sub(/^=/, "", _wval)
+						_work=_wnam
+						sub(/^_/, "", _work)
+						if (_work != _name) {
+							gsub(_wval, ":_"_work"_:", _valu)
+						}
+					}
+					_line=sprintf("%-39s %s",_name"="_valu, _cmnt)
+				}
+				printf "%s\n", _line
+			} while ((getline) > 0)
+		}
+	' > "$1"
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -1347,10 +1357,44 @@ function fnList_mdia_Get() {
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
-	if [[ -e "${1:?}" ]]; then
-		_LIST_MDIA=()
-		IFS= mapfile -d $'\n' -t _LIST_MDIA < <(expand -t 4 "$1" || true)
-	fi
+	IFS= mapfile -d $'\n' -t _LIST_MDIA < <(awk -v list="${_LIST_PARM[*]}" '
+		BEGIN {
+			split(list, _arry, " ")
+			delete _parm
+			for (i in _arry) {
+				_name=_arry[i]
+				sub(/=.*$/, "", _name)
+				_work=_name
+				sub(/[[:alnum:]]+$/, "", _work)
+				switch (_work) {
+					case "_PATH_":
+					case "_DIRS_":
+					case "_FILE_":
+						break
+					default:
+						continue
+						break
+				}
+				_valu=_arry[i]
+				sub(_name, "", _valu)
+				sub(/^=/, "", _valu)
+				_parm[_name]=_valu
+			}
+		}
+		{
+			_line=$0
+			while (1) {
+				match(_line, /:_[[:alnum:]]+_[[:alnum:]]+_:/)
+				if (RSTART == 0) {
+					break
+				}
+				_ptrn=substr(_line, RSTART, RLENGTH)
+				_name="_"substr(_line, RSTART+2, RLENGTH-4)
+				gsub(_ptrn, _parm[_name], _line)
+			}
+			printf "%s\n", _line
+		}
+	' "$1" || true)
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -1361,40 +1405,62 @@ function fnList_mdia_Get() {
 }
 
 # -----------------------------------------------------------------------------
-# descript: decoding common configuration data
-#   input :            : unused
+# descript: put media information data
+#   input :     $1     : target file name
 #   output:   stdout   : message
 #   return:            : unused
-function fnList_mdia_Dec() {
+function fnList_mdia_Put() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
-	declare       __WNAM=""				# work: variable name
-	declare       __WVAL=""				# work: setting value
-	declare       __WORK=""				# work
-	declare       __LINE=""				# work
-	declare -i    I=0					# work
-
-	for I in "${!_LIST_MDIA[@]}"
-	do
-		__LINE="${_LIST_MDIA[I]:-}"
-		read -r -a __LIST < <(echo "${__LINE:-}")
-		__WVAL="${__LIST[*]:-}"
-		while true
-		do
-			__WNAM="${__WVAL#"${__WVAL%%:_[[:alnum:]]*_[[:alnum:]]*_:*}"}"
-			__WNAM="${__WNAM%"${__WNAM##*:_[[:alnum:]]*_[[:alnum:]]*_:}"}"
-			__WNAM="${__WNAM%%[!:_[:alnum:]]*}"
-			__WNAM="${__WNAM#:_}"
-			__WNAM="${__WNAM%_:}"
-			[[ -z "${__WNAM:-}" ]] && break
-			__WORK="_${__WNAM}"
-			__WVAL="${__WVAL/":_${__WNAM}_:"/"${!__WORK}"}"
-		done
-		_LIST_MDIA[I]="${__WVAL}"
-	done
-	unset __WNAM __WVAL __WORK __LINE I
+	printf "%s\n" "${_LIST_MDIA[@]}" | awk -v list="${_LIST_PARM[*]}" '
+		BEGIN {
+			split(list, _arry, " ")
+			delete _parm
+			j = length(_arry)
+			for (i in _arry) {
+				_name=_arry[i]
+				sub(/=.*$/, "", _name)
+				_work=_name
+				sub(/[[:alnum:]]+$/, "", _work)
+				switch (_work) {
+					case "_PATH_":
+					case "_DIRS_":
+					case "_FILE_":
+						break
+					default:
+						continue
+						break
+				}
+				_valu=_arry[i]
+				sub(_name, "", _valu)
+				sub(/^=/, "", _valu)
+				_parm[j--]=_name"="_valu
+			}
+		}
+		{
+			_line=$0
+			for (j in _parm) {
+				_name=_parm[j]
+				sub(/=.*$/, "", _name)
+				_valu=_parm[j]
+				sub(_name, "", _valu)
+				sub(/^=/, "", _valu)
+				_work=_name
+				sub(/^_/, "", _work)
+				gsub(_valu, ":_"_work"_:", _line)
+			}
+			split(_line, _arry, "\n")
+			for (i in _arry) {
+				split(_arry[i], _list, " ")
+				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-11s \n", \
+					_list[1], _list[2], _list[3], _list[4], _list[5], _list[6], _list[7], _list[8], _list[9], _list[10], \
+					_list[11], _list[12], _list[13], _list[14], _list[15], _list[16], _list[17], _list[18], _list[19], _list[20], \
+					_list[21], _list[22], _list[23], _list[24], _list[25], _list[26], _list[27]
+			}
+		}
+	' > "$1"
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -1541,7 +1607,7 @@ function fnMk_symlink() {
 		mkdir -p "${__LIST[13]%/*}"
 		ln -s "${__LIST[25]}/${__LIST[13]##*/}" "${__LIST[13]}"
 	done
-	unset __NAME_REFR __OPTN __FORC __PTRN __LINE __LIST I
+	unset __OPTN __FORC __PTRN __LINE __LIST I
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -1608,7 +1674,6 @@ function fnMk_preconf_nocloud() {
 #	unset __TGET_PATH
 }
 
- shellcheck disable=SC2148
 # -----------------------------------------------------------------------------
 # descript: make kickstart.cfg
 #   input :     $1     : input value
@@ -1919,7 +1984,7 @@ function fnMk_preconf() {
 			esac
 		done
 	fi
-	unset __NAME_REFR __OPTN __PTRN __TGET __LINE __LIST __PATH
+	unset __OPTN __PTRN __TGET __LINE __LIST __PATH
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -2010,7 +2075,61 @@ function fnMk_pxeboot() {
 			esac
 		done
 	fi
-	unset __NAME_REFR __OPTN __PTRN __TGET __LINE __LIST __PATH
+	unset __OPTN __PTRN __TGET __LINE __LIST __PATH
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+	fnDbgparameters
+#	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: copy iso files
+#   n-ref :     $1     : target path
+#   output:   stdout   : message
+#   return:            : unused
+function fnCopy_iso() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	declare -r    __TGET_PATH="${1:?}"	# target file
+	declare -r    __DEST_DIRS="${2:?}"	# destination directory
+	declare       __TEMP=""				# Temporary Directory
+	declare       __MNTP=""				# mount point
+	declare -r -a __OPTN=(\
+		--recursive \
+		--links \
+		--perms \
+		--times \
+		--group \
+		--owner \
+		--devices \
+		--specials \
+		--hard-links \
+		--acls \
+		--xattrs \
+		--human-readable \
+		--update \
+		--delete \
+	)
+
+	__TEMP="$(mktemp -qd -p "${_DIRS_TEMP:-/tmp}" "${__FUNC_NAME}.XXXXXX")"
+	_LIST_RMOV+=("${__TEMP}")
+	if [[ -s "${__TGET_PATH}" ]]; then
+		__MNTP="${__TEMP}/mnt"
+		mkdir -p "${__MNTP}" "${__DEST_DIRS}"
+		mount -o ro,loop "${__TGET_PATH}" "${__MNTP}" && _LIST_RMOV+=("${__MNTP}")
+		rsync "${__OPTN[@]}" "${__MNTP:?}/." "${__DEST_DIRS:?}/"
+		umount "${__MNTP}" && { unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]'; _LIST_RMOV=("${_LIST_RMOV[@]}"); }
+		chmod -R +r "${__DEST_DIRS}/" 2>/dev/null || true
+	fi
+	rm -rf "${__TEMP:?}"
+	unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]'
+	_LIST_RMOV=("${_LIST_RMOV[@]}")
+	unset __TEMP __MNTP __OPTN
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -2035,7 +2154,6 @@ function fnMk_isofile() {
 	shift
 	              __NAME_REFR="${*:-}"
 #	declare -a    __OPTN=("${@:-}")		# options
-	unset __NAME_REFR
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -2043,6 +2161,142 @@ function fnMk_isofile() {
 	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
 	fnDbgparameters
 #	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: select target
+#   n-ref :     $1     : return value : option parameter
+#   n-ref :     $2     : return value : serialized target data
+#   input :     $@     : option parameter
+#   output:   stdout   : result
+#   return:            : unused
+function fnSelect_target() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	declare -n    __NREF="${1:-}"		# name reference
+	declare -n    __RETN="${2:-}"		# name reference
+	shift 2
+	              __NREF="${*:-}"
+#	declare -a    __OPTN=("${@:-}")		# options
+
+	declare       __TYPE=""				# media type
+	declare       __RANG=""				# range
+	declare -a    __ARRY=()				# arry
+	declare -A    __AARY=()				# associative arrays
+
+	# --- split optional parameters -------------------------------------------
+	__AARY=()
+	for I in "${_LIST_TYPE[@]}"
+	do
+		__AARY["${I}"]=""
+	done
+	set -f -- "${@:-}"
+	set +f
+	while [[ -n "${1:-}" ]]
+	do
+		__TYPE="${1%%:*}"
+		__RANG="${1#"${__TYPE:-}"}"
+		__RANG="${__RANG#"${__RANG%%[^:]*}"}"
+		__RANG="${__RANG%"${__RANG##*[^:]}"}"
+		case "${__TYPE:-}" in
+			all      ) IFS= mapfile -d $'\n' -t __ARRY < <(printf "%s:all\n" "${_LIST_TYPE[@]}"); shift; break;;
+			mini     ) ;;
+			netinst  ) ;;
+			dvd      ) ;;
+			liveinst ) ;;
+			live     ) ;;
+			tool     ) ;;
+			clive    ) ;;
+			cnetinst ) ;;
+			system   ) ;;
+			*) break;;
+		esac
+		case "${__RANG:-}" in
+			'' | \
+			all| \
+			[0-9]|[0-9][0-9]|[0-9][0-9][0-9])
+				__RANG="${__RANG:-"inp"}"
+				__AARY["${__TYPE:?}"]+="${__RANG:+"${__AARY["${__TYPE}"]:+","}${__RANG}"}"
+				;;
+			*) ;;
+		esac
+		shift
+	done
+	__NREF="${*:-}"
+	# --- formatting the return value -----------------------------------------
+	__ARRY=()
+	for I in "${_LIST_TYPE[@]}"
+	do
+		__ARRY+=("${I}=${__AARY["${I}"]:-}")
+	done
+	# --- output and finalization ---------------------------------------------
+	__RETN="${__ARRY[*]}"
+	unset __TYPE __RANG __AARY __ARRY
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+	fnDbgparameters
+#	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: screen output
+#   input :     $@     : list
+#   output:   stdout   : message
+#   return:            : unused
+function fnScreen_output() {
+	declare       __FMTG=""
+	declare       __FMTT=""
+	declare -a    __LIST=()
+	__FMTG="%-$((_COLS_SIZE-2)).$((_COLS_SIZE-2))s"
+	if [[ "${_COLS_SIZE}" -le 100 ]]; then
+		__FMTT="%2.2s:%-42.42s:%-10.10s:%-10.10s:%-$((_COLS_SIZE-70)).$((_COLS_SIZE-70))s"
+	else
+		__FMTT="%2.2s:%-48.48s:%-10.10s:%-10.10s:%-$((_COLS_SIZE-76)).$((_COLS_SIZE-76))s"
+	fi
+	set -f -- "${@:-}"
+	set +f
+	if [[ "$#" -gt 0 ]] && [[ -n "${*:-}" ]]; then
+		printf "%c${__FMTG}%c\n" "#" "${_TEXT_GAP2}" "#"
+		printf "%c${__FMTT}%c\n" "#" "ID" "Target file name" "ReleaseDay" "SupportEnd" "Memo" "#"
+		printf "%s\n" "${@:-}" | awk '
+		{
+			split($0, _arry, "\n")
+			for (i in _arry) {
+				split(_arry[i], _list)
+				for (j in _list) {
+					gsub("%20", " ", _list[j])
+				}
+				sub("^.*/", "", _list[16])
+				sub("^.*/", "", _list[26])
+				sub("^-+$", "", _list[16])
+				sub("^-+$", "", _list[26])
+				_list[17]=substr(_list[17], 1, 10)
+				_list[10]=substr(_list[10], 1, 10)
+				_list[26]=substr(_list[26], 1, 44)
+				sub("^-+$", "\033[m\033[90m----------\033[m", _list[17])
+				sub("^-+$", "\033[m\033[90m----------\033[m", _list[10])
+				sub("^$", "\033[m\033[37m"_list[6]"\033[m", _list[26])
+				printf("\033[m%c%2d:%-48.48s:%-10s:%-10s:%-44s%c\033[m\n", "#", _list[2], _list[16], _list[17], _list[10], _list[26], "#")
+			}
+		}'
+#		while [[ -n "${1:-}" ]]
+#		do
+#			read -r -a __LIST < <(echo "${1:-}")
+#			shift
+#			__LIST=("${__LIST[@]//%20/ }")
+#			__LIST[15]="${__LIST[15]##*/}"
+#			__LIST[25]="${__LIST[25]##*/}"
+#			__LIST=("${__LIST[@]##-}")
+#			printf "%c${__FMTT}%c\n" "#" "${__LIST[1]:-}" "${__LIST[15]:-}" "${__LIST[16]:-}" "${__LIST[9]:-}" "${__LIST[25]:-}" "#"
+#		done
+		printf "%c${__FMTG}%c\n" "#" "${_TEXT_GAP2}" "#"
+	fi
+	unset __FMTG __FMTT __LIST
 }
 
 # *** main section ************************************************************
