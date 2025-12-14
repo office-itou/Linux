@@ -189,6 +189,7 @@ time	for __TYPE in "${_LIST_TYPE[@]}"
 		do
 			read -r -a __MDIA < <(echo "${__TGET[I]}")
 			__MDIA=("${__MDIA[@]//%20/ }")
+			# --- web file ----------------------------------------------------
 			if [[ -n "$(fnTrim "${__MDIA[9]}" "-")" ]]; then
 				__RETN="$(fnGetWebinfo "${__MDIA[9]}")"
 				read -r -a __LIST < <(echo "${__RETN}")
@@ -207,30 +208,41 @@ time	for __TYPE in "${_LIST_TYPE[@]}"
 									__MDIA[14]="${__DIRS:-}/${__FILE}"	# iso_path
 									;;
 							esac
-							# --- iso file ------------------------------------
-							__RETN="$(fnGetFileinfo "${__MDIA[14]}")"
-							read -r -a __LIST < <(echo "${__RETN}")
-							__MDIA[15]="${__LIST[1]:-}"	# iso_tstamp
-							__MDIA[16]="${__LIST[2]:-}"	# iso_size
-							__MDIA[17]="${__LIST[3]:-}"	# iso_volume
-							# --- rmk file ------------------------------------
-							__RETN="$(fnGetFileinfo "${__MDIA[18]}")"
-							read -r -a __LIST < <(echo "${__RETN}")
-							__MDIA[19]="${__LIST[1]:-}"	# rmk_tstamp
-							__MDIA[20]="${__LIST[2]:-}"	# rmk_size
-							__MDIA[21]="${__LIST[3]:-}"	# rmk_volume
 						fi
 						;;
 					*) ;;
 				esac
 			fi
+			# --- iso file ----------------------------------------------------
+			if [[ -n "$(fnTrim "${__MDIA[14]}" "-")" ]]; then
+				__RETN="$(fnGetFileinfo "${__MDIA[14]}")"
+				read -r -a __LIST < <(echo "${__RETN}")
+				__MDIA[15]="${__LIST[1]:-}"	# iso_tstamp
+				__MDIA[16]="${__LIST[2]:-}"	# iso_size
+				__MDIA[17]="${__LIST[3]:-}"	# iso_volume
+			fi
+			# --- rmk file ----------------------------------------------------
+			if [[ -n "$(fnTrim "${__MDIA[18]}" "-")" ]]; then
+				__RETN="$(fnGetFileinfo "${__MDIA[18]}")"
+				read -r -a __LIST < <(echo "${__RETN}")
+				__MDIA[19]="${__LIST[1]:-}"	# rmk_tstamp
+				__MDIA[20]="${__LIST[2]:-}"	# rmk_size
+				__MDIA[21]="${__LIST[3]:-}"	# rmk_volume
+			fi
+			# --- conf file ---------------------------------------------------
+			if [[ -n "$(fnTrim "${__MDIA[24]}" "-")" ]]; then
+				__RETN="$(fnGetFileinfo "${__MDIA[24]}")"
+				read -r -a __LIST < <(echo "${__RETN}")
+				__MDIA[25]="${__LIST[1]:-}"	# rmk_tstamp
+			fi
+			# --- data registration -------------------------------------------
 			__MDIA=("${__MDIA[@]// /%20}")
 			I="${__MDIA[0]}"
 			_LIST_MDIA[I]="$(
 				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-11s \n" \
 				"${__MDIA[@]:1}"
 			)"
-printf "%s\n" "${_LIST_MDIA[I]:-}"
+#printf "%s\n" "${_LIST_MDIA[I]:-}"
 		done
 	done
 
