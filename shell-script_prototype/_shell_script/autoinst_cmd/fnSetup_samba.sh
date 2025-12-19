@@ -121,8 +121,8 @@ fnSetup_samba() {
 		[homes]
 		        browseable = No
 		        comment = Home Directories
-		        create mask = 0770
-		        directory mask = 0770
+		        create mask = 0660
+		        directory mask = 2770
 		        force group = ${_SAMB_GRUP}
 		        force user = ${_SAMB_USER}
 		        valid users = %S
@@ -139,8 +139,8 @@ fnSetup_samba() {
 		[adm]
 		        browseable = No
 		        comment = Administrator directories
-		        create mask = 0770
-		        directory mask = 0770
+		        create mask = 0660
+		        directory mask = 2770
 		        force group = ${_SAMB_GRUP}
 		        force user = ${_SAMB_USER}
 		        path = ${_DIRS_SAMB}/adm
@@ -149,8 +149,8 @@ fnSetup_samba() {
 		[pub]
 		        browseable = Yes
 		        comment = Public directories
-		        create mask = 0770
-		        directory mask = 0770
+		        create mask = 0660
+		        directory mask = 2770
 		        force group = ${_SAMB_GRUP}
 		        force user = ${_SAMB_USER}
 		        path = ${_DIRS_SAMB}/pub
@@ -159,8 +159,8 @@ fnSetup_samba() {
 		[usr]
 		        browseable = No
 		        comment = User directories
-		        create mask = 0770
-		        directory mask = 0770
+		        create mask = 0660
+		        directory mask = 2770
 		        force group = ${_SAMB_GRUP}
 		        force user = ${_SAMB_USER}
 		        path = ${_DIRS_SAMB}/usr
@@ -169,8 +169,8 @@ fnSetup_samba() {
 		[share]
 		        browseable = No
 		        comment = Shared directories
-		        create mask = 0770
-		        directory mask = 0770
+		        create mask = 0660
+		        directory mask = 2770
 		        force group = ${_SAMB_GRUP}
 		        force user = ${_SAMB_USER}
 		        path = ${_DIRS_SAMB}
@@ -179,8 +179,8 @@ fnSetup_samba() {
 		[dlna]
 		        browseable = No
 		        comment = DLNA directories
-		        create mask = 0770
-		        directory mask = 0770
+		        create mask = 0660
+		        directory mask = 2770
 		        force group = ${_SAMB_GRUP}
 		        force user = ${_SAMB_USER}
 		        path = ${_DIRS_SAMB}/pub/contents/dlna

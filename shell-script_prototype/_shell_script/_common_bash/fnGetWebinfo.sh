@@ -3,12 +3,12 @@
 # -----------------------------------------------------------------------------
 # descript: get web information data
 #   input :     $1     : target url
-#   output:   stdout   : output (url,code,content-length,last-modified,message)
+#   output:   stdout   : output (url,last-modified,content-length,code,message)
 #   return:            : unused
 #   g-var :            : unused
 # shellcheck disable=SC2148,SC2317,SC2329
 function fnGetWebinfo() {
-	awk -v _urls="${1:?}" '
+	awk -v _urls="${1:?}" -v _wget="${2:-"wget"}" '
 		function fnAwk_GetWebstatus(_retn, _code,  _mesg) {
 			# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
 			_mesg="Unknown Code"
@@ -61,28 +61,38 @@ function fnGetWebinfo() {
 				case 505: _mesg="HTTP Version Not Supported"; break
 				default : break
 			}
+			_mesg=sprintf("%-3s(%s)", _code, _mesg)
 			gsub(" ", "%20", _mesg)
 			_retn[1]=_mesg
 		}
-		function fnAwk_GetWebdata(_retn, _urls,  i, j, _list, _line, _code, _leng, _lmod, _date, _lcat, _ptrn, _dirs, _file, _rear, _mesg) {
+		function fnAwk_GetWebdata(_retn, _urls, _wget,  i, j, _list, _line, _code, _leng, _lmod, _date, _lcat, _ptrn, _dirs, _file, _rear, _mesg) {
 			# --- set pattern part --------------------------------------------
 			_ptrn=""
 			_dirs=""
 			_rear=""
 			match(_urls, "/[^/ \t]*\\[[^/ \t]+\\][^/ \t]*")
 			if (RSTART == 0) {
-				_comd="wget --tries=3 --timeout=60 --quiet --spider --server-response --output-document=- "_urls" 2>&1"
+				if (_wget == "curl") {
+					_comd="LANG=C curl --location --http1.1 --no-progress-meter --no-progress-bar --remote-time --show-error --fail --retry-max-time 3 --retry 3 --connect-timeout 60 --head "_urls" 2>&1"
+				} else {
+					_comd="LANG=C wget --tries=3 --timeout=60 --quiet --spider --server-response --output-document=- "_urls" 2>&1"
+				}
 			} else {
 				_ptrn=substr(_urls, RSTART+1, RLENGTH-1)
 				_dirs=substr(_urls, 1, RSTART-1)
 				_rear=substr(_urls, RSTART+RLENGTH+1)
-				_comd="wget --tries=3 --timeout=60 --quiet --server-response --output-document=- "_dirs" 2>&1"
+				if (_wget == "curl") {
+					_comd="LANG=C curl --location --http1.1 --no-progress-meter --no-progress-bar --remote-time --show-error --fail --retry-max-time 3 --retry 3 --connect-timeout 60 --show-headers --output - "_dirs" 2>&1"
+				} else {
+					_comd="LANG=C wget --tries=3 --timeout=60 --quiet --server-response --output-document=- "_dirs" 2>&1"
+				}
 			}
 			# --- get web data ------------------------------------------------
 			delete _list
 			i=0
 			while (_comd | getline) {
 				_line=$0
+				sub("\r", "", _line)
 				_list[i++]=_line
 			}
 			close(_comd)
@@ -140,9 +150,9 @@ function fnGetWebinfo() {
 			delete _mesg
 			fnAwk_GetWebstatus(_mesg, _code)
 			_retn[1]=_urls
-			_retn[2]=_code
+			_retn[2]="-"
 			_retn[3]="-"
-			_retn[4]="-"
+			_retn[4]=_code
 			_retn[5]=_mesg[1]
 			# --- check the results -------------------------------------------
 			if (_code < 200 || _code > 299) {
@@ -150,8 +160,8 @@ function fnGetWebinfo() {
 			}
 			# --- get file information ----------------------------------------
 			if (length(_ptrn) == 0) {
+				_retn[2]=_lmod
 				_retn[3]=_leng
-				_retn[4]=_lmod
 				return
 			}
 			# --- pattern completion ------------------------------------------
@@ -162,11 +172,15 @@ function fnGetWebinfo() {
 			if (length(_rear) > 0) {
 				_urls=_urls"/"_rear
 			}
-			fnAwk_GetWebdata(_retn, _urls)
+			fnAwk_GetWebdata(_retn, _urls, _wget)
 			return
 		}
 		BEGIN {
-			fnAwk_GetWebdata(_retn, _urls)
+			fnAwk_GetWebdata(_retn, _urls, _wget)
+			for (i in _retn) {
+				if (length(_retn[i]) == 0) {_retn[i]="-"}
+				gsub(" ", "%20", _retn[i])
+			}
 			printf("%s %s %s %s %s", _retn[1], _retn[2], _retn[3], _retn[4], _retn[5])
 		}
 	' || true

@@ -46,28 +46,24 @@ function fnMk_preconf() {
 
 	# --- create a file  ------------------------------------------------------
 	if [[ -n "${__PTRN:-}" ]]; then
-		__TGET=()
-		for I in "${!_LIST_MDIA[@]}"
-		do
-			__LINE="${_LIST_MDIA[I]:-}"
-			read -r -a __LIST < <(echo "${__LINE:-}")
-			case "${__LIST[1]}" in			# entry_flag
-				o) ;;
-				*) continue;;
-			esac
-			case "${__LIST[23]##*/}" in		# cfg_path
-				-) continue;;
-				*) ;;
-			esac
-			__PATH="${__LIST[23]}"
-			__TGET+=("${__PATH}")
-			case "${__PATH}" in
-				*/agama/*    ) __TGET+=("${__PATH/_leap-*_/_tumbleweed_}");;
-				*/kickstart/*) __TGET+=("${__PATH/_dvd/_web}");;
-				*            ) ;;
-			esac
-		done
-		IFS= mapfile -d $'\n' -t __TGET < <(IFS= printf "%s\n" "${__TGET[@]}" | grep -E "${__PTRN}" | sort -uV || true)
+		IFS= mapfile -d $'\n' -t __TGET < <(\
+			printf "%s\n" "${_LIST_MDIA[@]}" | \
+			awk -v ptrn="@/.*\/${__PTRN}\/.*/" '$2=="o" && $24!~/.*-$/ && $24~ptrn {}
+				print $24
+				switch ($24) {
+					case /.*\/agama\/.*/:
+						sub("_leap-[0-9]+.[0-9]+", "_tumbleweed", $24)
+						print $24
+						break
+					case /.*\/kickstart\/.*/:
+						sub("_dvd", "_web", $24)
+						print $24
+						break
+					default:
+						break
+				}
+			}' | sort -uV || true \
+		)
 		for __PATH in "${__TGET[@]}"
 		do
 			case "${__PATH}" in

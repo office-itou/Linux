@@ -40,8 +40,10 @@ function fnInitialize() {
 	readonly _ROWS_SIZE
 	readonly _COLS_SIZE
 
+	_TEXT_SPCE="$(fnString "${_COLS_SIZE}" ' ')"
 	_TEXT_GAP1="$(fnString "${_COLS_SIZE}" '-')"
 	_TEXT_GAP2="$(fnString "${_COLS_SIZE}" '=')"
+	readonly _TEXT_SPCE
 	readonly _TEXT_GAP1
 	readonly _TEXT_GAP2
 

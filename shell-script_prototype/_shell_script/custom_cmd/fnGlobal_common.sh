@@ -19,6 +19,15 @@
 	declare       _PATH_LATE=":_DIRS_SHEL_:/:_FILE_LATE_:"	# "              to run late
 	declare       _PATH_PART=":_DIRS_SHEL_:/:_FILE_PART_:"	# "              to run after partition
 	declare       _PATH_RUNS=":_DIRS_SHEL_:/:_FILE_RUNS_:"	# "              to run preseed/run
+# --- tftp menu ---------------------------------------------------------------
+	declare       _FILE_IPXE="autoexec.ipxe"				# ipxe
+	declare       _FILE_GRUB="boot/grub/grub.cfg"			# grub
+	declare       _FILE_SLNX="menu-bios/syslinux.cfg"		# syslinux (bios)
+	declare       _FILE_UEFI="menu-efi64/syslinux.cfg"		# syslinux (efi64)
+	declare       _PATH_IPXE=":_DIRS_TFTP_:/:_FILE_IPXE_:"	# ipxe
+	declare       _PATH_GRUB=":_DIRS_TFTP_:/:_FILE_GRUB_:"	# grub
+	declare       _PATH_SLNX=":_DIRS_TFTP_:/:_FILE_SLNX_:"	# syslinux (bios)
+	declare       _PATH_UEFI=":_DIRS_TFTP_:/:_FILE_UEFI_:"	# syslinux (efi64)
 
 	# --- tftp / web server network parameter ---------------------------------
 	declare       _SRVR_HTTP="http"							# server connection protocol (http or https)
@@ -62,3 +71,19 @@
 	declare -a    _LIST_DSTP=()								# debstrap information
 															# media type
 	declare -a    _LIST_TYPE=("mini" "netinst" "dvd" "liveinst" "live" "tool" "clive" "cnetinst" "system")
+
+	# --- wget / curl options -------------------------------------------------
+	declare -r -a _OPTN_CURL=("--location" "--http1.1" "--no-progress-bar" "--remote-time" "--show-error" "--fail" "--retry-max-time" "3" "--retry" "3" "--connect-timeout" "60")
+	declare -r -a _OPTN_WGET=("--tries=3" "--timeout=60" "--quiet")
+	declare       _COMD_WGET=""
+	if command -v wget2 > /dev/null 2>&1; then
+		_COMD_WGET="curl"
+	elif command -v wget > /dev/null 2>&1; then
+		_COMD_WGET="wget"
+	elif command -v curl > /dev/null 2>&1; then
+		_COMD_WGET="curl"
+	fi
+	readonly      _COMD_WGET
+
+	# --- rsync options -------------------------------------------------------
+	declare -r -a _OPTN_RSYC=("--recursive" "--links" "--perms" "--times" "--group" "--owner" "--devices" "--specials" "--hard-links" "--acls" "--xattrs" "--human-readable" "--update" "--delete")

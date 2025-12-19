@@ -28,6 +28,7 @@
 	declare       _DIST_CODE=""			# code name         (ex. trixie)
 	declare       _ROWS_SIZE="25"		# screen size: rows
 	declare       _COLS_SIZE="80"		# screen size: columns
+	declare       _TEXT_SPCE=""			# space
 	declare       _TEXT_GAP1=""			# gap1
 	declare       _TEXT_GAP2=""			# gap2
 	declare       _COMD_BBOX=""			# busybox (empty: inactive, else: active )
