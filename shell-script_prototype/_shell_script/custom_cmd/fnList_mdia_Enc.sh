@@ -30,7 +30,7 @@ function fnList_mdia_Enc() {
 	for I in $(printf "%d\n" "${!_LIST_CONF[@]}" | sort -rV)
 	do
 		__LINE="${_LIST_CONF[I]:-}"
-		__NAME="${__LINE%%[!_[:alnum:]]*}"
+		__NAME="${__LINE%%[^_[:alnum:]]*}"
 		[[ -z "${__NAME:-}" ]] && continue
 		case "${__NAME}" in
 			PATH_*     ) ;;

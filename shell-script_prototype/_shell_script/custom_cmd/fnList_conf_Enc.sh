@@ -31,7 +31,7 @@ function fnList_conf_Enc() {
 	for I in $(printf "%d\n" "${!_LIST_CONF[@]}" | sort -rV)
 	do
 		__LINE="${_LIST_CONF[I]:-}"
-		__NAME="${__LINE%%[!_[:alnum:]]*}"
+		__NAME="${__LINE%%[^_[:alnum:]]*}"
 		[[ -z "${__NAME:-}" ]] && continue
 		case "${__NAME}" in
 			PATH_*     ) ;;
@@ -48,16 +48,16 @@ function fnList_conf_Enc() {
 		__LIST+=("${__LINE:-}")
 		# comments with "#" do not work
 		# --- get variable name -----------------------------------------------
-		__NAME="${__LINE%%[!_[:alnum:]]*}"
+		__NAME="${__LINE%%[^_[:alnum:]]*}"
 		# --- get setting value -----------------------------------------------
 		__VALU="${__LINE#"${__NAME:-}="}"
 		__VALU="${__VALU%"#${__VALU##*#}"}"
-		__VALU="${__VALU#"${__VALU%%[!"${IFS}"]*}"}"	# ltrim
-		__VALU="${__VALU%"${__VALU##*[!"${IFS}"]}"}"	# rtrim
+		__VALU="${__VALU#"${__VALU%%[^"${IFS}"]*}"}"	# ltrim
+		__VALU="${__VALU%"${__VALU##*[^"${IFS}"]}"}"	# rtrim
 		# --- get comment -----------------------------------------------------
 		__CMNT="${__LINE#"${__NAME:+"${__NAME}="}${__VALU:-}"}"
-		__CMNT="${__CMNT#"${__CMNT%%[!"${IFS}"]*}"}"	# ltrim
-		__CMNT="${__CMNT%"${__CMNT##*[!"${IFS}"]}"}"	# rtrim
+		__CMNT="${__CMNT#"${__CMNT%%[^"${IFS}"]*}"}"	# ltrim
+		__CMNT="${__CMNT%"${__CMNT##*[^"${IFS}"]}"}"	# rtrim
 		# --- store in a variable ---------------------------------------------
 		case "${__CMNT:-}" in
 			*"application output"*)

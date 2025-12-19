@@ -10,7 +10,7 @@
 function fnDirname() {
 	declare       __WORK=""				# work
 	__WORK="${1%"${1##*/}"}"
-	[[ "${__WORK:-}" != "/" ]] && __WORK="${__WORK%"${__WORK##*[!/]}"}"
+	[[ "${__WORK:-}" != "/" ]] && __WORK="${__WORK%"${__WORK##*[^/]}"}"
 	echo -n "${__WORK:-}"
 }
 
@@ -25,6 +25,6 @@ function fnBasename() {
 	declare       __WORK=""				# work
 	__WORK="${1#"${1%/*}"}"
 	__WORK="${__WORK:-"${1:-}"}"
-	__WORK="${__WORK#"${__WORK%%[!/]*}"}"
+	__WORK="${__WORK#"${__WORK%%[^/]*}"}"
 	echo -n "${__WORK:-}"
 }

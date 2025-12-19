@@ -8,7 +8,7 @@
 #   g-var :            : unused
 # shellcheck disable=SC2148,SC2317,SC2329
 function fnLtrim() {
-	echo -n "${1#"${1%%[!"${2:-"${IFS}"}"]*}"}"	# ltrim
+	echo -n "${1#"${1%%[^"${2:-"${IFS}"}"]*}"}"	# ltrim
 }
 
 # -----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ function fnLtrim() {
 #   g-var :            : unused
 # shellcheck disable=SC2148,SC2317,SC2329
 function fnRtrim() {
-	echo -n "${1%"${1##*[!"${2:-"${IFS}"}"]}"}"	# rtrim
+	echo -n "${1%"${1##*[^"${2:-"${IFS}"}"]}"}"	# rtrim
 }
 
 # -----------------------------------------------------------------------------

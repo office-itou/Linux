@@ -29,14 +29,14 @@ function fnList_conf_Dec() {
 	do
 		__LINE="${_LIST_CONF[I]}"
 		# comments with "#" do not work
-		__NAME="${__LINE%%[!_[:alnum:]]*}"
+		__NAME="${__LINE%%[^_[:alnum:]]*}"
 		__VALU="${__LINE#"${__NAME:-}="}"
 		__CMNT="${__VALU#"${__VALU%%\#*}"}"
-		__CMNT="${__CMNT#"${__CMNT%%[!"${IFS}"]*}"}"	# ltrim
-		__CMNT="${__CMNT%"${__CMNT##*[!"${IFS}"]}"}"	# rtrim
+		__CMNT="${__CMNT#"${__CMNT%%[^"${IFS}"]*}"}"	# ltrim
+		__CMNT="${__CMNT%"${__CMNT##*[^"${IFS}"]}"}"	# rtrim
 		__VALU="${__VALU%"${__CMNT:-}"}"
-		__VALU="${__VALU#"${__VALU%%[!"${IFS}"]*}"}"	# ltrim
-		__VALU="${__VALU%"${__VALU##*[!"${IFS}"]}"}"	# rtrim
+		__VALU="${__VALU#"${__VALU%%[^"${IFS}"]*}"}"	# ltrim
+		__VALU="${__VALU%"${__VALU##*[^"${IFS}"]}"}"	# rtrim
 		# --- store in a variable ---------------------------------------------
 		[[ -z "${__NAME:-}" ]] && continue
 		__WNAM="${__NAME:-}"
@@ -52,7 +52,7 @@ function fnList_conf_Dec() {
 				do
 					__WNAM="${__VALU#"${__VALU%%:_[[:alnum:]]*_[[:alnum:]]*_:*}"}"
 					__WNAM="${__WNAM%"${__WNAM##*:_[[:alnum:]]*_[[:alnum:]]*_:}"}"
-					__WNAM="${__WNAM%%[!:_[:alnum:]]*}"
+					__WNAM="${__WNAM%%[^:_[:alnum:]]*}"
 					__WNAM="${__WNAM#:_}"
 					__WNAM="${__WNAM%_:}"
 					[[ -z "${__WNAM:-}" ]] && break
