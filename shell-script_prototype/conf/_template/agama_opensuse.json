@@ -87,6 +87,7 @@
       "curl",
       "vim",
       "bc",
+      "rsync",
       "tree",
       "openssh-server",
       "systemd-resolved",
