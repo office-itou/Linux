@@ -894,30 +894,6 @@ fnMkdir_share(){
 	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/windows/ati
 	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/windows/aomei
 	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_data
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_keyring
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.build.d
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.clean.d
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.conf.d
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.extra
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.finalize.d
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.postinst.d
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.postoutput.d
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.prepare.d
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.repart
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.sync.d
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_repository/opensuse
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_template
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/agama
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/autoyast
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/kickstart
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/nocloud/ubuntu_desktop
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/nocloud/ubuntu_server
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/preseed
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/script
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/windows
-#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/windows
 	mkdir -p "${_DIRS_SAMB:?}"/usr
 	mkdir -p "${_DIRS_TFTP:?}"/boot/grub/fonts
 	mkdir -p "${_DIRS_TFTP:?}"/boot/grub/locale
@@ -951,22 +927,9 @@ fnMkdir_share(){
 	mkdir -p "${_DIRS_CONF:?}"/preseed
 	mkdir -p "${_DIRS_CONF:?}"/script
 	mkdir -p "${_DIRS_CONF:?}"/windows
-#	mkdir -p "${_DIRS_DATA:?}"
-#	mkdir -p "${_DIRS_KEYS:?}"
-#	mkdir -p "${_DIRS_MKOS:?}"/mkosi.build.d
-#	mkdir -p "${_DIRS_MKOS:?}"/mkosi.clean.d
-#	mkdir -p "${_DIRS_MKOS:?}"/mkosi.conf.d
-#	mkdir -p "${_DIRS_MKOS:?}"/mkosi.extra
-#	mkdir -p "${_DIRS_MKOS:?}"/mkosi.finalize.d
-#	mkdir -p "${_DIRS_MKOS:?}"/mkosi.postinst.d
-#	mkdir -p "${_DIRS_MKOS:?}"/mkosi.postoutput.d
-#	mkdir -p "${_DIRS_MKOS:?}"/mkosi.prepare.d
-#	mkdir -p "${_DIRS_MKOS:?}"/mkosi.repart
-#	mkdir -p "${_DIRS_MKOS:?}"/mkosi.sync.d
-#	mkdir -p "${_DIRS_TMPL:?}"
-#	mkdir -p "${_DIRS_SHEL:?}"
 	mkdir -p "${_DIRS_IMGS:?}"
-	mkdir -p "${_DIRS_ISOS:?}"
+	mkdir -p "${_DIRS_ISOS:?}"/linux
+	mkdir -p "${_DIRS_ISOS:?}"/windows
 	mkdir -p "${_DIRS_LOAD:?}"
 	mkdir -p "${_DIRS_RMAK:?}"
 	mkdir -p "${_DIRS_CACH:?}"
@@ -974,23 +937,16 @@ fnMkdir_share(){
 	mkdir -p "${_DIRS_CHRT:?}"
 
 	# --- change file mode ----------------------------------------------------
-	chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_SAMB}/"*
-	chmod -R 2770 "${_DIRS_SAMB}/"*
-#	chmod    1777 "${_DIRS_SAMB}/adm/profiles"
-	chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_CONF}/"*
-	chmod -R 2775 "${_DIRS_CONF}/"*
-	chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_ISOS}/"*
-	chmod -R 2775 "${_DIRS_ISOS}/"*
-	chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_RMAK}/"*
-	chmod -R 2775 "${_DIRS_RMAK}/"*
+	chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_SAMB}/"
+	chmod -R 2770 "${_DIRS_SAMB}/"
+	chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_CONF}/"
+	chmod -R 2775 "${_DIRS_CONF}/"
+	chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_ISOS}/"
+	chmod -R 2775 "${_DIRS_ISOS}/"
+	chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_RMAK}/"
+	chmod -R 2775 "${_DIRS_RMAK}/"
 
 	# --- create symbolic link ------------------------------------------------
-#	[ ! -e "${_DIRS_CONF:?}.orig"                            ] && mv "${_DIRS_CONF:?}" "${_DIRS_CONF:?}.orig"
-	[ ! -e "${_DIRS_RMAK:?}.orig"                            ] && mv "${_DIRS_RMAK:?}" "${_DIRS_RMAK:?}.orig"
-#	[ ! -h "${_DIRS_CONF:?}"                                 ] && ln -s "${_DIRS_SAMB#"${_DIRS_TGET:-}"}/pub/resource/source/git/office-itou/linux/conf" "${_DIRS_CONF:?}"
-	[ ! -h "${_DIRS_RMAK:?}"                                 ] && ln -s "${_DIRS_SAMB#"${_DIRS_TGET:-}"}/pub/resource/image/creations/rmak"              "${_DIRS_RMAK:?}"
-	[ ! -h "${_DIRS_ISOS:?}/linux"                           ] && ln -s "${_DIRS_SAMB#"${_DIRS_TGET:-}"}/pub/resource/image/linux"                       "${_DIRS_ISOS:?}/"
-	[ ! -h "${_DIRS_ISOS:?}/windows"                         ] && ln -s "${_DIRS_SAMB#"${_DIRS_TGET:-}"}/pub/resource/image/windows"                     "${_DIRS_ISOS:?}/"
 	[ ! -h "${_DIRS_HTML:?}/${_DIRS_CONF##*/}"               ] && ln -s "${_DIRS_CONF#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
 	[ ! -h "${_DIRS_HTML:?}/${_DIRS_IMGS##*/}"               ] && ln -s "${_DIRS_IMGS#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
 	[ ! -h "${_DIRS_HTML:?}/${_DIRS_ISOS##*/}"               ] && ln -s "${_DIRS_ISOS#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
