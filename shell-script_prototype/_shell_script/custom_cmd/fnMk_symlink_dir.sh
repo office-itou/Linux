@@ -45,20 +45,14 @@ function fnMk_symlink_dir() {
 		"${_DIRS_SAMB:?}"/pub/resource/image/creations/rmak \
 		"${_DIRS_SAMB:?}"/pub/resource/image/linux/{debian,ubuntu,fedora,centos,almalinux,rockylinux,miraclelinux,opensuse,memtest86plus} \
 		"${_DIRS_SAMB:?}"/pub/resource/image/windows/{windows-{10,11},winpe,ati,aomei} \
-		"${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/{_data,_keyring,_repository/opensuse,_template} \
-		"${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/{agama,autoyast,kickstart,nocloud/{ubuntu_desktop,ubuntu_server},preseed,script,windows} \
-		"${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.{build.d,clean.d,conf.d,extra,finalize.d,postinst.d,postoutput.d,prepare.d,repart,sync.d} \
-		"${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/windows \
+		"${_DIRS_SAMB:?}"/pub/resource/source/git \
 		"${_DIRS_SAMB:?}"/usr \
 		"${_DIRS_TFTP:?}"/{boot/grub/{fonts,locale,i386-pc,i386-efi,x86_64-efi},ipxe,menu-{bios,efi64}/pxelinux.cfg} \
 		"${_DIRS_USER:?}"/private \
 		"${_DIRS_SHAR:?}" \
-		"${_DIRS_CONF:?}"/{_repository,agama,autoyast,kickstart,nocloud,preseed,windows} \
-		"${_DIRS_DATA:?}" \
-		"${_DIRS_KEYS:?}" \
-		"${_DIRS_MKOS:?}"/mkosi.{build.d,clean.d,conf.d,extra,finalize.d,postinst.d,postoutput.d,prepare.d,repart,sync.d} \
-		"${_DIRS_TMPL:?}" \
-		"${_DIRS_SHEL:?}" \
+		"${_DIRS_CONF:?}"/{_data,_keyring,_repository/opensuse,_template} \
+		"${_DIRS_CONF:?}"/_mkosi/mkosi.{build.d,clean.d,conf.d,extra,finalize.d,postinst.d,postoutput.d,prepare.d,repart,sync.d} \
+		"${_DIRS_CONF:?}"/{agama,autoyast,kickstart,nocloud/{ubuntu_desktop,ubuntu_server},preseed,script,windows} \
 		"${_DIRS_IMGS:?}" \
 		"${_DIRS_ISOS:?}" \
 		"${_DIRS_LOAD:?}" \
@@ -71,9 +65,9 @@ function fnMk_symlink_dir() {
 	chmod -R 2770 "${_DIRS_SAMB}/"*
 #	chmod    1777 "${_DIRS_SAMB}/adm/profiles"
 	# --- create symbolic link ------------------------------------------------
-	[ ! -e "${_DIRS_CONF:?}.orig"                            ] && mv "${_DIRS_CONF:?}" "${_DIRS_CONF:?}.orig"
+#	[ ! -e "${_DIRS_CONF:?}.orig"                            ] && mv "${_DIRS_CONF:?}" "${_DIRS_CONF:?}.orig"
 	[ ! -e "${_DIRS_RMAK:?}.orig"                            ] && mv "${_DIRS_RMAK:?}" "${_DIRS_RMAK:?}.orig"
-	[ ! -h "${_DIRS_CONF:?}"                                 ] && ln -s "${_DIRS_SAMB#"${_DIRS_TGET:-}"}/pub/resource/source/git/office-itou/linux/conf" "${_DIRS_CONF:?}"
+#	[ ! -h "${_DIRS_CONF:?}"                                 ] && ln -s "${_DIRS_SAMB#"${_DIRS_TGET:-}"}/pub/resource/source/git/office-itou/linux/conf" "${_DIRS_CONF:?}"
 	[ ! -h "${_DIRS_RMAK:?}"                                 ] && ln -s "${_DIRS_SAMB#"${_DIRS_TGET:-}"}/pub/resource/image/creations/rmak"              "${_DIRS_RMAK:?}"
 	[ ! -h "${_DIRS_ISOS:?}/linux"                           ] && ln -s "${_DIRS_SAMB#"${_DIRS_TGET:-}"}/pub/resource/image/linux"                       "${_DIRS_ISOS:?}/"
 	[ ! -h "${_DIRS_ISOS:?}/windows"                         ] && ln -s "${_DIRS_SAMB#"${_DIRS_TGET:-}"}/pub/resource/image/windows"                     "${_DIRS_ISOS:?}/"
@@ -100,6 +94,10 @@ function fnMk_symlink_dir() {
 	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_LOAD##*/}"    ] && ln -s "../${_DIRS_LOAD##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
 	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_RMAK##*/}"    ] && ln -s "../${_DIRS_RMAK##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
 	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default" ] && ln -s "../syslinux.cfg"                 "${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default"
+	# --- create index.html ---------------------------------------------------
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_DIRS_HTML}/index.html"
+		"Hello, world!" from ${_NICS_HOST}
+_EOT_
 	# --- create autoexec.ipxe ------------------------------------------------
 	touch "${_DIRS_TFTP:?}/menu-bios/syslinux.cfg"
 	touch "${_DIRS_TFTP:?}/menu-efi64/syslinux.cfg"

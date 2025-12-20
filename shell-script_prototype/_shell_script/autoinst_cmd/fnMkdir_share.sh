@@ -186,7 +186,7 @@ fnMkdir_share(){
 
 	# --- create index.html ---------------------------------------------------
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_DIRS_HTML}/index.html"
-		\"Hello, world!\" from ${_NICS_HOST}
+		"Hello, world!" from ${_NICS_HOST}
 _EOT_
 
 	# --- create autoexec.ipxe ------------------------------------------------
