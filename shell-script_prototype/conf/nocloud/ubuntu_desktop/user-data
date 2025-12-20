@@ -186,9 +186,11 @@ autoinstall:
   - network-manager                     # network management framework (daemon and userspace tools)
   - bash-completion                     # programmable completion for the bash shell
   - build-essential                     # Informational list of build-essential packages
+  - wget                                # retrieves files from the web
   - curl                                # command line tool for transferring data with URL syntax
   - vim                                 # Vi IMproved - enhanced vi editor
   - bc                                  # GNU bc arbitrary precision calculator language
+  - rsync                               # fast, versatile, remote (and local) file-copying tool
   - tree                                # displays an indented directory tree, in color
   - shellcheck                          # lint tool for shell scripts
   - tasksel                             # tool for selecting tasks for installation on Debian systems

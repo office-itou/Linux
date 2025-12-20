@@ -301,6 +301,7 @@ fixed address -->
       <package>curl</package>
       <package>vim</package>
       <package>bc</package>
+      <package>rsync</package>
       <package>tree</package>
       <package>openssh-server</package>
 <!-- leap
