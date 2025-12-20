@@ -9,7 +9,7 @@
 # shellcheck disable=SC2148,SC2317,SC2329
 fnSetup_apache() {
 	__FUNC_NAME="fnSetup_apache"
-	fnMsgout "${_PROG_NAME:-}" "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check service -------------------------------------------------------
 	__SRVC="$(fnFind_serivce 'apache2.service' 'httpd.service' | sort -V | head -n 1)"
