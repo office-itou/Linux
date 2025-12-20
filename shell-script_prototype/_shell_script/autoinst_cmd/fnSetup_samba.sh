@@ -201,10 +201,33 @@ fnSetup_samba() {
 		[share-conf]
 		        browseable = No
 		        comment = Shared directory for configuration files
+		        create mask = 0664
+		        directory mask = 2775
+		        force group = ${_SAMB_GRUP}
+		        force user = ${_SAMB_USER}
 		        path = ${_DIRS_CONF}
 		        valid users = @${_SAMB_GRUP}
 		        write list = @${_SAMB_GADM}
-		        wide links = Yes
+		[share-isos]
+		        browseable = No
+		        comment = Shared directory for iso image files
+		        create mask = 0664
+		        directory mask = 2775
+		        force group = ${_SAMB_GRUP}
+		        force user = ${_SAMB_USER}
+		        path = ${_DIRS_ISOS}
+		        valid users = @${_SAMB_GRUP}
+		        write list = @${_SAMB_GADM}
+		[share-rmak]
+		        browseable = No
+		        comment = Shared directory for remake files
+		        create mask = 0664
+		        directory mask = 2775
+		        force group = ${_SAMB_GRUP}
+		        force user = ${_SAMB_USER}
+		        path = ${_DIRS_RMAK}
+		        valid users = @${_SAMB_GRUP}
+		        write list = @${_SAMB_GADM}
 _EOT_
 	# --- output --------------------------------------------------------------
 	testparm -s "${__CONF}" > "${__PATH}"

@@ -1502,6 +1502,12 @@ function fnMk_symlink_dir() {
 	chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_SAMB}/"*
 	chmod -R 2770 "${_DIRS_SAMB}/"*
 #	chmod    1777 "${_DIRS_SAMB}/adm/profiles"
+	chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_CONF}/"*
+	chmod -R 2775 "${_DIRS_CONF}/"*
+	chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_ISOS}/"*
+	chmod -R 2775 "${_DIRS_ISOS}/"*
+	chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_RMAK}/"*
+	chmod -R 2775 "${_DIRS_RMAK}/"*
 	# --- create symbolic link ------------------------------------------------
 #	[ ! -e "${_DIRS_CONF:?}.orig"                            ] && mv "${_DIRS_CONF:?}" "${_DIRS_CONF:?}.orig"
 	[ ! -e "${_DIRS_RMAK:?}.orig"                            ] && mv "${_DIRS_RMAK:?}" "${_DIRS_RMAK:?}.orig"
