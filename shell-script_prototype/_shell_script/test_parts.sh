@@ -202,7 +202,7 @@ function fnMk_boot_option_preseed() {
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
 	if [[ -n "${25##*-}" ]]; then
-		__WORK="${__WORK:+"${__WORK} "}auto=true preseed/file=/cdrom${25#"${_DIRS_CONF}"}"
+		__WORK="${__WORK:+"${__WORK} "}auto=true preseed/file=/cdrom${25#"${_DIRS_CONF%/*}"}"
 		[[ "${__TGET_TYPE:-}" = "pxeboot" ]] && __WORK="${__WORK/file=\/cdrom/url=\$\{srvraddr\}}"
 		case "${4}" in
 			ubuntu-desktop-*|ubuntu-legacy-*) __WORK="${__WORK:+"${__WORK} "}automatic-ubiquity noprompt ${__WORK}";;
@@ -274,7 +274,7 @@ function fnMk_boot_option_nocloud() {
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
 	if [[ -n "${25##*-}" ]]; then
-		__WORK="${__WORK:+"${__WORK} "}automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom${25#"${_DIRS_CONF}"}"
+		__WORK="${__WORK:+"${__WORK} "}automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom${25#"${_DIRS_CONF%/*}"}"
 		[[ "${__TGET_TYPE:-}" = "pxeboot" ]] && __WORK="${__WORK/file=\/cdrom/url=\${srvraddr}}"
 	fi
 	case "${1}" in
@@ -334,7 +334,7 @@ function fnMk_boot_option_kickstart() {
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
 	if [[ -n "${25##*-}" ]]; then
-		__WORK="${__WORK:+"${__WORK} "}inst.ks=hd:sr0:${25#"${_DIRS_CONF}"}"
+		__WORK="${__WORK:+"${__WORK} "}inst.ks=hd:sr0:${25#"${_DIRS_CONF%/*}"}"
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
 			__WORK="${__WORK/hd:sr0:/\${srvraddr}}"
 			__WORK="${__WORK/_dvd/_web}"
@@ -384,7 +384,7 @@ function fnMk_boot_option_autoyast() {
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
 	if [[ -n "${25##*-}" ]]; then
-		__WORK="${__WORK:+"${__WORK} "}autoyast=cd:${25#"${_DIRS_CONF}"}"
+		__WORK="${__WORK:+"${__WORK} "}autoyast=cd:${25#"${_DIRS_CONF%/*}"}"
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
 			__WORK="${__WORK/cd:/\${srvraddr}}"
 			__WORK="${__WORK/_dvd/_web}"
@@ -434,7 +434,7 @@ function fnMk_boot_option_agama() {
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
 	if [[ -n "${25##*-}" ]]; then
-		__WORK="${__WORK:+"${__WORK} "}live.password=install inst.auto=dvd:${25#"${_DIRS_CONF}"}"
+		__WORK="${__WORK:+"${__WORK} "}live.password=install inst.auto=dvd:${25#"${_DIRS_CONF%/*}"}"
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
 			__WORK="${__WORK/dvd:/\${srvraddr}}"
 			__WORK="${__WORK/_dvd/_web}"

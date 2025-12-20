@@ -18,11 +18,11 @@ item -- debian-mini-12                          - Debian 12 ....................
 item -- debian-mini-13                          - Debian 13 ...........................................2025-11-11 21:23:57
 item -- debian-mini-14                          - Debian 14 ...........................................2025-08-03 00:51:41
 item -- debian-mini-testing                     - Debian testing ......................................2025-08-03 00:51:41
-item -- debian-mini-testing-daily               - Debian testing daily ................................2025-12-19 00:02:16
+item -- debian-mini-testing-daily               - Debian testing daily ................................2025-12-20 00:02:14
 item --gap --                                   [ Auto install Net install ]
 item -- debian-netinst-12                       - Debian 12 ...........................................2025-09-06 17:08:10
 item -- debian-netinst-13                       - Debian 13 ...........................................2025-11-15 13:15:32
-item -- debian-netinst-testing                  - Debian testing ......................................2025-12-19 15:21:41
+item -- debian-netinst-testing                  - Debian testing ......................................2025-12-20 16:02:01
 item -- fedora-netinst-43                       - Fedora Server 43 ....................................2025-10-23 03:26:02
 item -- centos-stream-netinst-9                 - CentOS Stream 9 .....................................2025-12-15 03:58:07
 item -- centos-stream-netinst-10                - CentOS Stream 10 ....................................2025-12-15 04:19:16
@@ -105,7 +105,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/preseed/ps_debian_server.cfg
+set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/mini-bookworm-amd64.iso
@@ -140,7 +140,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/preseed/ps_debian_server.cfg
+set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/mini-trixie-amd64.iso
@@ -175,7 +175,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/preseed/ps_debian_server.cfg
+set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/mini-forky-amd64.iso
@@ -210,7 +210,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/preseed/ps_debian_server.cfg
+set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/mini-testing-amd64.iso
@@ -245,7 +245,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/preseed/ps_debian_server.cfg
+set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/mini-testing-daily-amd64.iso
@@ -280,7 +280,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/preseed/ps_debian_server.cfg
+set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-12.12.0-amd64-netinst.iso
@@ -315,7 +315,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/preseed/ps_debian_server.cfg
+set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-13.2.0-amd64-netinst.iso
@@ -350,7 +350,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/preseed/ps_debian_server.cfg
+set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-testing-amd64-netinst.iso
@@ -385,7 +385,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} inst.ks=${srvraddr/kickstart/ks_fedora-43_net.cfg}
+set autoinst server=${srvraddr} inst.ks=${srvraddr/conf/kickstart/ks_fedora-43_net.cfg}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106 language=ja_JP
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set otheropt inst.repo=${srvraddr}/imgs/fedora-netinst-43
@@ -420,7 +420,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} inst.ks=${srvraddr/kickstart/ks_centos-stream-9_net.cfg}
+set autoinst server=${srvraddr} inst.ks=${srvraddr/conf/kickstart/ks_centos-stream-9_net.cfg}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106 language=ja_JP
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set otheropt inst.repo=${srvraddr}/imgs/centos-stream-netinst-9
@@ -455,7 +455,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} inst.ks=${srvraddr/kickstart/ks_centos-stream-10_net.cfg}
+set autoinst server=${srvraddr} inst.ks=${srvraddr/conf/kickstart/ks_centos-stream-10_net.cfg}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106 language=ja_JP
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set otheropt inst.repo=${srvraddr}/imgs/centos-stream-netinst-10
@@ -490,7 +490,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} inst.ks=${srvraddr/kickstart/ks_almalinux-9_net.cfg}
+set autoinst server=${srvraddr} inst.ks=${srvraddr/conf/kickstart/ks_almalinux-9_net.cfg}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106 language=ja_JP
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set otheropt inst.repo=${srvraddr}/imgs/almalinux-netinst-9
@@ -525,7 +525,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} inst.ks=${srvraddr/kickstart/ks_almalinux-10_net.cfg}
+set autoinst server=${srvraddr} inst.ks=${srvraddr/conf/kickstart/ks_almalinux-10_net.cfg}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106 language=ja_JP
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set otheropt inst.repo=${srvraddr}/imgs/almalinux-netinst-10
@@ -560,7 +560,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} inst.ks=${srvraddr/kickstart/ks_rockylinux-9_net.cfg}
+set autoinst server=${srvraddr} inst.ks=${srvraddr/conf/kickstart/ks_rockylinux-9_net.cfg}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106 language=ja_JP
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set otheropt inst.repo=${srvraddr}/imgs/rockylinux-netinst-9
@@ -595,7 +595,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} inst.ks=${srvraddr/kickstart/ks_rockylinux-10_net.cfg}
+set autoinst server=${srvraddr} inst.ks=${srvraddr/conf/kickstart/ks_rockylinux-10_net.cfg}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106 language=ja_JP
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set otheropt inst.repo=${srvraddr}/imgs/rockylinux-netinst-10
@@ -630,7 +630,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} inst.ks=${srvraddr/kickstart/ks_miraclelinux-9_net.cfg}
+set autoinst server=${srvraddr} inst.ks=${srvraddr/conf/kickstart/ks_miraclelinux-9_net.cfg}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106 language=ja_JP
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set otheropt inst.repo=${srvraddr}/imgs/miraclelinux-netinst-9
@@ -665,7 +665,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} live.password=install inst.auto=${srvraddr/agama/autoinst_leap-16.0.json}
+set autoinst server=${srvraddr} live.password=install inst.auto=${srvraddr/conf/agama/autoinst_leap-16.0.json}
 set language language=ja_JP
 set networks hostname=${hostname} ifcfg=${ethrname}=${ipv4addr}/24,${ipv4gway},${ipv4nsvr},workgroup
 set otheropt install=https://download.opensuse.org/distribution/leap/0/repo/oss/
@@ -700,7 +700,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} autoyast=${srvraddr/autoyast/autoinst_tumbleweed_net.xml}
+set autoinst server=${srvraddr} autoyast=${srvraddr/conf/autoyast/autoinst_tumbleweed_net.xml}
 set language language=ja_JP
 set networks hostname=${hostname} ifcfg=${ethrname}=${ipv4addr}/24,${ipv4gway},${ipv4nsvr},workgroup
 set otheropt install=https://download.opensuse.org/tumbleweed/repo/oss/
@@ -735,7 +735,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/preseed/ps_debian_server.cfg
+set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-12.12.0-amd64-DVD-1.iso
@@ -770,7 +770,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/preseed/ps_debian_server.cfg
+set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-13.2.0-amd64-DVD-1.iso
@@ -805,7 +805,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/preseed/ps_debian_server.cfg
+set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-testing-amd64-DVD-1.iso
@@ -840,7 +840,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom/nocloud/ubuntu_server}
+set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom/conf/nocloud/ubuntu_server}
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}::${ethrname}:static:${ipv4nsvr} hostname=${hostname}
 set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/ubuntu-24.04.3-live-server-amd64.iso
@@ -875,7 +875,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom/nocloud/ubuntu_server}
+set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom/conf/nocloud/ubuntu_server}
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}::${ethrname}:static:${ipv4nsvr} hostname=${hostname}
 set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/ubuntu-25.04-live-server-amd64.iso
@@ -910,7 +910,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom/nocloud/ubuntu_server}
+set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom/conf/nocloud/ubuntu_server}
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}::${ethrname}:static:${ipv4nsvr} hostname=${hostname}
 set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/ubuntu-25.10-live-server-amd64.iso
@@ -945,7 +945,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} inst.ks=${srvraddr/kickstart/ks_fedora-43_web.cfg}
+set autoinst server=${srvraddr} inst.ks=${srvraddr/conf/kickstart/ks_fedora-43_web.cfg}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106 language=ja_JP
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set otheropt inst.repo=${srvraddr}/imgs/fedora-43
@@ -980,7 +980,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} inst.ks=${srvraddr/kickstart/ks_centos-stream-9_web.cfg}
+set autoinst server=${srvraddr} inst.ks=${srvraddr/conf/kickstart/ks_centos-stream-9_web.cfg}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106 language=ja_JP
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set otheropt inst.repo=${srvraddr}/imgs/centos-stream-9
@@ -1015,7 +1015,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} inst.ks=${srvraddr/kickstart/ks_centos-stream-10_web.cfg}
+set autoinst server=${srvraddr} inst.ks=${srvraddr/conf/kickstart/ks_centos-stream-10_web.cfg}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106 language=ja_JP
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set otheropt inst.repo=${srvraddr}/imgs/centos-stream-10
@@ -1050,7 +1050,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} inst.ks=${srvraddr/kickstart/ks_almalinux-9_web.cfg}
+set autoinst server=${srvraddr} inst.ks=${srvraddr/conf/kickstart/ks_almalinux-9_web.cfg}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106 language=ja_JP
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set otheropt inst.repo=${srvraddr}/imgs/almalinux-9
@@ -1085,7 +1085,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} inst.ks=${srvraddr/kickstart/ks_almalinux-10_web.cfg}
+set autoinst server=${srvraddr} inst.ks=${srvraddr/conf/kickstart/ks_almalinux-10_web.cfg}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106 language=ja_JP
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set otheropt inst.repo=${srvraddr}/imgs/almalinux-10
@@ -1120,7 +1120,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} inst.ks=${srvraddr/kickstart/ks_rockylinux-9_web.cfg}
+set autoinst server=${srvraddr} inst.ks=${srvraddr/conf/kickstart/ks_rockylinux-9_web.cfg}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106 language=ja_JP
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set otheropt inst.repo=${srvraddr}/imgs/rockylinux-9
@@ -1155,7 +1155,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} inst.ks=${srvraddr/kickstart/ks_rockylinux-10_web.cfg}
+set autoinst server=${srvraddr} inst.ks=${srvraddr/conf/kickstart/ks_rockylinux-10_web.cfg}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106 language=ja_JP
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set otheropt inst.repo=${srvraddr}/imgs/rockylinux-10
@@ -1190,7 +1190,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} inst.ks=${srvraddr/kickstart/ks_miraclelinux-9_web.cfg}
+set autoinst server=${srvraddr} inst.ks=${srvraddr/conf/kickstart/ks_miraclelinux-9_web.cfg}
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106 language=ja_JP
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
 set otheropt inst.repo=${srvraddr}/imgs/miraclelinux-9
@@ -1225,7 +1225,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} live.password=install inst.auto=${srvraddr/agama/autoinst_leap-16.0.json}
+set autoinst server=${srvraddr} live.password=install inst.auto=${srvraddr/conf/agama/autoinst_leap-16.0.json}
 set language language=ja_JP
 set networks hostname=${hostname} ifcfg=${ethrname}=${ipv4addr}/24,${ipv4gway},${ipv4nsvr},workgroup
 set otheropt install=${srvraddr}/imgs/0
@@ -1260,7 +1260,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} autoyast=${srvraddr/autoyast/autoinst_tumbleweed_web.xml}
+set autoinst server=${srvraddr} autoyast=${srvraddr/conf/autoyast/autoinst_tumbleweed_web.xml}
 set language language=ja_JP
 set networks hostname=${hostname} ifcfg=${ethrname}=${ipv4addr}/24,${ipv4gway},${ipv4nsvr},workgroup
 set otheropt install=${srvraddr}/imgs/
@@ -1333,7 +1333,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/preseed/ps_debian_desktop.cfg
+set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-live-12.12.0-amd64-standard.iso
@@ -1368,7 +1368,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/preseed/ps_debian_desktop.cfg
+set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-live-13.2.0-amd64-standard.iso
@@ -1403,7 +1403,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/preseed/ps_debian_desktop.cfg
+set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-live-testing-amd64-standard.iso
@@ -1438,7 +1438,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/preseed/ps_debian_desktop.cfg
+set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-live-12.12.0-amd64-gnome.iso
@@ -1473,7 +1473,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/preseed/ps_debian_desktop.cfg
+set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-live-13.2.0-amd64-gnome.iso
@@ -1508,7 +1508,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/preseed/ps_debian_desktop.cfg
+set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-live-testing-amd64-gnome.iso
@@ -1543,7 +1543,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/preseed/ps_debian_desktop.cfg
+set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-live-12.12.0-amd64-lxde.iso
@@ -1578,7 +1578,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/preseed/ps_debian_desktop.cfg
+set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-live-13.2.0-amd64-lxde.iso
@@ -1613,7 +1613,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/preseed/ps_debian_desktop.cfg
+set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-live-testing-amd64-lxde.iso
@@ -1648,7 +1648,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom/nocloud/ubuntu_desktop}
+set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom/conf/nocloud/ubuntu_desktop}
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}::${ethrname}:static:${ipv4nsvr} hostname=${hostname}
 set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/ubuntu-24.04.3-desktop-amd64.iso
@@ -1683,7 +1683,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom/nocloud/ubuntu_desktop}
+set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom/conf/nocloud/ubuntu_desktop}
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}::${ethrname}:static:${ipv4nsvr} hostname=${hostname}
 set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/ubuntu-25.04-desktop-amd64.iso
@@ -1718,7 +1718,7 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom/nocloud/ubuntu_desktop}
+set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom/conf/nocloud/ubuntu_desktop}
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}::${ethrname}:static:${ipv4nsvr} hostname=${hostname}
 set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/ubuntu-25.10-desktop-amd64.iso

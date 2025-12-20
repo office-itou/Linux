@@ -53,22 +53,7 @@ fnMkdir_share(){
 	mkdir -p "${_DIRS_SAMB:?}"/pub/contents/dlna/sounds
 	mkdir -p "${_DIRS_SAMB:?}"/pub/hardware
 	mkdir -p "${_DIRS_SAMB:?}"/pub/software
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/creations/rmak
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/linux/debian
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/linux/ubuntu
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/linux/fedora
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/linux/centos
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/linux/almalinux
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/linux/rockylinux
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/linux/miraclelinux
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/linux/opensuse
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/linux/memtest86plus
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/windows/windows-10
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/windows/windows-11
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/windows/winpe
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/windows/ati
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/windows/aomei
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git
+	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/git
 	mkdir -p "${_DIRS_SAMB:?}"/usr
 	mkdir -p "${_DIRS_TFTP:?}"/boot/grub/fonts
 	mkdir -p "${_DIRS_TFTP:?}"/boot/grub/locale
@@ -104,7 +89,21 @@ fnMkdir_share(){
 	mkdir -p "${_DIRS_CONF:?}"/windows
 	mkdir -p "${_DIRS_IMGS:?}"
 	mkdir -p "${_DIRS_ISOS:?}"/linux
+	mkdir -p "${_DIRS_ISOS:?}"/linux/debian
+	mkdir -p "${_DIRS_ISOS:?}"/linux/ubuntu
+	mkdir -p "${_DIRS_ISOS:?}"/linux/fedora
+	mkdir -p "${_DIRS_ISOS:?}"/linux/centos
+	mkdir -p "${_DIRS_ISOS:?}"/linux/almalinux
+	mkdir -p "${_DIRS_ISOS:?}"/linux/rockylinux
+	mkdir -p "${_DIRS_ISOS:?}"/linux/miraclelinux
+	mkdir -p "${_DIRS_ISOS:?}"/linux/opensuse
+	mkdir -p "${_DIRS_ISOS:?}"/linux/memtest86plus
 	mkdir -p "${_DIRS_ISOS:?}"/windows
+	mkdir -p "${_DIRS_ISOS:?}"/windows/windows-10
+	mkdir -p "${_DIRS_ISOS:?}"/windows/windows-11
+	mkdir -p "${_DIRS_ISOS:?}"/windows/winpe
+	mkdir -p "${_DIRS_ISOS:?}"/windows/ati
+	mkdir -p "${_DIRS_ISOS:?}"/windows/aomei
 	mkdir -p "${_DIRS_LOAD:?}"
 	mkdir -p "${_DIRS_RMAK:?}"
 	mkdir -p "${_DIRS_CACH:?}"

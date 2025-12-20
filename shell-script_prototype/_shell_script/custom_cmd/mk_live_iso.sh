@@ -1480,10 +1480,7 @@ function fnMk_symlink_dir() {
 		"${_DIRS_HTML:?}" \
 		"${_DIRS_SAMB:?}"/adm/{commands,profiles} \
 		"${_DIRS_SAMB:?}"/pub/{_license,contents/{disc,dlna/{movies,others,photos,sounds}},hardware,software} \
-		"${_DIRS_SAMB:?}"/pub/resource/image/creations/rmak \
-		"${_DIRS_SAMB:?}"/pub/resource/image/linux/{debian,ubuntu,fedora,centos,almalinux,rockylinux,miraclelinux,opensuse,memtest86plus} \
-		"${_DIRS_SAMB:?}"/pub/resource/image/windows/{windows-{10,11},winpe,ati,aomei} \
-		"${_DIRS_SAMB:?}"/pub/resource/source/git \
+		"${_DIRS_SAMB:?}"/pub/resource/git \
 		"${_DIRS_SAMB:?}"/usr \
 		"${_DIRS_TFTP:?}"/{boot/grub/{fonts,locale,i386-pc,i386-efi,x86_64-efi},ipxe,menu-{bios,efi64}/pxelinux.cfg} \
 		"${_DIRS_USER:?}"/private \
@@ -1493,6 +1490,8 @@ function fnMk_symlink_dir() {
 		"${_DIRS_CONF:?}"/{agama,autoyast,kickstart,nocloud/{ubuntu_desktop,ubuntu_server},preseed,script,windows} \
 		"${_DIRS_IMGS:?}" \
 		"${_DIRS_ISOS:?}"/{linux,windows} \
+		"${_DIRS_ISOS:?}"/linux/{debian,ubuntu,fedora,centos,almalinux,rockylinux,miraclelinux,opensuse,memtest86plus} \
+		"${_DIRS_ISOS:?}"/windows/{windows-{10,11},winpe,ati,aomei} \
 		"${_DIRS_LOAD:?}" \
 		"${_DIRS_RMAK:?}" \
 		"${_DIRS_CACH:?}" \

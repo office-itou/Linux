@@ -157,7 +157,7 @@ function fnMk_print_list() {
 		__MESG="$(fnTrim "${__MESG:-"${__SEED}"}" "-")"
 		[[ -n "$(fnTrim "${__MDIA[15]}" "-")" ]] && __RDAT="$(fnTrim "${__MDIA[15]%%%20*}" "-")"	# iso_tstamp
 		[[ -n "$(fnTrim "${__MDIA[11]}" "-")" ]] && __RDAT="$(fnTrim "${__MDIA[11]%%%20*}" "-")"	# web_tstamp
-		printf "\033[m%c\033[%sm${__FMTT}\033[m%c\n" "#" "${__COLR:-}" "$((1+I))" "${__BASE}" "${__RDAT:-"20xx-xx-xx"}" "${__SUPE:-"20xx-xx-xx"}" "${__MESG:-}" "#"
+		printf "\033[m%c\033[%sm${__FMTT}\033[m%c\n" "#" "${__COLR:-}" "${I}" "${__BASE}" "${__RDAT:-"20xx-xx-xx"}" "${__SUPE:-"20xx-xx-xx"}" "${__MESG:-}" "#"
 		# --- data registration -------------------------------------------
 		__MDIA=("${__MDIA[@]// /%20}")
 		__LIST[I]="${__MDIA[*]}"
