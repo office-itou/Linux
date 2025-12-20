@@ -117,13 +117,13 @@
   |-- hgfs ----------------------------- vmware shared directory
   |-- http
   |   `-- html ------------------------- html contents
+  |       |-- index.html
   |       |-- conf -> /srv/user/share/conf
   |       |-- imgs -> /srv/user/share/imgs
   |       |-- isos -> /srv/user/share/isos
   |       |-- load -> /srv/user/share/load
   |       |-- rmak -> /srv/user/share/rmak
   |       `-- tftp -> /srv/tftp
-  |-- lost+found
   |-- samba ---------------------------- samba shared directory
   |   |-- adm
   |   |   |-- commands
@@ -139,7 +139,7 @@
   |   |   |       `-- sounds
   |   |   |-- hardware
   |   |   |-- resource
-  |   |   |   |-- image
+  |   |   |   |-- image ---------------- image file
   |   |   |   |   |-- creations
   |   |   |   |   |   `-- rmak --------- remake file
   |   |   |   |   |-- linux
@@ -160,57 +160,20 @@
   |   |   |   |       `-- winpe
   |   |   |   `-- source
   |   |   |       `-- git
-  |   |   |           `-- office-itou
-  |   |   |               |-- linux
-  |   |   |               |   `-- conf --------- configuration file
-  |   |   |               |       |-- _data ------- common data files
-  |   |   |               |       |   |-- common.cfg ----------- configuration file of common
-  |   |   |               |       |   |-- distribution.dat ----- data file of distribution
-  |   |   |               |       |   `-- media.dat ------------ data file of media
-  |   |   |               |       |-- _keyring ---- keyring file
-  |   |   |               |       |-- _mkosi
-  |   |   |               |       |   |-- mkosi.build.d
-  |   |   |               |       |   |-- mkosi.clean.d
-  |   |   |               |       |   |-- mkosi.conf.d
-  |   |   |               |       |   |-- mkosi.extra
-  |   |   |               |       |   |-- mkosi.finalize.d
-  |   |   |               |       |   |-- mkosi.postinst.d
-  |   |   |               |       |   |-- mkosi.postoutput.d
-  |   |   |               |       |   |-- mkosi.prepare.d
-  |   |   |               |       |   |-- mkosi.repart
-  |   |   |               |       |   `-- mkosi.sync.d
-  |   |   |               |       |-- _repository
-  |   |   |               |       |-- _template --- templates for various configuration files
-  |   |   |               |       |   |-- agama_opensuse.json -- for opensuse agama installer
-  |   |   |               |       |   |-- kickstart_rhel.cfg --- for rhel
-  |   |   |               |       |   |-- preseed_debian.cfg --- for debian
-  |   |   |               |       |   |-- preseed_ubuntu.cfg --- for ubuntu
-  |   |   |               |       |   |-- user-data_ubuntu ----- for ubuntu cloud-init
-  |   |   |               |       |   `-- yast_opensuse.xml ---- for opensuse
-  |   |   |               |       |-- agama ------- configuration files for opensuse agama installer
-  |   |   |               |       |-- autoyast ---- "                   for opensuse
-  |   |   |               |       |-- kickstart --- "                   for rhel
-  |   |   |               |       |-- nocloud ----- "                   for ubuntu cloud-init
-  |   |   |               |       |-- preseed ----- "                   for debian/ubuntu preseed
-  |   |   |               |       |-- script ------ script files
-  |   |   |               |       |   |-- autoinst_cmd_early.sh ---- for auto install early command
-  |   |   |               |       |   |-- autoinst_cmd_late.sh ----- "                late command
-  |   |   |               |       |   |-- autoinst_cmd_part.sh ----- "                early command after partman
-  |   |   |               |       |   `-- autoinst_cmd_run.sh ------ "                preseed/run
-  |   |   |               |       `-- windows
-  |   |   |               `-- windows --------------- configuration files for windows
-  |   |   |                   |-- WinREexpand.cmd ---------- hotfix for windows 10
-  |   |   |                   |-- WinREexpand_bios.sub ----- "
-  |   |   |                   |-- WinREexpand_uefi.sub ----- "
-  |   |   |                   |-- bypass.cmd --------------- installation restriction bypass command for windows 11
-  |   |   |                   |-- inst_w10.cmd ------------- installation batch file for windows 10
-  |   |   |                   |-- inst_w11.cmd ------------- "                       for windows 11
-  |   |   |                   |-- shutdown.cmd ------------- shutdown command for winpe
-  |   |   |                   |-- startnet.cmd ------------- startup command for winpe
-  |   |   |                   |-- unattend.xml ------------- auto-installation configuration file for windows 10/11
-  |   |   |                   `-- winpeshl.ini -------------
   |   |   `-- software
   |   `-- usr
+  |       `-- administrator
+  |           |-- .bash_history
+  |           |-- .bash_logout
+  |           |-- .bashrc
+  |           |-- .curlrc
+  |           |-- .profile
+  |           |-- .vimrc
+  |           |-- app
+  |           |-- dat
+  |           `-- web
+  |               `-- public_html
+  |                   `-- index.html
   |-- tftp ----------------------------- tftp contents
   |   |-- autoexec.ipxe ---------------- ipxe script file (menu file)
   |   |-- boot
@@ -240,8 +203,7 @@
   |   |   |-- load -> ../load
   |   |   |-- pxelinux.cfg
   |   |   |   `-- default -> ../syslinux.cfg
-  |   |   |-- rmak -> ../rmak
-  |   |   `-- syslinux.cfg
+  |   |   `-- rmak -> ../rmak
   |   |-- menu-efi64
   |   |   |-- syslinux.cfg ------------- syslinux configuration for uefi(x86_64) environment
   |   |   |-- syslinux.efi ------------- bootloader (x86_64-efi)
@@ -251,16 +213,62 @@
   |   |   |-- load -> ../load
   |   |   |-- pxelinux.cfg
   |   |   |   `-- default -> ../syslinux.cfg
-  |   |   |-- rmak -> ../rmak
-  |   |   `-- syslinux.cfg
+  |   |   `-- rmak -> ../rmak
   |   `-- rmak -> /srv/user/share/rmak
   `-- user ----------------------------- user file
       |-- private ---------------------- personal use
       `-- share ------------------------ shared
           |-- cache
           |-- chroot ------------------- change route directory
-          |-- conf -> /srv/samba/pub/resource/source/git/office-itou/linux/conf
-          |-- conf.orig
+          |-- conf ------------------------- configuration file
+          |   |-- _data ------------------------ common data files
+          |   |   |-- common.cfg ------------------- configuration file of common
+          |   |   |-- distribution.dat ------------- data file of distribution
+          |   |   `-- media.dat -------------------- data file of media
+          |   |-- _keyring
+          |   |-- _mkosi
+          |   |   |-- mkosi.build.d
+          |   |   |-- mkosi.clean.d
+          |   |   |-- mkosi.conf.d
+          |   |   |-- mkosi.extra
+          |   |   |-- mkosi.finalize.d
+          |   |   |-- mkosi.postinst.d
+          |   |   |-- mkosi.postoutput.d
+          |   |   |-- mkosi.prepare.d
+          |   |   |-- mkosi.repart
+          |   |   `-- mkosi.sync.d
+          |   |-- _repository
+          |   |   `-- opensuse
+          |   |-- _template -------------------- templates for various configuration files
+          |   |   |-- agama_opensuse.json ---------- for opensuse agama installer
+          |   |   |-- kickstart_rhel.cfg ----------- for rhel
+          |   |   |-- preseed_debian.cfg ----------- for debian
+          |   |   |-- preseed_ubuntu.cfg ----------- for ubuntu
+          |   |   |-- user-data_ubuntu ------------- for ubuntu cloud-init
+          |   |   `-- yast_opensuse.xml ------------ for opensuse
+          |   |-- agama ------------------------ configuration files for opensuse agama installer
+          |   |-- autoyast --------------------- "                   for opensuse
+          |   |-- kickstart -------------------- "                   for rhel
+          |   |-- nocloud ---------------------- "                   for ubuntu cloud-init
+          |   |   |-- ubuntu_desktop
+          |   |   `-- ubuntu_server
+          |   |-- preseed ---------------------- "                   for debian/ubuntu preseed
+          |   |-- script ----------------------- script files
+          |   |   |-- autoinst_cmd_early.sh -------- for auto install early command
+          |   |   |-- autoinst_cmd_late.sh --------- "                late command
+          |   |   |-- autoinst_cmd_part.sh --------- "                early command after partman
+          |   |   `-- autoinst_cmd_run.sh ---------- "                preseed/run
+          |   `-- windows ----------------------configuration files for windows
+          |       |-- WinREexpand.cmd -------------- hotfix for windows 10
+          |       |-- WinREexpand_bios.sub --------- "
+          |       |-- WinREexpand_uefi.sub --------- "
+          |       |-- bypass.cmd ------------------- installation restriction bypass command for windows 11
+          |       |-- inst_w10.cmd ----------------- installation batch file for windows 10
+          |       |-- inst_w11.cmd ----------------- "                       for windows 11
+          |       |-- shutdown.cmd ----------------- shutdown command for winpe
+          |       |-- startnet.cmd ----------------- startup command for winpe
+          |       |-- unattend.xml ----------------- auto-installation configuration file for windows 10/11
+          |       `-- winpeshl.ini -----------------
           |-- containers
           |-- imgs --------------------- iso file extraction destination
           |-- isos --------------------- iso file
