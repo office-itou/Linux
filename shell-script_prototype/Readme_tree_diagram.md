@@ -3,7 +3,7 @@
 * ## **tree**
 
   ``` bash:
-  tree --charset C -n --filesfirst -d /srv/
+  tree --charset C -n --filefirst -d /srv/
   ```
 
 * ## **/boot/**
@@ -127,7 +127,7 @@
   |-- samba ---------------------------- samba shared directory
   |   |-- adm
   |   |   |-- commands
-  |   |   `-- profiles
+  |   |   `-- profile
   |   |-- pub
   |   |   |-- _license
   |   |   |-- contents
@@ -139,27 +139,7 @@
   |   |   |       `-- sounds
   |   |   |-- hardware
   |   |   |-- resource
-  |   |   |   |-- image ---------------- image file
-  |   |   |   |   |-- creations
-  |   |   |   |   |   `-- rmak --------- remake file
-  |   |   |   |   |-- linux
-  |   |   |   |   |   |-- almalinux
-  |   |   |   |   |   |-- centos
-  |   |   |   |   |   |-- debian
-  |   |   |   |   |   |-- fedora
-  |   |   |   |   |   |-- memtest86plus
-  |   |   |   |   |   |-- miraclelinux
-  |   |   |   |   |   |-- opensuse
-  |   |   |   |   |   |-- rockylinux
-  |   |   |   |   |   `-- ubuntu
-  |   |   |   |   `-- windows
-  |   |   |   |       |-- aomei
-  |   |   |   |       |-- ati
-  |   |   |   |       |-- windows-10
-  |   |   |   |       |-- windows-11
-  |   |   |   |       `-- winpe
-  |   |   |   `-- source
-  |   |   |       `-- git
+  |   |   |   `-- git
   |   |   `-- software
   |   `-- usr
   |       `-- administrator
@@ -221,12 +201,12 @@
           |-- cache
           |-- chroot ------------------- change route directory
           |-- conf ------------------------- configuration file
-          |   |-- _data ------------------------ common data files
+          |   |-- _data ------------------------ common data file
           |   |   |-- common.cfg ------------------- configuration file of common
           |   |   |-- distribution.dat ------------- data file of distribution
           |   |   `-- media.dat -------------------- data file of media
-          |   |-- _keyring
-          |   |-- _mkosi
+          |   |-- _keyring --------------------- keyring file
+          |   |-- _mkosi ----------------------- mkosi script
           |   |   |-- mkosi.build.d
           |   |   |-- mkosi.clean.d
           |   |   |-- mkosi.conf.d
@@ -239,44 +219,57 @@
           |   |   `-- mkosi.sync.d
           |   |-- _repository
           |   |   `-- opensuse
-          |   |-- _template -------------------- templates for various configuration files
+          |   |-- _template -------------------- templates for various configuration file
           |   |   |-- agama_opensuse.json ---------- for opensuse agama installer
           |   |   |-- kickstart_rhel.cfg ----------- for rhel
           |   |   |-- preseed_debian.cfg ----------- for debian
           |   |   |-- preseed_ubuntu.cfg ----------- for ubuntu
           |   |   |-- user-data_ubuntu ------------- for ubuntu cloud-init
           |   |   `-- yast_opensuse.xml ------------ for opensuse
-          |   |-- agama ------------------------ configuration files for opensuse agama installer
-          |   |-- autoyast --------------------- "                   for opensuse
-          |   |-- kickstart -------------------- "                   for rhel
-          |   |-- nocloud ---------------------- "                   for ubuntu cloud-init
+          |   |-- agama ------------------------ configuration file for opensuse agama installer
+          |   |-- autoyast ---------------------                     for opensuse
+          |   |-- kickstart --------------------                     for rhel
+          |   |-- nocloud ----------------------                     for ubuntu cloud-init
           |   |   |-- ubuntu_desktop
           |   |   `-- ubuntu_server
-          |   |-- preseed ---------------------- "                   for debian/ubuntu preseed
-          |   |-- script ----------------------- script files
+          |   |-- preseed ----------------------                     for debian/ubuntu preseed
+          |   |-- script ----------------------- script file
           |   |   |-- autoinst_cmd_early.sh -------- for auto install early command
-          |   |   |-- autoinst_cmd_late.sh --------- "                late command
-          |   |   |-- autoinst_cmd_part.sh --------- "                early command after partman
-          |   |   `-- autoinst_cmd_run.sh ---------- "                preseed/run
-          |   `-- windows ----------------------configuration files for windows
+          |   |   |-- autoinst_cmd_late.sh ---------                  late command
+          |   |   |-- autoinst_cmd_part.sh ---------                  early command after partman
+          |   |   `-- autoinst_cmd_run.sh ----------                  preseed/run
+          |   `-- windows ----------------------configuration file for windows
           |       |-- WinREexpand.cmd -------------- hotfix for windows 10
-          |       |-- WinREexpand_bios.sub --------- "
-          |       |-- WinREexpand_uefi.sub --------- "
+          |       |-- WinREexpand_bios.sub
+          |       |-- WinREexpand_uefi.sub
           |       |-- bypass.cmd ------------------- installation restriction bypass command for windows 11
           |       |-- inst_w10.cmd ----------------- installation batch file for windows 10
-          |       |-- inst_w11.cmd ----------------- "                       for windows 11
+          |       |-- inst_w11.cmd -----------------                         for windows 11
           |       |-- shutdown.cmd ----------------- shutdown command for winpe
           |       |-- startnet.cmd ----------------- startup command for winpe
           |       |-- unattend.xml ----------------- auto-installation configuration file for windows 10/11
-          |       `-- winpeshl.ini -----------------
+          |       `-- winpeshl.ini
           |-- containers
           |-- imgs --------------------- iso file extraction destination
           |-- isos --------------------- iso file
-          |   |-- linux -> /srv/samba/pub/resource/image/linux
-          |   `-- windows -> /srv/samba/pub/resource/image/windows
+          |   |-- linux
+          |   |   |-- almalinux
+          |   |   |-- centos
+          |   |   |-- debian
+          |   |   |-- fedora
+          |   |   |-- memtest86plus
+          |   |   |-- miraclelinux
+          |   |   |-- opensuse
+          |   |   |-- rockylinux
+          |   |   `-- ubuntu
+          |   `-- windows
+          |       |-- aomei
+          |       |-- ati
+          |       |-- windows-10
+          |       |-- windows-11
+          |       `-- winpe
           |-- load --------------------- load module
-          |-- rmak -> /srv/samba/pub/resource/image/creations/rmak
-          `-- rmak.orig
+          `-- rmak --------------------- remake file
   ```
 
 * ## **/var/**
