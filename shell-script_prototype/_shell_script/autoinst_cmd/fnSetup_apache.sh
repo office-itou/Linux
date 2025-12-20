@@ -18,7 +18,8 @@ fnSetup_apache() {
 		return
 	fi
 	# --- apache2.conf / httpd.conf -------------------------------------------
-	__PATH="${_DIRS_TGET:-}/etc/${__SRVC%%.*}/sites-available/999-site.conf"
+	__FILE="${__SRVC##*/}"
+	__PATH="${_DIRS_TGET:-}/etc/${__FILE%%.*}/sites-available/999-site.conf"
 	if [ -e "${__PATH%/*}/." ]; then
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
@@ -39,7 +40,7 @@ _EOT_
 		a2dissite 000-default
 		a2ensite "${__PATH##*/}"
 	else
-		__PATH="${_DIRS_TGET:-}/etc/${__SRVC%%.*}/conf.d/site.conf"
+		__PATH="${_DIRS_TGET:-}/etc/${__FILE%%.*}/conf.d/site.conf"
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
 		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
