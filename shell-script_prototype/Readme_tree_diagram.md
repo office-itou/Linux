@@ -227,9 +227,9 @@
           |   |   |-- user-data_ubuntu ------------- for ubuntu cloud-init
           |   |   `-- yast_opensuse.xml ------------ for opensuse
           |   |-- agama ------------------------ configuration file for opensuse agama installer
-          |   |-- autoyast ---------------------                     for opensuse
-          |   |-- kickstart --------------------                     for rhel
-          |   |-- nocloud ----------------------                     for ubuntu cloud-init
+          |   |-- autoyast ---------------------                    for opensuse
+          |   |-- kickstart --------------------                    for rhel
+          |   |-- nocloud ----------------------                    for ubuntu cloud-init
           |   |   |-- ubuntu_desktop
           |   |   `-- ubuntu_server
           |   |-- preseed ----------------------                     for debian/ubuntu preseed
