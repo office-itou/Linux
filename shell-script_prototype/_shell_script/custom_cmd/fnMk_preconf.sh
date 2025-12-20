@@ -48,7 +48,7 @@ function fnMk_preconf() {
 	if [[ -n "${__PTRN:-}" ]]; then
 		IFS= mapfile -d $'\n' -t __TGET < <(\
 			printf "%s\n" "${_LIST_MDIA[@]}" | \
-			awk -v ptrn="@/.*\/${__PTRN}\/.*/" '$2=="o" && $24!~/.*-$/ && $24~ptrn {}
+			awk -v ptrn="@/.*\/${__PTRN}\/.*/" '$2=="o" && $24!~/.*-$/ && $24~ptrn {
 				print $24
 				switch ($24) {
 					case /.*\/agama\/.*/:

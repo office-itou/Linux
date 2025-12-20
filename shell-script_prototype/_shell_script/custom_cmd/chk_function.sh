@@ -105,6 +105,7 @@
 	declare       _DIST_CODE=""			# code name         (ex. trixie)
 	declare       _ROWS_SIZE="25"		# screen size: rows
 	declare       _COLS_SIZE="80"		# screen size: columns
+	declare       _TEXT_SPCE=""			# space
 	declare       _TEXT_GAP1=""			# gap1
 	declare       _TEXT_GAP2=""			# gap2
 	declare       _COMD_BBOX=""			# busybox (empty: inactive, else: active )
@@ -212,6 +213,15 @@
 	declare       _PATH_LATE=":_DIRS_SHEL_:/:_FILE_LATE_:"	# "              to run late
 	declare       _PATH_PART=":_DIRS_SHEL_:/:_FILE_PART_:"	# "              to run after partition
 	declare       _PATH_RUNS=":_DIRS_SHEL_:/:_FILE_RUNS_:"	# "              to run preseed/run
+# --- tftp menu ---------------------------------------------------------------
+	declare       _FILE_IPXE="autoexec.ipxe"				# ipxe
+	declare       _FILE_GRUB="boot/grub/grub.cfg"			# grub
+	declare       _FILE_SLNX="menu-bios/syslinux.cfg"		# syslinux (bios)
+	declare       _FILE_UEFI="menu-efi64/syslinux.cfg"		# syslinux (efi64)
+	declare       _PATH_IPXE=":_DIRS_TFTP_:/:_FILE_IPXE_:"	# ipxe
+	declare       _PATH_GRUB=":_DIRS_TFTP_:/:_FILE_GRUB_:"	# grub
+	declare       _PATH_SLNX=":_DIRS_TFTP_:/:_FILE_SLNX_:"	# syslinux (bios)
+	declare       _PATH_UEFI=":_DIRS_TFTP_:/:_FILE_UEFI_:"	# syslinux (efi64)
 
 	# --- tftp / web server network parameter ---------------------------------
 	declare       _SRVR_HTTP="http"							# server connection protocol (http or https)
@@ -254,6 +264,23 @@
 	declare -a    _LIST_MDIA=()								# media information
 	declare -a    _LIST_DSTP=()								# debstrap information
 															# media type
+	declare -a    _LIST_TYPE=("mini" "netinst" "dvd" "liveinst" "live" "tool" "clive" "cnetinst" "system")
+
+	# --- wget / curl options -------------------------------------------------
+	declare -r -a _OPTN_CURL=("--location" "--http1.1" "--no-progress-bar" "--remote-time" "--show-error" "--fail" "--retry-max-time" "3" "--retry" "3" "--connect-timeout" "60")
+	declare -r -a _OPTN_WGET=("--tries=3" "--timeout=60" "--quiet")
+	declare       _COMD_WGET=""
+	if command -v wget2 > /dev/null 2>&1; then
+		_COMD_WGET="curl"
+	elif command -v wget > /dev/null 2>&1; then
+		_COMD_WGET="wget"
+	elif command -v curl > /dev/null 2>&1; then
+		_COMD_WGET="curl"
+	fi
+	readonly      _COMD_WGET
+
+	# --- rsync options -------------------------------------------------------
+	declare -r -a _OPTN_RSYC=("--recursive" "--links" "--perms" "--times" "--group" "--owner" "--devices" "--specials" "--hard-links" "--acls" "--xattrs" "--human-readable" "--update" "--delete")
 
 # *** function section (common functions) *************************************
 
@@ -893,8 +920,10 @@ function fnInitialize() {
 	readonly _ROWS_SIZE
 	readonly _COLS_SIZE
 
+	_TEXT_SPCE="$(fnString "${_COLS_SIZE}" ' ')"
 	_TEXT_GAP1="$(fnString "${_COLS_SIZE}" '-')"
 	_TEXT_GAP2="$(fnString "${_COLS_SIZE}" '=')"
+	readonly _TEXT_SPCE
 	readonly _TEXT_GAP1
 	readonly _TEXT_GAP2
 
@@ -1138,7 +1167,7 @@ function fnList_conf_Enc() {
 	for I in $(printf "%d\n" "${!_LIST_CONF[@]}" | sort -rV)
 	do
 		__LINE="${_LIST_CONF[I]:-}"
-		__NAME="${__LINE%%[!_[:alnum:]]*}"
+		__NAME="${__LINE%%[^_[:alnum:]]*}"
 		[[ -z "${__NAME:-}" ]] && continue
 		case "${__NAME}" in
 			PATH_*     ) ;;
@@ -1155,16 +1184,16 @@ function fnList_conf_Enc() {
 		__LIST+=("${__LINE:-}")
 		# comments with "#" do not work
 		# --- get variable name -----------------------------------------------
-		__NAME="${__LINE%%[!_[:alnum:]]*}"
+		__NAME="${__LINE%%[^_[:alnum:]]*}"
 		# --- get setting value -----------------------------------------------
 		__VALU="${__LINE#"${__NAME:-}="}"
 		__VALU="${__VALU%"#${__VALU##*#}"}"
-		__VALU="${__VALU#"${__VALU%%[!"${IFS}"]*}"}"	# ltrim
-		__VALU="${__VALU%"${__VALU##*[!"${IFS}"]}"}"	# rtrim
+		__VALU="${__VALU#"${__VALU%%[^"${IFS}"]*}"}"	# ltrim
+		__VALU="${__VALU%"${__VALU##*[^"${IFS}"]}"}"	# rtrim
 		# --- get comment -----------------------------------------------------
 		__CMNT="${__LINE#"${__NAME:+"${__NAME}="}${__VALU:-}"}"
-		__CMNT="${__CMNT#"${__CMNT%%[!"${IFS}"]*}"}"	# ltrim
-		__CMNT="${__CMNT%"${__CMNT##*[!"${IFS}"]}"}"	# rtrim
+		__CMNT="${__CMNT#"${__CMNT%%[^"${IFS}"]*}"}"	# ltrim
+		__CMNT="${__CMNT%"${__CMNT##*[^"${IFS}"]}"}"	# rtrim
 		# --- store in a variable ---------------------------------------------
 		case "${__CMNT:-}" in
 			*"application output"*)
@@ -1237,14 +1266,14 @@ function fnList_conf_Dec() {
 	do
 		__LINE="${_LIST_CONF[I]}"
 		# comments with "#" do not work
-		__NAME="${__LINE%%[!_[:alnum:]]*}"
+		__NAME="${__LINE%%[^_[:alnum:]]*}"
 		__VALU="${__LINE#"${__NAME:-}="}"
 		__CMNT="${__VALU#"${__VALU%%\#*}"}"
-		__CMNT="${__CMNT#"${__CMNT%%[!"${IFS}"]*}"}"	# ltrim
-		__CMNT="${__CMNT%"${__CMNT##*[!"${IFS}"]}"}"	# rtrim
+		__CMNT="${__CMNT#"${__CMNT%%[^"${IFS}"]*}"}"	# ltrim
+		__CMNT="${__CMNT%"${__CMNT##*[^"${IFS}"]}"}"	# rtrim
 		__VALU="${__VALU%"${__CMNT:-}"}"
-		__VALU="${__VALU#"${__VALU%%[!"${IFS}"]*}"}"	# ltrim
-		__VALU="${__VALU%"${__VALU##*[!"${IFS}"]}"}"	# rtrim
+		__VALU="${__VALU#"${__VALU%%[^"${IFS}"]*}"}"	# ltrim
+		__VALU="${__VALU%"${__VALU##*[^"${IFS}"]}"}"	# rtrim
 		# --- store in a variable ---------------------------------------------
 		[[ -z "${__NAME:-}" ]] && continue
 		__WNAM="${__NAME:-}"
@@ -1260,7 +1289,7 @@ function fnList_conf_Dec() {
 				do
 					__WNAM="${__VALU#"${__VALU%%:_[[:alnum:]]*_[[:alnum:]]*_:*}"}"
 					__WNAM="${__WNAM%"${__WNAM##*:_[[:alnum:]]*_[[:alnum:]]*_:}"}"
-					__WNAM="${__WNAM%%[!:_[:alnum:]]*}"
+					__WNAM="${__WNAM%%[^:_[:alnum:]]*}"
 					__WNAM="${__WNAM#:_}"
 					__WNAM="${__WNAM%_:}"
 					[[ -z "${__WNAM:-}" ]] && break
@@ -1449,16 +1478,19 @@ function fnMk_symlink_dir() {
 		"${_DIRS_TOPS:?}" \
 		"${_DIRS_HGFS:?}" \
 		"${_DIRS_HTML:?}" \
-		"${_DIRS_SAMB:?}"/{adm/{commands,profiles},pub/{_license,contents/{disc,dlna/{movies,others,photos,sounds}},hardware,software,resource/{image/{linux,windows},source/git}},usr} \
-		"${_DIRS_TFTP:?}"/{boot/grub/{fonts,locale,i386-pc,i386-efi,x86_64-efi},ipxe,menu-bios/pxelinux.cfg,menu-efi64/pxelinux.cfg} \
+		"${_DIRS_SAMB:?}"/adm/{commands,profiles} \
+		"${_DIRS_SAMB:?}"/pub/{_license,contents/{disc,dlna/{movies,others,photos,sounds}},hardware,software} \
+		"${_DIRS_SAMB:?}"/pub/resource/image/creations/rmak \
+		"${_DIRS_SAMB:?}"/pub/resource/image/linux/{debian,ubuntu,fedora,centos,almalinux,rockylinux,miraclelinux,opensuse,memtest86plus} \
+		"${_DIRS_SAMB:?}"/pub/resource/image/windows/{windows-{10,11},winpe,ati,aomei} \
+		"${_DIRS_SAMB:?}"/pub/resource/source/git \
+		"${_DIRS_SAMB:?}"/usr \
+		"${_DIRS_TFTP:?}"/{boot/grub/{fonts,locale,i386-pc,i386-efi,x86_64-efi},ipxe,menu-{bios,efi64}/pxelinux.cfg} \
 		"${_DIRS_USER:?}"/private \
 		"${_DIRS_SHAR:?}" \
-		"${_DIRS_CONF:?}"/{_repository,agama,autoyast,kickstart,nocloud,preseed,windows} \
-		"${_DIRS_DATA:?}" \
-		"${_DIRS_KEYS:?}" \
-		"${_DIRS_MKOS:?}"/{mkosi.build.d,mkosi.clean.d,mkosi.conf.d,mkosi.extra,mkosi.finalize.d,mkosi.postinst.d,mkosi.postoutput.d,mkosi.prepare.d,mkosi.repart,mkosi.sync.d} \
-		"${_DIRS_TMPL:?}" \
-		"${_DIRS_SHEL:?}" \
+		"${_DIRS_CONF:?}"/{_data,_keyring,_repository/opensuse,_template} \
+		"${_DIRS_CONF:?}"/_mkosi/mkosi.{build.d,clean.d,conf.d,extra,finalize.d,postinst.d,postoutput.d,prepare.d,repart,sync.d} \
+		"${_DIRS_CONF:?}"/{agama,autoyast,kickstart,nocloud/{ubuntu_desktop,ubuntu_server},preseed,script,windows} \
 		"${_DIRS_IMGS:?}" \
 		"${_DIRS_ISOS:?}" \
 		"${_DIRS_LOAD:?}" \
@@ -1466,37 +1498,94 @@ function fnMk_symlink_dir() {
 		"${_DIRS_CACH:?}" \
 		"${_DIRS_CTNR:?}" \
 		"${_DIRS_CHRT:?}"
-	# --- change file mode ------------------------------------------------
+	# --- change file mode ----------------------------------------------------
 	chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_SAMB}/"*
-	chmod -R  770 "${_DIRS_SAMB}/"*
-	chmod    1777 "${_DIRS_SAMB}/adm/profiles"
-	# --- create symbolic link --------------------------------------------
-	[[ ! -h "${_DIRS_HTML:?}/${_DIRS_CONF##*/}"               ]] && ln -s "${_DIRS_CONF#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
-	[[ ! -h "${_DIRS_HTML:?}/${_DIRS_IMGS##*/}"               ]] && ln -s "${_DIRS_IMGS#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
-	[[ ! -h "${_DIRS_HTML:?}/${_DIRS_ISOS##*/}"               ]] && ln -s "${_DIRS_ISOS#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
-	[[ ! -h "${_DIRS_HTML:?}/${_DIRS_LOAD##*/}"               ]] && ln -s "${_DIRS_LOAD#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
-	[[ ! -h "${_DIRS_HTML:?}/${_DIRS_RMAK##*/}"               ]] && ln -s "${_DIRS_RMAK#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
-	[[ ! -h "${_DIRS_HTML:?}/${_DIRS_TFTP##*/}"               ]] && ln -s "${_DIRS_TFTP#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
-	[[ ! -h "${_DIRS_TFTP:?}/${_DIRS_CONF##*/}"               ]] && ln -s "${_DIRS_CONF#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
-	[[ ! -h "${_DIRS_TFTP:?}/${_DIRS_IMGS##*/}"               ]] && ln -s "${_DIRS_IMGS#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
-	[[ ! -h "${_DIRS_TFTP:?}/${_DIRS_ISOS##*/}"               ]] && ln -s "${_DIRS_ISOS#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
-	[[ ! -h "${_DIRS_TFTP:?}/${_DIRS_LOAD##*/}"               ]] && ln -s "${_DIRS_LOAD#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
-	[[ ! -h "${_DIRS_TFTP:?}/${_DIRS_RMAK##*/}"               ]] && ln -s "${_DIRS_RMAK#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
-	[[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_CONF##*/}"     ]] && ln -s "../${_DIRS_CONF##*/}"            "${_DIRS_TFTP:?}/menu-bios/"
-	[[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_IMGS##*/}"     ]] && ln -s "../${_DIRS_IMGS##*/}"            "${_DIRS_TFTP:?}/menu-bios/"
-	[[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_ISOS##*/}"     ]] && ln -s "../${_DIRS_ISOS##*/}"            "${_DIRS_TFTP:?}/menu-bios/"
-	[[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_LOAD##*/}"     ]] && ln -s "../${_DIRS_LOAD##*/}"            "${_DIRS_TFTP:?}/menu-bios/"
-	[[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_RMAK##*/}"     ]] && ln -s "../${_DIRS_RMAK##*/}"            "${_DIRS_TFTP:?}/menu-bios/"
-	[[ ! -h "${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"  ]] && ln -s "../syslinux.cfg"                 "${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"
-	[[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_CONF##*/}"     ]] && ln -s "../${_DIRS_CONF##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
-	[[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_IMGS##*/}"     ]] && ln -s "../${_DIRS_IMGS##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
-	[[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_ISOS##*/}"     ]] && ln -s "../${_DIRS_ISOS##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
-	[[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_LOAD##*/}"     ]] && ln -s "../${_DIRS_LOAD##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
-	[[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_RMAK##*/}"     ]] && ln -s "../${_DIRS_RMAK##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
-	[[ ! -h "${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default" ]] && ln -s "../syslinux.cfg"                 "${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default"
+	chmod -R 2770 "${_DIRS_SAMB}/"*
+#	chmod    1777 "${_DIRS_SAMB}/adm/profiles"
+	# --- create symbolic link ------------------------------------------------
+#	[ ! -e "${_DIRS_CONF:?}.orig"                            ] && mv "${_DIRS_CONF:?}" "${_DIRS_CONF:?}.orig"
+	[ ! -e "${_DIRS_RMAK:?}.orig"                            ] && mv "${_DIRS_RMAK:?}" "${_DIRS_RMAK:?}.orig"
+#	[ ! -h "${_DIRS_CONF:?}"                                 ] && ln -s "${_DIRS_SAMB#"${_DIRS_TGET:-}"}/pub/resource/source/git/office-itou/linux/conf" "${_DIRS_CONF:?}"
+	[ ! -h "${_DIRS_RMAK:?}"                                 ] && ln -s "${_DIRS_SAMB#"${_DIRS_TGET:-}"}/pub/resource/image/creations/rmak"              "${_DIRS_RMAK:?}"
+	[ ! -h "${_DIRS_ISOS:?}/linux"                           ] && ln -s "${_DIRS_SAMB#"${_DIRS_TGET:-}"}/pub/resource/image/linux"                       "${_DIRS_ISOS:?}/"
+	[ ! -h "${_DIRS_ISOS:?}/windows"                         ] && ln -s "${_DIRS_SAMB#"${_DIRS_TGET:-}"}/pub/resource/image/windows"                     "${_DIRS_ISOS:?}/"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_CONF##*/}"               ] && ln -s "${_DIRS_CONF#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_IMGS##*/}"               ] && ln -s "${_DIRS_IMGS#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_ISOS##*/}"               ] && ln -s "${_DIRS_ISOS#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_LOAD##*/}"               ] && ln -s "${_DIRS_LOAD#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_RMAK##*/}"               ] && ln -s "${_DIRS_RMAK#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_TFTP##*/}"               ] && ln -s "${_DIRS_TFTP#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_CONF##*/}"               ] && ln -s "${_DIRS_CONF#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
+	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_IMGS##*/}"               ] && ln -s "${_DIRS_IMGS#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
+	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_ISOS##*/}"               ] && ln -s "${_DIRS_ISOS#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
+	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_LOAD##*/}"               ] && ln -s "${_DIRS_LOAD#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
+	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_RMAK##*/}"               ] && ln -s "${_DIRS_RMAK#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_CONF##*/}"     ] && ln -s "../${_DIRS_CONF##*/}"            "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_IMGS##*/}"     ] && ln -s "../${_DIRS_IMGS##*/}"            "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_ISOS##*/}"     ] && ln -s "../${_DIRS_ISOS##*/}"            "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_LOAD##*/}"     ] && ln -s "../${_DIRS_LOAD##*/}"            "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_RMAK##*/}"     ] && ln -s "../${_DIRS_RMAK##*/}"            "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"  ] && ln -s "../syslinux.cfg"                 "${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"
+	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_CONF##*/}"    ] && ln -s "../${_DIRS_CONF##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_IMGS##*/}"    ] && ln -s "../${_DIRS_IMGS##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_ISOS##*/}"    ] && ln -s "../${_DIRS_ISOS##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_LOAD##*/}"    ] && ln -s "../${_DIRS_LOAD##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_RMAK##*/}"    ] && ln -s "../${_DIRS_RMAK##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default" ] && ln -s "../syslinux.cfg"                 "${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default"
+	# --- create index.html ---------------------------------------------------
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_DIRS_HTML}/index.html"
+		"Hello, world!" from ${_NICS_HOST}
+_EOT_
 	# --- create autoexec.ipxe ------------------------------------------------
-	[[ ! -e "${_DIRS_TFTP:?}/menu-bios/syslinux.cfg"  ]] && touch "${_DIRS_TFTP:?}/menu-bios/syslinux.cfg"
-	[[ ! -e "${_DIRS_TFTP:?}/menu-efi64/syslinux.cfg" ]] && touch "${_DIRS_TFTP:?}/menu-efi64/syslinux.cfg"
+	touch "${_DIRS_TFTP:?}/menu-bios/syslinux.cfg"
+	touch "${_DIRS_TFTP:?}/menu-efi64/syslinux.cfg"
+	# --- create autoexec.ipxe ------------------------------------------------
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_DIRS_TFTP:?}/autoexec.ipxe"
+		#!ipxe
+
+		cpuid --ext 29 && set arch amd64 || set arch x86
+
+		dhcp
+
+		set optn-timeout 1000
+		set menu-timeout 0
+		isset \${menu-default} || set menu-default exit
+
+		:start
+
+		:menu
+		menu Select the OS type you want to boot
+		item --gap --                                   --------------------------------------------------------------------------
+		item --gap --                                   [ System command ]
+		item -- shell                                   - iPXE shell
+		#item -- shutdown                               - System shutdown
+		item -- restart                                 - System reboot
+		item --gap --                                   --------------------------------------------------------------------------
+		choose --timeout \${menu-timeout} --default \${menu-default} selected || goto menu
+		goto \${selected}
+
+		:shell
+		echo "Booting iPXE shell ..."
+		shell
+		goto start
+
+		:shutdown
+		echo "System shutting down ..."
+		poweroff
+		exit
+
+		:restart
+		echo "System rebooting ..."
+		reboot
+		exit
+
+		:error
+		prompt Press any key to continue
+		exit
+
+		:exit
+		exit
+_EOT_
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -1913,28 +2002,24 @@ function fnMk_preconf() {
 
 	# --- create a file  ------------------------------------------------------
 	if [[ -n "${__PTRN:-}" ]]; then
-		__TGET=()
-		for I in "${!_LIST_MDIA[@]}"
-		do
-			__LINE="${_LIST_MDIA[I]:-}"
-			read -r -a __LIST < <(echo "${__LINE:-}")
-			case "${__LIST[1]}" in			# entry_flag
-				o) ;;
-				*) continue;;
-			esac
-			case "${__LIST[23]##*/}" in		# cfg_path
-				-) continue;;
-				*) ;;
-			esac
-			__PATH="${__LIST[23]}"
-			__TGET+=("${__PATH}")
-			case "${__PATH}" in
-				*/agama/*    ) __TGET+=("${__PATH/_leap-*_/_tumbleweed_}");;
-				*/kickstart/*) __TGET+=("${__PATH/_dvd/_web}");;
-				*            ) ;;
-			esac
-		done
-		IFS= mapfile -d $'\n' -t __TGET < <(IFS= printf "%s\n" "${__TGET[@]}" | grep -E "${__PTRN}" | sort -uV || true)
+		IFS= mapfile -d $'\n' -t __TGET < <(\
+			printf "%s\n" "${_LIST_MDIA[@]}" | \
+			awk -v ptrn="@/.*\/${__PTRN}\/.*/" '$2=="o" && $24!~/.*-$/ && $24~ptrn {
+				print $24
+				switch ($24) {
+					case /.*\/agama\/.*/:
+						sub("_leap-[0-9]+.[0-9]+", "_tumbleweed", $24)
+						print $24
+						break
+					case /.*\/kickstart\/.*/:
+						sub("_dvd", "_web", $24)
+						print $24
+						break
+					default:
+						break
+				}
+			}' | sort -uV || true \
+		)
 		for __PATH in "${__TGET[@]}"
 		do
 			case "${__PATH}" in
