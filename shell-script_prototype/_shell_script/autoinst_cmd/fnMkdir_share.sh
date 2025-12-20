@@ -68,30 +68,31 @@ fnMkdir_share(){
 	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/windows/winpe
 	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/windows/ati
 	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/windows/aomei
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_data
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_keyring
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.build.d
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.clean.d
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.conf.d
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.extra
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.finalize.d
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.postinst.d
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.postoutput.d
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.prepare.d
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.repart
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.sync.d
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_repository/opensuse
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_template
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/agama
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/autoyast
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/kickstart
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/nocloud/ubuntu_desktop
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/nocloud/ubuntu_server
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/preseed
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/script
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/windows
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/windows
+	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_data
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_keyring
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.build.d
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.clean.d
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.conf.d
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.extra
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.finalize.d
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.postinst.d
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.postoutput.d
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.prepare.d
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.repart
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_mkosi/mkosi.sync.d
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_repository/opensuse
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/_template
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/agama
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/autoyast
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/kickstart
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/nocloud/ubuntu_desktop
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/nocloud/ubuntu_server
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/preseed
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/script
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/linux/conf/windows
+#	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git/office-itou/windows
 	mkdir -p "${_DIRS_SAMB:?}"/usr
 	mkdir -p "${_DIRS_TFTP:?}"/boot/grub/fonts
 	mkdir -p "${_DIRS_TFTP:?}"/boot/grub/locale
@@ -103,27 +104,42 @@ fnMkdir_share(){
 	mkdir -p "${_DIRS_TFTP:?}"/menu-efi64/pxelinux.cfg
 	mkdir -p "${_DIRS_USER:?}"/private
 	mkdir -p "${_DIRS_SHAR:?}"
-	mkdir -p "${_DIRS_CONF:?}"/_repository
-	mkdir -p "${_DIRS_CONF:?}"/agama
-	mkdir -p "${_DIRS_CONF:?}"/autoyast
-	mkdir -p "${_DIRS_CONF:?}"/kickstart
-	mkdir -p "${_DIRS_CONF:?}"/nocloud
-	mkdir -p "${_DIRS_CONF:?}"/preseed
-	mkdir -p "${_DIRS_CONF:?}"/windows
-	mkdir -p "${_DIRS_DATA:?}"
-	mkdir -p "${_DIRS_KEYS:?}"
-	mkdir -p "${_DIRS_MKOS:?}"/mkosi.build.d
-	mkdir -p "${_DIRS_MKOS:?}"/mkosi.clean.d
-	mkdir -p "${_DIRS_MKOS:?}"/mkosi.conf.d
-	mkdir -p "${_DIRS_MKOS:?}"/mkosi.extra
-	mkdir -p "${_DIRS_MKOS:?}"/mkosi.finalize.d
-	mkdir -p "${_DIRS_MKOS:?}"/mkosi.postinst.d
-	mkdir -p "${_DIRS_MKOS:?}"/mkosi.postoutput.d
-	mkdir -p "${_DIRS_MKOS:?}"/mkosi.prepare.d
-	mkdir -p "${_DIRS_MKOS:?}"/mkosi.repart
-	mkdir -p "${_DIRS_MKOS:?}"/mkosi.sync.d
-	mkdir -p "${_DIRS_TMPL:?}"
-	mkdir -p "${_DIRS_SHEL:?}"
+	mkdir -p "${_DIRS_CONF:?}"_data
+	mkdir -p "${_DIRS_CONF:?}"_keyring
+	mkdir -p "${_DIRS_CONF:?}"_mkosi/mkosi.build.d
+	mkdir -p "${_DIRS_CONF:?}"_mkosi/mkosi.clean.d
+	mkdir -p "${_DIRS_CONF:?}"_mkosi/mkosi.conf.d
+	mkdir -p "${_DIRS_CONF:?}"_mkosi/mkosi.extra
+	mkdir -p "${_DIRS_CONF:?}"_mkosi/mkosi.finalize.d
+	mkdir -p "${_DIRS_CONF:?}"_mkosi/mkosi.postinst.d
+	mkdir -p "${_DIRS_CONF:?}"_mkosi/mkosi.postoutput.d
+	mkdir -p "${_DIRS_CONF:?}"_mkosi/mkosi.prepare.d
+	mkdir -p "${_DIRS_CONF:?}"_mkosi/mkosi.repart
+	mkdir -p "${_DIRS_CONF:?}"_mkosi/mkosi.sync.d
+	mkdir -p "${_DIRS_CONF:?}"_repository/opensuse
+	mkdir -p "${_DIRS_CONF:?}"_template
+	mkdir -p "${_DIRS_CONF:?}"agama
+	mkdir -p "${_DIRS_CONF:?}"autoyast
+	mkdir -p "${_DIRS_CONF:?}"kickstart
+	mkdir -p "${_DIRS_CONF:?}"nocloud/ubuntu_desktop
+	mkdir -p "${_DIRS_CONF:?}"nocloud/ubuntu_server
+	mkdir -p "${_DIRS_CONF:?}"preseed
+	mkdir -p "${_DIRS_CONF:?}"script
+	mkdir -p "${_DIRS_CONF:?}"windows
+#	mkdir -p "${_DIRS_DATA:?}"
+#	mkdir -p "${_DIRS_KEYS:?}"
+#	mkdir -p "${_DIRS_MKOS:?}"/mkosi.build.d
+#	mkdir -p "${_DIRS_MKOS:?}"/mkosi.clean.d
+#	mkdir -p "${_DIRS_MKOS:?}"/mkosi.conf.d
+#	mkdir -p "${_DIRS_MKOS:?}"/mkosi.extra
+#	mkdir -p "${_DIRS_MKOS:?}"/mkosi.finalize.d
+#	mkdir -p "${_DIRS_MKOS:?}"/mkosi.postinst.d
+#	mkdir -p "${_DIRS_MKOS:?}"/mkosi.postoutput.d
+#	mkdir -p "${_DIRS_MKOS:?}"/mkosi.prepare.d
+#	mkdir -p "${_DIRS_MKOS:?}"/mkosi.repart
+#	mkdir -p "${_DIRS_MKOS:?}"/mkosi.sync.d
+#	mkdir -p "${_DIRS_TMPL:?}"
+#	mkdir -p "${_DIRS_SHEL:?}"
 	mkdir -p "${_DIRS_IMGS:?}"
 	mkdir -p "${_DIRS_ISOS:?}"
 	mkdir -p "${_DIRS_LOAD:?}"
@@ -138,9 +154,9 @@ fnMkdir_share(){
 #	chmod    1777 "${_DIRS_SAMB}/adm/profiles"
 
 	# --- create symbolic link ------------------------------------------------
-	[ ! -e "${_DIRS_CONF:?}.orig"                            ] && mv "${_DIRS_CONF:?}" "${_DIRS_CONF:?}.orig"
+#	[ ! -e "${_DIRS_CONF:?}.orig"                            ] && mv "${_DIRS_CONF:?}" "${_DIRS_CONF:?}.orig"
 	[ ! -e "${_DIRS_RMAK:?}.orig"                            ] && mv "${_DIRS_RMAK:?}" "${_DIRS_RMAK:?}.orig"
-	[ ! -h "${_DIRS_CONF:?}"                                 ] && ln -s "${_DIRS_SAMB#"${_DIRS_TGET:-}"}/pub/resource/source/git/office-itou/linux/conf" "${_DIRS_CONF:?}"
+#	[ ! -h "${_DIRS_CONF:?}"                                 ] && ln -s "${_DIRS_SAMB#"${_DIRS_TGET:-}"}/pub/resource/source/git/office-itou/linux/conf" "${_DIRS_CONF:?}"
 	[ ! -h "${_DIRS_RMAK:?}"                                 ] && ln -s "${_DIRS_SAMB#"${_DIRS_TGET:-}"}/pub/resource/image/creations/rmak"              "${_DIRS_RMAK:?}"
 	[ ! -h "${_DIRS_ISOS:?}/linux"                           ] && ln -s "${_DIRS_SAMB#"${_DIRS_TGET:-}"}/pub/resource/image/linux"                       "${_DIRS_ISOS:?}/"
 	[ ! -h "${_DIRS_ISOS:?}/windows"                         ] && ln -s "${_DIRS_SAMB#"${_DIRS_TGET:-}"}/pub/resource/image/windows"                     "${_DIRS_ISOS:?}/"
@@ -167,6 +183,11 @@ fnMkdir_share(){
 	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_LOAD##*/}"    ] && ln -s "../${_DIRS_LOAD##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
 	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_RMAK##*/}"    ] && ln -s "../${_DIRS_RMAK##*/}"            "${_DIRS_TFTP:?}/menu-efi64/"
 	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default" ] && ln -s "../syslinux.cfg"                 "${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default"
+
+	# --- create index.html ---------------------------------------------------
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_DIRS_HTML}/index.html"
+		\"Hello, world!\" from ${_NICS_HOST}
+_EOT_
 
 	# --- create autoexec.ipxe ------------------------------------------------
 	touch "${_DIRS_TFTP:?}/menu-bios/syslinux.cfg"

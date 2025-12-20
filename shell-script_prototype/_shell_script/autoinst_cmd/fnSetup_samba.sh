@@ -186,17 +186,24 @@ fnSetup_samba() {
 		        path = ${_DIRS_SAMB}/pub/contents/dlna
 		        valid users = @${_SAMB_GRUP}
 		        write list = @${_SAMB_GADM}
-		[html-share]
+		[share-html]
 		        browseable = No
-		        comment = HTML shared directories
+		        comment = Shared directory for HTML
 		        guest ok = Yes
 		        path = ${_DIRS_HTML}
 		        wide links = Yes
-		[tftp-share]
+		[share-tftp]
 		        browseable = No
-		        comment = TFTP shared directories
+		        comment = Shared directory for TFTP
 		        guest ok = Yes
 		        path = ${_DIRS_TFTP}
+		        wide links = Yes
+		[share-conf]
+		        browseable = No
+		        comment = Shared directory for configuration files
+		        path = ${_DIRS_CONF}
+		        valid users = @${_SAMB_GRUP}
+		        write list = @${_SAMB_GADM}
 		        wide links = Yes
 _EOT_
 	# --- output --------------------------------------------------------------

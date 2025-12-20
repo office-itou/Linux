@@ -24,7 +24,7 @@ fnSetup_apache() {
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
 		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
-		sed -e 's%^\([ \t]\+DocumentRoot[ \t]\+\).*$%\1'"${_DIRS_HTML}"/html'%' \
+		sed -e 's%^\([ \t]\+DocumentRoot[ \t]\+\).*$%\1'"${_DIRS_HTML}"'%' \
 		    "${__PATH%/*}/000-default.conf" \
 		> "${__PATH}"
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
@@ -47,7 +47,7 @@ _EOT_
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
 			<VirtualHost *:80>
 			 	ServerAdmin webmaster@localhost
-			 	DocumentRoot ${_DIRS_HTML}/html
+			 	DocumentRoot ${_DIRS_HTML}
 			#	ErrorLog \${APACHE_LOG_DIR}/error.log
 			#	CustomLog \${APACHE_LOG_DIR}/access.log combined
 			</VirtualHost>
