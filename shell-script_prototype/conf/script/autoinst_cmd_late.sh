@@ -1877,7 +1877,8 @@ fnSetup_apache() {
 		return
 	fi
 	# --- apache2.conf / httpd.conf -------------------------------------------
-	__PATH="${_DIRS_TGET:-}/etc/${__SRVC%%.*}/sites-available/999-site.conf"
+	__FILE="${__SRVC##*/}"
+	__PATH="${_DIRS_TGET:-}/etc/${__FILE%%.*}/sites-available/999-site.conf"
 	if [ -e "${__PATH%/*}/." ]; then
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
@@ -1898,7 +1899,7 @@ _EOT_
 		a2dissite 000-default
 		a2ensite "${__PATH##*/}"
 	else
-		__PATH="${_DIRS_TGET:-}/etc/${__SRVC%%.*}/conf.d/site.conf"
+		__PATH="${_DIRS_TGET:-}/etc/${__FILE%%.*}/conf.d/site.conf"
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
 		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
@@ -2056,8 +2057,8 @@ fnSetup_samba() {
 		[homes]
 		        browseable = No
 		        comment = Home Directories
-		        create mask = 0770
-		        directory mask = 0770
+		        create mask = 0660
+		        directory mask = 2770
 		        force group = ${_SAMB_GRUP}
 		        force user = ${_SAMB_USER}
 		        valid users = %S
@@ -2074,8 +2075,8 @@ fnSetup_samba() {
 		[adm]
 		        browseable = No
 		        comment = Administrator directories
-		        create mask = 0770
-		        directory mask = 0770
+		        create mask = 0660
+		        directory mask = 2770
 		        force group = ${_SAMB_GRUP}
 		        force user = ${_SAMB_USER}
 		        path = ${_DIRS_SAMB}/adm
@@ -2084,8 +2085,8 @@ fnSetup_samba() {
 		[pub]
 		        browseable = Yes
 		        comment = Public directories
-		        create mask = 0770
-		        directory mask = 0770
+		        create mask = 0660
+		        directory mask = 2770
 		        force group = ${_SAMB_GRUP}
 		        force user = ${_SAMB_USER}
 		        path = ${_DIRS_SAMB}/pub
@@ -2094,8 +2095,8 @@ fnSetup_samba() {
 		[usr]
 		        browseable = No
 		        comment = User directories
-		        create mask = 0770
-		        directory mask = 0770
+		        create mask = 0660
+		        directory mask = 2770
 		        force group = ${_SAMB_GRUP}
 		        force user = ${_SAMB_USER}
 		        path = ${_DIRS_SAMB}/usr
@@ -2104,8 +2105,8 @@ fnSetup_samba() {
 		[share]
 		        browseable = No
 		        comment = Shared directories
-		        create mask = 0770
-		        directory mask = 0770
+		        create mask = 0660
+		        directory mask = 2770
 		        force group = ${_SAMB_GRUP}
 		        force user = ${_SAMB_USER}
 		        path = ${_DIRS_SAMB}
@@ -2114,8 +2115,8 @@ fnSetup_samba() {
 		[dlna]
 		        browseable = No
 		        comment = DLNA directories
-		        create mask = 0770
-		        directory mask = 0770
+		        create mask = 0660
+		        directory mask = 2770
 		        force group = ${_SAMB_GRUP}
 		        force user = ${_SAMB_USER}
 		        path = ${_DIRS_SAMB}/pub/contents/dlna
