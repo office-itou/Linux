@@ -126,6 +126,18 @@
 	source "${_SHEL_COMD}"/fnSelect_target.sh				# select target
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_print_list.sh				# print media list
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_boot_option_preseed.sh		# make boot options for preseed
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_boot_option_nocloud.sh		# make boot options for nocloud
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_boot_option_kickstart.sh	# make boot options for kickstart
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_boot_option_autoyast.sh		# make boot options for autoyast
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_boot_option_agama.sh		# make boot options for agama
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_boot_options.sh				# make boot options
 
 # *** main section ************************************************************
 
@@ -192,322 +204,6 @@
 	declare -i    I=0
 	declare -i    J=0
 
-function fnMk_boot_option_preseed() {
-	declare -r    __TGET_TYPE="${1:?}"
-	shift
-	declare -a    __BOPT=()
-	declare       __WORK=""
-	# --- 0: server -----------------------------------------------------------
-	__BOPT=("server=\${srvraddr}")
-	# --- 1: autoinst ---------------------------------------------------------
-	__WORK=""
-	if [[ -n "${25##*-}" ]]; then
-		__WORK="${__WORK:+"${__WORK} "}auto=true preseed/file=/cdrom${25#"${_DIRS_CONF%/*}"}"
-		[[ "${__TGET_TYPE:-}" = "pxeboot" ]] && __WORK="${__WORK/file=\/cdrom/url=\$\{srvraddr\}}"
-		case "${4}" in
-			ubuntu-desktop-*|ubuntu-legacy-*) __WORK="${__WORK:+"${__WORK} "}automatic-ubiquity noprompt ${__WORK}";;
-			*-mini-*                        ) __WORK="${__WORK/\/cdrom/}";;
-			*                               ) ;;
-		esac
-	fi
-	case "${1}" in
-		live) __WORK="boot=live";;
-		*) ;;
-	esac
-	__BOPT+=("${__WORK:-}")
-	# --- 2: language ---------------------------------------------------------
-	__WORK=""
-	case "${4}" in
-		live-debian-*   |live-ubuntu-*  ) __WORK="${__WORK:+"${__WORK} "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp,us keyboard-model=pc105 keyboard-variants=,";;
-		debian-live-*                   ) __WORK="${__WORK:+"${__WORK} "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A";;
-		ubuntu-desktop-*|ubuntu-legacy-*) __WORK="${__WORK:+"${__WORK} "}debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
-		*                               ) __WORK="${__WORK:+"${__WORK} "}language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese";;
-	esac
-	__BOPT+=("${__WORK:-}")
-	# --- 3: network ----------------------------------------------------------
-	__WORK=""
-	if [[ -n "${25##*-}" ]]; then
-		case "${4}" in
-			ubuntu-*) __WORK="${__WORK:+"${__WORK} "}netcfg/target_network_config=NetworkManager";;
-			*       ) ;;
-		esac
-		__WORK="${__WORK:+"${__WORK} "}netcfg/disable_autoconfig=true"
-		__WORK="${__WORK:+"${__WORK} "}netcfg/choose_interface=\${ethrname}"
-		__WORK="${__WORK:+"${__WORK} "}netcfg/get_hostname=\${hostname}"
-		__WORK="${__WORK:+"${__WORK} "}netcfg/get_ipaddress=\${ipv4addr}"
-		__WORK="${__WORK:+"${__WORK} "}netcfg/get_netmask=\${ipv4mask}"
-		__WORK="${__WORK:+"${__WORK} "}netcfg/get_gateway=\${ipv4gway}"
-		__WORK="${__WORK:+"${__WORK} "}netcfg/get_nameservers=\${ipv4nsvr}"
-	fi
-	case "${1}" in
-		live) __WORK="dhcp";;
-		*   ) __WORK="${__WORK:-"dhcp"}";;
-	esac
-	__BOPT+=("${__WORK:-}")
-	# --- 4: otheropt ---------------------------------------------------------
-	__WORK=""
-	__WORK="${__WORK:+"${__WORK} "}root=/dev/ram0"
-	if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-		case "${4}" in
-#			debian-mini-*                       ) ;;
-			ubuntu-mini-*                       ) __WORK="${__WORK:+"${__WORK} "}initrd=\${srvraddr}/${_DIRS_IMGS##*/}/${23#"${_DIRS_LOAD}"} iso-url=\${srvraddr}/${_DIRS_ISOS##*/}/${15##*/}";;
-			ubuntu-desktop-18.*|ubuntu-live-18.*| \
-			ubuntu-desktop-20.*|ubuntu-live-20.*| \
-			ubuntu-desktop-22.*|ubuntu-live-22.*| \
-			ubuntu-server-*    |ubuntu-legacy-* ) __WORK="${__WORK:+"${__WORK} "}boot=casper url=\${srvraddr}/${_DIRS_ISOS##*/}/${15##*/}";;
-			ubuntu-*                            ) __WORK="${__WORK:+"${__WORK} "}boot=casper iso-url=\${srvraddr}/${_DIRS_ISOS##*/}/${15##*/}";;
-			live-*                              ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvraddr}/${_DIRS_RMAK##*/}/${15##*/}";;
-			*                                   ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvraddr}/${_DIRS_ISOS##*/}/${15##*/}";;
-		esac
-	fi
-	__BOPT+=("${__WORK}")
-	# --- output --------------------------------------------------------------
-	printf "%s\n" "${__BOPT[@]}"
-}
-function fnMk_boot_option_nocloud() {
-	declare -r    __TGET_TYPE="${1:?}"
-	shift
-	declare -a    __BOPT=()
-	declare       __WORK=""
-	# --- 0: server -----------------------------------------------------------
-	__BOPT=("server=\${srvraddr}")
-	# --- 1: autoinst ---------------------------------------------------------
-	__WORK=""
-	if [[ -n "${25##*-}" ]]; then
-		__WORK="${__WORK:+"${__WORK} "}automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom${25#"${_DIRS_CONF%/*}"}"
-		[[ "${__TGET_TYPE:-}" = "pxeboot" ]] && __WORK="${__WORK/file=\/cdrom/url=\${srvraddr}}"
-	fi
-	case "${1}" in
-		live) __WORK="boot=live";;
-		*) ;;
-	esac
-	__BOPT+=("${__WORK}")
-	# --- 2: language ---------------------------------------------------------
-	__WORK=""
-	case "${4}" in
-		live-debian-*   |live-ubuntu-*  ) __WORK="${__WORK:+"${__WORK} "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp,us keyboard-model=pc105 keyboard-variants=,";;
-		debian-live-*                   ) __WORK="${__WORK:+"${__WORK} "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A";;
-		ubuntu-desktop-*|ubuntu-legacy-*) __WORK="${__WORK:+"${__WORK} "}debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
-		*                               ) __WORK="${__WORK:+"${__WORK} "}language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese";;
-	esac
-	__BOPT+=("${__WORK}")
-	# --- 3: network ----------------------------------------------------------
-	__WORK=""
-	if [[ -n "${25##*-}" ]]; then
-		case "${4}" in
-			ubuntu-live-18.04   ) __WORK="${__WORK:+"${__WORK} "}ip=\${ethrname},\${ipv4addr},\${ipv4mask},\${ipv4gway} hostname=\${hostname}";;
-			*                   ) __WORK="${__WORK:+"${__WORK} "}ip=\${ipv4addr}::\${ipv4gway}:\${ipv4mask}::\${ethrname}:${_IPV4_ADDR:+static}:\${ipv4nsvr} hostname=\${hostname}";;
-		esac
-	fi
-	case "${1}" in
-		live) __WORK="dhcp";;
-		*   ) __WORK="${__WORK:-"dhcp"}";;
-	esac
-	__BOPT+=("${__WORK}")
-	# --- 4: otheropt ---------------------------------------------------------
-	__WORK=""
-	__WORK="${__WORK:+"${__WORK} "}root=/dev/ram0"
-	if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-		case "${4}" in
-#			debian-mini-*                       ) ;;
-			ubuntu-mini-*                       ) __WORK="${__WORK:+"${__WORK} "}initrd=\${srvraddr}/${_DIRS_IMGS##*/}/${23#"${_DIRS_LOAD}"} iso-url=\${srvraddr}/${_DIRS_ISOS##*/}/${15##*/}";;
-			ubuntu-desktop-18.*|ubuntu-live-18.*| \
-			ubuntu-desktop-20.*|ubuntu-live-20.*| \
-			ubuntu-desktop-22.*|ubuntu-live-22.*| \
-			ubuntu-server-*    |ubuntu-legacy-* ) __WORK="${__WORK:+"${__WORK} "}boot=casper url=\${srvraddr}/${_DIRS_ISOS##*/}/${15##*/}";;
-			ubuntu-*                            ) __WORK="${__WORK:+"${__WORK} "}boot=casper iso-url=\${srvraddr}/${_DIRS_ISOS##*/}/${15##*/}";;
-			live-*                              ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvraddr}/${_DIRS_RMAK##*/}/${15##*/}";;
-			*                                   ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvraddr}/${_DIRS_ISOS##*/}/${15##*/}";;
-		esac
-	fi
-	__BOPT+=("${__WORK}")
-	# --- output --------------------------------------------------------------
-	printf "%s\n" "${__BOPT[@]}"
-}
-function fnMk_boot_option_kickstart() {
-	declare -r    __TGET_TYPE="${1:?}"
-	shift
-	declare -a    __BOPT=()
-	declare       __WORK=""
-	# --- 0: server -----------------------------------------------------------
-	__BOPT=("server=\${srvraddr}")
-	# --- 1: autoinst ---------------------------------------------------------
-	__WORK=""
-	if [[ -n "${25##*-}" ]]; then
-		__WORK="${__WORK:+"${__WORK} "}inst.ks=hd:sr0:${25#"${_DIRS_CONF%/*}"}"
-		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			__WORK="${__WORK/hd:sr0:/\${srvraddr}}"
-			__WORK="${__WORK/_dvd/_web}"
-		fi
-	fi
-	__BOPT+=("${__WORK}")
-	# --- 2: language ---------------------------------------------------------
-	__WORK=""
-	__WORK="${__WORK:+"${__WORK} "}locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	__WORK="${__WORK:+"${__WORK} "}language=ja_JP"
-	__BOPT+=("${__WORK}")
-	# --- 3: network ----------------------------------------------------------
-	__WORK=""
-	if [[ -n "${25##*-}" ]]; then
-		__WORK="${__WORK:+"${__WORK} "}ip=\${ipv4addr}::\${ipv4gway}:\${ipv4mask}:\${hostname}:\${ethrname}:none,auto6 nameserver=\${ipv4nsvr}"
-	fi
-	case "${1}" in
-		live) __WORK="dhcp";;
-		*   ) __WORK="${__WORK:-"dhcp"}";;
-	esac
-	__BOPT+=("${__WORK}")
-	# --- 4: otheropt ---------------------------------------------------------
-	__WORK=""
-	if [[ -n "${25##*-}" ]]; then
-		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			__WORK="${__WORK:+"${__WORK} "}inst.repo=\${srvraddr}/${_DIRS_IMGS##*/}/${4}"
-		else
-			__WORK="${__WORK:+"${__WORK} "}inst.stage2=hd:LABEL=${18}"
-		fi
-	else
-		case "${1}" in
-			clive) __WORK="${__WORK:+"${__WORK} "}root=live:\${srvraddr}/${_DIRS_RMAK##*/}/${15##*/}";;
-			*    ) __WORK="${__WORK:+"${__WORK} "}root=live:\${srvraddr}/${_DIRS_ISOS##*/}/${15##*/}";;
-		esac
-	fi
-	__BOPT+=("${__WORK}")
-	# --- output --------------------------------------------------------------
-	printf "%s\n" "${__BOPT[@]}"
-}
-function fnMk_boot_option_autoyast() {
-	declare -r    __TGET_TYPE="${1:?}"
-	shift
-	declare -a    __BOPT=()
-	declare       __WORK=""
-	# --- 0: server -----------------------------------------------------------
-	__BOPT=("server=\${srvraddr}")
-	# --- 1: autoinst ---------------------------------------------------------
-	__WORK=""
-	if [[ -n "${25##*-}" ]]; then
-		__WORK="${__WORK:+"${__WORK} "}autoyast=cd:${25#"${_DIRS_CONF%/*}"}"
-		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			__WORK="${__WORK/cd:/\${srvraddr}}"
-			__WORK="${__WORK/_dvd/_web}"
-		fi
-	fi
-	__BOPT+=("${__WORK}")
-	# --- 2: language ---------------------------------------------------------
-	__WORK=""
-	__WORK="${__WORK:+"${__WORK} "}language=ja_JP"
-	__BOPT+=("${__WORK}")
-	# --- 3: network ----------------------------------------------------------
-	__WORK=""
-	if [[ -n "${25##*-}" ]]; then
-		__WORK="${__WORK:+"${__WORK} "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr}/${_IPV4_CIDR:-},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
-		case "${4}" in
-			opensuse-*-15*) __WORK="${__WORK//"${_NICS_NAME:-ens160}"/"eth0"}";;
-			*             ) ;;
-		esac
-	fi
-	case "${1}" in
-		live) __WORK="dhcp";;
-		*   ) __WORK="${__WORK:-"dhcp"}";;
-	esac
-	__BOPT+=("${__WORK}")
-	# --- 4: otheropt ---------------------------------------------------------
-	__WORK=""
-	if [[ -n "${25##*-}" ]]; then
-		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			case "${4}" in
-				opensuse-leap*netinst*      ) __WORK="${__WORK:+"${__WORK} "}install=https://download.opensuse.org/distribution/leap/${4##*[^0-9]}/repo/oss/";;
-				opensuse-tumbleweed*netinst*) __WORK="${__WORK:+"${__WORK} "}install=https://download.opensuse.org/tumbleweed/repo/oss/";;
-				*                           ) __WORK="${__WORK:+"${__WORK} "}install=\${srvraddr}/${_DIRS_IMGS##*/}/${4##*[^0-9]}";;
-			esac
-		fi
-	fi
-	__BOPT+=("${__WORK}")
-	# --- output --------------------------------------------------------------
-	printf "%s\n" "${__BOPT[@]}"
-}
-function fnMk_boot_option_agama() {
-	declare -r    __TGET_TYPE="${1:?}"
-	shift
-	declare -a    __BOPT=()
-	declare       __WORK=""
-	# --- 0: server -----------------------------------------------------------
-	__BOPT=("server=\${srvraddr}")
-	# --- 1: autoinst ---------------------------------------------------------
-	__WORK=""
-	if [[ -n "${25##*-}" ]]; then
-		__WORK="${__WORK:+"${__WORK} "}live.password=install inst.auto=dvd:${25#"${_DIRS_CONF%/*}"}"
-		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			__WORK="${__WORK/dvd:/\${srvraddr}}"
-			__WORK="${__WORK/_dvd/_web}"
-		else
-			__WORK="${__WORK:+"${__WORK}?devices=sr0"}"
-		fi
-	fi
-	__BOPT+=("${__WORK}")
-	# --- 2: language ---------------------------------------------------------
-	__WORK=""
-	__WORK="${__WORK:+"${__WORK} "}language=ja_JP"
-	__BOPT+=("${__WORK}")
-	# --- 3: network ----------------------------------------------------------
-	__WORK=""
-	if [[ -n "${25##*-}" ]]; then
-		__WORK="${__WORK:+"${__WORK} "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr}/${_IPV4_CIDR:-},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
-		case "${4}" in
-			opensuse-*-15*) __WORK="${__WORK//"${_NICS_NAME:-ens160}"/"eth0"}";;
-			*             ) ;;
-		esac
-	fi
-	case "${1}" in
-		live) __WORK="dhcp";;
-		*   ) __WORK="${__WORK:-"dhcp"}";;
-	esac
-	__BOPT+=("${__WORK}")
-	# --- 4: otheropt ---------------------------------------------------------
-	__WORK=""
-	if [[ -n "${25##*-}" ]]; then
-		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			case "${4}" in
-				opensuse-leap*netinst*      ) __WORK="${__WORK:+"${__WORK} "}install=https://download.opensuse.org/distribution/leap/${4##*[^0-9]}/repo/oss/";;
-				opensuse-tumbleweed*netinst*) __WORK="${__WORK:+"${__WORK} "}install=https://download.opensuse.org/tumbleweed/repo/oss/";;
-				*                           ) __WORK="${__WORK:+"${__WORK} "}install=\${srvraddr}/${_DIRS_IMGS##*/}/${4##*[^0-9]}";;
-			esac
-		fi
-	fi
-	__BOPT+=("${__WORK}")
-	# --- output --------------------------------------------------------------
-	printf "%s\n" "${__BOPT[@]}"
-}
-function fnMk_boot_options() {
-	declare -r    __TGET_TYPE="${1:?}"
-	shift
-	case "${4}" in
-		debian-*|live-debian-*| \
-		ubuntu-*|live-ubuntu-*)
-			case "${25}" in
-				*/preseed/*) fnMk_boot_option_preseed "${__TGET_TYPE}" "${@}";;
-				*/nocloud/*) fnMk_boot_option_nocloud "${__TGET_TYPE}" "${@}";;
-				*          ) ;;
-			esac
-			;;
-		fedora-*      |live-fedora-*      | \
-		centos-*      |live-centos-*      | \
-		almalinux-*   |live-almalinux-*   | \
-		rockylinux-*  |live-rockylinux-*  | \
-		miraclelinux-*|live-miraclelinux-*)
-			case "${25}" in
-				*/kickstart/*) fnMk_boot_option_kickstart "${__TGET_TYPE}" "${@}";;
-				*            ) ;;
-			esac
-			;;
-		opensuse-*|live-opensuse-*)
-			case "${25}" in
-				*/autoyast/*) fnMk_boot_option_autoyast "${__TGET_TYPE}" "${@}";;
-				*/agama/*   ) fnMk_boot_option_agama    "${__TGET_TYPE}" "${@}";;
-				*           ) ;;
-			esac
-			;;
-		* ) ;;
-	esac
-}
 function fnMk_pxeboot_clear_menu() {
 	declare       __DIRS=""
 	__DIRS="$(fnDirname "${1:?}")"
@@ -640,10 +336,11 @@ _EOT_
 function fnMk_pxeboot_ipxe_linux() {
 	declare -a    __BOPT=()
 	declare       __ENTR=""
+	declare       __CIDR=""
 	declare       __WORK=""
 	__WORK="$(fnMk_boot_options "pxeboot" "${@}")"
 	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
-	case "${1}" in
+	case "${2}" in
 #		mini    ) ;;
 #		netinst ) ;;
 #		dvd     ) ;;
@@ -653,50 +350,81 @@ function fnMk_pxeboot_ipxe_linux() {
 #		clive   ) ;;					# custom media live mode
 #		cnetinst) ;;					# custom media install mode
 #		system  ) ;;					# system command
-		*       )						# original media install mode
+		*       ) __ENTR="";;			# original media install mode
 	esac
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
-		:${__ENTR:-}${4}
-		prompt --key e --timeout \${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
-		set hostname ${_NWRK_HOST/:_DISTRO_:/${4%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
-		set ethrname ${_NICS_NAME:-ens160}
-		set ipv4addr ${_IPV4_ADDR:-}/${_IPV4_CIDR:-}
-		set ipv4gway ${_IPV4_GWAY:-}
-		set ipv4nsvr ${_IPV4_NSVR:-}
-		form                                    Configure Network Options
-		item hostname                           Hostname
-		item ethrname                           Interface
-		item ipv4addr                           IPv4 address/netmask
-		item ipv4gway                           IPv4 gateway
-		item ipv4nsvr                           IPv4 nameservers
-		isset \${openmenu} && present ||
-		set srvraddr ${_SRVR_PROT:?}://\${66}
-		set autoinst ${__BOPT[0]:-} ${__BOPT[1]:-}
-		set language ${__BOPT[2]:-}
-		set networks ${__BOPT[3]:-}
-		set otheropt ${__BOPT[@]:4}
-		form                                    Configure Autoinstall Options
-		item autoinst                           Auto install
-		item language                           Language
-		item networks                           Network
-		item otheropt                           Other options
-		isset \${openmenu} && present ||
-		echo Loading ${5//%20/ } ...
-		set srvraddr ${_SRVR_PROT:?}://\${66}
-		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${4}
-		set options \${autoinst} \${language} \${networks} \${otheropt}
-		echo Loading boot files ...
-		kernel \${knladdr}/${24#*/"${4}"/} \${options} --- quiet || goto error
-		initrd \${knladdr}/${23#*/"${4}"/} || goto error
-		boot || goto error
-		exit
+	case "${4:-}" in
+		ubuntu*) __CIDR="";;
+		*      ) __CIDR="/${_IPV4_CIDR:-}";;
+	esac
+	if [[ -z "${__ENTR:-}" ]]; then
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+			:${4}
+			prompt --key e --timeout \${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
+			set hostname ${_NWRK_HOST/:_DISTRO_:/${4%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
+			set ethrname ${_NICS_NAME:-ens160}
+			set ipv4addr ${_IPV4_ADDR:-}${__CIDR:-}
+			set ipv4mask ${_IPV4_MASK:-}
+			set ipv4gway ${_IPV4_GWAY:-}
+			set ipv4nsvr ${_IPV4_NSVR:-}
+			form                                    Configure Network Options
+			item hostname                           Hostname
+			item ethrname                           Interface
+			item ipv4addr                           IPv4 address/netmask
+			item ipv4gway                           IPv4 gateway
+			item ipv4nsvr                           IPv4 nameservers
+			isset \${openmenu} && present ||
+			set srvraddr ${_SRVR_PROT:?}://\${66}
+			set autoinst ${__BOPT[0]:-} ${__BOPT[1]:-}
+			set language ${__BOPT[2]:-}
+			set networks ${__BOPT[3]:-}
+			set otheropt ${__BOPT[@]:4}
+			form                                    Configure Autoinstall Options
+			item autoinst                           Auto install
+			item language                           Language
+			item networks                           Network
+			item otheropt                           Other options
+			isset \${openmenu} && present ||
+			echo Loading ${5//%20/ } ...
+			set srvraddr ${_SRVR_PROT:?}://\${66}
+			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${4}
+			set options \${autoinst} \${language} \${networks} \${otheropt}
+			echo Loading boot files ...
+			kernel \${knladdr}/${24#*/"${4}"/} \${options} --- quiet || goto error
+			initrd \${knladdr}/${23#*/"${4}"/} || goto error
+			boot || goto error
+			exit
 _EOT_
+	else
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+			:${__ENTR:-}${4}
+			set hostname ${_NWRK_HOST/:_DISTRO_:/${4%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
+			set ethrname ${_NICS_NAME:-ens160}
+			set ipv4addr ${_IPV4_ADDR:-}/${_IPV4_CIDR:-}
+			set ipv4gway ${_IPV4_GWAY:-}
+			set ipv4nsvr ${_IPV4_NSVR:-}
+			set srvraddr ${_SRVR_PROT:?}://\${66}
+			set autoinst ${__BOPT[0]:-} ${__BOPT[1]:-}
+			set language ${__BOPT[2]:-}
+			set networks ${__BOPT[3]:-}
+			set otheropt ${__BOPT[@]:4}
+			echo Loading ${5//%20/ } ...
+			set srvraddr ${_SRVR_PROT:?}://\${66}
+			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${4}
+			set options \${autoinst} \${language} \${networks} \${otheropt}
+			echo Loading boot files ...
+			kernel \${knladdr}/${24#*/"${4}"/} \${options} --- quiet || goto error
+			initrd \${knladdr}/${23#*/"${4}"/} || goto error
+			boot || goto error
+			exit
+_EOT_
+	fi
 }
 function fnMk_pxeboot_ipxe() {
 	declare -r    __TGET_PATH="${1:?}"
 	declare -r    __CONT_TABS="${2:?}"
 	declare -r -a __LIST_MDIA=("${@:3}")
 	declare -a    __MDIA=()
+	declare       __ENTR=""
 	declare       __WORK=""
 	__MDIA=("${__LIST_MDIA[@]//%20/ }")
 	[[ ! -s "${__TGET_PATH}" ]] && fnMk_pxeboot_ipxe_hdrftr
@@ -713,7 +441,19 @@ function fnMk_pxeboot_ipxe() {
 			|| [[ ! -s "${__MDIA[14]}" ]]; then
 				return
 			fi
-			__WORK="$(printf "%-48.48s%-55.55s%19.19s" "item -- ${__LIST_MDIA[3]}" "- ${__MDIA[4]//%20/ } ${_TEXT_SPCE// /.}" "${__MDIA[15]//%20/ }")"
+			case "${__MDIA[1]}" in
+#				mini    ) ;;
+#				netinst ) ;;
+#				dvd     ) ;;
+#				liveinst) ;;
+				live    ) __ENTR="live-";;		# original media live mode
+#				tool    ) ;;					# tools
+#				clive   ) ;;					# custom media live mode
+#				cnetinst) ;;					# custom media install mode
+#				system  ) ;;					# system command
+				*       ) __ENTR="";;			# original media install mode
+			esac
+			__WORK="$(printf "%-48.48s%-55.55s%19.19s" "item -- ${__ENTR:-}${__LIST_MDIA[3]}" "- ${__MDIA[4]//%20/ } ${_TEXT_SPCE// /.}" "${__MDIA[15]//%20/ }")"
 			sed -i "${__TGET_PATH}" -e "/\[ System command \]/i \\${__WORK}"
 			case "${__MDIA[3]}" in
 				windows-*              ) __WORK="$(fnMk_pxeboot_ipxe_windows "${__MDIA[@]}")";;
