@@ -18,11 +18,11 @@ item -- debian-mini-12                          - Debian 12 ....................
 item -- debian-mini-13                          - Debian 13 ...........................................2025-11-11 21:23:57
 item -- debian-mini-14                          - Debian 14 ...........................................2025-08-03 00:51:41
 item -- debian-mini-testing                     - Debian testing ......................................2025-08-03 00:51:41
-item -- debian-mini-testing-daily               - Debian testing daily ................................2025-12-20 00:02:14
+item -- debian-mini-testing-daily               - Debian testing daily ................................2025-12-21 00:02:16
 item --gap --                                   [ Auto install Net install ]
 item -- debian-netinst-12                       - Debian 12 ...........................................2025-09-06 17:08:10
 item -- debian-netinst-13                       - Debian 13 ...........................................2025-11-15 13:15:32
-item -- debian-netinst-testing                  - Debian testing ......................................2025-12-20 16:02:01
+item -- debian-netinst-testing                  - Debian testing ......................................2025-12-21 09:22:41
 item -- fedora-netinst-43                       - Fedora Server 43 ....................................2025-10-23 03:26:02
 item -- centos-stream-netinst-9                 - CentOS Stream 9 .....................................2025-12-15 03:58:07
 item -- centos-stream-netinst-10                - CentOS Stream 10 ....................................2025-12-15 04:19:16
@@ -66,13 +66,13 @@ item -- ubuntu-desktop-24.04                    - Ubuntu 24.04 Desktop .........
 item -- ubuntu-desktop-25.04                    - Ubuntu 25.04 Desktop ................................2025-04-15 18:47:56
 item -- ubuntu-desktop-25.10                    - Ubuntu 25.10 Desktop ................................2025-10-07 03:55:53
 item --gap --                                   [ Live media Live mode ]
-item -- debian-live-12-gnome                    - Debian 12 Live gnome ................................2025-09-06 11:02:45
-item -- debian-live-13-gnome                    - Debian 13 Live gnome ................................2025-11-15 10:36:56
-item -- debian-live-testing-gnome               - Debian testing Live gnome ...........................2025-12-15 09:20:02
-item -- ubuntu-desktop-24.04                    - Ubuntu 24.04 Desktop ................................2025-08-05 18:22:33
-item -- ubuntu-desktop-25.04                    - Ubuntu 25.04 Desktop ................................2025-04-15 18:47:56
-item -- ubuntu-desktop-25.10                    - Ubuntu 25.10 Desktop ................................2025-10-07 03:55:53
-item -- almalinux-live-10                       - Alma Linux 10 Live ..................................2025-11-24 16:57:15
+item -- live-debian-live-12-gnome               - Debian 12 Live gnome ................................2025-09-06 11:02:45
+item -- live-debian-live-13-gnome               - Debian 13 Live gnome ................................2025-11-15 10:36:56
+item -- live-debian-live-testing-gnome          - Debian testing Live gnome ...........................2025-12-15 09:20:02
+item -- live-ubuntu-desktop-24.04               - Ubuntu 24.04 Desktop ................................2025-08-05 18:22:33
+item -- live-ubuntu-desktop-25.04               - Ubuntu 25.04 Desktop ................................2025-04-15 18:47:56
+item -- live-ubuntu-desktop-25.10               - Ubuntu 25.10 Desktop ................................2025-10-07 03:55:53
+item -- live-almalinux-live-10                  - Alma Linux 10 Live ..................................2025-11-24 16:57:15
 item --gap --                                   [ System tools ]
 item -- memtest86plus                           - Memtest86+ 8.00 .....................................2025-11-23 08:53:14
 item -- winpe-x64                               - WinPE x64 ...........................................2024-10-21 12:19:39
@@ -95,6 +95,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -108,7 +109,7 @@ set srvraddr http://${66}
 set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/mini-bookworm-amd64.iso
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/mini-bookworm-amd64.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -130,6 +131,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -143,7 +145,7 @@ set srvraddr http://${66}
 set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/mini-trixie-amd64.iso
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/mini-trixie-amd64.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -165,6 +167,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -178,7 +181,7 @@ set srvraddr http://${66}
 set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/mini-forky-amd64.iso
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/mini-forky-amd64.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -200,6 +203,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -213,7 +217,7 @@ set srvraddr http://${66}
 set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/mini-testing-amd64.iso
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/mini-testing-amd64.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -235,6 +239,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -248,7 +253,7 @@ set srvraddr http://${66}
 set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/mini-testing-daily-amd64.iso
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/mini-testing-daily-amd64.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -270,6 +275,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -283,7 +289,7 @@ set srvraddr http://${66}
 set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-12.12.0-amd64-netinst.iso
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/debian-12.12.0-amd64-netinst.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -305,6 +311,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -318,7 +325,7 @@ set srvraddr http://${66}
 set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-13.2.0-amd64-netinst.iso
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/debian-13.2.0-amd64-netinst.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -340,6 +347,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -353,7 +361,7 @@ set srvraddr http://${66}
 set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-testing-amd64-netinst.iso
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/debian-testing-amd64-netinst.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -375,6 +383,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-fedora.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -410,6 +419,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-centos.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -445,6 +455,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-centos.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -480,6 +491,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-almalinux.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -515,6 +527,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-almalinux.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -550,6 +563,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-rockylinux.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -585,6 +599,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-rockylinux.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -620,6 +635,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-miraclelinux.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -655,6 +671,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-opensuse.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -690,6 +707,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-opensuse.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -725,6 +743,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -738,7 +757,7 @@ set srvraddr http://${66}
 set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-12.12.0-amd64-DVD-1.iso
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/debian-12.12.0-amd64-DVD-1.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -760,6 +779,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -773,7 +793,7 @@ set srvraddr http://${66}
 set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-13.2.0-amd64-DVD-1.iso
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/debian-13.2.0-amd64-DVD-1.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -795,6 +815,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -808,7 +829,7 @@ set srvraddr http://${66}
 set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-testing-amd64-DVD-1.iso
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/debian-testing-amd64-DVD-1.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -829,7 +850,8 @@ exit
 prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-ubuntu.workgroup
 set ethrname ens160
-set ipv4addr 192.168.1.1/24
+set ipv4addr 192.168.1.1
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -840,10 +862,10 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom/conf/nocloud/ubuntu_server}
+set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=url=${srvraddr}/conf/nocloud/ubuntu_server
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}::${ethrname}:static:${ipv4nsvr} hostname=${hostname}
-set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/ubuntu-24.04.3-live-server-amd64.iso
+set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/linux/ubuntu/ubuntu-24.04.3-live-server-amd64.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -864,7 +886,8 @@ exit
 prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-ubuntu.workgroup
 set ethrname ens160
-set ipv4addr 192.168.1.1/24
+set ipv4addr 192.168.1.1
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -875,10 +898,10 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom/conf/nocloud/ubuntu_server}
+set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=url=${srvraddr}/conf/nocloud/ubuntu_server
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}::${ethrname}:static:${ipv4nsvr} hostname=${hostname}
-set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/ubuntu-25.04-live-server-amd64.iso
+set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/linux/ubuntu/ubuntu-25.04-live-server-amd64.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -899,7 +922,8 @@ exit
 prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-ubuntu.workgroup
 set ethrname ens160
-set ipv4addr 192.168.1.1/24
+set ipv4addr 192.168.1.1
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -910,10 +934,10 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom/conf/nocloud/ubuntu_server}
+set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=url=${srvraddr}/conf/nocloud/ubuntu_server
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}::${ethrname}:static:${ipv4nsvr} hostname=${hostname}
-set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/ubuntu-25.10-live-server-amd64.iso
+set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/linux/ubuntu/ubuntu-25.10-live-server-amd64.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -935,6 +959,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-fedora.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -970,6 +995,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-centos.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -1005,6 +1031,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-centos.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -1040,6 +1067,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-almalinux.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -1075,6 +1103,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-almalinux.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -1110,6 +1139,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-rockylinux.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -1145,6 +1175,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-rockylinux.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -1180,6 +1211,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-miraclelinux.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -1215,6 +1247,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-opensuse.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -1250,6 +1283,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-opensuse.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -1323,6 +1357,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -1336,7 +1371,7 @@ set srvraddr http://${66}
 set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-live-12.12.0-amd64-standard.iso
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/debian-live-12.12.0-amd64-standard.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -1358,6 +1393,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -1371,7 +1407,7 @@ set srvraddr http://${66}
 set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-live-13.2.0-amd64-standard.iso
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/debian-live-13.2.0-amd64-standard.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -1393,6 +1429,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -1406,7 +1443,7 @@ set srvraddr http://${66}
 set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-live-testing-amd64-standard.iso
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/debian-live-testing-amd64-standard.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -1428,6 +1465,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -1441,7 +1479,7 @@ set srvraddr http://${66}
 set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-live-12.12.0-amd64-gnome.iso
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/debian-live-12.12.0-amd64-gnome.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -1463,6 +1501,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -1476,7 +1515,7 @@ set srvraddr http://${66}
 set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-live-13.2.0-amd64-gnome.iso
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/debian-live-13.2.0-amd64-gnome.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -1498,6 +1537,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -1511,7 +1551,7 @@ set srvraddr http://${66}
 set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-live-testing-amd64-gnome.iso
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/debian-live-testing-amd64-gnome.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -1533,6 +1573,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -1546,7 +1587,7 @@ set srvraddr http://${66}
 set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-live-12.12.0-amd64-lxde.iso
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/debian-live-12.12.0-amd64-lxde.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -1568,6 +1609,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -1581,7 +1623,7 @@ set srvraddr http://${66}
 set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-live-13.2.0-amd64-lxde.iso
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/debian-live-13.2.0-amd64-lxde.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -1603,6 +1645,7 @@ prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set 
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -1616,7 +1659,7 @@ set srvraddr http://${66}
 set autoinst server=${srvraddr} auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cfg
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-live-testing-amd64-lxde.iso
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/debian-live-testing-amd64-lxde.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -1637,7 +1680,8 @@ exit
 prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-ubuntu.workgroup
 set ethrname ens160
-set ipv4addr 192.168.1.1/24
+set ipv4addr 192.168.1.1
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -1648,10 +1692,10 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom/conf/nocloud/ubuntu_desktop}
+set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=url=${srvraddr}/conf/nocloud/ubuntu_desktop
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}::${ethrname}:static:${ipv4nsvr} hostname=${hostname}
-set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/ubuntu-24.04.3-desktop-amd64.iso
+set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/linux/ubuntu/ubuntu-24.04.3-desktop-amd64.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -1672,7 +1716,8 @@ exit
 prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-ubuntu.workgroup
 set ethrname ens160
-set ipv4addr 192.168.1.1/24
+set ipv4addr 192.168.1.1
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -1683,10 +1728,10 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom/conf/nocloud/ubuntu_desktop}
+set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=url=${srvraddr}/conf/nocloud/ubuntu_desktop
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}::${ethrname}:static:${ipv4nsvr} hostname=${hostname}
-set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/ubuntu-25.04-desktop-amd64.iso
+set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/linux/ubuntu/ubuntu-25.04-desktop-amd64.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -1707,7 +1752,8 @@ exit
 prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
 set hostname sv-ubuntu.workgroup
 set ethrname ens160
-set ipv4addr 192.168.1.1/24
+set ipv4addr 192.168.1.1
+set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 form                                    Configure Network Options
@@ -1718,10 +1764,10 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom/conf/nocloud/ubuntu_desktop}
+set autoinst server=${srvraddr} automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=url=${srvraddr}/conf/nocloud/ubuntu_desktop
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}::${ethrname}:static:${ipv4nsvr} hostname=${hostname}
-set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/ubuntu-25.10-desktop-amd64.iso
+set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/linux/ubuntu/ubuntu-25.10-desktop-amd64.iso
 form                                    Configure Autoinstall Options
 item autoinst                           Auto install
 item language                           Language
@@ -1738,136 +1784,80 @@ initrd ${knladdr}/casper/initrd || goto error
 boot || goto error
 exit
 
-:debian-live-12-gnome
-prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
+:live-debian-live-12-gnome
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Network Options
-item hostname                           Hostname
-item ethrname                           Interface
-item ipv4addr                           IPv4 address/netmask
-item ipv4gway                           IPv4 gateway
-item ipv4nsvr                           IPv4 nameservers
-isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} 
+set autoinst server=${srvraddr} boot=live
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set networks dhcp
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-live-12.12.0-amd64-gnome.iso
-form                                    Configure Autoinstall Options
-item autoinst                           Auto install
-item language                           Language
-item networks                           Network
-item otheropt                           Other options
-isset ${openmenu} && present ||
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/debian-live-12.12.0-amd64-gnome.iso
 echo Loading Debian 12 Live gnome ...
 set srvraddr http://${66}
 set knladdr ${srvraddr}/imgs/debian-live-12-gnome
 set options ${autoinst} ${language} ${networks} ${otheropt}
 echo Loading boot files ...
-kernel ${knladdr}/live/vmlinuz-6.1.0-39-amd64 ${options} --- quiet || goto error
-initrd ${knladdr}/live/initrd.img-6.1.0-39-amd64 || goto error
+kernel ${knladdr}/live/vmlinuz ${options} --- quiet || goto error
+initrd ${knladdr}/live/initrd.img || goto error
 boot || goto error
 exit
 
-:debian-live-13-gnome
-prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
+:live-debian-live-13-gnome
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Network Options
-item hostname                           Hostname
-item ethrname                           Interface
-item ipv4addr                           IPv4 address/netmask
-item ipv4gway                           IPv4 gateway
-item ipv4nsvr                           IPv4 nameservers
-isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} 
+set autoinst server=${srvraddr} boot=live
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set networks dhcp
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-live-13.2.0-amd64-gnome.iso
-form                                    Configure Autoinstall Options
-item autoinst                           Auto install
-item language                           Language
-item networks                           Network
-item otheropt                           Other options
-isset ${openmenu} && present ||
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/debian-live-13.2.0-amd64-gnome.iso
 echo Loading Debian 13 Live gnome ...
 set srvraddr http://${66}
 set knladdr ${srvraddr}/imgs/debian-live-13-gnome
 set options ${autoinst} ${language} ${networks} ${otheropt}
 echo Loading boot files ...
-kernel ${knladdr}/live/vmlinuz-6.12.43+deb13-amd64 ${options} --- quiet || goto error
-initrd ${knladdr}/live/initrd.img-6.12.43+deb13-amd64 || goto error
+kernel ${knladdr}/live/vmlinuz ${options} --- quiet || goto error
+initrd ${knladdr}/live/initrd.img || goto error
 boot || goto error
 exit
 
-:debian-live-testing-gnome
-prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
+:live-debian-live-testing-gnome
 set hostname sv-debian.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Network Options
-item hostname                           Hostname
-item ethrname                           Interface
-item ipv4addr                           IPv4 address/netmask
-item ipv4gway                           IPv4 gateway
-item ipv4nsvr                           IPv4 nameservers
-isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} 
+set autoinst server=${srvraddr} boot=live
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set networks dhcp
-set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/debian-live-testing-amd64-gnome.iso
-form                                    Configure Autoinstall Options
-item autoinst                           Auto install
-item language                           Language
-item networks                           Network
-item otheropt                           Other options
-isset ${openmenu} && present ||
+set otheropt root=/dev/ram0 fetch=${srvraddr}/isos/linux/debian/debian-live-testing-amd64-gnome.iso
 echo Loading Debian testing Live gnome ...
 set srvraddr http://${66}
 set knladdr ${srvraddr}/imgs/debian-live-testing-gnome
 set options ${autoinst} ${language} ${networks} ${otheropt}
 echo Loading boot files ...
-kernel ${knladdr}/live/vmlinuz-6.16.12+deb14+1-amd64 ${options} --- quiet || goto error
-initrd ${knladdr}/live/initrd.img-6.16.12+deb14+1-amd64 || goto error
+kernel ${knladdr}/live/vmlinuz ${options} --- quiet || goto error
+initrd ${knladdr}/live/initrd.img || goto error
 boot || goto error
 exit
 
-:ubuntu-desktop-24.04
-prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
+:live-ubuntu-desktop-24.04
 set hostname sv-ubuntu.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Network Options
-item hostname                           Hostname
-item ethrname                           Interface
-item ipv4addr                           IPv4 address/netmask
-item ipv4gway                           IPv4 gateway
-item ipv4nsvr                           IPv4 nameservers
-isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} 
+set autoinst server=${srvraddr} boot=live
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
-set networks dhcp
-set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/ubuntu-24.04.3-desktop-amd64.iso
-form                                    Configure Autoinstall Options
-item autoinst                           Auto install
-item language                           Language
-item networks                           Network
-item otheropt                           Other options
-isset ${openmenu} && present ||
+set networks ip=dhcp
+set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/linux/ubuntu/ubuntu-24.04.3-desktop-amd64.iso
 echo Loading Ubuntu 24.04 Desktop ...
 set srvraddr http://${66}
 set knladdr ${srvraddr}/imgs/ubuntu-desktop-24.04
@@ -1878,31 +1868,17 @@ initrd ${knladdr}/casper/initrd || goto error
 boot || goto error
 exit
 
-:ubuntu-desktop-25.04
-prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
+:live-ubuntu-desktop-25.04
 set hostname sv-ubuntu.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Network Options
-item hostname                           Hostname
-item ethrname                           Interface
-item ipv4addr                           IPv4 address/netmask
-item ipv4gway                           IPv4 gateway
-item ipv4nsvr                           IPv4 nameservers
-isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} 
+set autoinst server=${srvraddr} boot=live
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
-set networks dhcp
-set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/ubuntu-25.04-desktop-amd64.iso
-form                                    Configure Autoinstall Options
-item autoinst                           Auto install
-item language                           Language
-item networks                           Network
-item otheropt                           Other options
-isset ${openmenu} && present ||
+set networks ip=dhcp
+set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/linux/ubuntu/ubuntu-25.04-desktop-amd64.iso
 echo Loading Ubuntu 25.04 Desktop ...
 set srvraddr http://${66}
 set knladdr ${srvraddr}/imgs/ubuntu-desktop-25.04
@@ -1913,31 +1889,17 @@ initrd ${knladdr}/casper/initrd || goto error
 boot || goto error
 exit
 
-:ubuntu-desktop-25.10
-prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
+:live-ubuntu-desktop-25.10
 set hostname sv-ubuntu.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Network Options
-item hostname                           Hostname
-item ethrname                           Interface
-item ipv4addr                           IPv4 address/netmask
-item ipv4gway                           IPv4 gateway
-item ipv4nsvr                           IPv4 nameservers
-isset ${openmenu} && present ||
 set srvraddr http://${66}
-set autoinst server=${srvraddr} 
+set autoinst server=${srvraddr} boot=live
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
-set networks dhcp
-set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/ubuntu-25.10-desktop-amd64.iso
-form                                    Configure Autoinstall Options
-item autoinst                           Auto install
-item language                           Language
-item networks                           Network
-item otheropt                           Other options
-isset ${openmenu} && present ||
+set networks ip=dhcp
+set otheropt root=/dev/ram0 boot=casper iso-url=${srvraddr}/isos/linux/ubuntu/ubuntu-25.10-desktop-amd64.iso
 echo Loading Ubuntu 25.10 Desktop ...
 set srvraddr http://${66}
 set knladdr ${srvraddr}/imgs/ubuntu-desktop-25.10
@@ -1948,31 +1910,17 @@ initrd ${knladdr}/casper/initrd || goto error
 boot || goto error
 exit
 
-:almalinux-live-10
-prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
+:live-almalinux-live-10
 set hostname sv-almalinux.workgroup
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-form                                    Configure Network Options
-item hostname                           Hostname
-item ethrname                           Interface
-item ipv4addr                           IPv4 address/netmask
-item ipv4gway                           IPv4 gateway
-item ipv4nsvr                           IPv4 nameservers
-isset ${openmenu} && present ||
 set srvraddr http://${66}
 set autoinst server=${srvraddr} 
 set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106 language=ja_JP
 set networks dhcp
-set otheropt root=live:${srvraddr}/isos/AlmaLinux-10-latest-x86_64-Live-GNOME.iso
-form                                    Configure Autoinstall Options
-item autoinst                           Auto install
-item language                           Language
-item networks                           Network
-item otheropt                           Other options
-isset ${openmenu} && present ||
+set otheropt root=live:${srvraddr}/isos/linux/almalinux/AlmaLinux-10-latest-x86_64-Live-GNOME.iso
 echo Loading Alma Linux 10 Live ...
 set srvraddr http://${66}
 set knladdr ${srvraddr}/imgs/almalinux-live-10
