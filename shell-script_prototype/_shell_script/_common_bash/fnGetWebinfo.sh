@@ -110,7 +110,7 @@ function fnGetWebinfo() {
 				switch (tolower(_line)) {
 					case /^http\/[0-9]+.[0-9]+/:
 						sub("[^ \t]+[ \t]+", "", _line)
-						sub("[^0-9]*$", "", _line)
+						sub("[^0-9]+$", "", _line)
 						_code=_line
 						break
 					case /^content-length:/:

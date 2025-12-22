@@ -138,6 +138,52 @@
 	source "${_SHEL_COMD}"/fnMk_boot_option_agama.sh		# make boot options for agama
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_boot_options.sh				# make boot options
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_clear_menu.sh		# clear pxeboot menu
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe_hdrftr.sh		# make header and footer for ipxe menu
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe_windows.sh		# make Windows section for ipxe menu
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe_winpe.sh		# make WinPE section for ipxe menu
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe_aomei.sh		# make aomei backup section for ipxe menu
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe_m86p.sh		# make memtest86+ section for ipxe menu
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe_linux.sh		# make linux section for ipxe menu
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe.sh				# make ipxe menu
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_grub_hdrftr.sh		# make header and footer for grub.cfg
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_grub_windows.sh		# make Windows section for grub.cfg
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_grub_winpe.sh		# make WinPE section for grub.cfg
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_grub_aomei.sh		# make aomei backup section for grub.cfg
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_grub_m86p.sh		# make memtest86+ section for grub.cfg
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_grub_linux.sh		# make linux section for grub.cfg
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_grub.sh				# make grub.cfg for pxeboot
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_hdrftr.sh		# make header and footer for syslinux
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_windows.sh		# make Windows section for syslinux
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_winpe.sh		# make WinPE section for syslinux
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_aomei.sh		# make aomei backup section for syslinux
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_m86p.sh		# make memtest86+ section for syslinux
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_linux.sh		# make linux section for syslinux
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx.sh				# make syslinux for pxeboot
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot.sh					# make pxeboot files
 
 # *** main section ************************************************************
 
@@ -185,351 +231,7 @@
 	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
 
 	# --- main processing -----------------------------------------------------
-	fnInitialize
-
-#printf "%s\n" "${_LIST_CONF[@]}"
-#printf "%s\n" "${_LIST_PARM[@]}"
-
-#fnList_conf_Put "test.cfg"
-#sleep 600
-
-	declare       __REFR=""				# name reference
-	declare       __PTRN=""				# pattern
-	declare -a    __LIST=()				# list
-
-	declare       __TYPE=""
-	declare       __LINE=""
-	declare -a    __TGET=()
-	declare -a    __MDIA=()
-	declare -i    I=0
-	declare -i    J=0
-
-function fnMk_pxeboot_clear_menu() {
-	declare       __DIRS=""
-	__DIRS="$(fnDirname "${1:?}")"
-	if [[ -z "${__DIRS:-}" ]]; then
-		fnMsgout "${_PROG_NAME:-}" "failed" "invalid value: [${1:-}]"
-		return
-	fi
-	mkdir -p "${__DIRS:?}"
-	: > "${1:?}"
-}
-function fnMk_pxeboot_ipxe_hdrftr() {
-	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__TGET_PATH}" || true
-		#!ipxe
-
-		cpuid --ext 29 && set arch amd64 || set arch x86
-
-		dhcp
-
-		set optn-timeout 1000
-		set menu-timeout 0
-		isset ${menu-default} || set menu-default exit
-
-		:start
-
-		:menu
-		menu Select the OS type you want to boot
-		item --gap --                                   --------------------------------------------------------------------------
-		item --gap --                                   [ System command ]
-		item -- shell                                   - iPXE shell
-		#item -- shutdown                               - System shutdown
-		item -- restart                                 - System reboot
-		item --gap --                                   --------------------------------------------------------------------------
-		choose --timeout ${menu-timeout} --default ${menu-default} selected || goto menu
-		goto ${selected}
-
-		:shell
-		echo "Booting iPXE shell ..."
-		shell
-		goto start
-
-		:shutdown
-		echo "System shutting down ..."
-		poweroff
-		exit
-
-		:restart
-		echo "System rebooting ..."
-		reboot
-		exit
-
-		:error
-		prompt Press any key to continue
-		exit
-
-		:exit
-		exit
-_EOT_
-}
-function fnMk_pxeboot_ipxe_windows() {
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
-		:${4}
-		echo Loading ${5//%20/ } ...
-		set srvraddr ${_SRVR_PROT:?}://${_SRVR_ADDR:?}
-		set ipxaddr \${srvraddr}/${_DIRS_TFTP##*/}/ipxe
-		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${4}
-		set cfgaddr \${srvraddr}/${_DIRS_CONF##*/}/windows
-		echo Loading boot files ...
-		kernel \${ipxaddr}/wimboot
-		initrd -n install.cmd \${cfgaddr}/inst_w${4##*-}.cmd  install.cmd  || goto error
-		initrd \${cfgaddr}/unattend.xml                 unattend.xml || goto error
-		initrd \${cfgaddr}/shutdown.cmd                 shutdown.cmd || goto error
-		initrd \${cfgaddr}/winpeshl.ini                 winpeshl.ini || goto error
-		initrd \${knladdr}/bootmgr                      bootmgr      || goto error
-		initrd \${knladdr}/boot/bcd                     BCD          || goto error
-		initrd \${knladdr}/boot/boot.sdi                boot.sdi     || goto error
-		initrd \${knladdr}/sources/boot.wim             boot.wim     || goto error
-		boot || goto error
-		exit
-_EOT_
-}
-function fnMk_pxeboot_ipxe_winpe() {
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
-		:${4}
-		echo Loading ${5//%20/ } ...
-		set srvraddr ${_SRVR_PROT:?}://${_SRVR_ADDR:?}
-		set ipxaddr \${srvraddr}/${_DIRS_TFTP##*/}/ipxe
-		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${4}
-		set cfgaddr \${srvraddr}/${_DIRS_CONF##*/}/windows
-		echo Loading boot files ...
-		kernel \${ipxaddr}/wimboot
-		initrd \${knladdr}/bootmgr                      bootmgr      || goto error
-		initrd \${knladdr}/Boot/BCD                     BCD          || goto error
-		initrd \${knladdr}/Boot/boot.sdi                boot.sdi     || goto error
-		initrd \${knladdr}/sources/boot.wim             boot.wim     || goto error
-		boot || goto error
-		exit
-_EOT_
-}
-function fnMk_pxeboot_ipxe_aomei() {
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
-		:${4}
-		echo Loading ${5//%20/ } ...
-		set srvraddr ${_SRVR_PROT:?}://${_SRVR_ADDR:?}
-		set ipxaddr \${srvraddr}/${_DIRS_TFTP##*/}/ipxe
-		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${4}
-		set cfgaddr \${srvraddr}/${_DIRS_CONF##*/}/windows
-		echo Loading boot files ...
-		kernel \${ipxaddr}/wimboot
-		initrd \${knladdr}/bootmgr                      bootmgr      || goto error
-		initrd \${knladdr}/boot/bcd                     BCD          || goto error
-		initrd \${knladdr}/boot/boot.sdi                boot.sdi     || goto error
-		initrd \${knladdr}/sources/boot.wim             boot.wim     || goto error
-		boot || goto error
-		exit
-_EOT_
-}
-function fnMk_pxeboot_ipxe_m86p() {
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
-		:${4}
-		echo Loading ${5//%20/ } ...
-		set srvraddr ${_SRVR_PROT:?}://${_SRVR_ADDR:?}
-		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${4}
-		iseq \${platform} efi && set knlfile \${knladdr}/${23#*/"${4}"/} || set knlfile \${knladdr}/${24#*/"${4}"/}
-		echo Loading boot files ...
-		kernel \${knlfile} || goto error
-		boot || goto error
-		exit
-_EOT_
-}
-function fnMk_pxeboot_ipxe_linux() {
-	declare -a    __BOPT=()
-	declare       __ENTR=""
-	declare       __CIDR=""
-	declare       __WORK=""
-	__WORK="$(fnMk_boot_options "pxeboot" "${@}")"
-	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
-	case "${2}" in
-#		mini    ) ;;
-#		netinst ) ;;
-#		dvd     ) ;;
-#		liveinst) ;;
-		live    ) __ENTR="live-";;		# original media live mode
-#		tool    ) ;;					# tools
-#		clive   ) ;;					# custom media live mode
-#		cnetinst) ;;					# custom media install mode
-#		system  ) ;;					# system command
-		*       ) __ENTR="";;			# original media install mode
-	esac
-	case "${4:-}" in
-		ubuntu*) __CIDR="";;
-		*      ) __CIDR="/${_IPV4_CIDR:-}";;
-	esac
-	if [[ -z "${__ENTR:-}" ]]; then
-		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
-			:${4}
-			prompt --key e --timeout \${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
-			set hostname ${_NWRK_HOST/:_DISTRO_:/${4%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
-			set ethrname ${_NICS_NAME:-ens160}
-			set ipv4addr ${_IPV4_ADDR:-}${__CIDR:-}
-			set ipv4mask ${_IPV4_MASK:-}
-			set ipv4gway ${_IPV4_GWAY:-}
-			set ipv4nsvr ${_IPV4_NSVR:-}
-			form                                    Configure Network Options
-			item hostname                           Hostname
-			item ethrname                           Interface
-			item ipv4addr                           IPv4 address/netmask
-			item ipv4gway                           IPv4 gateway
-			item ipv4nsvr                           IPv4 nameservers
-			isset \${openmenu} && present ||
-			set srvraddr ${_SRVR_PROT:?}://\${66}
-			set autoinst ${__BOPT[0]:-} ${__BOPT[1]:-}
-			set language ${__BOPT[2]:-}
-			set networks ${__BOPT[3]:-}
-			set otheropt ${__BOPT[@]:4}
-			form                                    Configure Autoinstall Options
-			item autoinst                           Auto install
-			item language                           Language
-			item networks                           Network
-			item otheropt                           Other options
-			isset \${openmenu} && present ||
-			echo Loading ${5//%20/ } ...
-			set srvraddr ${_SRVR_PROT:?}://\${66}
-			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${4}
-			set options \${autoinst} \${language} \${networks} \${otheropt}
-			echo Loading boot files ...
-			kernel \${knladdr}/${24#*/"${4}"/} \${options} --- quiet || goto error
-			initrd \${knladdr}/${23#*/"${4}"/} || goto error
-			boot || goto error
-			exit
-_EOT_
-	else
-		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
-			:${__ENTR:-}${4}
-			set hostname ${_NWRK_HOST/:_DISTRO_:/${4%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
-			set ethrname ${_NICS_NAME:-ens160}
-			set ipv4addr ${_IPV4_ADDR:-}/${_IPV4_CIDR:-}
-			set ipv4gway ${_IPV4_GWAY:-}
-			set ipv4nsvr ${_IPV4_NSVR:-}
-			set srvraddr ${_SRVR_PROT:?}://\${66}
-			set autoinst ${__BOPT[0]:-} ${__BOPT[1]:-}
-			set language ${__BOPT[2]:-}
-			set networks ${__BOPT[3]:-}
-			set otheropt ${__BOPT[@]:4}
-			echo Loading ${5//%20/ } ...
-			set srvraddr ${_SRVR_PROT:?}://\${66}
-			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${4}
-			set options \${autoinst} \${language} \${networks} \${otheropt}
-			echo Loading boot files ...
-			kernel \${knladdr}/${24#*/"${4}"/} \${options} --- quiet || goto error
-			initrd \${knladdr}/${23#*/"${4}"/} || goto error
-			boot || goto error
-			exit
-_EOT_
-	fi
-}
-function fnMk_pxeboot_ipxe() {
-	declare -r    __TGET_PATH="${1:?}"
-	declare -r    __CONT_TABS="${2:?}"
-	declare -r -a __LIST_MDIA=("${@:3}")
-	declare -a    __MDIA=()
-	declare       __ENTR=""
-	declare       __WORK=""
-	__MDIA=("${__LIST_MDIA[@]//%20/ }")
-	[[ ! -s "${__TGET_PATH}" ]] && fnMk_pxeboot_ipxe_hdrftr
-	case "${__MDIA[2]}" in
-		m)								# (menu)
-			if [[ -z "$(fnTrim "${__MDIA[4]:-}" " ")" ]]; then
-				return
-			fi
-			__WORK="$(printf "%-48.48s[ %s ]" "item --gap --" "${__MDIA[4]//%20/ }")"
-			sed -i "${__TGET_PATH}" -e "/\[ System command \]/i \\${__WORK}"
-			;;
-		o)								# (output)
-			if [[ ! -e "${_DIRS_IMGS}/${__MDIA[3]}"/. ]] \
-			|| [[ ! -s "${__MDIA[14]}" ]]; then
-				return
-			fi
-			case "${__MDIA[1]}" in
-#				mini    ) ;;
-#				netinst ) ;;
-#				dvd     ) ;;
-#				liveinst) ;;
-				live    ) __ENTR="live-";;		# original media live mode
-#				tool    ) ;;					# tools
-#				clive   ) ;;					# custom media live mode
-#				cnetinst) ;;					# custom media install mode
-#				system  ) ;;					# system command
-				*       ) __ENTR="";;			# original media install mode
-			esac
-			__WORK="$(printf "%-48.48s%-55.55s%19.19s" "item -- ${__ENTR:-}${__LIST_MDIA[3]}" "- ${__MDIA[4]//%20/ } ${_TEXT_SPCE// /.}" "${__MDIA[15]//%20/ }")"
-			sed -i "${__TGET_PATH}" -e "/\[ System command \]/i \\${__WORK}"
-			case "${__MDIA[3]}" in
-				windows-*              ) __WORK="$(fnMk_pxeboot_ipxe_windows "${__MDIA[@]}")";;
-				winpe-*|ati*x64|ati*x86) __WORK="$(fnMk_pxeboot_ipxe_winpe   "${__MDIA[@]}")";;
-				aomei-backupper        ) __WORK="$(fnMk_pxeboot_ipxe_aomei   "${__MDIA[@]}")";;
-				memtest86*             ) __WORK="$(fnMk_pxeboot_ipxe_m86p    "${__MDIA[@]}")";;
-				*                      ) __WORK="$(fnMk_pxeboot_ipxe_linux   "${__MDIA[@]}")";;
-			esac
-			sed -i "${__TGET_PATH}" -e "/^:shell$/i \\${__WORK}\n"
-			;;
-		*) ;;							# (hidden)
-	esac
-}
-function fnMk_pxeboot_grub() {
-	declare -r    __TGET_PATH="${1:?}"
-	declare -r    __CONT_TABS="${2:?}"
-	declare -r -a __LIST_MDIA=("${@:3}")
-}
-function fnMk_pxeboot_slnx() {
-	declare -r    __TGET_PATH="${1:?}"
-	declare -r    __CONT_TABS="${2:?}"
-	declare -r -a __LIST_MDIA=("${@:3}")
-}
-
-	fnMk_pxeboot_clear_menu "${_PATH_IPXE:?}"				# ipxe
-	fnMk_pxeboot_clear_menu "${_PATH_GRUB:?}"				# grub
-	fnMk_pxeboot_clear_menu "${_PATH_SLNX:?}"				# syslinux (bios)
-	fnMk_pxeboot_clear_menu "${_PATH_UEFI:?}"				# syslinux (efi64)
-	for __TYPE in "${_LIST_TYPE[@]}"
-	do
-		fnMk_print_list __LINE "${__TYPE}"
-		IFS= mapfile -d $'\n' -t __TGET < <(echo -n "${__LINE}")
-		for I in "${!__TGET[@]}"
-		do
-			read -r -a __MDIA < <(echo "${__TGET[I]}")
-			case "${__MDIA[2]}" in
-				m) ;;
-				*)
-					case "${__MDIA[27]}" in
-						c) ;;
-						d)
-							__RETN="- - - -"
-							if [[ -n "$(fnTrim "${__MDIA[14]}" "-")" ]]; then
-								fnDownload "${__MDIA[10]}" "${__MDIA[14]}"
-								__RETN="$(fnGetFileinfo "${__MDIA[14]}")"
-							fi
-							read -r -a __ARRY < <(echo "${__RETN}")
-							__MDIA[15]="${__ARRY[1]:-}"	# iso_tstamp
-							__MDIA[16]="${__ARRY[2]:-}"	# iso_size
-							__MDIA[17]="${__ARRY[3]:-}"	# iso_volume
-							;;
-						*) ;;
-					esac
-					# --- rsync -----------------------------------------------
-					fnRsync "${__MDIA[14]}" "${_DIRS_IMGS}/${__MDIA[3]}"
-					;;
-			esac
-			# --- create menu file --------------------------------------------
-			fnMk_pxeboot_ipxe "${_PATH_IPXE:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# ipxe
-			fnMk_pxeboot_grub "${_PATH_GRUB:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# grub
-			fnMk_pxeboot_slnx "${_PATH_SLNX:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# syslinux (bios)
-			fnMk_pxeboot_slnx "${_PATH_UEFI:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# syslinux (efi64)
-			# --- data registration -------------------------------------------
-			__MDIA=("${__MDIA[@]// /%20}")
-			J="${__MDIA[0]}"
-			_LIST_MDIA[J]="$(
-				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-11s \n" \
-				"${__MDIA[@]:1}"
-			)"
-		done
-	done
-
-#printf "%s\n" "${_LIST_MDIA[@]}"
-
-	# --- put media information data ------------------------------------------
-	fnList_mdia_Put "work.txt"
+	fnMain
 
 	# --- complete ------------------------------------------------------------
 	__time_end=$(date +%s)
@@ -541,30 +243,3 @@ function fnMk_pxeboot_slnx() {
 	exit 0
 
 # ### eof #####################################################################
-#    0: type        ( 11)   TEXT            NOT NULL    media type
-#    1: entry_flag  ( 11)   TEXT            NOT NULL    [m] menu, [o] output, [else] hidden
-#    2: entry_name  ( 39)   TEXT            NOT NULL    entry name (unique)
-#    3: entry_disp  ( 39)   TEXT            NOT NULL    entry name for display
-#    4: version     ( 23)   TEXT                        version id
-#    5: latest      ( 23)   TEXT                        latest version
-#    6: release     ( 15)   TEXT                        release date
-#    7: support     ( 15)   TEXT                        support end date
-#    8: web_regexp  (143)   TEXT                        web file  regexp
-#    9: web_path    (143)   TEXT                        "         path
-#   10: web_tstamp  ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
-#   11: web_size    ( 15)   BIGINT                      "         file size
-#   12: web_status  ( 15)   TEXT                        "         download status
-#   13: iso_path    ( 87)   TEXT                        iso image file path
-#   14: iso_tstamp  ( 47)   TEXT                        "         time stamp
-#   15: iso_size    ( 15)   BIGINT                      "         file size
-#   16: iso_volume  ( 43)   TEXT                        "         volume id
-#   17: rmk_path    ( 87)   TEXT                        remaster  file path
-#   18: rmk_tstamp  ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
-#   19: rmk_size    ( 15)   BIGINT                      "         file size
-#   20: rmk_volume  ( 43)   TEXT                        "         volume id
-#   21: ldr_initrd  ( 87)   TEXT                        initrd    file path
-#   22: ldr_kernel  ( 87)   TEXT                        kernel    file path
-#   23: cfg_path    ( 87)   TEXT                        config    file path
-#   24: cfg_tstamp  ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
-#   25: lnk_path    ( 87)   TEXT                        symlink   directory or file path
-#   26: create_flag ( 11)   TEXT                        create flag
