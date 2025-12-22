@@ -18,11 +18,11 @@ item -- debian-mini-12                          - Debian 12 ....................
 item -- debian-mini-13                          - Debian 13 ...........................................2025-11-11 21:23:57
 item -- debian-mini-14                          - Debian 14 ...........................................2025-08-03 00:51:41
 item -- debian-mini-testing                     - Debian testing ......................................2025-08-03 00:51:41
-item -- debian-mini-testing-daily               - Debian testing daily ................................2025-12-21 00:02:16
+item -- debian-mini-testing-daily               - Debian testing daily ................................2025-12-22 00:02:29
 item --gap --                                   [ Auto install Net install ]
 item -- debian-netinst-12                       - Debian 12 ...........................................2025-09-06 17:08:10
 item -- debian-netinst-13                       - Debian 13 ...........................................2025-11-15 13:15:32
-item -- debian-netinst-testing                  - Debian testing ......................................2025-12-21 09:22:41
+item -- debian-netinst-testing                  - Debian testing ......................................2025-12-22 09:52:09
 item -- fedora-netinst-43                       - Fedora Server 43 ....................................2025-10-23 03:26:02
 item -- centos-stream-netinst-9                 - CentOS Stream 9 .....................................2025-12-15 03:58:07
 item -- centos-stream-netinst-10                - CentOS Stream 10 ....................................2025-12-15 04:19:16
@@ -36,7 +36,7 @@ item -- opensuse-tumbleweed-netinst             - openSUSE Tumbleweed ..........
 item --gap --                                   [ Auto install DVD media ]
 item -- debian-12                               - Debian 12 ...........................................2025-09-06 17:09:04
 item -- debian-13                               - Debian 13 ...........................................2025-11-15 13:17:29
-item -- debian-testing                          - Debian testing ......................................2025-12-15 12:50:09
+item -- debian-testing                          - Debian testing ......................................2025-12-22 06:37:35
 item -- ubuntu-live-24.04                       - Ubuntu 24.04 Live Server ............................2025-08-05 23:54:22
 item -- ubuntu-live-25.04                       - Ubuntu 25.04 Live Server ............................2025-04-15 22:38:47
 item -- ubuntu-live-25.10                       - Ubuntu 25.10 Live Server ............................2025-10-07 19:35:49
@@ -55,20 +55,20 @@ item -- windows-11                              - Windows 11 ...................
 item --gap --                                   [ Live media Install mode ]
 item -- debian-live-12-standard                 - Debian 12 Live standard .............................2025-09-06 11:02:45
 item -- debian-live-13-standard                 - Debian 13 Live standard .............................2025-11-15 10:36:56
-item -- debian-live-testing-standard            - Debian testing Live standard ........................2025-12-15 09:20:02
+item -- debian-live-testing-standard            - Debian testing Live standard ........................2025-12-22 02:33:09
 item -- debian-live-12-gnome                    - Debian 12 Live gnome ................................2025-09-06 11:02:45
 item -- debian-live-13-gnome                    - Debian 13 Live gnome ................................2025-11-15 10:36:56
-item -- debian-live-testing-gnome               - Debian testing Live gnome ...........................2025-12-15 09:20:02
+item -- debian-live-testing-gnome               - Debian testing Live gnome ...........................2025-12-22 02:33:09
 item -- debian-live-12-lxde                     - Debian 12 Live lxde .................................2025-09-06 11:02:45
 item -- debian-live-13-lxde                     - Debian 13 Live lxde .................................2025-11-15 10:36:56
-item -- debian-live-testing-lxde                - Debian testing Live lxde ............................2025-12-15 09:20:02
+item -- debian-live-testing-lxde                - Debian testing Live lxde ............................2025-12-22 02:33:09
 item -- ubuntu-desktop-24.04                    - Ubuntu 24.04 Desktop ................................2025-08-05 18:22:33
 item -- ubuntu-desktop-25.04                    - Ubuntu 25.04 Desktop ................................2025-04-15 18:47:56
 item -- ubuntu-desktop-25.10                    - Ubuntu 25.10 Desktop ................................2025-10-07 03:55:53
 item --gap --                                   [ Live media Live mode ]
 item -- live-debian-live-12-gnome               - Debian 12 Live gnome ................................2025-09-06 11:02:45
 item -- live-debian-live-13-gnome               - Debian 13 Live gnome ................................2025-11-15 10:36:56
-item -- live-debian-live-testing-gnome          - Debian testing Live gnome ...........................2025-12-15 09:20:02
+item -- live-debian-live-testing-gnome          - Debian testing Live gnome ...........................2025-12-22 02:33:09
 item -- live-ubuntu-desktop-24.04               - Ubuntu 24.04 Desktop ................................2025-08-05 18:22:33
 item -- live-ubuntu-desktop-25.04               - Ubuntu 25.04 Desktop ................................2025-04-15 18:47:56
 item -- live-ubuntu-desktop-25.10               - Ubuntu 25.10 Desktop ................................2025-10-07 03:55:53
