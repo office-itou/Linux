@@ -21,24 +21,13 @@ function fnMk_pxeboot_grub_linux() {
 	declare       __WORK=""
 	__WORK="$(fnMk_boot_options "pxeboot" "${@}")"
 	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
-	case "${2}" in
-#		mini    ) ;;
-#		netinst ) ;;
-#		dvd     ) ;;
-#		liveinst) ;;
-		live    ) __ENTR="live-";;		# original media live mode
-#		tool    ) ;;					# tools
-#		clive   ) ;;					# custom media live mode
-#		cnetinst) ;;					# custom media install mode
-#		system  ) ;;					# system command
-		*       ) __ENTR="";;			# original media install mode
-	esac
 	case "${4:-}" in
 		ubuntu*) __CIDR="";;
 		*      ) __CIDR="/${_IPV4_CIDR:-}";;
 	esac
+	__ENTR="$(printf "%-55.55s%19.19s" "- ${4//%20/ }  ${_TEXT_SPCE// /.}" "${15//%20/ }")"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
-		menuentry '${__ENTR:-}${4}' {
+		menuentry '${__ENTR:-}' {
 		  echo 'Loading ${5//%20/ } ...'
 		  set hostname=${_NWRK_HOST/:_DISTRO_:/${4%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
 		  set ethrname=${_NICS_NAME:-ens160}
@@ -61,5 +50,5 @@ function fnMk_pxeboot_grub_linux() {
 		  initrd \${knladdr}/${23#*/"${4}"/}
 		}
 _EOT_
-	unset __BOPT= __ENTR __CIDR __WORK
+	unset __ENTR __BOPT __ENTR __CIDR __WORK
 }

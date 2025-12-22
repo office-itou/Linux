@@ -262,7 +262,7 @@
 	declare -a    _LIST_MDIA=()								# media information
 	declare -a    _LIST_DSTP=()								# debstrap information
 															# media type
-	declare -a    _LIST_TYPE=("mini" "netinst" "dvd" "liveinst" "live" "tool" "clive" "cnetinst" "system")
+#	declare -a    _LIST_TYPE=("mini" "netinst" "dvd" "liveinst" "live" "tool" "clive" "cnetinst" "system")
 
 	# --- wget / curl options -------------------------------------------------
 	declare -r -a _OPTN_CURL=("--location" "--http1.1" "--no-progress-bar" "--remote-time" "--show-error" "--fail" "--retry-max-time" "3" "--retry" "3" "--connect-timeout" "60")
@@ -604,7 +604,7 @@ function fnGetWebinfo() {
 				switch (tolower(_line)) {
 					case /^http\/[0-9]+.[0-9]+/:
 						sub("[^ \t]+[ \t]+", "", _line)
-						sub("[^0-9]*$", "", _line)
+						sub("[^0-9]+$", "", _line)
 						_code=_line
 						break
 					case /^content-length:/:
@@ -1095,6 +1095,87 @@ function fnFile_backup() {
 	fnMsgout "backup" "[${__TGET_PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
 	cp --archive "${__TGET_PATH}" "${___BACK}"
 	unset ___REAL ___DIRS ___BACK
+}
+
+# -----------------------------------------------------------------------------
+# descript: wget / curl file download
+#   input :     $1     : target url
+#   input :     $2     : target path
+#   output:   stdout   : message
+#   return:            : unused
+function fnDownload() {
+	declare -r    __TGET_URLS="${1:?}"
+	declare -r    __TGET_PATH="${2:?}"
+	declare       __TEMP=""				# temporary file
+	              __TEMP="$(mktemp -q -p "${_DIRS_TEMP:-/tmp}" "${__TGET_PATH##*/}.XXXXXX")"
+	readonly      __TEMP
+	declare       __REAL=""
+	declare       __OWNR=""
+	declare       __PATH=""
+	declare       __DIRS=""
+	declare       __FNAM=""
+#	declare -a    __OPTN=()
+
+	printf "\033[mstart   : %s\033[m\n" "${__TGET_PATH##*/}"
+	__DIRS="$(fnDirname  "${__TEMP}")"
+	__FNAM="$(fnBasename "${__TEMP}")"
+	case "${_COMD_WGET:-}" in
+		curl)
+			if ! LANG=C curl "${_OPTN_CURL[@]}" --progress-bar --continue-at - --create-dirs --output-dir "${__DIRS}" --output "${__FNAM}" "${__TGET_URLS}" 2>&1; then
+				printf "\033[m\033[41mfailed  : %s [%s]\033[m\n" "curl" "${__TGET_URLS}"
+				return
+			fi
+			;;
+		*)
+			if ! LANG=C wget "${_OPTN_WGET[@]}" --continue --show-progress --progress=bar --output-document="${__TEMP}" "${__TGET_URLS}" 2>&1; then
+				printf "\033[m\033[41mfailed  : %s [%s]\033[m\n" "wget" "${__TGET_URLS}"
+				return
+			fi
+			;;
+	esac
+	if ! cp --preserve=timestamps "${__TEMP}" "${__TGET_PATH}"; then
+		printf "\033[m\033[41mfailed  : %s\033[m\n" "${__TGET_PATH}"
+		return
+	fi
+	__REAL="$(realpath "${__TGET_PATH}")"
+	if [[ -z "${__REAL%"${_DIRS_SAMB:-}"*}" ]]; then
+		__DIRS="$(fnDirname "${__TGET_PATH}")"
+		__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
+		chown "${__OWNR:-"${_SAMB_USER}"}" "${__TGET_PATH}"
+		chmod g+rw "${__TGET_PATH}"
+	fi
+	rm -rf "${__TEMP:?}"
+	printf "\033[m\033[92mcomplete: %s\033[m\n" "${__TGET_PATH##*/}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: rsync
+#   input :     $1     : target iso file
+#   input :     $2     : destination directory
+#   output:   stdout   : output
+#   return:            : unused
+function fnRsync() {
+	declare -r    __TGET_ISOS="${1:?}"	# target iso file
+	declare -r    __TGET_DEST="${2:?}"	# destination directory
+	declare       __TEMP=""				# temporary file
+	              __TEMP="$(mktemp -qd -p "${_DIRS_TEMP:-/tmp}" "${__TGET_ISOS##*/}.XXXXXX")"
+	readonly      __TEMP
+
+	case "${__TGET_ISOS}" in
+		*.iso) ;;
+		*    ) return;;
+	esac
+	if [[ ! -s "${__TGET_ISOS}" ]]; then
+		return
+	fi
+	printf "\033[mrsync   : %s\033[m\n" "${__TGET_ISOS##*/}"
+	rm -rf "${__TEMP:?}"
+	mkdir -p "${__TEMP}" "${__TGET_DEST}"
+	mount -o ro,loop "${__TGET_ISOS}" "${__TEMP}"
+	nice -n "${_NICE_VALU:-19}" rsync "${_OPTN_RSYC[@]}" "${__TEMP}/." "${__TGET_DEST}/" 2>/dev/null || true
+	umount "${__TEMP}"
+	chmod -R +r "${__TGET_DEST}/" 2>/dev/null || true
+	rm -rf "${__TEMP:?}"
 }
 
 # *** function section (subroutine functions) *********************************
@@ -2149,7 +2230,7 @@ function fnMk_pxeboot() {
 	fnMk_pxeboot_clear_menu "${_PATH_GRUB:?}"				# grub
 	fnMk_pxeboot_clear_menu "${_PATH_SLNX:?}"				# syslinux (bios)
 	fnMk_pxeboot_clear_menu "${_PATH_UEFI:?}"				# syslinux (efi64)
-	for __TYPE in "${_LIST_TYPE[@]}"
+	for __TYPE in "${__PTRN[@]}"
 	do
 		fnMk_print_list __LINE "${__TYPE}"
 		IFS= mapfile -d $'\n' -t __TGET < <(echo -n "${__LINE}")
@@ -2157,8 +2238,11 @@ function fnMk_pxeboot() {
 		do
 			read -r -a __MDIA < <(echo "${__TGET[I]}")
 			case "${__MDIA[2]}" in
-				m) ;;
-				*)
+				m)						# (menu)
+					[[ "${__MDIA[4]}" = "%20" ]] && __TABS=$((__TABS-1))
+					[[ "${__TABS}" -lt 0 ]] && __TABS=0
+					;;
+				o)						# (output)
 					case "${__MDIA[27]}" in
 						c) ;;
 						d)
@@ -2177,12 +2261,22 @@ function fnMk_pxeboot() {
 					# --- rsync -----------------------------------------------
 					fnRsync "${__MDIA[14]}" "${_DIRS_IMGS}/${__MDIA[3]}"
 					;;
+				*) ;;					# (hidden)
 			esac
 			# --- create menu file --------------------------------------------
 			fnMk_pxeboot_ipxe "${_PATH_IPXE:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# ipxe
 			fnMk_pxeboot_grub "${_PATH_GRUB:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# grub
-			fnMk_pxeboot_slnx "${_PATH_SLNX:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# syslinux (bios)
-			fnMk_pxeboot_slnx "${_PATH_UEFI:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# syslinux (efi64)
+#			fnMk_pxeboot_slnx "${_PATH_SLNX:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# syslinux (bios)
+#			fnMk_pxeboot_slnx "${_PATH_UEFI:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# syslinux (efi64)
+			# --- tab ---------------------------------------------------------
+			case "${__MDIA[2]}" in
+				m)						# (menu)
+					[[ "${__MDIA[4]}" != "%20" ]] && __TABS=$((__TABS+1))
+					[[ "${__TABS}" -lt 0 ]] && __TABS=0
+					;;
+				o) ;;					# (output)
+				*) ;;					# (hidden)
+			esac
 			# --- data registration -------------------------------------------
 			__MDIA=("${__MDIA[@]// /%20}")
 			J="${__MDIA[0]}"
@@ -2361,59 +2455,1237 @@ function fnSelect_target() {
 }
 
 # -----------------------------------------------------------------------------
-# descript: screen output
-#   input :     $@     : list
+# descript: print media list
+#   input :     $1     : type
 #   output:   stdout   : message
 #   return:            : unused
-function fnScreen_output() {
-	declare       __FMTG=""
-	declare       __FMTT=""
+function fnMk_print_list() {
+	declare -n    __REFR="${1:?}"		# name reference
+	declare -r    __TYPE="${2:?}"
 	declare -a    __LIST=()
-	__FMTG="%-$((_COLS_SIZE-2)).$((_COLS_SIZE-2))s"
-	if [[ "${_COLS_SIZE}" -le 100 ]]; then
-		__FMTT="%2.2s:%-42.42s:%-10.10s:%-10.10s:%-$((_COLS_SIZE-70)).$((_COLS_SIZE-70))s"
-	else
-		__FMTT="%2.2s:%-48.48s:%-10.10s:%-10.10s:%-$((_COLS_SIZE-76)).$((_COLS_SIZE-76))s"
+	declare       __FMTT=""
+	declare -a    __MDIA=()
+	declare       __RETN=""
+	declare -a    __ARRY=()
+	declare       __MESG=""
+	declare       __FILE=""
+	declare       __DIRS=""
+	declare       __SEED=""
+	declare       __BASE=""
+	declare       __EXTE=""
+	declare       __WORK=""
+	declare       __COLR=""
+	declare -i    I=0
+#	declare -i    J=0
+
+	IFS= mapfile -d $'\n' -t __LIST < <(\
+		printf "%s\n" "${_LIST_MDIA[@]}" | \
+		awk -v type="${__TYPE:?}" '$1==type && ($2=="m" || $2=="o") {print FNR-1, $0;}' \
+	)
+	__REFR="$(printf "%s\n" "${__LIST[@]:-}")"
+	if [[ "${#__LIST[@]}" -eq 0 ]]; then
+		return
 	fi
+	__FMTT="%2s:%-$((42+6*_COLS_SIZE/120))s:%-10s:%-10s:%-$((_COLS_SIZE-$((70+6*_COLS_SIZE/120))))s"
+	printf "\033[m%c%s\033[m%c\n" "#" "${_TEXT_GAP2:1:$((_COLS_SIZE-2))}" "#"
+	printf "\033[m%c${__FMTT}\033[m%c\n" "#" "ID" "Target file name" "ReleaseDay" "SupportEnd" "Memo" "#"
+	for I in "${!__LIST[@]}"
+	do
+		read -r -a __MDIA < <(echo "${__LIST[I]}")
+		__MDIA=("${__MDIA[@]//%20/ }")
+		case "${__MDIA[2]}" in
+			o) ;;
+			*) continue;;
+		esac
+		# --- web file ----------------------------------------------------
+		__RETN="- - - - -"
+		if [[ -n "$(fnTrim "${__MDIA[9]}" "-")" ]]; then
+			__RETN="$(fnGetWebinfo "${__MDIA[9]}" "${_COMD_WGET:-}")"
+		fi
+		read -r -a __ARRY < <(echo "${__RETN}")
+		__MDIA[10]="${__ARRY[0]:-}"	# web_path
+		__MDIA[11]="${__ARRY[1]:-}"	# web_tstamp
+		__MDIA[12]="${__ARRY[2]:-}"	# web_size
+		__MDIA[13]="${__ARRY[3]:-}"	# web_status
+		__MESG="$(fnTrim "${__ARRY[4]:-}" "-")"	# message
+		__MESG="${__MESG//%20/ }"
+		case "${__MDIA[13]}" in
+			2[0-9][0-9])
+				__MESG=""
+				__FILE="$(fnBasename "${__MDIA[10]}")"
+				if [[ -n "${__FILE:-}" ]]; then
+					case "${__FILE}" in
+						mini.iso) ;;
+						*       )
+							__DIRS="$(fnDirname "${__MDIA[14]}")"
+							__MDIA[14]="${__DIRS:-}/${__FILE}"	# iso_path
+							;;
+					esac
+				fi
+				;;
+			*) ;;
+		esac
+		# --- iso file ----------------------------------------------------
+		__RETN="- - - -"
+		if [[ -n "$(fnTrim "${__MDIA[14]}" "-")" ]]; then
+			__RETN="$(fnGetFileinfo "${__MDIA[14]}")"
+		fi
+		read -r -a __ARRY < <(echo "${__RETN}")
+		__MDIA[15]="${__ARRY[1]:-}"	# iso_tstamp
+		__MDIA[16]="${__ARRY[2]:-}"	# iso_size
+		__MDIA[17]="${__ARRY[3]:-}"	# iso_volume
+		# --- conf file ---------------------------------------------------
+		__RETN="- - - -"
+		if [[ -n "$(fnTrim "${__MDIA[24]}" "-")" ]]; then
+			__RETN="$(fnGetFileinfo "${__MDIA[24]}")"
+		fi
+		read -r -a __ARRY < <(echo "${__RETN}")
+		__MDIA[25]="${__ARRY[1]:-}"	# rmk_tstamp
+		# --- rmk file ----------------------------------------------------
+		if [[ -n "$(fnTrim "${__MDIA[14]}" "-")" ]] \
+		&& [[ -n "$(fnTrim "${__MDIA[18]}" "-")" ]] \
+		&& [[ -n "$(fnTrim "${__MDIA[24]}" "-")" ]]; then
+			__SEED="${__MDIA[24]%/*}"
+			__SEED="${__SEED##*/}"
+			__FILE="${__MDIA[24]#*"${__SEED:+"${__SEED}/"}"}"
+			if [[ -n "$(fnTrim "${__FILE}" "-")" ]]; then
+				__DIRS="$(fnDirname "${__MDIA[18]}")"
+				__BASE="$(fnBasename "${__MDIA[14]}")"
+				__FILE="${__BASE%.*}"
+				__EXTE="${__BASE#"${__FILE:+"${__FILE}."}"}"
+				__MDIA[18]="${__DIRS:-}/${__FILE}${__SEED:+"_${__SEED}"}${__EXTE:+".${__EXTE}"}"
+			fi
+		fi
+		__RETN="- - - -"
+		if [[ -n "$(fnTrim "${__MDIA[18]}" "-")" ]]; then
+			__RETN="$(fnGetFileinfo "${__MDIA[18]}")"
+		fi
+		read -r -a __ARRY < <(echo "${__RETN}")
+		__MDIA[19]="${__ARRY[1]:-}"	# rmk_tstamp
+		__MDIA[20]="${__ARRY[2]:-}"	# rmk_size
+		__MDIA[21]="${__ARRY[3]:-}"	# rmk_volume
+		# --- decision on next process ------------------------------------
+		# download: light blue
+		# create  : green
+		# error   : red
+		__MDIA[27]="-"				# create_flag
+		if [[ -n "$(fnTrim "${__MDIA[10]}" "-")" ]] \
+		&& [[ -n "$(fnTrim "${__MDIA[14]}" "-")" ]]; then
+			case "${__MDIA[13]}" in
+				2[0-9][0-9])
+					if [[ ! -e "${__MDIA[14]}" ]]; then
+						__MDIA[27]="d"	# create_flag (download: original file not found)
+					elif [[ "${__MDIA[11]:-}" != "${__MDIA[15]:-}" ]] \
+					||   [[ "${__MDIA[12]:-}" != "${__MDIA[16]:-}" ]]; then
+						__MDIA[27]="d"	# create_flag (download: timestamp or size differs)
+					elif [[ -n "$(fnTrim "${__MDIA[24]}" "-")" ]] \
+					&&   [[ -n "$(fnTrim "${__MDIA[18]}" "-")" ]]; then
+						if   [[ ! -e "${__MDIA[18]}" ]]; then
+							__MDIA[27]="c"	# create_flag (create: remake file not found)
+						elif [[ "${__MDIA[15]:-}" -gt "${__MDIA[19]:-}" ]] \
+						||   [[ "${__MDIA[25]:-}" -gt "${__MDIA[19]:-}" ]]; then
+							__MDIA[27]="c"	# create_flag (create: remake file is out of date)
+						else
+							__WORK="$(find -L "${_DIRS_SHEL:?}" -newer "${__MDIA[18]}" -name 'auto*sh')"
+							if [[ -n "${__WORK:-}" ]]; then
+								__MDIA[27]="c"	# create_flag (create: remake file is out of date)
+							fi
+						fi
+					fi
+					;;
+				*) __MDIA[27]="e";;	# create_flag (error: communication failure)
+			esac
+		fi
+		case "${__MDIA[27]:-}" in
+			d) __COLR="96";;	# download
+			c) __COLR="92";;	# create
+			e) __COLR="91";;	# error
+			*) __COLR="";;
+		esac
+		__BASE="$(fnBasename "${__MDIA[14]}")"
+		__SEED="$(fnBasename "${__MDIA[24]}")"
+		__RDAT="$(fnTrim "${__MDIA[7]%%%20*}" "-")"
+		__SUPE="$(fnTrim "${__MDIA[8]%%%20*}" "-")"
+		__MESG="$(fnTrim "${__MESG:-"${__SEED}"}" "-")"
+		[[ -n "$(fnTrim "${__MDIA[15]}" "-")" ]] && __RDAT="$(fnTrim "${__MDIA[15]%%%20*}" "-")"	# iso_tstamp
+		[[ -n "$(fnTrim "${__MDIA[11]}" "-")" ]] && __RDAT="$(fnTrim "${__MDIA[11]%%%20*}" "-")"	# web_tstamp
+		printf "\033[m%c\033[%sm${__FMTT}\033[m%c\n" "#" "${__COLR:-}" "${I}" "${__BASE}" "${__RDAT:-"20xx-xx-xx"}" "${__SUPE:-"20xx-xx-xx"}" "${__MESG:-}" "#"
+		# --- data registration -------------------------------------------
+		__MDIA=("${__MDIA[@]// /%20}")
+		__LIST[I]="${__MDIA[*]}"
+#		J="${__MDIA[0]}"
+#		_LIST_MDIA[J]="$(
+#			printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-11s \n" \
+#			"${__MDIA[@]:1}"
+#		)"
+	done
+	printf "\033[m%c%s\033[m%c\n" "#" "${_TEXT_GAP2:1:$((_COLS_SIZE-2))}" "#"
+	__REFR="$(printf "%s\n" "${__LIST[@]:-}")"
+
+	unset __LIST __FMTT __MDIA __RETN __ARRY __MESG __FILE __DIRS __SEED __BASE __EXTE __WORK __COLR I J
+}
+
+# -----------------------------------------------------------------------------
+# descript: make boot options for preseed
+#   input :     $1     : target type (remake or pxeboot)
+#   input :   $2..$@   : media info data
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_boot_option_preseed() {
+	declare -r    __TGET_TYPE="${1:?}"
+	shift
+	declare -a    __BOPT=()
+	declare       __WORK=""
+	# --- 0: server -----------------------------------------------------------
+	__BOPT=("server=\${srvraddr}")
+	# --- 1: autoinst ---------------------------------------------------------
+	__WORK=""
+	if [[ -n "${25##*-}" ]]; then
+		__WORK="${__WORK:+"${__WORK} "}auto=true preseed/file=/cdrom${25#"${_DIRS_CONF%/*}"}"
+		[[ "${__TGET_TYPE:-}" = "pxeboot" ]] && __WORK="${__WORK/file=\/cdrom/url=\$\{srvraddr\}}"
+		case "${4}" in
+			ubuntu-desktop-*|ubuntu-legacy-*) __WORK="${__WORK:+"${__WORK} "}automatic-ubiquity noprompt ${__WORK}";;
+			*-mini-*                        ) __WORK="${__WORK/\/cdrom/}";;
+			*                               ) ;;
+		esac
+	fi
+	case "${2}" in
+		live) __WORK="boot=live";;
+		*) ;;
+	esac
+	__BOPT+=("${__WORK:-}")
+	# --- 2: language ---------------------------------------------------------
+	__WORK=""
+	case "${4}" in
+		live-debian-*   |live-ubuntu-*  ) __WORK="${__WORK:+"${__WORK} "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp,us keyboard-model=pc105 keyboard-variants=,";;
+		debian-live-*                   ) __WORK="${__WORK:+"${__WORK} "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A";;
+		ubuntu-desktop-*|ubuntu-legacy-*) __WORK="${__WORK:+"${__WORK} "}debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
+		*                               ) __WORK="${__WORK:+"${__WORK} "}language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese";;
+	esac
+	__BOPT+=("${__WORK:-}")
+	# --- 3: network ----------------------------------------------------------
+	__WORK=""
+	if [[ -n "${25##*-}" ]]; then
+		case "${4}" in
+			ubuntu-*) __WORK="${__WORK:+"${__WORK} "}netcfg/target_network_config=NetworkManager";;
+			*       ) ;;
+		esac
+		__WORK="${__WORK:+"${__WORK} "}netcfg/disable_autoconfig=true"
+		__WORK="${__WORK:+"${__WORK} "}netcfg/choose_interface=\${ethrname}"
+		__WORK="${__WORK:+"${__WORK} "}netcfg/get_hostname=\${hostname}"
+		__WORK="${__WORK:+"${__WORK} "}netcfg/get_ipaddress=\${ipv4addr}"
+		__WORK="${__WORK:+"${__WORK} "}netcfg/get_netmask=\${ipv4mask}"
+		__WORK="${__WORK:+"${__WORK} "}netcfg/get_gateway=\${ipv4gway}"
+		__WORK="${__WORK:+"${__WORK} "}netcfg/get_nameservers=\${ipv4nsvr}"
+	fi
+	case "${2}" in
+		live) __WORK="dhcp";;
+		*   ) __WORK="${__WORK:-"dhcp"}";;
+	esac
+	__BOPT+=("${__WORK:-}")
+	# --- 4: otheropt ---------------------------------------------------------
+	__WORK=""
+	__WORK="${__WORK:+"${__WORK} "}root=/dev/ram0"
+	if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
+		case "${4}" in
+#			debian-mini-*                       ) ;;
+			ubuntu-mini-*                       ) __WORK="${__WORK:+"${__WORK} "}initrd=\${srvraddr}/${_DIRS_IMGS##*/}/${23#"${_DIRS_LOAD}"} iso-url=\${srvraddr}/${_DIRS_ISOS##*/}${15#"${_DIRS_ISOS}"}";;
+			ubuntu-desktop-18.*|ubuntu-live-18.*| \
+			ubuntu-desktop-20.*|ubuntu-live-20.*| \
+			ubuntu-desktop-22.*|ubuntu-live-22.*| \
+			ubuntu-server-*    |ubuntu-legacy-* ) __WORK="${__WORK:+"${__WORK} "}boot=casper url=\${srvraddr}/${_DIRS_ISOS##*/}${15#"${_DIRS_ISOS}"}";;
+			ubuntu-*                            ) __WORK="${__WORK:+"${__WORK} "}boot=casper iso-url=\${srvraddr}/${_DIRS_ISOS##*/}${15#"${_DIRS_ISOS}"}";;
+			live-*                              ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvraddr}/${_DIRS_RMAK##*/}/${15##*/}";;
+			*                                   ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvraddr}/${_DIRS_ISOS##*/}${15#"${_DIRS_ISOS}"}";;
+		esac
+	fi
+	__BOPT+=("${__WORK}")
+	# --- output --------------------------------------------------------------
+	printf "%s\n" "${__BOPT[@]}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: make boot options for nocloud
+#   input :     $1     : target type (remake or pxeboot)
+#   input :   $2..$@   : media info data
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_boot_option_nocloud() {
+	declare -r    __TGET_TYPE="${1:?}"
+	shift
+	declare -a    __BOPT=()
+	declare       __WORK=""
+	# --- 0: server -----------------------------------------------------------
+	__BOPT=("server=\${srvraddr}")
+	# --- 1: autoinst ---------------------------------------------------------
+	__WORK=""
+	if [[ -n "${25##*-}" ]]; then
+		__WORK="${__WORK:+"${__WORK} "}automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom${25#"${_DIRS_CONF%/*}"}"
+		[[ "${__TGET_TYPE:-}" = "pxeboot" ]] && __WORK="${__WORK/\/cdrom/url=\$\{srvraddr\}}"
+	fi
+	case "${2}" in
+		live) __WORK="boot=live";;
+		*) ;;
+	esac
+	__BOPT+=("${__WORK}")
+	# --- 2: language ---------------------------------------------------------
+	__WORK=""
+	case "${4}" in
+		live-debian-*   |live-ubuntu-*  ) __WORK="${__WORK:+"${__WORK} "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp,us keyboard-model=pc105 keyboard-variants=,";;
+		debian-live-*                   ) __WORK="${__WORK:+"${__WORK} "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A";;
+		ubuntu-desktop-*|ubuntu-legacy-*) __WORK="${__WORK:+"${__WORK} "}debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
+		*                               ) __WORK="${__WORK:+"${__WORK} "}language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese";;
+	esac
+	__BOPT+=("${__WORK}")
+	# --- 3: network ----------------------------------------------------------
+	__WORK=""
+	if [[ -n "${25##*-}" ]]; then
+		case "${4}" in
+			ubuntu-live-18.04   ) __WORK="${__WORK:+"${__WORK} "}ip=\${ethrname},\${ipv4addr},\${ipv4mask},\${ipv4gway} hostname=\${hostname}";;
+			*                   ) __WORK="${__WORK:+"${__WORK} "}ip=\${ipv4addr}::\${ipv4gway}:\${ipv4mask}::\${ethrname}:${_IPV4_ADDR:+static}:\${ipv4nsvr} hostname=\${hostname}";;
+		esac
+	fi
+	case "${2}" in
+		live) __WORK="ip=dhcp";;
+		*   ) __WORK="${__WORK:-"ip=dhcp"}";;
+	esac
+	__BOPT+=("${__WORK}")
+	# --- 4: otheropt ---------------------------------------------------------
+	__WORK=""
+	__WORK="${__WORK:+"${__WORK} "}root=/dev/ram0"
+	if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
+		case "${4}" in
+#			debian-mini-*                       ) ;;
+			ubuntu-mini-*                       ) __WORK="${__WORK:+"${__WORK} "}initrd=\${srvraddr}/${_DIRS_IMGS##*/}/${23#"${_DIRS_LOAD}"} iso-url=\${srvraddr}/${_DIRS_ISOS##*/}${15#"${_DIRS_ISOS}"}";;
+			ubuntu-desktop-18.*|ubuntu-live-18.*| \
+			ubuntu-desktop-20.*|ubuntu-live-20.*| \
+			ubuntu-desktop-22.*|ubuntu-live-22.*| \
+			ubuntu-server-*    |ubuntu-legacy-* ) __WORK="${__WORK:+"${__WORK} "}boot=casper url=\${srvraddr}/${_DIRS_ISOS##*/}${15#"${_DIRS_ISOS}"}";;
+			ubuntu-*                            ) __WORK="${__WORK:+"${__WORK} "}boot=casper iso-url=\${srvraddr}/${_DIRS_ISOS##*/}${15#"${_DIRS_ISOS}"}";;
+			live-*                              ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvraddr}/${_DIRS_RMAK##*/}/${15##*/}";;
+			*                                   ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvraddr}/${_DIRS_ISOS##*/}${15#"${_DIRS_ISOS}"}";;
+		esac
+	fi
+	__BOPT+=("${__WORK}")
+	# --- output --------------------------------------------------------------
+	printf "%s\n" "${__BOPT[@]}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: make boot options for kickstart
+#   input :     $1     : target type (remake or pxeboot)
+#   input :   $2..$@   : media info data
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_boot_option_kickstart() {
+	declare -r    __TGET_TYPE="${1:?}"
+	shift
+	declare -a    __BOPT=()
+	declare       __WORK=""
+	# --- 0: server -----------------------------------------------------------
+	__BOPT=("server=\${srvraddr}")
+	# --- 1: autoinst ---------------------------------------------------------
+	__WORK=""
+	if [[ -n "${25##*-}" ]]; then
+		__WORK="${__WORK:+"${__WORK} "}inst.ks=hd:sr0:${25#"${_DIRS_CONF%/*}"}"
+		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
+			__WORK="${__WORK/hd:sr0:/\${srvraddr}}"
+			__WORK="${__WORK/_dvd/_web}"
+		fi
+	fi
+	__BOPT+=("${__WORK}")
+	# --- 2: language ---------------------------------------------------------
+	__WORK=""
+	__WORK="${__WORK:+"${__WORK} "}locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	__WORK="${__WORK:+"${__WORK} "}language=ja_JP"
+	__BOPT+=("${__WORK}")
+	# --- 3: network ----------------------------------------------------------
+	__WORK=""
+	if [[ -n "${25##*-}" ]]; then
+		__WORK="${__WORK:+"${__WORK} "}ip=\${ipv4addr}::\${ipv4gway}:\${ipv4mask}:\${hostname}:\${ethrname}:none,auto6 nameserver=\${ipv4nsvr}"
+	fi
+	case "${2}" in
+		live) __WORK="dhcp";;
+		*   ) __WORK="${__WORK:-"dhcp"}";;
+	esac
+	__BOPT+=("${__WORK}")
+	# --- 4: otheropt ---------------------------------------------------------
+	__WORK=""
+	if [[ -n "${25##*-}" ]]; then
+		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
+			__WORK="${__WORK:+"${__WORK} "}inst.repo=\${srvraddr}/${_DIRS_IMGS##*/}/${4}"
+		else
+			__WORK="${__WORK:+"${__WORK} "}inst.stage2=hd:LABEL=${18}"
+		fi
+	else
+		case "${2}" in
+			clive) __WORK="${__WORK:+"${__WORK} "}root=live:\${srvraddr}/${_DIRS_RMAK##*/}/${15##*/}";;
+			*    ) __WORK="${__WORK:+"${__WORK} "}root=live:\${srvraddr}/${_DIRS_ISOS##*/}${15#"${_DIRS_ISOS}"}";;
+		esac
+	fi
+	__BOPT+=("${__WORK}")
+	# --- output --------------------------------------------------------------
+	printf "%s\n" "${__BOPT[@]}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: make boot options for autoyast
+#   input :     $1     : target type (remake or pxeboot)
+#   input :   $2..$@   : media info data
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_boot_option_autoyast() {
+	declare -r    __TGET_TYPE="${1:?}"
+	shift
+	declare -a    __BOPT=()
+	declare       __WORK=""
+	# --- 0: server -----------------------------------------------------------
+	__BOPT=("server=\${srvraddr}")
+	# --- 1: autoinst ---------------------------------------------------------
+	__WORK=""
+	if [[ -n "${25##*-}" ]]; then
+		__WORK="${__WORK:+"${__WORK} "}autoyast=cd:${25#"${_DIRS_CONF%/*}"}"
+		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
+			__WORK="${__WORK/cd:/\${srvraddr}}"
+			__WORK="${__WORK/_dvd/_web}"
+		fi
+	fi
+	__BOPT+=("${__WORK}")
+	# --- 2: language ---------------------------------------------------------
+	__WORK=""
+	__WORK="${__WORK:+"${__WORK} "}language=ja_JP"
+	__BOPT+=("${__WORK}")
+	# --- 3: network ----------------------------------------------------------
+	__WORK=""
+	if [[ -n "${25##*-}" ]]; then
+		__WORK="${__WORK:+"${__WORK} "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr}/${_IPV4_CIDR:-},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
+		case "${4}" in
+			opensuse-*-15*) __WORK="${__WORK//"${_NICS_NAME:-ens160}"/"eth0"}";;
+			*             ) ;;
+		esac
+	fi
+	case "${2}" in
+		live) __WORK="dhcp";;
+		*   ) __WORK="${__WORK:-"dhcp"}";;
+	esac
+	__BOPT+=("${__WORK}")
+	# --- 4: otheropt ---------------------------------------------------------
+	__WORK=""
+	if [[ -n "${25##*-}" ]]; then
+		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
+			case "${4}" in
+				opensuse-leap*netinst*      ) __WORK="${__WORK:+"${__WORK} "}install=https://download.opensuse.org/distribution/leap/${4##*[^0-9]}/repo/oss/";;
+				opensuse-tumbleweed*netinst*) __WORK="${__WORK:+"${__WORK} "}install=https://download.opensuse.org/tumbleweed/repo/oss/";;
+				*                           ) __WORK="${__WORK:+"${__WORK} "}install=\${srvraddr}/${_DIRS_IMGS##*/}/${4##*[^0-9]}";;
+			esac
+		fi
+	fi
+	__BOPT+=("${__WORK}")
+	# --- output --------------------------------------------------------------
+	printf "%s\n" "${__BOPT[@]}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: make boot options for agama
+#   input :     $1     : target type (remake or pxeboot)
+#   input :   $2..$@   : media info data
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_boot_option_agama() {
+	declare -r    __TGET_TYPE="${1:?}"
+	shift
+	declare -a    __BOPT=()
+	declare       __WORK=""
+	# --- 0: server -----------------------------------------------------------
+	__BOPT=("server=\${srvraddr}")
+	# --- 1: autoinst ---------------------------------------------------------
+	__WORK=""
+	if [[ -n "${25##*-}" ]]; then
+		__WORK="${__WORK:+"${__WORK} "}live.password=install inst.auto=dvd:${25#"${_DIRS_CONF%/*}"}"
+		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
+			__WORK="${__WORK/dvd:/\${srvraddr}}"
+			__WORK="${__WORK/_dvd/_web}"
+		else
+			__WORK="${__WORK:+"${__WORK}?devices=sr0"}"
+		fi
+	fi
+	__BOPT+=("${__WORK}")
+	# --- 2: language ---------------------------------------------------------
+	__WORK=""
+	__WORK="${__WORK:+"${__WORK} "}language=ja_JP"
+	__BOPT+=("${__WORK}")
+	# --- 3: network ----------------------------------------------------------
+	__WORK=""
+	if [[ -n "${25##*-}" ]]; then
+		__WORK="${__WORK:+"${__WORK} "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr}/${_IPV4_CIDR:-},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
+		case "${4}" in
+			opensuse-*-15*) __WORK="${__WORK//"${_NICS_NAME:-ens160}"/"eth0"}";;
+			*             ) ;;
+		esac
+	fi
+	case "${2}" in
+		live) __WORK="dhcp";;
+		*   ) __WORK="${__WORK:-"dhcp"}";;
+	esac
+	__BOPT+=("${__WORK}")
+	# --- 4: otheropt ---------------------------------------------------------
+	__WORK=""
+	if [[ -n "${25##*-}" ]]; then
+		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
+			case "${4}" in
+				opensuse-leap*netinst*      ) __WORK="${__WORK:+"${__WORK} "}install=https://download.opensuse.org/distribution/leap/${4##*[^0-9]}/repo/oss/";;
+				opensuse-tumbleweed*netinst*) __WORK="${__WORK:+"${__WORK} "}install=https://download.opensuse.org/tumbleweed/repo/oss/";;
+				*                           ) __WORK="${__WORK:+"${__WORK} "}install=\${srvraddr}/${_DIRS_IMGS##*/}/${4##*[^0-9]}";;
+			esac
+		fi
+	fi
+	__BOPT+=("${__WORK}")
+	# --- output --------------------------------------------------------------
+	printf "%s\n" "${__BOPT[@]}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: make boot options
+#   input :     $1     : target type (remake or pxeboot)
+#   input :   $2..$@   : media info data
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_boot_options() {
+	declare -r    __TGET_TYPE="${1:?}"
+	shift
+	case "${4}" in
+		debian-*|live-debian-*| \
+		ubuntu-*|live-ubuntu-*)
+			case "${25}" in
+				*/preseed/*) fnMk_boot_option_preseed "${__TGET_TYPE}" "${@}";;
+				*/nocloud/*) fnMk_boot_option_nocloud "${__TGET_TYPE}" "${@}";;
+				*          ) ;;
+			esac
+			;;
+		fedora-*      |live-fedora-*      | \
+		centos-*      |live-centos-*      | \
+		almalinux-*   |live-almalinux-*   | \
+		rockylinux-*  |live-rockylinux-*  | \
+		miraclelinux-*|live-miraclelinux-*)
+			case "${25}" in
+				*/kickstart/*) fnMk_boot_option_kickstart "${__TGET_TYPE}" "${@}";;
+				*            ) ;;
+			esac
+			;;
+		opensuse-*|live-opensuse-*)
+			case "${25}" in
+				*/autoyast/*) fnMk_boot_option_autoyast "${__TGET_TYPE}" "${@}";;
+				*/agama/*   ) fnMk_boot_option_agama    "${__TGET_TYPE}" "${@}";;
+				*           ) ;;
+			esac
+			;;
+		* ) ;;
+	esac
+}
+
+# -----------------------------------------------------------------------------
+# descript: clear pxeboot menu
+#   input :     $@     : file name
+#   output:   stdout   : message
+#   return:            : unused
+function fnMk_pxeboot_clear_menu() {
+	declare       __DIRS=""
+	__DIRS="$(fnDirname "${1:?}")"
+	if [[ -z "${__DIRS:-}" ]]; then
+		fnMsgout "${_PROG_NAME:-}" "failed" "invalid value: [${1:-}]"
+		return
+	fi
+	mkdir -p "${__DIRS:?}"
+	: > "${1:?}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: make header and footer for ipxe menu in pxeboot
+#   input :            : unused
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_pxeboot_ipxe_hdrftr() {
+	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+		#!ipxe
+
+		cpuid --ext 29 && set arch amd64 || set arch x86
+
+		dhcp
+
+		set optn-timeout 1000
+		set menu-timeout 0
+		isset ${menu-default} || set menu-default exit
+
+		:start
+
+		:menu
+		menu Select the OS type you want to boot
+		item --gap --                                   --------------------------------------------------------------------------
+		item --gap --                                   [ System command ]
+		item -- shell                                   - iPXE shell
+		#item -- shutdown                               - System shutdown
+		item -- restart                                 - System reboot
+		item --gap --                                   --------------------------------------------------------------------------
+		choose --timeout ${menu-timeout} --default ${menu-default} selected || goto menu
+		goto ${selected}
+
+		:shell
+		echo "Booting iPXE shell ..."
+		shell
+		goto start
+
+		:shutdown
+		echo "System shutting down ..."
+		poweroff
+		exit
+
+		:restart
+		echo "System rebooting ..."
+		reboot
+		exit
+
+		:error
+		prompt Press any key to continue
+		exit
+
+		:exit
+		exit
+_EOT_
+}
+
+# -----------------------------------------------------------------------------
+# descript: make Windows section for ipxe menu
+#   input :     $@     : media info data
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_pxeboot_ipxe_windows() {
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+		:${4}
+		echo Loading ${5//%20/ } ...
+		set srvraddr ${_SRVR_PROT:?}://${_SRVR_ADDR:?}
+		set ipxaddr \${srvraddr}/${_DIRS_TFTP##*/}/ipxe
+		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${4}
+		set cfgaddr \${srvraddr}/${_DIRS_CONF##*/}/windows
+		echo Loading boot files ...
+		kernel \${ipxaddr}/wimboot
+		initrd -n install.cmd \${cfgaddr}/inst_w${4##*-}.cmd  install.cmd  || goto error
+		initrd \${cfgaddr}/unattend.xml                 unattend.xml || goto error
+		initrd \${cfgaddr}/shutdown.cmd                 shutdown.cmd || goto error
+		initrd \${cfgaddr}/winpeshl.ini                 winpeshl.ini || goto error
+		initrd \${knladdr}/bootmgr                      bootmgr      || goto error
+		initrd \${knladdr}/boot/bcd                     BCD          || goto error
+		initrd \${knladdr}/boot/boot.sdi                boot.sdi     || goto error
+		initrd \${knladdr}/sources/boot.wim             boot.wim     || goto error
+		boot || goto error
+		exit
+_EOT_
+}
+
+# -----------------------------------------------------------------------------
+# descript: make WinPE section for ipxe menu
+#   input :     $@     : media info data
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_pxeboot_ipxe_winpe() {
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+		:${4}
+		echo Loading ${5//%20/ } ...
+		set srvraddr ${_SRVR_PROT:?}://${_SRVR_ADDR:?}
+		set ipxaddr \${srvraddr}/${_DIRS_TFTP##*/}/ipxe
+		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${4}
+		set cfgaddr \${srvraddr}/${_DIRS_CONF##*/}/windows
+		echo Loading boot files ...
+		kernel \${ipxaddr}/wimboot
+		initrd \${knladdr}/bootmgr                      bootmgr      || goto error
+		initrd \${knladdr}/Boot/BCD                     BCD          || goto error
+		initrd \${knladdr}/Boot/boot.sdi                boot.sdi     || goto error
+		initrd \${knladdr}/sources/boot.wim             boot.wim     || goto error
+		boot || goto error
+		exit
+_EOT_
+}
+
+# -----------------------------------------------------------------------------
+# descript: make aomei backup section for ipxe menu
+#   input :     $@     : media info data
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_pxeboot_ipxe_aomei() {
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+		:${4}
+		echo Loading ${5//%20/ } ...
+		set srvraddr ${_SRVR_PROT:?}://${_SRVR_ADDR:?}
+		set ipxaddr \${srvraddr}/${_DIRS_TFTP##*/}/ipxe
+		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${4}
+		set cfgaddr \${srvraddr}/${_DIRS_CONF##*/}/windows
+		echo Loading boot files ...
+		kernel \${ipxaddr}/wimboot
+		initrd \${knladdr}/bootmgr                      bootmgr      || goto error
+		initrd \${knladdr}/boot/bcd                     BCD          || goto error
+		initrd \${knladdr}/boot/boot.sdi                boot.sdi     || goto error
+		initrd \${knladdr}/sources/boot.wim             boot.wim     || goto error
+		boot || goto error
+		exit
+_EOT_
+}
+
+# -----------------------------------------------------------------------------
+# descript: make memtest86+ section for ipxe menu
+#   input :     $@     : media info data
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_pxeboot_ipxe_m86p() {
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+		:${4}
+		echo Loading ${5//%20/ } ...
+		set srvraddr ${_SRVR_PROT:?}://${_SRVR_ADDR:?}
+		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${4}
+		iseq \${platform} efi && set knlfile \${knladdr}/${23#*/"${4}"/} || set knlfile \${knladdr}/${24#*/"${4}"/}
+		echo Loading boot files ...
+		kernel \${knlfile} || goto error
+		boot || goto error
+		exit
+_EOT_
+}
+
+# -----------------------------------------------------------------------------
+# descript: make linux section for ipxe menu
+#   input :     $@     : media info data
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_pxeboot_ipxe_linux() {
+	declare -a    __BOPT=()
+	declare       __ENTR=""
+	declare       __CIDR=""
+	declare       __WORK=""
+	__WORK="$(fnMk_boot_options "pxeboot" "${@}")"
+	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
+	case "${2}" in
+#		mini    ) ;;
+#		netinst ) ;;
+#		dvd     ) ;;
+#		liveinst) ;;
+		live    ) __ENTR="live-";;		# original media live mode
+#		tool    ) ;;					# tools
+#		clive   ) ;;					# custom media live mode
+#		cnetinst) ;;					# custom media install mode
+#		system  ) ;;					# system command
+		*       ) __ENTR="";;			# original media install mode
+	esac
+	case "${4:-}" in
+		ubuntu*) __CIDR="";;
+		*      ) __CIDR="/${_IPV4_CIDR:-}";;
+	esac
+	if [[ -z "${__ENTR:-}" ]]; then
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+			:${4}
+			prompt --key e --timeout \${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
+			set hostname ${_NWRK_HOST/:_DISTRO_:/${4%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
+			set ethrname ${_NICS_NAME:-ens160}
+			set ipv4addr ${_IPV4_ADDR:-}${__CIDR:-}
+			set ipv4mask ${_IPV4_MASK:-}
+			set ipv4gway ${_IPV4_GWAY:-}
+			set ipv4nsvr ${_IPV4_NSVR:-}
+			form                                    Configure Network Options
+			item hostname                           Hostname
+			item ethrname                           Interface
+			item ipv4addr                           IPv4 address/netmask
+			item ipv4gway                           IPv4 gateway
+			item ipv4nsvr                           IPv4 nameservers
+			isset \${openmenu} && present ||
+			set srvraddr ${_SRVR_PROT:?}://\${66}
+			set autoinst ${__BOPT[0]:-} ${__BOPT[1]:-}
+			set language ${__BOPT[2]:-}
+			set networks ${__BOPT[3]:-}
+			set otheropt ${__BOPT[@]:4}
+			form                                    Configure Autoinstall Options
+			item autoinst                           Auto install
+			item language                           Language
+			item networks                           Network
+			item otheropt                           Other options
+			isset \${openmenu} && present ||
+			echo Loading ${5//%20/ } ...
+			set srvraddr ${_SRVR_PROT:?}://\${66}
+			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${4}
+			set options \${autoinst} \${language} \${networks} \${otheropt}
+			echo Loading boot files ...
+			kernel \${knladdr}/${24#*/"${4}"/} \${options} --- quiet || goto error
+			initrd \${knladdr}/${23#*/"${4}"/} || goto error
+			boot || goto error
+			exit
+_EOT_
+	else
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+			:${__ENTR:-}${4}
+			set hostname ${_NWRK_HOST/:_DISTRO_:/${4%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
+			set ethrname ${_NICS_NAME:-ens160}
+			set ipv4addr ${_IPV4_ADDR:-}/${_IPV4_CIDR:-}
+			set ipv4gway ${_IPV4_GWAY:-}
+			set ipv4nsvr ${_IPV4_NSVR:-}
+			set srvraddr ${_SRVR_PROT:?}://\${66}
+			set autoinst ${__BOPT[0]:-} ${__BOPT[1]:-}
+			set language ${__BOPT[2]:-}
+			set networks ${__BOPT[3]:-}
+			set otheropt ${__BOPT[@]:4}
+			echo Loading ${5//%20/ } ...
+			set srvraddr ${_SRVR_PROT:?}://\${66}
+			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${4}
+			set options \${autoinst} \${language} \${networks} \${otheropt}
+			echo Loading boot files ...
+			kernel \${knladdr}/${24#*/"${4}"/} \${options} --- quiet || goto error
+			initrd \${knladdr}/${23#*/"${4}"/} || goto error
+			boot || goto error
+			exit
+_EOT_
+	fi
+	unset __BOPT= __ENTR __CIDR __WORK
+}
+
+# -----------------------------------------------------------------------------
+# descript: make make ipxe menu
+#   input :     $1     : file name
+#   input :     $2     : tab count
+#   input :   $3..$@   : media info data
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_pxeboot_ipxe() {
+	declare -r    __TGET_PATH="${1:?}"
+	declare -r    __CONT_TABS="${2:?}"
+	declare -r -a __LIST_MDIA=("${@:3}")
+	declare       __ENTR=""
+	declare       __WORK=""
+	[[ ! -s "${__TGET_PATH}" ]] && fnMk_pxeboot_ipxe_hdrftr > "${__TGET_PATH}"
+	case "${__LIST_MDIA[2]}" in
+		m)								# (menu)
+			[[ "${__LIST_MDIA[4]:-}" = "%20" ]] && return
+			__WORK="$(printf "%-48.48s[ %s ]" "item --gap --" "${__LIST_MDIA[4]//%20/ }")"
+			sed -i "${__TGET_PATH}" -e "/\[ System command \]/i \\${__WORK}"
+			;;
+		o)								# (output)
+			if [[ ! -e "${_DIRS_IMGS}/${__LIST_MDIA[3]}"/. ]] \
+			|| [[ ! -s "${__LIST_MDIA[14]}" ]]; then
+				return
+			fi
+			case "${__LIST_MDIA[1]}" in
+#				mini    ) ;;
+#				netinst ) ;;
+#				dvd     ) ;;
+#				liveinst) ;;
+				live    ) __ENTR="live-";;		# original media live mode
+#				tool    ) ;;					# tools
+#				clive   ) ;;					# custom media live mode
+#				cnetinst) ;;					# custom media install mode
+#				system  ) ;;					# system command
+				*       ) __ENTR="";;			# original media install mode
+			esac
+			__WORK="$(printf "%-48.48s%-55.55s%19.19s" "item -- ${__ENTR:-}${__LIST_MDIA[3]}" "- ${__LIST_MDIA[4]//%20/ } ${_TEXT_SPCE// /.}" "${__LIST_MDIA[15]//%20/ }")"
+			sed -i "${__TGET_PATH}" -e "/\[ System command \]/i \\${__WORK}"
+			case "${__LIST_MDIA[3]}" in
+				windows-*              ) __WORK="$(fnMk_pxeboot_ipxe_windows "${__LIST_MDIA[@]}" | sed -e ':l; N; s/\n/\\n/; b l;')";;
+				winpe-*|ati*x64|ati*x86) __WORK="$(fnMk_pxeboot_ipxe_winpe   "${__LIST_MDIA[@]}" | sed -e ':l; N; s/\n/\\n/; b l;')";;
+				aomei-backupper        ) __WORK="$(fnMk_pxeboot_ipxe_aomei   "${__LIST_MDIA[@]}" | sed -e ':l; N; s/\n/\\n/; b l;')";;
+				memtest86*             ) __WORK="$(fnMk_pxeboot_ipxe_m86p    "${__LIST_MDIA[@]}" | sed -e ':l; N; s/\n/\\n/; b l;')";;
+				*                      ) __WORK="$(fnMk_pxeboot_ipxe_linux   "${__LIST_MDIA[@]}" | sed -e ':l; N; s/\n/\\n/; b l;')";;
+			esac
+			sed -i "${__TGET_PATH}" -e "/^:shell$/i \\${__WORK}\n"
+			;;
+		*) ;;							# (hidden)
+	esac
+	unset __ENTR __WORK
+}
+
+# -----------------------------------------------------------------------------
+# descript: make header and footer for grub.cfg in pxeboot
+#   input :            : unused
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_pxeboot_grub_hdrftr() {
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+		set default="0"
+		set timeout="-1"
+
+		if [ "x\${feature_default_font_path}" = "xy" ] ; then
+		  font="unicode"
+		else
+		  font="\${prefix}/fonts/font.pf2"
+		fi
+
+		if loadfont "\$font" ; then
+		# set lang="ja_JP"
+		  set gfxmode=${_MENU_RESO:+"${_MENU_RESO}x${_MENU_DPTH},"}auto
+		  set gfxpayload="keep"
+		  if [ "\${grub_platform}" = "efi" ]; then
+		    insmod efi_gop
+		    insmod efi_uga
+		  else
+		    insmod vbe
+		    insmod vga
+		  fi
+		  insmod gfxterm
+		  insmod gettext
+		  terminal_output gfxterm
+		fi
+
+		set menu_color_normal="cyan/blue"
+		set menu_color_highlight="white/blue"
+
+		#export lang
+		export gfxmode
+		export gfxpayload
+		export menu_color_normal
+		export menu_color_highlight
+
+		insmod play
+		play 960 440 1 0 4 440 1
+
+		menuentry '[ System command ]' {
+		  true
+		}
+
+		menuentry '- System shutdown' {
+		  echo "System shutting down ..."
+		  halt
+		}
+
+		menuentry '- System restart' {
+		  echo "System rebooting ..."
+		  reboot
+		}
+
+		if [ "\${grub_platform}" = "efi" ]; then
+		  menuentry '- Boot from next volume' {
+		    exit 1
+		  }
+
+		  menuentry '- UEFI Firmware Settings' {
+		    fwsetup
+		  }
+		fi
+_EOT_
+}
+
+# -----------------------------------------------------------------------------
+# descript: make Windows section for grub.cfg
+#   input :     $@     : media info data
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_pxeboot_grub_windows() {
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+		if [ "\${grub_platform}" = "pc" ]; then
+		  menuentry '${4}' {
+		    echo 'Loading ${5//%20/ } ...'
+		    set isofile="(${_SRVR_PROT:?},${_SRVR_ADDR:?})/${_DIRS_ISOS##*/}${15#"${_DIRS_ISOS}"}"
+		    export isofile
+		    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+		    insmod net
+		    insmod http
+		    insmod progress
+		    echo 'Loading linux ...'
+		    linux  memdisk iso raw
+		    echo 'Loading initrd ...'
+		    initrd \$isofile
+		  }
+		fi
+_EOT_
+}
+
+# -----------------------------------------------------------------------------
+# descript: make WinPE section for grub.cfg
+#   input :     $@     : media info data
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_pxeboot_grub_winpe() {
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+		if [ "\${grub_platform}" = "pc" ]; then
+		  menuentry '${4}' {
+		    echo 'Loading ${5//%20/ } ...'
+		    set isofile="(${_SRVR_PROT:?},${_SRVR_ADDR:?})/${_DIRS_ISOS##*/}${15#"${_DIRS_ISOS}"}"
+		    export isofile
+		    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+		    insmod net
+		    insmod http
+		    insmod progress
+		    echo 'Loading linux ...'
+		    linux  memdisk iso raw
+		    echo 'Loading initrd ...'
+		    initrd \$isofile
+		  }
+		fi
+_EOT_
+}
+
+# -----------------------------------------------------------------------------
+# descript: make aomei backup section for grub.cfg
+#   input :     $@     : media info data
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_pxeboot_grub_aomei() {
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+		if [ "\${grub_platform}" = "pc" ]; then
+		  menuentry '${4}' {
+		    echo 'Loading ${5//%20/ } ...'
+		    set isofile="(${_SRVR_PROT:?},${_SRVR_ADDR:?})/${_DIRS_ISOS##*/}${15#"${_DIRS_ISOS}"}"
+		    export isofile
+		    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+		    insmod net
+		    insmod http
+		    insmod progress
+		    echo 'Loading linux ...'
+		    linux  memdisk iso raw
+		    echo 'Loading initrd ...'
+		    initrd \$isofile
+		  }
+		fi
+_EOT_
+}
+
+# -----------------------------------------------------------------------------
+# descript: make memtest86+ section for grub.cfg
+#   input :     $@     : media info data
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_pxeboot_grub_m86p() {
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+		if [ "\${grub_platform}" = "pc" ]; then
+		  menuentry '${4}' {
+		    echo 'Loading ${5//%20/ } ...'
+		    set srvraddr=${_SRVR_PROT:?}://${_SRVR_ADDR:?}
+		    set knladdr=\${srvraddr}/${_DIRS_IMGS##*/}/${4}
+		    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+		    insmod net
+		    insmod http
+		    insmod progress
+		    echo Loading boot files ...
+		    if [ "\${grub_platform}" = "pc" ]; then
+		      linux \${knladdr}/${23#*/"${4}"/}
+		    else
+		      linux \${knladdr}/${24#*/"${4}"/}
+		    fi
+		  }
+		fi
+_EOT_
+}
+
+# -----------------------------------------------------------------------------
+# descript: make linux section for grub.cfg
+#   input :     $@     : media info data
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_pxeboot_grub_linux() {
+	declare -a    __BOPT=()
+	declare       __ENTR=""
+	declare       __CIDR=""
+	declare       __WORK=""
+	__WORK="$(fnMk_boot_options "pxeboot" "${@}")"
+	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
+	case "${2}" in
+#		mini    ) ;;
+#		netinst ) ;;
+#		dvd     ) ;;
+#		liveinst) ;;
+		live    ) __ENTR="live-";;		# original media live mode
+#		tool    ) ;;					# tools
+#		clive   ) ;;					# custom media live mode
+#		cnetinst) ;;					# custom media install mode
+#		system  ) ;;					# system command
+		*       ) __ENTR="";;			# original media install mode
+	esac
+	case "${4:-}" in
+		ubuntu*) __CIDR="";;
+		*      ) __CIDR="/${_IPV4_CIDR:-}";;
+	esac
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+		menuentry '${__ENTR:-}${4}' {
+		  echo 'Loading ${5//%20/ } ...'
+		  set hostname=${_NWRK_HOST/:_DISTRO_:/${4%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
+		  set ethrname=${_NICS_NAME:-ens160}
+		  set ipv4addr=${_IPV4_ADDR:-}${__CIDR:-}
+		  set ipv4mask=${_IPV4_MASK:-}
+		  set ipv4gway=${_IPV4_GWAY:-}
+		  set ipv4nsvr=${_IPV4_NSVR:-}
+		  set autoinst=${__BOPT[0]:-} ${__BOPT[1]:-}
+		  set language=${__BOPT[2]:-}
+		  set networks=${__BOPT[3]:-}
+		  set otheropt=${__BOPT[@]:4}
+		  set srvraddr=${_SRVR_PROT:?}://${_SRVR_ADDR:?}
+		  set knladdr=\${srvraddr}/${_DIRS_IMGS##*/}/${4}
+		  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+		  insmod net
+		  insmod http
+		  insmod progress
+		  echo Loading boot files ...
+		  linux  \${knladdr}/${24#*/"${4}"/}
+		  initrd \${knladdr}/${23#*/"${4}"/}
+		}
+_EOT_
+	unset __BOPT= __ENTR __CIDR __WORK
+}
+
+# -----------------------------------------------------------------------------
+# descript: make grub.cfg for pxeboot
+#   input :     $1     : file name
+#   input :     $2     : tab count
+#   input :   $3..$@   : media info data
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_pxeboot_grub() {
+	declare -r    __TGET_PATH="${1:?}"
+	declare -r    __CONT_TABS="${2:?}"
+	declare -r -a __LIST_MDIA=("${@:3}")
+	declare       __SPCS=""				# tabs string (space)
+	declare       __ENTR=""
+	declare       __WORK=""
+	# --- tab string ----------------------------------------------------------
+	__SPCS="$(printf "%$(("${__CONT_TABS}" * 2))s" "")"
+	# --- menu list -----------------------------------------------------------
+	[[ ! -s "${__TGET_PATH}" ]] && fnMk_pxeboot_grub_hdrftr > "${__TGET_PATH}"
+	case "${__LIST_MDIA[2]}" in
+		m)								# (menu)
+			case "${__LIST_MDIA[4]}" in
+				System%20command) ;;
+				%20             ) __WORK="${__SPCS}}\n";;
+				*               ) __WORK="${__SPCS}submenu '[ ${__LIST_MDIA[4]//%20/ } ... ]' {";;
+			esac
+			sed -i "${__TGET_PATH}" -e "/\[ System command \]/i \\${__WORK}"
+			;;
+		o)								# (output)
+			if [[ ! -e "${_DIRS_IMGS}/${__LIST_MDIA[3]}"/. ]] \
+			|| [[ ! -s "${__LIST_MDIA[14]}" ]]; then
+				return
+			fi
+			case "${__LIST_MDIA[3]}" in
+				windows-*              ) __WORK="$(fnMk_pxeboot_grub_windows "${__LIST_MDIA[@]}")";;
+				winpe-*|ati*x64|ati*x86) __WORK="$(fnMk_pxeboot_grub_winpe   "${__LIST_MDIA[@]}")";;
+				aomei-backupper        ) __WORK="$(fnMk_pxeboot_grub_aomei   "${__LIST_MDIA[@]}")";;
+				memtest86*             ) __WORK="$(fnMk_pxeboot_grub_m86p    "${__LIST_MDIA[@]}")";;
+				*                      ) __WORK="$(fnMk_pxeboot_grub_linux   "${__LIST_MDIA[@]}")";;
+			esac
+			__WORK="$(printf "%s" "${__WORK}" | sed -e "s/^/${__SPCS}/g" | sed -e ':l; N; s/\n/\\n/; b l;')"
+			sed -i "${__TGET_PATH}" -e "/\[ System command \]/i \\${__WORK}"
+			;;
+		*) ;;							# (hidden)
+	esac
+	unset __ENTR __WORK
+}
+
+# -----------------------------------------------------------------------------
+# descript: make pxeboot files
+#   n-ref :     $1     : return value : serialized target data
+#   input :     $@     : option parameter
+#   output:   stdout   : message
+#   return:            : unused
+function fnMk_pxeboot() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	declare -n    __NAME_REFR="${1:-}"	# name reference
+	shift
+	              __NAME_REFR="${*:-}"
+#	declare -a    __OPTN=("${@:-}")		# options
+	declare       __PTRN=""				# pattern
+	declare       __TYPE=""				# target type
+	declare       __LINE=""				# data line
+	declare -a    __TGET=()				# target data line
+	declare -a    __MDIA=()				# media info data
+	declare       __RETN=""				# return value
+	declare -a    __ARRY=()				# data array
+	declare -i    __TABS=0				# tab count
+	declare -i    I=0
+	declare -i    J=0
+
+	# --- get target ----------------------------------------------------------
+	__PTRN=()
 	set -f -- "${@:-}"
 	set +f
-	if [[ "$#" -gt 0 ]] && [[ -n "${*:-}" ]]; then
-		printf "%c${__FMTG}%c\n" "#" "${_TEXT_GAP2}" "#"
-		printf "%c${__FMTT}%c\n" "#" "ID" "Target file name" "ReleaseDay" "SupportEnd" "Memo" "#"
-		printf "%s\n" "${@:-}" | awk '
-		{
-			split($0, _arry, "\n")
-			for (i in _arry) {
-				split(_arry[i], _list)
-				for (j in _list) {
-					gsub("%20", " ", _list[j])
-				}
-				sub("^.*/", "", _list[16])
-				sub("^.*/", "", _list[26])
-				sub("^-+$", "", _list[16])
-				sub("^-+$", "", _list[26])
-				_list[17]=substr(_list[17], 1, 10)
-				_list[10]=substr(_list[10], 1, 10)
-				_list[26]=substr(_list[26], 1, 44)
-				sub("^-+$", "\033[m\033[90m----------\033[m", _list[17])
-				sub("^-+$", "\033[m\033[90m----------\033[m", _list[10])
-				sub("^$", "\033[m\033[37m"_list[6]"\033[m", _list[26])
-				printf("\033[m%c%2d:%-48.48s:%-10s:%-10s:%-44s%c\033[m\n", "#", _list[2], _list[16], _list[17], _list[10], _list[26], "#")
-			}
-		}'
-#		while [[ -n "${1:-}" ]]
-#		do
-#			read -r -a __LIST < <(echo "${1:-}")
-#			shift
-#			__LIST=("${__LIST[@]//%20/ }")
-#			__LIST[15]="${__LIST[15]##*/}"
-#			__LIST[25]="${__LIST[25]##*/}"
-#			__LIST=("${__LIST[@]##-}")
-#			printf "%c${__FMTT}%c\n" "#" "${__LIST[1]:-}" "${__LIST[15]:-}" "${__LIST[16]:-}" "${__LIST[9]:-}" "${__LIST[25]:-}" "#"
-#		done
-		printf "%c${__FMTG}%c\n" "#" "${_TEXT_GAP2}" "#"
-	fi
-	unset __FMTG __FMTT __LIST
+	while [[ -n "${1:-}" ]]
+	do
+		case "${1%%:*}" in
+			a|all    ) __PTRN=("mini" "netinst" "dvd" "liveinst" "live" "tool" "clive" "cnetinst" "system"); shift; break;;
+			mini     ) ;;
+			netinst  ) ;;
+			dvd      ) ;;
+			liveinst ) ;;
+			live     ) ;;
+			tool     ) ;;
+			clive    ) ;;
+			cnetinst ) ;;
+			system   ) ;;
+			*) break;;
+		esac
+		__PTRN+=("${1:-}")
+		shift
+	done
+	__NAME_REFR="${*:-}"
+	# --- create pxeboot menu file --------------------------------------------
+	fnMk_pxeboot_clear_menu "${_PATH_IPXE:?}"				# ipxe
+	fnMk_pxeboot_clear_menu "${_PATH_GRUB:?}"				# grub
+	fnMk_pxeboot_clear_menu "${_PATH_SLNX:?}"				# syslinux (bios)
+	fnMk_pxeboot_clear_menu "${_PATH_UEFI:?}"				# syslinux (efi64)
+	for __TYPE in "${__PTRN[@]}"
+	do
+		fnMk_print_list __LINE "${__TYPE}"
+		IFS= mapfile -d $'\n' -t __TGET < <(echo -n "${__LINE}")
+		for I in "${!__TGET[@]}"
+		do
+			read -r -a __MDIA < <(echo "${__TGET[I]}")
+			case "${__MDIA[2]}" in
+				m)						# (menu)
+					[[ "${__MDIA[4]}" = "%20" ]] && __TABS=$((__TABS-1))
+					[[ "${__TABS}" -lt 0 ]] && __TABS=0
+					;;
+				o)						# (output)
+					case "${__MDIA[27]}" in
+						c) ;;
+						d)
+							__RETN="- - - -"
+							if [[ -n "$(fnTrim "${__MDIA[14]}" "-")" ]]; then
+								fnDownload "${__MDIA[10]}" "${__MDIA[14]}"
+								__RETN="$(fnGetFileinfo "${__MDIA[14]}")"
+							fi
+							read -r -a __ARRY < <(echo "${__RETN}")
+							__MDIA[15]="${__ARRY[1]:-}"	# iso_tstamp
+							__MDIA[16]="${__ARRY[2]:-}"	# iso_size
+							__MDIA[17]="${__ARRY[3]:-}"	# iso_volume
+							;;
+						*) ;;
+					esac
+					# --- rsync -----------------------------------------------
+					fnRsync "${__MDIA[14]}" "${_DIRS_IMGS}/${__MDIA[3]}"
+					;;
+				*) ;;					# (hidden)
+			esac
+			# --- create menu file --------------------------------------------
+			fnMk_pxeboot_ipxe "${_PATH_IPXE:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# ipxe
+			fnMk_pxeboot_grub "${_PATH_GRUB:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# grub
+#			fnMk_pxeboot_slnx "${_PATH_SLNX:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# syslinux (bios)
+#			fnMk_pxeboot_slnx "${_PATH_UEFI:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# syslinux (efi64)
+			# --- tab ---------------------------------------------------------
+			case "${__MDIA[2]}" in
+				m)						# (menu)
+					[[ "${__MDIA[4]}" != "%20" ]] && __TABS=$((__TABS+1))
+					[[ "${__TABS}" -lt 0 ]] && __TABS=0
+					;;
+				o) ;;					# (output)
+				*) ;;					# (hidden)
+			esac
+			# --- data registration -------------------------------------------
+			__MDIA=("${__MDIA[@]// /%20}")
+			J="${__MDIA[0]}"
+			_LIST_MDIA[J]="$(
+				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-11s \n" \
+				"${__MDIA[@]:1}"
+			)"
+		done
+	done
+	unset __OPTN __PTRN __TYPE __LINE __TGET __MDIA __RETN __ARRY __TABS I J
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+	fnDbgparameters
+#	unset __FUNC_NAME
 }
 
 # *** main section ************************************************************

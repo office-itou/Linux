@@ -10,9 +10,11 @@
 #   g-var : _DIRS_TFTP : read
 #   g-var : _DIRS_IMGS : read
 function fnMk_pxeboot_grub_m86p() {
+	declare       __ENTR=""
+	__ENTR="$(printf "%-55.55s%19.19s" "- ${4//%20/ }  ${_TEXT_SPCE// /.}" "${15//%20/ }")"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		if [ "\${grub_platform}" = "pc" ]; then
-		  menuentry '${4}' {
+		  menuentry '${__ENTR:-}' {
 		    echo 'Loading ${5//%20/ } ...'
 		    set srvraddr=${_SRVR_PROT:?}://${_SRVR_ADDR:?}
 		    set knladdr=\${srvraddr}/${_DIRS_IMGS##*/}/${4}
@@ -29,4 +31,5 @@ function fnMk_pxeboot_grub_m86p() {
 		  }
 		fi
 _EOT_
+	unset __ENTR
 }

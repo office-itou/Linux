@@ -169,19 +169,19 @@
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_pxeboot_grub.sh				# make grub.cfg for pxeboot
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_hdrftr.sh		# make header and footer for syslinux
+	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_hdrftr.sh		# make header and footer for syslinux
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_windows.sh		# make Windows section for syslinux
+	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_windows.sh		# make Windows section for syslinux
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_winpe.sh		# make WinPE section for syslinux
+	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_winpe.sh		# make WinPE section for syslinux
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_aomei.sh		# make aomei backup section for syslinux
+	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_aomei.sh		# make aomei backup section for syslinux
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_m86p.sh		# make memtest86+ section for syslinux
+	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_m86p.sh		# make memtest86+ section for syslinux
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_linux.sh		# make linux section for syslinux
+	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_linux.sh		# make linux section for syslinux
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx.sh				# make syslinux for pxeboot
+	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx.sh				# make syslinux for pxeboot
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_pxeboot.sh					# make pxeboot files
 

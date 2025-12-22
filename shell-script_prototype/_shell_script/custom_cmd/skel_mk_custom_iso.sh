@@ -56,6 +56,8 @@
 	source "${_SHEL_COMN}"/fnGetWebinfo.sh					# get web information data
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMN}"/fnGetFileinfo.sh					# get file information data
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMN}"/fnWget.sh						# wget / curl
 
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnDbgout.sh						# message output (debug out)
@@ -77,6 +79,10 @@
 	source "${_SHEL_COMD}"/fnNetwork_param.sh				# get network parameter
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnFile_backup.sh					# file backup
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnDownload.sh					# wget / curl file download
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnRsync.sh						# rsync
 
 # *** function section (subroutine functions) *********************************
 
@@ -125,7 +131,65 @@
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnSelect_target.sh				# select target
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnScreen_output.sh				# screen output
+	source "${_SHEL_COMD}"/fnMk_print_list.sh				# print media list
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_boot_option_preseed.sh		# make boot options for preseed
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_boot_option_nocloud.sh		# make boot options for nocloud
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_boot_option_kickstart.sh	# make boot options for kickstart
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_boot_option_autoyast.sh		# make boot options for autoyast
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_boot_option_agama.sh		# make boot options for agama
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_boot_options.sh				# make boot options
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_clear_menu.sh		# clear pxeboot menu
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe_hdrftr.sh		# make header and footer for ipxe menu
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe_windows.sh		# make Windows section for ipxe menu
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe_winpe.sh		# make WinPE section for ipxe menu
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe_aomei.sh		# make aomei backup section for ipxe menu
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe_m86p.sh		# make memtest86+ section for ipxe menu
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe_linux.sh		# make linux section for ipxe menu
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe.sh				# make ipxe menu
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_grub_hdrftr.sh		# make header and footer for grub.cfg
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_grub_windows.sh		# make Windows section for grub.cfg
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_grub_winpe.sh		# make WinPE section for grub.cfg
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_grub_aomei.sh		# make aomei backup section for grub.cfg
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_grub_m86p.sh		# make memtest86+ section for grub.cfg
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_grub_linux.sh		# make linux section for grub.cfg
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot_grub.sh				# make grub.cfg for pxeboot
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_hdrftr.sh		# make header and footer for syslinux
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_windows.sh		# make Windows section for syslinux
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_winpe.sh		# make WinPE section for syslinux
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_aomei.sh		# make aomei backup section for syslinux
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_m86p.sh		# make memtest86+ section for syslinux
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_linux.sh		# make linux section for syslinux
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx.sh				# make syslinux for pxeboot
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_pxeboot.sh					# make pxeboot files
 
 # *** main section ************************************************************
 
