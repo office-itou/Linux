@@ -112,6 +112,7 @@ function fnMk_pxeboot() {
 			)"
 		done
 	done
+	fnList_mdia_Put "work.txt"
 	unset __OPTN __PTRN __TYPE __LINE __TGET __MDIA __RETN __ARRY __TABS I J
 
 	# --- complete ------------------------------------------------------------
