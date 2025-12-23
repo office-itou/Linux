@@ -25,7 +25,7 @@ function fnMk_pxeboot_grub_linux() {
 		ubuntu*) __CIDR="";;
 		*      ) __CIDR="/${_IPV4_CIDR:-}";;
 	esac
-	__ENTR="$(printf "%-55.55s%19.19s" "- ${4//%20/ }  ${_TEXT_SPCE// /.}" "${15//%20/ }")"
+	__ENTR="$(printf "%-55.55s%19.19s" "- ${4//%20/ }  ${_TEXT_SPCE// /.}" "${16//%20/ }")"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		menuentry '${__ENTR:-}' {
 		  echo 'Loading ${5//%20/ } ...'
@@ -46,8 +46,8 @@ function fnMk_pxeboot_grub_linux() {
 		  insmod http
 		  insmod progress
 		  echo Loading boot files ...
-		  linux  \${knladdr}/${24#*/"${4}"/}
-		  initrd \${knladdr}/${23#*/"${4}"/}
+		  linux  \${knladdr}/${25#*/"${4}"/}
+		  initrd \${knladdr}/${24#*/"${4}"/}
 		}
 _EOT_
 	unset __ENTR __BOPT __ENTR __CIDR __WORK

@@ -18,11 +18,11 @@ function fnMk_boot_option_preseed() {
 	declare -a    __BOPT=()
 	declare       __WORK=""
 	# --- 0: server -----------------------------------------------------------
-	__BOPT=("server=\${srvraddr}")
+	__BOPT=("server=\$\{srvraddr\}")
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
-	if [[ -n "${25##*-}" ]]; then
-		__WORK="${__WORK:+"${__WORK} "}auto=true preseed/file=/cdrom${25#"${_DIRS_CONF%/*}"}"
+	if [[ -n "${26##*-}" ]]; then
+		__WORK="${__WORK:+"${__WORK} "}auto=true preseed/file=/cdrom${26#"${_DIRS_CONF%/*}"}"
 		[[ "${__TGET_TYPE:-}" = "pxeboot" ]] && __WORK="${__WORK/file=\/cdrom/url=\$\{srvraddr\}}"
 		case "${4}" in
 			ubuntu-desktop-*|ubuntu-legacy-*) __WORK="${__WORK:+"${__WORK} "}automatic-ubiquity noprompt ${__WORK}";;
@@ -46,7 +46,7 @@ function fnMk_boot_option_preseed() {
 	__BOPT+=("${__WORK:-}")
 	# --- 3: network ----------------------------------------------------------
 	__WORK=""
-	if [[ -n "${25##*-}" ]]; then
+	if [[ -n "${26##*-}" ]]; then
 		case "${4}" in
 			ubuntu-*) __WORK="${__WORK:+"${__WORK} "}netcfg/target_network_config=NetworkManager";;
 			*       ) ;;
@@ -70,14 +70,14 @@ function fnMk_boot_option_preseed() {
 	if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
 		case "${4}" in
 #			debian-mini-*                       ) ;;
-			ubuntu-mini-*                       ) __WORK="${__WORK:+"${__WORK} "}initrd=\${srvraddr}/${_DIRS_IMGS##*/}/${23#"${_DIRS_LOAD}"} iso-url=\${srvraddr}/${_DIRS_ISOS##*/}${15#"${_DIRS_ISOS}"}";;
+			ubuntu-mini-*                       ) __WORK="${__WORK:+"${__WORK} "}initrd=\$\{srvraddr\}/${_DIRS_IMGS##*/}/${24#"${_DIRS_LOAD}"} iso-url=\$\{srvraddr\}/${_DIRS_ISOS##*/}${16#"${_DIRS_ISOS}"}";;
 			ubuntu-desktop-18.*|ubuntu-live-18.*| \
 			ubuntu-desktop-20.*|ubuntu-live-20.*| \
 			ubuntu-desktop-22.*|ubuntu-live-22.*| \
-			ubuntu-server-*    |ubuntu-legacy-* ) __WORK="${__WORK:+"${__WORK} "}boot=casper url=\${srvraddr}/${_DIRS_ISOS##*/}${15#"${_DIRS_ISOS}"}";;
-			ubuntu-*                            ) __WORK="${__WORK:+"${__WORK} "}boot=casper iso-url=\${srvraddr}/${_DIRS_ISOS##*/}${15#"${_DIRS_ISOS}"}";;
-			live-*                              ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvraddr}/${_DIRS_RMAK##*/}/${15##*/}";;
-			*                                   ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvraddr}/${_DIRS_ISOS##*/}${15#"${_DIRS_ISOS}"}";;
+			ubuntu-server-*    |ubuntu-legacy-* ) __WORK="${__WORK:+"${__WORK} "}boot=casper url=\$\{srvraddr\}/${_DIRS_ISOS##*/}${16#"${_DIRS_ISOS}"}";;
+			ubuntu-*                            ) __WORK="${__WORK:+"${__WORK} "}boot=casper iso-url=\$\{srvraddr\}/${_DIRS_ISOS##*/}${16#"${_DIRS_ISOS}"}";;
+			live-*                              ) __WORK="${__WORK:+"${__WORK} "}fetch=\$\{srvraddr\}/${_DIRS_RMAK##*/}/${16##*/}";;
+			*                                   ) __WORK="${__WORK:+"${__WORK} "}fetch=\$\{srvraddr\}/${_DIRS_ISOS##*/}${16#"${_DIRS_ISOS}"}";;
 		esac
 	fi
 	__BOPT+=("${__WORK}")

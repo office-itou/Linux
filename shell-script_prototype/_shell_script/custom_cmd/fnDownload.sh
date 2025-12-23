@@ -45,12 +45,12 @@ function fnDownload() {
 		return
 	fi
 	__REAL="$(realpath "${__TGET_PATH}")"
-	if [[ -z "${__REAL%"${_DIRS_SAMB:-}"*}" ]]; then
+#	if [[ -z "${__REAL%"${_DIRS_SAMB:-}"*}" ]]; then
 		__DIRS="$(fnDirname "${__TGET_PATH}")"
 		__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
 		chown "${__OWNR:-"${_SAMB_USER}"}" "${__TGET_PATH}"
-		chmod g+rw "${__TGET_PATH}"
-	fi
+		chmod g+rw,o+r "${__TGET_PATH}"
+#	fi
 	rm -rf "${__TEMP:?}"
 	printf "\033[m\033[92mcomplete: %s\033[m\n" "${__TGET_PATH##*/}"
 }

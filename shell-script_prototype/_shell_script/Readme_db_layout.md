@@ -33,19 +33,20 @@
   #   10: web_path    (143)   TEXT                        "         path
   #   11: web_tstamp  ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
   #   12: web_size    ( 15)   BIGINT                      "         file size
-  #   13: web_status  ( 15)   TEXT                        "         download status
-  #   14: iso_path    ( 87)   TEXT                        iso image file path
-  #   15: iso_tstamp  ( 47)   TEXT                        "         time stamp
-  #   16: iso_size    ( 15)   BIGINT                      "         file size
-  #   17: iso_volume  ( 43)   TEXT                        "         volume id
-  #   18: rmk_path    ( 87)   TEXT                        remaster  file path
-  #   19: rmk_tstamp  ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
-  #   20: rmk_size    ( 15)   BIGINT                      "         file size
-  #   21: rmk_volume  ( 43)   TEXT                        "         volume id
-  #   22: ldr_initrd  ( 87)   TEXT                        initrd    file path
-  #   23: ldr_kernel  ( 87)   TEXT                        kernel    file path
-  #   24: cfg_path    ( 87)   TEXT                        config    file path
-  #   25: cfg_tstamp  ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
-  #   26: lnk_path    ( 87)   TEXT                        symlink   directory or file path
-  #   27: create_flag ( 11)   TEXT                        create flag
+  #   13: web_check   ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
+  #   14: web_status  ( 15)   TEXT                        "         download status
+  #   15: iso_path    ( 87)   TEXT                        iso image file path
+  #   16: iso_tstamp  ( 47)   TEXT                        "         time stamp
+  #   17: iso_size    ( 15)   BIGINT                      "         file size
+  #   18: iso_volume  ( 43)   TEXT                        "         volume id
+  #   19: rmk_path    ( 87)   TEXT                        remaster  file path
+  #   20: rmk_tstamp  ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
+  #   21: rmk_size    ( 15)   BIGINT                      "         file size
+  #   22: rmk_volume  ( 43)   TEXT                        "         volume id
+  #   23: ldr_initrd  ( 87)   TEXT                        initrd    file path
+  #   24: ldr_kernel  ( 87)   TEXT                        kernel    file path
+  #   25: cfg_path    ( 87)   TEXT                        config    file path
+  #   26: cfg_tstamp  ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
+  #   27: lnk_path    ( 87)   TEXT                        symlink   directory or file path
+  #   28: create_flag ( 11)   TEXT                        create flag
   ```

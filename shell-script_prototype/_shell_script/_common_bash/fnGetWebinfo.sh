@@ -3,7 +3,7 @@
 # -----------------------------------------------------------------------------
 # descript: get web information data
 #   input :     $1     : target url
-#   output:   stdout   : output (url,last-modified,content-length,code,message)
+#   output:   stdout   : output (url,last-modified,content-length,check-date,code,message)
 #   return:            : unused
 #   g-var :            : unused
 # shellcheck disable=SC2148,SC2317,SC2329
@@ -65,7 +65,7 @@ function fnGetWebinfo() {
 			gsub(" ", "%20", _mesg)
 			_retn[1]=_mesg
 		}
-		function fnAwk_GetWebdata(_retn, _urls, _wget,  i, j, _list, _line, _code, _leng, _lmod, _date, _lcat, _ptrn, _dirs, _file, _rear, _mesg) {
+		function fnAwk_GetWebdata(_retn, _urls, _wget,  i, j, _list, _line, _code, _leng, _lmod, _date, _lcat, _ptrn, _dirs, _file, _rear, _mesg, _chek) {
 			# --- set pattern part --------------------------------------------
 			_ptrn=""
 			_dirs=""
@@ -149,11 +149,14 @@ function fnGetWebinfo() {
 			# --- get url -----------------------------------------------------
 			delete _mesg
 			fnAwk_GetWebstatus(_mesg, _code)
+			_date="TZ=UTC date \"+%Y-%m-%d%%20%H:%M:%S%z\""
+			_date | getline _chek
 			_retn[1]=_urls
 			_retn[2]="-"
 			_retn[3]="-"
-			_retn[4]=_code
-			_retn[5]=_mesg[1]
+			_retn[4]=_chek
+			_retn[5]=_code
+			_retn[6]=_mesg[1]
 			# --- check the results -------------------------------------------
 			if (_code < 200 || _code > 299) {
 				return							# other than success
@@ -181,7 +184,7 @@ function fnGetWebinfo() {
 				if (length(_retn[i]) == 0) {_retn[i]="-"}
 				gsub(" ", "%20", _retn[i])
 			}
-			printf("%s %s %s %s %s", _retn[1], _retn[2], _retn[3], _retn[4], _retn[5])
+			printf("%s %s %s %s %s %s", _retn[1], _retn[2], _retn[3], _retn[4], _retn[5], _retn[6])
 		}
 	' || true
 }

@@ -11,7 +11,7 @@
 #   g-var : _DIRS_IMGS : read
 function fnMk_pxeboot_grub_m86p() {
 	declare       __ENTR=""
-	__ENTR="$(printf "%-55.55s%19.19s" "- ${4//%20/ }  ${_TEXT_SPCE// /.}" "${15//%20/ }")"
+	__ENTR="$(printf "%-55.55s%19.19s" "- ${4//%20/ }  ${_TEXT_SPCE// /.}" "${16//%20/ }")"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		if [ "\${grub_platform}" = "pc" ]; then
 		  menuentry '${__ENTR:-}' {
@@ -24,9 +24,9 @@ function fnMk_pxeboot_grub_m86p() {
 		    insmod progress
 		    echo Loading boot files ...
 		    if [ "\${grub_platform}" = "pc" ]; then
-		      linux \${knladdr}/${23#*/"${4}"/}
-		    else
 		      linux \${knladdr}/${24#*/"${4}"/}
+		    else
+		      linux \${knladdr}/${25#*/"${4}"/}
 		    fi
 		  }
 		fi

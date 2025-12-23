@@ -69,23 +69,23 @@ function fnMk_pxeboot() {
 					[[ "${__TABS}" -lt 0 ]] && __TABS=0
 					;;
 				o)						# (output)
-					case "${__MDIA[27]}" in
+					case "${__MDIA[28]}" in
 						c) ;;
 						d)
 							__RETN="- - - -"
-							if [[ -n "$(fnTrim "${__MDIA[14]}" "-")" ]]; then
-								fnDownload "${__MDIA[10]}" "${__MDIA[14]}"
-								__RETN="$(fnGetFileinfo "${__MDIA[14]}")"
+							if [[ -n "$(fnTrim "${__MDIA[15]}" "-")" ]]; then
+								fnDownload "${__MDIA[10]}" "${__MDIA[15]}"
+								__RETN="$(fnGetFileinfo "${__MDIA[15]}")"
 							fi
 							read -r -a __ARRY < <(echo "${__RETN}")
-							__MDIA[15]="${__ARRY[1]:-}"	# iso_tstamp
-							__MDIA[16]="${__ARRY[2]:-}"	# iso_size
-							__MDIA[17]="${__ARRY[3]:-}"	# iso_volume
+							__MDIA[16]="${__ARRY[1]:-}"	# iso_tstamp
+							__MDIA[17]="${__ARRY[2]:-}"	# iso_size
+							__MDIA[18]="${__ARRY[3]:-}"	# iso_volume
 							;;
 						*) ;;
 					esac
 					# --- rsync -----------------------------------------------
-					fnRsync "${__MDIA[14]}" "${_DIRS_IMGS}/${__MDIA[3]}"
+					fnRsync "${__MDIA[15]}" "${_DIRS_IMGS}/${__MDIA[3]}"
 					;;
 				*) ;;					# (hidden)
 			esac
@@ -107,7 +107,7 @@ function fnMk_pxeboot() {
 			__MDIA=("${__MDIA[@]// /%20}")
 			J="${__MDIA[0]}"
 			_LIST_MDIA[J]="$(
-				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-11s \n" \
+				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-47s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-11s \n" \
 				"${__MDIA[@]:1}"
 			)"
 		done

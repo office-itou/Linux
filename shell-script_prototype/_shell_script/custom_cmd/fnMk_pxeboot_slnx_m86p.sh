@@ -11,11 +11,11 @@
 #   g-var : _DIRS_IMGS : read
 function fnMk_pxeboot_slnx_m86p() {
 	declare       __ENTR=""
-	__ENTR="$(printf "%-55.55s%19.19s" "- ${4//%20/ }  ${_TEXT_SPCE// /.}" "${16//%20/ }")"
+	__ENTR="$(printf "%-55.55s%19.19s" "- ${4//%20/ }  ${_TEXT_SPCE// /.}" "${17//%20/ }")"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		label ${4}
 		  menu label ^${__ENTR:-}
-		  linux  ${_SRVR_PROT:?}://${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}/${4}/${24#*/"${4}"/}
+		  linux  ${_SRVR_PROT:?}://${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}/${4}/${25#*/"${4}"/}
 _EOT_
 	unset __ENTR
 }

@@ -18,11 +18,11 @@ function fnMk_boot_option_nocloud() {
 	declare -a    __BOPT=()
 	declare       __WORK=""
 	# --- 0: server -----------------------------------------------------------
-	__BOPT=("server=\${srvraddr}")
+	__BOPT=("server=\$\{srvraddr\}")
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
-	if [[ -n "${25##*-}" ]]; then
-		__WORK="${__WORK:+"${__WORK} "}automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom${25#"${_DIRS_CONF%/*}"}"
+	if [[ -n "${26##*-}" ]]; then
+		__WORK="${__WORK:+"${__WORK} "}automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom${26#"${_DIRS_CONF%/*}"}"
 		[[ "${__TGET_TYPE:-}" = "pxeboot" ]] && __WORK="${__WORK/\/cdrom/url=\$\{srvraddr\}}"
 	fi
 	case "${2}" in
@@ -41,7 +41,7 @@ function fnMk_boot_option_nocloud() {
 	__BOPT+=("${__WORK}")
 	# --- 3: network ----------------------------------------------------------
 	__WORK=""
-	if [[ -n "${25##*-}" ]]; then
+	if [[ -n "${26##*-}" ]]; then
 		case "${4}" in
 			ubuntu-live-18.04   ) __WORK="${__WORK:+"${__WORK} "}ip=\${ethrname},\${ipv4addr},\${ipv4mask},\${ipv4gway} hostname=\${hostname}";;
 			*                   ) __WORK="${__WORK:+"${__WORK} "}ip=\${ipv4addr}::\${ipv4gway}:\${ipv4mask}::\${ethrname}:${_IPV4_ADDR:+static}:\${ipv4nsvr} hostname=\${hostname}";;
@@ -58,14 +58,14 @@ function fnMk_boot_option_nocloud() {
 	if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
 		case "${4}" in
 #			debian-mini-*                       ) ;;
-			ubuntu-mini-*                       ) __WORK="${__WORK:+"${__WORK} "}initrd=\${srvraddr}/${_DIRS_IMGS##*/}/${23#"${_DIRS_LOAD}"} iso-url=\${srvraddr}/${_DIRS_ISOS##*/}${15#"${_DIRS_ISOS}"}";;
+			ubuntu-mini-*                       ) __WORK="${__WORK:+"${__WORK} "}initrd=\$\{srvraddr\}/${_DIRS_IMGS##*/}/${24#"${_DIRS_LOAD}"} iso-url=\$\{srvraddr\}/${_DIRS_ISOS##*/}${16#"${_DIRS_ISOS}"}";;
 			ubuntu-desktop-18.*|ubuntu-live-18.*| \
 			ubuntu-desktop-20.*|ubuntu-live-20.*| \
 			ubuntu-desktop-22.*|ubuntu-live-22.*| \
-			ubuntu-server-*    |ubuntu-legacy-* ) __WORK="${__WORK:+"${__WORK} "}boot=casper url=\${srvraddr}/${_DIRS_ISOS##*/}${15#"${_DIRS_ISOS}"}";;
-			ubuntu-*                            ) __WORK="${__WORK:+"${__WORK} "}boot=casper iso-url=\${srvraddr}/${_DIRS_ISOS##*/}${15#"${_DIRS_ISOS}"}";;
-			live-*                              ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvraddr}/${_DIRS_RMAK##*/}/${15##*/}";;
-			*                                   ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvraddr}/${_DIRS_ISOS##*/}${15#"${_DIRS_ISOS}"}";;
+			ubuntu-server-*    |ubuntu-legacy-* ) __WORK="${__WORK:+"${__WORK} "}boot=casper url=\$\{srvraddr\}/${_DIRS_ISOS##*/}${16#"${_DIRS_ISOS}"}";;
+			ubuntu-*                            ) __WORK="${__WORK:+"${__WORK} "}boot=casper iso-url=\$\{srvraddr\}/${_DIRS_ISOS##*/}${16#"${_DIRS_ISOS}"}";;
+			live-*                              ) __WORK="${__WORK:+"${__WORK} "}fetch=\$\{srvraddr\}/${_DIRS_RMAK##*/}/${16##*/}";;
+			*                                   ) __WORK="${__WORK:+"${__WORK} "}fetch=\$\{srvraddr\}/${_DIRS_ISOS##*/}${16#"${_DIRS_ISOS}"}";;
 		esac
 	fi
 	__BOPT+=("${__WORK}")

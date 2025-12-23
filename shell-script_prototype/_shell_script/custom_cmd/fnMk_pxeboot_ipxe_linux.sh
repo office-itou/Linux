@@ -70,8 +70,8 @@ function fnMk_pxeboot_ipxe_linux() {
 			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${4}
 			set options \${autoinst} \${language} \${networks} \${otheropt}
 			echo Loading boot files ...
-			kernel \${knladdr}/${24#*/"${4}"/} \${options} --- quiet || goto error
-			initrd \${knladdr}/${23#*/"${4}"/} || goto error
+			kernel \${knladdr}/${25#*/"${4}"/} \${options} --- quiet || goto error
+			initrd \${knladdr}/${24#*/"${4}"/} || goto error
 			boot || goto error
 			exit
 _EOT_
@@ -93,8 +93,8 @@ _EOT_
 			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${4}
 			set options \${autoinst} \${language} \${networks} \${otheropt}
 			echo Loading boot files ...
-			kernel \${knladdr}/${24#*/"${4}"/} \${options} --- quiet || goto error
-			initrd \${knladdr}/${23#*/"${4}"/} || goto error
+			kernel \${knladdr}/${25#*/"${4}"/} \${options} --- quiet || goto error
+			initrd \${knladdr}/${24#*/"${4}"/} || goto error
 			boot || goto error
 			exit
 _EOT_

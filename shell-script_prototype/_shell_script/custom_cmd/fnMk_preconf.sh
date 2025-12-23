@@ -48,16 +48,16 @@ function fnMk_preconf() {
 	if [[ -n "${__PTRN:-}" ]]; then
 		IFS= mapfile -d $'\n' -t __TGET < <(\
 			printf "%s\n" "${_LIST_MDIA[@]}" | \
-			awk -v ptrn="@/.*\/${__PTRN}\/.*/" '$2=="o" && $24!~/.*-$/ && $24~ptrn {
-				print $24
-				switch ($24) {
+			awk -v ptrn="@/.*\/${__PTRN}\/.*/" '$2=="o" && $25!~/.*-$/ && $25~ptrn {
+				print $25
+				switch ($25) {
 					case /.*\/agama\/.*/:
-						sub("_leap-[0-9]+.[0-9]+", "_tumbleweed", $24)
-						print $24
+						sub("_leap-[0-9]+.[0-9]+", "_tumbleweed", $25)
+						print $25
 						break
 					case /.*\/kickstart\/.*/:
-						sub("_dvd", "_web", $24)
-						print $24
+						sub("_dvd", "_web", $25)
+						print $25
 						break
 					default:
 						break

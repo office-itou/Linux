@@ -23,7 +23,7 @@ function fnMk_pxeboot_ipxe() {
 			;;
 		o)								# (output)
 			if [[ ! -e "${_DIRS_IMGS}/${__LIST_MDIA[3]}"/. ]] \
-			|| [[ ! -s "${__LIST_MDIA[14]}" ]]; then
+			|| [[ ! -s "${__LIST_MDIA[15]}" ]]; then
 				return
 			fi
 			case "${__LIST_MDIA[1]}" in
@@ -38,7 +38,7 @@ function fnMk_pxeboot_ipxe() {
 #				system  ) ;;					# system command
 				*       ) __ENTR="";;			# original media install mode
 			esac
-			__WORK="$(printf "%-48.48s%-55.55s%19.19s" "item -- ${__ENTR:-}${__LIST_MDIA[3]}" "- ${__LIST_MDIA[4]//%20/ } ${_TEXT_SPCE// /.}" "${__LIST_MDIA[15]//%20/ }")"
+			__WORK="$(printf "%-48.48s%-55.55s%19.19s" "item -- ${__ENTR:-}${__LIST_MDIA[3]}" "- ${__LIST_MDIA[4]//%20/ } ${_TEXT_SPCE// /.}" "${__LIST_MDIA[16]//%20/ }")"
 			sed -i "${__TGET_PATH}" -e "/\[ System command \]/i \\${__WORK}"
 			case "${__LIST_MDIA[3]}" in
 				windows-*              ) __WORK="$(fnMk_pxeboot_ipxe_windows "${__LIST_MDIA[@]}" | sed -e ':l; N; s/\n/\\n/; b l;')";;

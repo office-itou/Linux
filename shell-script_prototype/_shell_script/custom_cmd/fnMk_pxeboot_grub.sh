@@ -30,7 +30,7 @@ function fnMk_pxeboot_grub() {
 			;;
 		o)								# (output)
 			if [[ ! -e "${_DIRS_IMGS}/${__LIST_MDIA[3]}"/. ]] \
-			|| [[ ! -s "${__LIST_MDIA[14]}" ]]; then
+			|| [[ ! -s "${__LIST_MDIA[15]}" ]]; then
 				return
 			fi
 			case "${__LIST_MDIA[3]}" in

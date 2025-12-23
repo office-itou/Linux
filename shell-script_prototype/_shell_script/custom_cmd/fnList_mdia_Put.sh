@@ -54,10 +54,10 @@ function fnList_mdia_Put() {
 			split(_line, _arry, "\n")
 			for (i in _arry) {
 				split(_arry[i], _list, " ")
-				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-11s \n", \
+				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-47s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-11s \n", \
 					_list[1], _list[2], _list[3], _list[4], _list[5], _list[6], _list[7], _list[8], _list[9], _list[10], \
 					_list[11], _list[12], _list[13], _list[14], _list[15], _list[16], _list[17], _list[18], _list[19], _list[20], \
-					_list[21], _list[22], _list[23], _list[24], _list[25], _list[26], _list[27]
+					_list[21], _list[22], _list[23], _list[24], _list[25], _list[26], _list[27], _list[28]
 			}
 		}
 	' > "$1"

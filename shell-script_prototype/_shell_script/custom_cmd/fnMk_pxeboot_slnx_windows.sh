@@ -12,12 +12,12 @@
 #   g-var : _DIRS_CONF : read
 function fnMk_pxeboot_slnx_windows() {
 	declare       __ENTR=""
-	__ENTR="$(printf "%-55.55s%19.19s" "- ${4//%20/ }  ${_TEXT_SPCE// /.}" "${16//%20/ }")"
+	__ENTR="$(printf "%-55.55s%19.19s" "- ${4//%20/ }  ${_TEXT_SPCE// /.}" "${17//%20/ }")"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		label ${4}
 		  menu label ^${__ENTR:-}
 		  linux  memdisk
-		  initrd ${_SRVR_PROT}://${_SRVR_ADDR:?}/${_DIRS_ISOS##*/}${15#"${_DIRS_ISOS}"}
+		  initrd ${_SRVR_PROT}://${_SRVR_ADDR:?}/${_DIRS_ISOS##*/}${16#"${_DIRS_ISOS}"}
 		  append iso raw
 _EOT_
 	unset __ENTR

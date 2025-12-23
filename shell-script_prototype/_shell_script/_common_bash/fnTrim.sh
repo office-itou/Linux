@@ -30,5 +30,5 @@ function fnRtrim() {
 #   g-var :            : unused
 # shellcheck disable=SC2148,SC2317,SC2329
 function fnTrim() {
-	fnRtrim "$(fnLtrim "${1:?}" "${2:-}")" "${2:-}"
+	fnRtrim "$(fnLtrim "${1:-}" "${2:-}")" "${2:-}"
 }

@@ -15,7 +15,7 @@ function fnMk_pxeboot_ipxe_m86p() {
 		echo Loading ${5//%20/ } ...
 		set srvraddr ${_SRVR_PROT:?}://${_SRVR_ADDR:?}
 		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${4}
-		iseq \${platform} efi && set knlfile \${knladdr}/${23#*/"${4}"/} || set knlfile \${knladdr}/${24#*/"${4}"/}
+		iseq \${platform} efi && set knlfile \${knladdr}/${24#*/"${4}"/} || set knlfile \${knladdr}/${25#*/"${4}"/}
 		echo Loading boot files ...
 		kernel \${knlfile} || goto error
 		boot || goto error

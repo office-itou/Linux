@@ -52,20 +52,20 @@ function fnMk_symlink() {
 			o ) ;;
 			* ) continue;;
 		esac
-		case "${__LIST[13]##-}" in		# iso_path
+		case "${__LIST[14]##-}" in		# iso_path
 			'') continue;;
 			- ) continue;;
 			* ) ;;
 		esac
-		case "${__LIST[25]##-}" in		# lnk_path
+		case "${__LIST[26]##-}" in		# lnk_path
 			'') continue;;
 			- ) continue;;
 			* ) ;;
 		esac
-		[[ -h "${__LIST[13]}" ]] && continue
+		[[ -h "${__LIST[14]}" ]] && continue
 		fnMsgout "${_PROG_NAME:-}" "create" "${__LIST[13]}"
-		mkdir -p "${__LIST[13]%/*}"
-		ln -s "${__LIST[25]}/${__LIST[13]##*/}" "${__LIST[13]}"
+		mkdir -p "${__LIST[14]%/*}"
+		ln -s "${__LIST[26]}/${__LIST[14]##*/}" "${__LIST[14]}"
 	done
 	unset __OPTN __FORC __PTRN __LINE __LIST I
 
