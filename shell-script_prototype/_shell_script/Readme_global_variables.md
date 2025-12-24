@@ -9,8 +9,8 @@
       |    name    |                             descript                             |                        example                        |
       | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
       | _DBGS_FLAG | debug flag (empty: normal, else: debug)                          | [],[true]                                             |
-      | _DBGS_FAIL | for detecting errors                                             | []                                                      |
-      | _DBGS_PARM |                                                                  | []                                                      |
+      | _DBGS_FAIL | for detecting errors                                             | []                                                    |
+      | _DBGS_PARM |                                                                  | []                                                    |
 
     * #### **working directory (executable file information)**
 
