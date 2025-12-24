@@ -21,23 +21,23 @@ function fnMk_boot_option_preseed() {
 	__BOPT=("server=\$\{srvraddr\}")
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
-	if [[ -n "${26##*-}" ]]; then
-		__WORK="${__WORK:+"${__WORK} "}auto=true preseed/file=/cdrom${26#"${_DIRS_CONF%/*}"}"
+	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
+		__WORK="${__WORK:+"${__WORK} "}auto=true preseed/file=/cdrom${__MDIA[$((_OSET_MDIA+24))]#"${_DIRS_CONF%/*}"}"
 		[[ "${__TGET_TYPE:-}" = "pxeboot" ]] && __WORK="${__WORK/file=\/cdrom/url=\$\{srvraddr\}}"
-		case "${4}" in
+		case "${__MDIA[$((_OSET_MDIA+2))]}" in
 			ubuntu-desktop-*|ubuntu-legacy-*) __WORK="${__WORK:+"${__WORK} "}automatic-ubiquity noprompt ${__WORK}";;
 			*-mini-*                        ) __WORK="${__WORK/\/cdrom/}";;
 			*                               ) ;;
 		esac
 	fi
-	case "${2}" in
+	case "${__MDIA[$((_OSET_MDIA+0))]}" in
 		live) __WORK="boot=live";;
 		*) ;;
 	esac
 	__BOPT+=("${__WORK:-}")
 	# --- 2: language ---------------------------------------------------------
 	__WORK=""
-	case "${4}" in
+	case "${__MDIA[$((_OSET_MDIA+2))]}" in
 		live-debian-*   |live-ubuntu-*  ) __WORK="${__WORK:+"${__WORK} "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp,us keyboard-model=pc105 keyboard-variants=,";;
 		debian-live-*                   ) __WORK="${__WORK:+"${__WORK} "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A";;
 		ubuntu-desktop-*|ubuntu-legacy-*) __WORK="${__WORK:+"${__WORK} "}debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
@@ -46,8 +46,8 @@ function fnMk_boot_option_preseed() {
 	__BOPT+=("${__WORK:-}")
 	# --- 3: network ----------------------------------------------------------
 	__WORK=""
-	if [[ -n "${26##*-}" ]]; then
-		case "${4}" in
+	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
+		case "${__MDIA[$((_OSET_MDIA+2))]}" in
 			ubuntu-*) __WORK="${__WORK:+"${__WORK} "}netcfg/target_network_config=NetworkManager";;
 			*       ) ;;
 		esac
@@ -59,7 +59,7 @@ function fnMk_boot_option_preseed() {
 		__WORK="${__WORK:+"${__WORK} "}netcfg/get_gateway=\${ipv4gway}"
 		__WORK="${__WORK:+"${__WORK} "}netcfg/get_nameservers=\${ipv4nsvr}"
 	fi
-	case "${2}" in
+	case "${__MDIA[$((_OSET_MDIA+0))]}" in
 		live) __WORK="dhcp";;
 		*   ) __WORK="${__WORK:-"dhcp"}";;
 	esac
@@ -68,16 +68,16 @@ function fnMk_boot_option_preseed() {
 	__WORK=""
 	__WORK="${__WORK:+"${__WORK} "}root=/dev/ram0"
 	if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-		case "${4}" in
+		case "${__MDIA[$((_OSET_MDIA+2))]}" in
 #			debian-mini-*                       ) ;;
-			ubuntu-mini-*                       ) __WORK="${__WORK:+"${__WORK} "}initrd=\$\{srvraddr\}/${_DIRS_IMGS##*/}/${24#"${_DIRS_LOAD}"} iso-url=\$\{srvraddr\}/${_DIRS_ISOS##*/}${16#"${_DIRS_ISOS}"}";;
+			ubuntu-mini-*                       ) __WORK="${__WORK:+"${__WORK} "}initrd=\$\{srvraddr\}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+22))]#"${_DIRS_LOAD}"} iso-url=\$\{srvraddr\}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
 			ubuntu-desktop-18.*|ubuntu-live-18.*| \
 			ubuntu-desktop-20.*|ubuntu-live-20.*| \
 			ubuntu-desktop-22.*|ubuntu-live-22.*| \
-			ubuntu-server-*    |ubuntu-legacy-* ) __WORK="${__WORK:+"${__WORK} "}boot=casper url=\$\{srvraddr\}/${_DIRS_ISOS##*/}${16#"${_DIRS_ISOS}"}";;
-			ubuntu-*                            ) __WORK="${__WORK:+"${__WORK} "}boot=casper iso-url=\$\{srvraddr\}/${_DIRS_ISOS##*/}${16#"${_DIRS_ISOS}"}";;
-			live-*                              ) __WORK="${__WORK:+"${__WORK} "}fetch=\$\{srvraddr\}/${_DIRS_RMAK##*/}/${16##*/}";;
-			*                                   ) __WORK="${__WORK:+"${__WORK} "}fetch=\$\{srvraddr\}/${_DIRS_ISOS##*/}${16#"${_DIRS_ISOS}"}";;
+			ubuntu-server-*    |ubuntu-legacy-* ) __WORK="${__WORK:+"${__WORK} "}boot=casper url=\$\{srvraddr\}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
+			ubuntu-*                            ) __WORK="${__WORK:+"${__WORK} "}boot=casper iso-url=\$\{srvraddr\}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
+			live-*                              ) __WORK="${__WORK:+"${__WORK} "}fetch=\$\{srvraddr\}/${_DIRS_RMAK##*/}/${__MDIA[$((_OSET_MDIA+14))]##*/}";;
+			*                                   ) __WORK="${__WORK:+"${__WORK} "}fetch=\$\{srvraddr\}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
 		esac
 	fi
 	__BOPT+=("${__WORK}")

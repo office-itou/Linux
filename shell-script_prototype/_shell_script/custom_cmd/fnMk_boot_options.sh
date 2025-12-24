@@ -15,10 +15,11 @@
 function fnMk_boot_options() {
 	declare -r    __TGET_TYPE="${1:?}"
 	shift
-	case "${4}" in
+	declare -a    __MDIA=("${@:-}")
+	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 		debian-*|live-debian-*| \
 		ubuntu-*|live-ubuntu-*)
-			case "${26}" in
+			case "${__MDIA[$((_OSET_MDIA+24))]:-}" in
 				*/preseed/*) fnMk_boot_option_preseed "${__TGET_TYPE}" "${@}";;
 				*/nocloud/*) fnMk_boot_option_nocloud "${__TGET_TYPE}" "${@}";;
 				*          ) ;;
@@ -29,13 +30,13 @@ function fnMk_boot_options() {
 		almalinux-*   |live-almalinux-*   | \
 		rockylinux-*  |live-rockylinux-*  | \
 		miraclelinux-*|live-miraclelinux-*)
-			case "${26}" in
+			case "${__MDIA[$((_OSET_MDIA+24))]:-}" in
 				*/kickstart/*) fnMk_boot_option_kickstart "${__TGET_TYPE}" "${@}";;
 				*            ) ;;
 			esac
 			;;
 		opensuse-*|live-opensuse-*)
-			case "${26}" in
+			case "${__MDIA[$((_OSET_MDIA+24))]:-}" in
 				*/autoyast/*) fnMk_boot_option_autoyast "${__TGET_TYPE}" "${@}";;
 				*/agama/*   ) fnMk_boot_option_agama    "${__TGET_TYPE}" "${@}";;
 				*           ) ;;

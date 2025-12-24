@@ -15,18 +15,18 @@ function fnMk_pxeboot_ipxe() {
 	declare       __ENTR=""
 	declare       __WORK=""
 	[[ ! -s "${__TGET_PATH}" ]] && fnMk_pxeboot_ipxe_hdrftr > "${__TGET_PATH}"
-	case "${__LIST_MDIA[2]}" in
+	case "${__LIST_MDIA[$((_OSET_MDIA+1))]}" in
 		m)								# (menu)
-			[[ "${__LIST_MDIA[4]:-}" = "%20" ]] && return
-			__WORK="$(printf "%-48.48s[ %s ]" "item --gap --" "${__LIST_MDIA[4]//%20/ }")"
+			[[ "${__LIST_MDIA[$((_OSET_MDIA+3))]:-}" = "%20" ]] && return
+			__WORK="$(printf "%-48.48s[ %s ]" "item --gap --" "${__LIST_MDIA[$((_OSET_MDIA+3))]//%20/ }")"
 			sed -i "${__TGET_PATH}" -e "/\[ System command \]/i \\${__WORK}"
 			;;
 		o)								# (output)
-			if [[ ! -e "${_DIRS_IMGS}/${__LIST_MDIA[3]}"/. ]] \
-			|| [[ ! -s "${__LIST_MDIA[15]}" ]]; then
+			if [[ ! -e "${_DIRS_IMGS}/${__LIST_MDIA[$((_OSET_MDIA+2))]}"/. ]] \
+			|| [[ ! -s "${__LIST_MDIA[$((_OSET_MDIA+14))]}" ]]; then
 				return
 			fi
-			case "${__LIST_MDIA[1]}" in
+			case "${__LIST_MDIA[$((_OSET_MDIA+0))]}" in
 #				mini    ) ;;
 #				netinst ) ;;
 #				dvd     ) ;;
@@ -38,9 +38,9 @@ function fnMk_pxeboot_ipxe() {
 #				system  ) ;;					# system command
 				*       ) __ENTR="";;			# original media install mode
 			esac
-			__WORK="$(printf "%-48.48s%-55.55s%19.19s" "item -- ${__ENTR:-}${__LIST_MDIA[3]}" "- ${__LIST_MDIA[4]//%20/ } ${_TEXT_SPCE// /.}" "${__LIST_MDIA[16]//%20/ }")"
+			__WORK="$(printf "%-48.48s%-55.55s%19.19s" "item -- ${__ENTR:-}${__LIST_MDIA[$((_OSET_MDIA+2))]}" "- ${__LIST_MDIA[$((_OSET_MDIA+3))]//%20/ } ${_TEXT_SPCE// /.}" "${__LIST_MDIA[$((_OSET_MDIA+15))]//%20/ }")"
 			sed -i "${__TGET_PATH}" -e "/\[ System command \]/i \\${__WORK}"
-			case "${__LIST_MDIA[3]}" in
+			case "${__LIST_MDIA[$((_OSET_MDIA+2))]}" in
 				windows-*              ) __WORK="$(fnMk_pxeboot_ipxe_windows "${__LIST_MDIA[@]}" | sed -e ':l; N; s/\n/\\n/; b l;')";;
 				winpe-*|ati*x64|ati*x86) __WORK="$(fnMk_pxeboot_ipxe_winpe   "${__LIST_MDIA[@]}" | sed -e ':l; N; s/\n/\\n/; b l;')";;
 				aomei-backupper        ) __WORK="$(fnMk_pxeboot_ipxe_aomei   "${__LIST_MDIA[@]}" | sed -e ':l; N; s/\n/\\n/; b l;')";;

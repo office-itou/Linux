@@ -13,9 +13,11 @@
 function fnDownload() {
 	declare -r    __TGET_URLS="${1:?}"
 	declare -r    __TGET_PATH="${2:?}"
+	declare -r    __TGET_SIZE="${3:-}"
 	declare       __TEMP=""				# temporary file
 	              __TEMP="$(mktemp -q -p "${_DIRS_TEMP:-/tmp}" "${__TGET_PATH##*/}.XXXXXX")"
 	readonly      __TEMP
+	declare       __SIZE=""
 	declare       __REAL=""
 	declare       __OWNR=""
 	declare       __PATH=""
@@ -23,7 +25,8 @@ function fnDownload() {
 	declare       __FNAM=""
 #	declare -a    __OPTN=()
 
-	printf "\033[mstart   : %s\033[m\n" "${__TGET_PATH##*/}"
+	[[ -n "${__TGET_SIZE:-}" ]] && __SIZE="$(echo "${__TGET_SIZE}" | numfmt --to=iec-i --suffix=B || true)"
+	printf "\033[mstart   : %s\033[m\n" "${__TGET_PATH##*/}${__SIZE:+" [${__SIZE}]"}"
 	__DIRS="$(fnDirname  "${__TEMP}")"
 	__FNAM="$(fnBasename "${__TEMP}")"
 	case "${_COMD_WGET:-}" in

@@ -15,13 +15,14 @@
 #   g-var : _SRVR_PROT : read
 #   g-var : _DIRS_IMGS : read
 function fnMk_pxeboot_ipxe_linux() {
+	declare -a    __MDIA=("${@:-}")
 	declare -a    __BOPT=()
 	declare       __ENTR=""
 	declare       __CIDR=""
 	declare       __WORK=""
 	__WORK="$(fnMk_boot_options "pxeboot" "${@}")"
 	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
-	case "${2}" in
+	case "${__MDIA[$((_OSET_MDIA+0))]}" in
 #		mini    ) ;;
 #		netinst ) ;;
 #		dvd     ) ;;
@@ -33,15 +34,15 @@ function fnMk_pxeboot_ipxe_linux() {
 #		system  ) ;;					# system command
 		*       ) __ENTR="";;			# original media install mode
 	esac
-	case "${4:-}" in
+	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 		ubuntu*) __CIDR="";;
 		*      ) __CIDR="/${_IPV4_CIDR:-}";;
 	esac
 	if [[ -z "${__ENTR:-}" ]]; then
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
-			:${4}
+			:${__MDIA[$((_OSET_MDIA+2))]}
 			prompt --key e --timeout \${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
-			set hostname ${_NWRK_HOST/:_DISTRO_:/${4%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
+			set hostname ${_NWRK_HOST/:_DISTRO_:/${__MDIA[$((_OSET_MDIA+2))]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
 			set ethrname ${_NICS_NAME:-ens160}
 			set ipv4addr ${_IPV4_ADDR:-}${__CIDR:-}
 			set ipv4mask ${_IPV4_MASK:-}
@@ -65,20 +66,20 @@ function fnMk_pxeboot_ipxe_linux() {
 			item networks                           Network
 			item otheropt                           Other options
 			isset \${openmenu} && present ||
-			echo Loading ${5//%20/ } ...
+			echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
 			set srvraddr ${_SRVR_PROT:?}://\${66}
-			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${4}
+			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
 			set options \${autoinst} \${language} \${networks} \${otheropt}
 			echo Loading boot files ...
-			kernel \${knladdr}/${25#*/"${4}"/} \${options} --- quiet || goto error
-			initrd \${knladdr}/${24#*/"${4}"/} || goto error
+			kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} --- quiet || goto error
+			initrd \${knladdr}/${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} || goto error
 			boot || goto error
 			exit
 _EOT_
 	else
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
-			:${__ENTR:-}${4}
-			set hostname ${_NWRK_HOST/:_DISTRO_:/${4%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
+			:${__ENTR:-}${__MDIA[$((_OSET_MDIA+2))]}
+			set hostname ${_NWRK_HOST/:_DISTRO_:/${__MDIA[$((_OSET_MDIA+2))]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
 			set ethrname ${_NICS_NAME:-ens160}
 			set ipv4addr ${_IPV4_ADDR:-}/${_IPV4_CIDR:-}
 			set ipv4gway ${_IPV4_GWAY:-}
@@ -88,13 +89,13 @@ _EOT_
 			set language ${__BOPT[2]:-}
 			set networks ${__BOPT[3]:-}
 			set otheropt ${__BOPT[@]:4}
-			echo Loading ${5//%20/ } ...
+			echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
 			set srvraddr ${_SRVR_PROT:?}://\${66}
-			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${4}
+			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
 			set options \${autoinst} \${language} \${networks} \${otheropt}
 			echo Loading boot files ...
-			kernel \${knladdr}/${25#*/"${4}"/} \${options} --- quiet || goto error
-			initrd \${knladdr}/${24#*/"${4}"/} || goto error
+			kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} --- quiet || goto error
+			initrd \${knladdr}/${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} || goto error
 			boot || goto error
 			exit
 _EOT_

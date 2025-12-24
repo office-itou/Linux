@@ -15,14 +15,15 @@
 function fnMk_boot_option_agama() {
 	declare -r    __TGET_TYPE="${1:?}"
 	shift
+	declare -a    __MDIA=("${@:-}")
 	declare -a    __BOPT=()
 	declare       __WORK=""
 	# --- 0: server -----------------------------------------------------------
 	__BOPT=("server=\${srvraddr}")
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
-	if [[ -n "${26##*-}" ]]; then
-		__WORK="${__WORK:+"${__WORK} "}live.password=install inst.auto=dvd:${26#"${_DIRS_CONF%/*}"}"
+	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
+		__WORK="${__WORK:+"${__WORK} "}live.password=install inst.auto=dvd:${__MDIA[$((_OSET_MDIA+24))]#"${_DIRS_CONF%/*}"}"
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
 			__WORK="${__WORK/dvd:/\${srvraddr}}"
 			__WORK="${__WORK/_dvd/_web}"
@@ -37,26 +38,26 @@ function fnMk_boot_option_agama() {
 	__BOPT+=("${__WORK}")
 	# --- 3: network ----------------------------------------------------------
 	__WORK=""
-	if [[ -n "${26##*-}" ]]; then
+	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		__WORK="${__WORK:+"${__WORK} "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr}/${_IPV4_CIDR:-},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
-		case "${4}" in
+		case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 			opensuse-*-15*) __WORK="${__WORK//"${_NICS_NAME:-ens160}"/"eth0"}";;
 			*             ) ;;
 		esac
 	fi
-	case "${2}" in
+	case "${__MDIA[$((_OSET_MDIA+0))]:-}" in
 		live) __WORK="dhcp";;
 		*   ) __WORK="${__WORK:-"dhcp"}";;
 	esac
 	__BOPT+=("${__WORK}")
 	# --- 4: otheropt ---------------------------------------------------------
 	__WORK=""
-	if [[ -n "${26##*-}" ]]; then
+	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			case "${4}" in
-				opensuse-leap*netinst*      ) __WORK="${__WORK:+"${__WORK} "}install=https://download.opensuse.org/distribution/leap/${4##*[^0-9]}/repo/oss/";;
+			case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
+				opensuse-leap*netinst*      ) __WORK="${__WORK:+"${__WORK} "}install=https://download.opensuse.org/distribution/leap/${__MDIA[$((_OSET_MDIA+2))]##*[^0-9]}/repo/oss/";;
 				opensuse-tumbleweed*netinst*) __WORK="${__WORK:+"${__WORK} "}install=https://download.opensuse.org/tumbleweed/repo/oss/";;
-				*                           ) __WORK="${__WORK:+"${__WORK} "}install=\${srvraddr}/${_DIRS_IMGS##*/}/${4##*[^0-9]}";;
+				*                           ) __WORK="${__WORK:+"${__WORK} "}install=\${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]##*[^0-9]}";;
 			esac
 		fi
 	fi

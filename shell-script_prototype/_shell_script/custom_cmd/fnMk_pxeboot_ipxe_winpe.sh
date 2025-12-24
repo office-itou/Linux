@@ -11,12 +11,13 @@
 #   g-var : _DIRS_IMGS : read
 #   g-var : _DIRS_CONF : read
 function fnMk_pxeboot_ipxe_winpe() {
+	declare -a    __MDIA=("${@:-}")
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
-		:${4}
-		echo Loading ${5//%20/ } ...
+		:${__MDIA[$((_OSET_MDIA+2))]}
+		echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
 		set srvraddr ${_SRVR_PROT:?}://${_SRVR_ADDR:?}
 		set ipxaddr \${srvraddr}/${_DIRS_TFTP##*/}/ipxe
-		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${4}
+		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
 		set cfgaddr \${srvraddr}/${_DIRS_CONF##*/}/windows
 		echo Loading boot files ...
 		kernel \${ipxaddr}/wimboot

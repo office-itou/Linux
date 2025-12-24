@@ -19,21 +19,21 @@ function fnMk_pxeboot_grub() {
 	__SPCS="$(printf "%$(("${__CONT_TABS}" * 2))s" "")"
 	# --- menu list -----------------------------------------------------------
 	[[ ! -s "${__TGET_PATH}" ]] && fnMk_pxeboot_grub_hdrftr > "${__TGET_PATH}"
-	case "${__LIST_MDIA[2]}" in
+	case "${__LIST_MDIA[$((_OSET_MDIA+1))]}" in
 		m)								# (menu)
-			case "${__LIST_MDIA[4]}" in
+			case "${__LIST_MDIA[$((_OSET_MDIA+3))]}" in
 				System%20command) ;;
 				%20             ) __WORK="${__SPCS}}\n";;
-				*               ) __WORK="${__SPCS}submenu '[ ${__LIST_MDIA[4]//%20/ } ... ]' {";;
+				*               ) __WORK="${__SPCS}submenu '[ ${__LIST_MDIA[$((_OSET_MDIA+3))]//%20/ } ... ]' {";;
 			esac
 			sed -i "${__TGET_PATH}" -e "/\[ System command \]/i \\${__WORK}"
 			;;
 		o)								# (output)
-			if [[ ! -e "${_DIRS_IMGS}/${__LIST_MDIA[3]}"/. ]] \
-			|| [[ ! -s "${__LIST_MDIA[15]}" ]]; then
+			if [[ ! -e "${_DIRS_IMGS}/${__LIST_MDIA[$((_OSET_MDIA+2))]}"/. ]] \
+			|| [[ ! -s "${__LIST_MDIA[$((_OSET_MDIA+14))]}" ]]; then
 				return
 			fi
-			case "${__LIST_MDIA[3]}" in
+			case "${__LIST_MDIA[$((_OSET_MDIA+2))]}" in
 				windows-*              ) __WORK="$(fnMk_pxeboot_grub_windows "${__LIST_MDIA[@]}")";;
 				winpe-*|ati*x64|ati*x86) __WORK="$(fnMk_pxeboot_grub_winpe   "${__LIST_MDIA[@]}")";;
 				aomei-backupper        ) __WORK="$(fnMk_pxeboot_grub_aomei   "${__LIST_MDIA[@]}")";;

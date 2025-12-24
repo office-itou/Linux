@@ -10,12 +10,13 @@
 #   g-var : _DIRS_TFTP : read
 #   g-var : _DIRS_IMGS : read
 function fnMk_pxeboot_slnx_m86p() {
+	declare -a    __MDIA=("${@:-}")
 	declare       __ENTR=""
-	__ENTR="$(printf "%-55.55s%19.19s" "- ${4//%20/ }  ${_TEXT_SPCE// /.}" "${17//%20/ }")"
+	__ENTR="$(printf "%-55.55s%19.19s" "- ${__MDIA[$((_OSET_MDIA+3))]//%20/ }  ${_TEXT_SPCE// /.}" "${__MDIA[$((_OSET_MDIA+16))]//%20/ }")"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
-		label ${4}
+		label ${__MDIA[$((_OSET_MDIA+3))]}
 		  menu label ^${__ENTR:-}
-		  linux  ${_SRVR_PROT:?}://${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}/${4}/${25#*/"${4}"/}
+		  linux  ${_SRVR_PROT:?}://${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+3))]}/${__MDIA[$((_OSET_MDIA+24))]#*/"${__MDIA[$((_OSET_MDIA+3))]}"/}
 _EOT_
 	unset __ENTR
 }

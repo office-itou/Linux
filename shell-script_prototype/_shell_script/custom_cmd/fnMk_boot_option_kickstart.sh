@@ -21,8 +21,8 @@ function fnMk_boot_option_kickstart() {
 	__BOPT=("server=\$\{srvraddr\}")
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
-	if [[ -n "${26##*-}" ]]; then
-		__WORK="${__WORK:+"${__WORK} "}inst.ks=hd:sr0:${26#"${_DIRS_CONF%/*}"}"
+	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
+		__WORK="${__WORK:+"${__WORK} "}inst.ks=hd:sr0:${__MDIA[$((_OSET_MDIA+24))]#"${_DIRS_CONF%/*}"}"
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
 			__WORK="${__WORK/hd:sr0:/\$\{srvraddr\}}"
 			__WORK="${__WORK/_dvd/_web}"
@@ -36,26 +36,26 @@ function fnMk_boot_option_kickstart() {
 	__BOPT+=("${__WORK}")
 	# --- 3: network ----------------------------------------------------------
 	__WORK=""
-	if [[ -n "${26##*-}" ]]; then
+	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		__WORK="${__WORK:+"${__WORK} "}ip=\${ipv4addr}::\${ipv4gway}:\${ipv4mask}:\${hostname}:\${ethrname}:none,auto6 nameserver=\${ipv4nsvr}"
 	fi
-	case "${2}" in
+	case "${__MDIA[$((_OSET_MDIA+0))]}" in
 		live) __WORK="dhcp";;
 		*   ) __WORK="${__WORK:-"dhcp"}";;
 	esac
 	__BOPT+=("${__WORK}")
 	# --- 4: otheropt ---------------------------------------------------------
 	__WORK=""
-	if [[ -n "${26##*-}" ]]; then
+	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			__WORK="${__WORK:+"${__WORK} "}inst.repo=\$\{srvraddr\}/${_DIRS_IMGS##*/}/${4}"
+			__WORK="${__WORK:+"${__WORK} "}inst.repo=\$\{srvraddr\}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}"
 		else
-			__WORK="${__WORK:+"${__WORK} "}inst.stage2=hd:LABEL=${19}"
+			__WORK="${__WORK:+"${__WORK} "}inst.stage2=hd:LABEL=${__MDIA[$((_OSET_MDIA+17))]}"
 		fi
 	else
 		case "${2}" in
-			clive) __WORK="${__WORK:+"${__WORK} "}root=live:\$\{srvraddr\}/${_DIRS_RMAK##*/}/${16##*/}";;
-			*    ) __WORK="${__WORK:+"${__WORK} "}root=live:\$\{srvraddr\}/${_DIRS_ISOS##*/}${16#"${_DIRS_ISOS}"}";;
+			clive) __WORK="${__WORK:+"${__WORK} "}root=live:\$\{srvraddr\}/${_DIRS_RMAK##*/}/${__MDIA[$((_OSET_MDIA+14))]##*/}";;
+			*    ) __WORK="${__WORK:+"${__WORK} "}root=live:\$\{srvraddr\}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
 		esac
 	fi
 	__BOPT+=("${__WORK}")
