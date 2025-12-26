@@ -67,7 +67,6 @@ function fnMk_pxeboot_ipxe_linux() {
 			item otheropt                           Other options
 			isset \${openmenu} && present ||
 			echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
-			set srvraddr ${_SRVR_PROT:?}://\${66}
 			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
 			set options \${autoinst} \${language} \${networks} \${otheropt}
 			echo Loading boot files ...
@@ -90,7 +89,6 @@ _EOT_
 			set networks ${__BOPT[3]:-}
 			set otheropt ${__BOPT[@]:4}
 			echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
-			set srvraddr ${_SRVR_PROT:?}://\${66}
 			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
 			set options \${autoinst} \${language} \${networks} \${otheropt}
 			echo Loading boot files ...

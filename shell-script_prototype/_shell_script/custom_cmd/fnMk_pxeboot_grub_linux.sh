@@ -26,7 +26,7 @@ function fnMk_pxeboot_grub_linux() {
 		ubuntu*) __CIDR="";;
 		*      ) __CIDR="/${_IPV4_CIDR:-}";;
 	esac
-	__ENTR="$(printf "%-55.55s%19.19s" "- ${__MDIA[$((_OSET_MDIA+2))]//%20/ }  ${_TEXT_SPCE// /.}" "${__MDIA[$((_OSET_MDIA+15))]//%20/ }")"
+	__ENTR="$(printf "%-54.54s %19.19s" "- ${__MDIA[$((_OSET_MDIA+3))]//%20/ }  ${_TEXT_SPCE// /.}" "${__MDIA[$((_OSET_MDIA+15))]//%20/ }")"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		menuentry '${__ENTR:-}' {
 		  echo 'Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...'

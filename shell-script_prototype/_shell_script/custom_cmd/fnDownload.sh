@@ -15,7 +15,7 @@ function fnDownload() {
 	declare -r    __TGET_PATH="${2:?}"
 	declare -r    __TGET_SIZE="${3:-}"
 	declare       __TEMP=""				# temporary file
-	              __TEMP="$(mktemp -q -p "${_DIRS_TEMP:-/tmp}" "${__TGET_PATH##*/}.XXXXXX")"
+	              __TEMP="$(mktemp -q "${_DIRS_TEMP:-/tmp}/${__FUNC_NAME}.XXXXXX")"
 	readonly      __TEMP
 	declare       __SIZE=""
 	declare       __REAL=""

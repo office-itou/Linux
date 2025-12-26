@@ -25,7 +25,7 @@ function fnMk_boot_option_agama() {
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		__WORK="${__WORK:+"${__WORK} "}live.password=install inst.auto=dvd:${__MDIA[$((_OSET_MDIA+24))]#"${_DIRS_CONF%/*}"}"
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			__WORK="${__WORK/dvd:/\${srvraddr}}"
+			__WORK="${__WORK/dvd:/\$\{srvraddr\}}"
 			__WORK="${__WORK/_dvd/_web}"
 		else
 			__WORK="${__WORK:+"${__WORK}?devices=sr0"}"

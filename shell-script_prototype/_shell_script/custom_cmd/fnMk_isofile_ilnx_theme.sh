@@ -1,14 +1,20 @@
 # shellcheck disable=SC2148
 
 # -----------------------------------------------------------------------------
-# descript: make header and footer for syslinux in pxeboot
-#   input :            : unused
-#   output:   stdout   : output
+# descript: make theme.txt files for isolinux
+#   input :     $1     : target directory
+#   input :     $2     : iso file name
+#   output:   stdout   : message
 #   return:            : unused
 #   g-var : _MENU_RESO : read
-#   g-var : _MENU_RESO : read
-#   g-var : _MENU_DPTH : read
-function fnMk_pxeboot_slnx_hdrftr() {
+#   g-var : _MENU_SPLS : read
+#   g-var : _MENU_TOUT : read
+#   g-var : _OSET_MDIA : read
+function fnMk_isofile_ilnx_theme() {
+	declare -r    __FILE_NAME="${1:?}"
+	declare -r    __TIME_STMP="${2:?}"
+	declare       __TITL=""
+	__TITL="$(printf "%s%19.19s" "${__FILE_NAME:-}" "${__TIME_STMP:-}")"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		path ./
 		prompt 0
@@ -16,6 +22,8 @@ function fnMk_pxeboot_slnx_hdrftr() {
 		default vesamenu.c32
 
 		${_MENU_RESO:+"menu resolution ${_MENU_RESO/x/ }"}
+		${__TITL:+"menu title Boot Menu: ${__TITL}"}
+		${_MENU_SPLS:+"menu background ${_MENU_SPLS}"}
 
 		menu color screen       * #ffffffff #ee000080 *
 		menu color title        * #ffffffff #ee000080 *
@@ -45,19 +53,8 @@ function fnMk_pxeboot_slnx_hdrftr() {
 		menu title - Boot Menu -
 		menu tabmsg Press ENTER to boot or TAB to edit a menu entry
 
-		label System-command
-		  menu label ^[ System command ... ]
-
-		label Hardware-info
-		  menu label ^- Hardware info
-		  com32 hdt.c32
-
-		label System-shutdown
-		  menu label ^- System shutdown
-		  com32 poweroff.c32
-
-		label System-restart
-		  menu label ^- System restart
-		  com32 reboot.c32
+		${_MENU_TOUT:+"timeout ${_MENU_TOUT}0"}
+		default auto-install
 _EOT_
+	unset __TITL
 }

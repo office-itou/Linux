@@ -38,7 +38,7 @@ function fnMk_pxeboot_ipxe() {
 #				system  ) ;;					# system command
 				*       ) __ENTR="";;			# original media install mode
 			esac
-			__WORK="$(printf "%-48.48s%-55.55s%19.19s" "item -- ${__ENTR:-}${__LIST_MDIA[$((_OSET_MDIA+2))]}" "- ${__LIST_MDIA[$((_OSET_MDIA+3))]//%20/ } ${_TEXT_SPCE// /.}" "${__LIST_MDIA[$((_OSET_MDIA+15))]//%20/ }")"
+			__WORK="$(printf "%-48.48s%-54.54s %19.19s" "item -- ${__ENTR:-}${__LIST_MDIA[$((_OSET_MDIA+2))]}" "- ${__LIST_MDIA[$((_OSET_MDIA+3))]//%20/ } ${_TEXT_SPCE// /.}" "${__LIST_MDIA[$((_OSET_MDIA+15))]//%20/ }")"
 			sed -i "${__TGET_PATH}" -e "/\[ System command \]/i \\${__WORK}"
 			case "${__LIST_MDIA[$((_OSET_MDIA+2))]}" in
 				windows-*              ) __WORK="$(fnMk_pxeboot_ipxe_windows "${__LIST_MDIA[@]}" | sed -e ':l; N; s/\n/\\n/; b l;')";;

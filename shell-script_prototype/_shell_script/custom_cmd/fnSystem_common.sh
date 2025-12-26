@@ -45,7 +45,7 @@
 
 	# --- temporary directory -------------------------------------------------
 	declare       _DIRS_TEMP="${_DIRS_WTOP}"
-	              _DIRS_TEMP="$(mktemp -qtd -p "${_DIRS_TEMP}" "${_PROG_NAME}.XXXXXX")"
+	              _DIRS_TEMP="$(mktemp -qd "${_DIRS_TEMP}/${_PROG_NAME}.XXXXXX")"
 	readonly      _DIRS_TEMP
 
 	# --- trap list -----------------------------------------------------------

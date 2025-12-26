@@ -13,12 +13,12 @@
 function fnMk_pxeboot_slnx_winpe() {
 	declare -a    __MDIA=("${@:-}")
 	declare       __ENTR=""
-	__ENTR="$(printf "%-55.55s%19.19s" "- ${__MDIA[$((_OSET_MDIA+3))]//%20/ }  ${_TEXT_SPCE// /.}" "${__MDIA[$((_OSET_MDIA+16))]//%20/ }")"
+	__ENTR="$(printf "%-54.54s %19.19s" "- ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ${_TEXT_SPCE// /.}" "${__MDIA[$((_OSET_MDIA+15))]//%20/ }")"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
-		label ${__MDIA[$((_OSET_MDIA+3))]}
+		label ${__MDIA[$((_OSET_MDIA+2))]}
 		  menu label ^${__ENTR:-}
 		  linux  memdisk
-		  initrd ${_SRVR_PROT}://${_SRVR_ADDR:?}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+15))]#"${_DIRS_ISOS}"}
+		  initrd ${_SRVR_PROT}://${_SRVR_ADDR:?}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}
 		  append iso raw
 _EOT_
 	unset __ENTR

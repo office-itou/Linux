@@ -13,7 +13,7 @@ function fnRsync() {
 	declare -r    __TGET_ISOS="${1:?}"	# target iso file
 	declare -r    __TGET_DEST="${2:?}"	# destination directory
 	declare       __TEMP=""				# temporary file
-	              __TEMP="$(mktemp -qd -p "${_DIRS_TEMP:-/tmp}" "${__TGET_ISOS##*/}.XXXXXX")"
+	              __TEMP="$(mktemp -q "${_DIRS_TEMP:-/tmp}/${__FUNC_NAME}.XXXXXX")"
 	readonly      __TEMP
 
 	case "${__TGET_ISOS}" in

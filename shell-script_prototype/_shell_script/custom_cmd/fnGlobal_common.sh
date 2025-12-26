@@ -63,6 +63,10 @@
 	declare       _MENU_MODE="864"							# screen mode (vga=nnn)
 	declare       _MENU_SPLS="splash.png"					# splash file
 
+	# --- auto install --------------------------------------------------------
+	declare       _AUTO_INST="autoinst.cfg"					# autoinstall configuration file
+	declare       _MINI_IRAM="initps.gz"					# initial ram disk of mini.iso including preseed
+
 	# --- list data -----------------------------------------------------------
 	declare -a    _LIST_PARM=()								# PARAMETER LIST
 	declare -a    _LIST_CONF=()								# common configuration data
