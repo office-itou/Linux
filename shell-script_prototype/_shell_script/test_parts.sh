@@ -37,15 +37,15 @@
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMN}"/fnString.sh						# string output
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnStrmsg.sh						# string output with message
+#	source "${_SHEL_COMN}"/fnStrmsg.sh						# string output with message
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMN}"/fnTargetsys.sh					# target system state
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnIPv6FullAddr.sh				# IPv6 full address
+#	source "${_SHEL_COMN}"/fnIPv6FullAddr.sh				# IPv6 full address
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnIPv6RevAddr.sh					# IPv6 reverse address
+#	source "${_SHEL_COMN}"/fnIPv6RevAddr.sh					# IPv6 reverse address
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnIPv4Netmask.sh					# IPv4 netmask conversion
+#	source "${_SHEL_COMN}"/fnIPv4Netmask.sh					# IPv4 netmask conversion
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMN}"/fnGetWebinfo.sh					# get web information data
 	# shellcheck source=/dev/null
@@ -54,11 +54,11 @@
 #	source "${_SHEL_COMN}"/fnWget.sh						# wget / curl
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnDbgout.sh						# message output (debug out)
+#	source "${_SHEL_COMD}"/fnDbgout.sh						# message output (debug out)
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnDbgdump.sh						# dump output (debug out)
+#	source "${_SHEL_COMD}"/fnDbgdump.sh						# dump output (debug out)
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnDbgparam.sh					# parameter debug output
+#	source "${_SHEL_COMD}"/fnDbgparam.sh					# parameter debug output
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnDbgparameters.sh				# print out of internal variables
 	# shellcheck source=/dev/null
@@ -66,13 +66,13 @@
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnFind_command.sh				# find command
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnFind_service.sh				# find service
+#	source "${_SHEL_COMD}"/fnFind_service.sh				# find service
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnSystem_param.sh				# get system parameter
+#	source "${_SHEL_COMD}"/fnSystem_param.sh				# get system parameter
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnNetwork_param.sh				# get network parameter
+#	source "${_SHEL_COMD}"/fnNetwork_param.sh				# get network parameter
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnFile_backup.sh					# file backup
+#	source "${_SHEL_COMD}"/fnFile_backup.sh					# file backup
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnDownload.sh					# wget / curl file download
 	# shellcheck source=/dev/null
@@ -84,26 +84,22 @@
 	source "${_SHEL_COMD}"/fnTrap.sh						# trap
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnInitialize.sh					# initialize
-	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnList_conf_Set.sh				# set default common configuration data
-	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnList_conf_Enc.sh				# encoding common configuration data
-	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnList_conf_Dec.sh				# decoding common configuration data
+
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnList_conf_Get.sh				# get auto-installation configuration file
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnList_conf_Put.sh				# put common configuration data
+#	source "${_SHEL_COMD}"/fnList_conf_Put.sh				# put common configuration data
+
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnList_mdia_Get.sh				# get media information data
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnList_mdia_Put.sh				# put media information data
-	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnList_mdia_Dec.sh				# decoding common configuration data
+
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_symlink_dir.sh				# make directory
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_symlink.sh					# make symlink
+
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_preconf_preseed.sh			# make preseed.cfg
 	# shellcheck source=/dev/null
@@ -116,16 +112,14 @@
 	source "${_SHEL_COMD}"/fnMk_preconf_agama.sh			# make autoinst.json
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_preconf.sh					# make preconfiguration files
+
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot.sh					# make pxeboot files
+#	source "${_SHEL_COMD}"/fnCopy_iso.sh					# copy iso files
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnCopy_iso.sh					# copy iso files
-	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_isofile.sh					# make iso files
-	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnSelect_target.sh				# select target
+#	source "${_SHEL_COMD}"/fnSelect_target.sh				# select target
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_print_list.sh				# print media list
+
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_boot_option_preseed.sh		# make boot options for preseed
 	# shellcheck source=/dev/null
@@ -138,6 +132,7 @@
 	source "${_SHEL_COMD}"/fnMk_boot_option_agama.sh		# make boot options for agama
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_boot_options.sh				# make boot options
+
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_pxeboot_clear_menu.sh		# clear pxeboot menu
 	# shellcheck source=/dev/null
@@ -154,6 +149,7 @@
 	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe_linux.sh		# make linux section for ipxe menu
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe.sh				# make ipxe menu
+
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_pxeboot_grub_hdrftr.sh		# make header and footer for grub.cfg
 	# shellcheck source=/dev/null
@@ -168,6 +164,7 @@
 	source "${_SHEL_COMD}"/fnMk_pxeboot_grub_linux.sh		# make linux section for grub.cfg
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_pxeboot_grub.sh				# make grub.cfg for pxeboot
+
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_hdrftr.sh		# make header and footer for syslinux
 	# shellcheck source=/dev/null
@@ -182,8 +179,29 @@
 	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_linux.sh		# make linux section for syslinux
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx.sh				# make syslinux for pxeboot
+
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_pxeboot.sh					# make pxeboot files
+
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_isofile_grub_autoinst.sh	# make autoinst.cfg files for grub.cfg
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_isofile_grub_theme.sh		# make theme.txt files for grub.cfg
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_isofile_grub.sh				# make grub.cfg files
+
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_isofile_ilnx_autoinst.sh	# make autoinst.cfg files for isolinux
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_isofile_ilnx_theme.sh		# make theme.txt files for isolinux
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_isofile_ilnx.sh				# make isolinux files
+
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_isofile_rebuild.sh			# make customize iso files
+
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_isofile.sh					# make iso files
 
 # *** main section ************************************************************
 

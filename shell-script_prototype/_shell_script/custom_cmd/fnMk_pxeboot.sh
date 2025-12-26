@@ -26,6 +26,7 @@ function fnMk_pxeboot() {
 	declare       __RETN=""				# return value
 	declare -a    __ARRY=()				# data array
 	declare -i    __TABS=0				# tab count
+	declare       __WORK=""
 	declare -i    I=0
 	declare -i    J=0
 
@@ -84,7 +85,8 @@ function fnMk_pxeboot() {
 						c) ;;
 						d)
 							__RETN="- - - -"
-							if [[ -n "$(fnTrim "${__MDIA[$((_OSET_MDIA+14))]}" "-")" ]]; then
+							__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+14))]}" "-")"
+							if [[ -n "${__WORK:-}" ]]; then
 								fnDownload "${__MDIA[$((_OSET_MDIA+9))]}" "${__MDIA[$((_OSET_MDIA+14))]}" "${__MDIA[$((_OSET_MDIA+11))]}"
 								__RETN="$(fnGetFileinfo "${__MDIA[$((_OSET_MDIA+14))]}")"
 							fi

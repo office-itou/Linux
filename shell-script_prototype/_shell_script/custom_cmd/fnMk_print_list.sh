@@ -24,6 +24,9 @@ function fnMk_print_list() {
 	declare       __BASE=""
 	declare       __EXTE=""
 	declare       __WORK=""
+	declare       __WRK1=""
+	declare       __WRK2=""
+	declare       __WRK3=""
 	declare       __COLR=""
 	declare       __CASH=""
 	declare -i    __TSMP=0
@@ -54,7 +57,7 @@ function fnMk_print_list() {
 					}
 				}
 			}
-		'
+		' || true
 	)
 	__REFR="$(printf "%s\n" "${__LIST[@]:-}")"
 	if [[ "${#__LIST[@]}" -eq 0 ]]; then
@@ -73,10 +76,12 @@ function fnMk_print_list() {
 		esac
 		# --- web file ----------------------------------------------------
 		__RETN="- - - - - -"
-		if [[ -n "$(fnTrim "${__MDIA[$((_OSET_MDIA+8))]}" "-")" ]] && [[ "${__MDIA[$((_OSET_MDIA+9))]##*.}" = "iso" ]]; then
+		__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+8))]}" "-")"
+		if [[ -n "${__WORK:-}" ]] && [[ "${__MDIA[$((_OSET_MDIA+9))]##*.}" = "iso" ]]; then
 			__TSMP="${__MDIA[$((_OSET_MDIA+10))]:-"0"}${__MDIA[$((_OSET_MDIA+10))]:+"$(TZ=UTC date -d "${__MDIA[$((_OSET_MDIA+10))]}" "+%s")"}"
 			__TNOW="$(TZ=UTC date "+%s")"
-			if [[ "${__TSMP}" -le $((__TNOW-5*60)) ]] || [[ -z "$(fnTrim "${__MDIA[$((_OSET_MDIA+9))]}" "-")" ]]; then
+			__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+9))]}" "-")"
+			if [[ "${__TSMP}" -le $((__TNOW-5*60)) ]] || [[ -z "${__WORK:-}" ]]; then
 				__CASH=""
 				__RETN="$(fnGetWebinfo "${__MDIA[$((_OSET_MDIA+8))]}" "${_COMD_WGET:-}")"
 			else
@@ -111,7 +116,8 @@ function fnMk_print_list() {
 		esac
 		# --- iso file ----------------------------------------------------
 		__RETN="- - - -"
-		if [[ -n "$(fnTrim "${__MDIA[$((_OSET_MDIA+14))]}" "-")" ]]; then
+		__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+14))]}" "-")"
+		if [[ -n "${__WORK:-}" ]]; then
 			__RETN="$(fnGetFileinfo "${__MDIA[$((_OSET_MDIA+14))]}")"
 		fi
 		read -r -a __ARRY < <(echo "${__RETN}")
@@ -120,19 +126,24 @@ function fnMk_print_list() {
 		__MDIA[_OSET_MDIA+17]="${__ARRY[3]:-"-"}"	# iso_volume
 		# --- conf file ---------------------------------------------------
 		__RETN="- - - -"
-		if [[ -n "$(fnTrim "${__MDIA[$((_OSET_MDIA+24))]}" "-")" ]]; then
+		__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+24))]}" "-")"
+		if [[ -n "${__WORK:-}" ]]; then
 			__RETN="$(fnGetFileinfo "${__MDIA[$((_OSET_MDIA+24))]}")"
 		fi
 		read -r -a __ARRY < <(echo "${__RETN}")
 		__MDIA[_OSET_MDIA+25]="${__ARRY[1]:-"-"}"	# rmk_tstamp
 		# --- rmk file ----------------------------------------------------
-		if [[ -n "$(fnTrim "${__MDIA[$((_OSET_MDIA+14))]}" "-")" ]] \
-		&& [[ -n "$(fnTrim "${__MDIA[$((_OSET_MDIA+18))]}" "-")" ]] \
-		&& [[ -n "$(fnTrim "${__MDIA[$((_OSET_MDIA+24))]}" "-")" ]]; then
+		__WRK1="$(fnTrim "${__MDIA[$((_OSET_MDIA+14))]}" "-")"
+		__WRK2="$(fnTrim "${__MDIA[$((_OSET_MDIA+18))]}" "-")"
+		__WRK3="$(fnTrim "${__MDIA[$((_OSET_MDIA+24))]}" "-")"
+		if [[ -n "${__WRK1:-}" ]] \
+		&& [[ -n "${__WRK2:-}" ]] \
+		&& [[ -n "${__WRK3:-}" ]]; then
 			__SEED="${__MDIA[$((_OSET_MDIA+24))]%/*}"
 			__SEED="${__SEED##*/}"
 			__FILE="${__MDIA[$((_OSET_MDIA+24))]#*"${__SEED:+"${__SEED}/"}"}"
-			if [[ -n "$(fnTrim "${__FILE}" "-")" ]]; then
+			__WORK="$(fnTrim "${__FILE}" "-")"
+			if [[ -n "${__WORK:-}" ]]; then
 				__DIRS="$(fnDirname "${__MDIA[$((_OSET_MDIA+18))]}")"
 				__BASE="$(fnBasename "${__MDIA[$((_OSET_MDIA+14))]}")"
 				__FILE="${__BASE%.*}"
@@ -141,7 +152,8 @@ function fnMk_print_list() {
 			fi
 		fi
 		__RETN="- - - -"
-		if [[ -n "$(fnTrim "${__MDIA[$((_OSET_MDIA+18))]}" "-")" ]]; then
+		__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+18))]}" "-")"
+		if [[ -n "${__WORK:-}" ]]; then
 			__RETN="$(fnGetFileinfo "${__MDIA[$((_OSET_MDIA+18))]}")"
 		fi
 		read -r -a __ARRY < <(echo "${__RETN}")
@@ -153,17 +165,21 @@ function fnMk_print_list() {
 		# create  : green
 		# error   : red
 		__MDIA[_OSET_MDIA+27]="-"				# create_flag
-		if [[ -n "$(fnTrim "${__MDIA[$((_OSET_MDIA+9))]}"  "-")" ]] \
-		&& [[ -n "$(fnTrim "${__MDIA[$((_OSET_MDIA+14))]}" "-")" ]]; then
+		__WRK1="$(fnTrim "${__MDIA[$((_OSET_MDIA+9))]}"  "-")"
+		__WRK2="$(fnTrim "${__MDIA[$((_OSET_MDIA+14))]}" "-")"
+		if [[ -n "${__WRK1:-}" ]] \
+		&& [[ -n "${__WRK2:-}" ]]; then
 			case "${__MDIA[$((_OSET_MDIA+13))]}" in
 				2[0-9][0-9])
+					__WRK1="$(fnTrim "${__MDIA[$((_OSET_MDIA+24))]}" "-")"
+					__WRK2="$(fnTrim "${__MDIA[$((_OSET_MDIA+18))]}" "-")"
 					if [[ ! -e "${__MDIA[$((_OSET_MDIA+14))]}" ]]; then
 						__MDIA[_OSET_MDIA+27]="d"	# create_flag (download: original file not found)
 					elif [[ "${__MDIA[$((_OSET_MDIA+10))]:-}" != "${__MDIA[$((_OSET_MDIA+15))]:-}" ]] \
 					||   [[ "${__MDIA[$((_OSET_MDIA+11))]:-}" != "${__MDIA[$((_OSET_MDIA+16))]:-}" ]]; then
 						__MDIA[_OSET_MDIA+27]="d"	# create_flag (download: timestamp or size differs)
-					elif [[ -n "$(fnTrim "${__MDIA[$((_OSET_MDIA+24))]}" "-")" ]] \
-					&&   [[ -n "$(fnTrim "${__MDIA[$((_OSET_MDIA+18))]}" "-")" ]]; then
+					elif [[ -n "${__WRK1:-}" ]] \
+					&&   [[ -n "${__WRK2:-}" ]]; then
 						if   [[ ! -e "${__MDIA[$((_OSET_MDIA+18))]}" ]]; then
 							__MDIA[_OSET_MDIA+27]="c"	# create_flag (create: remake file not found)
 						elif [[ "${__MDIA[$((_OSET_MDIA+15))]:-}" -gt "${__MDIA[$((_OSET_MDIA+19))]:-}" ]] \
@@ -191,8 +207,10 @@ function fnMk_print_list() {
 		__RDAT="$(fnTrim "${__MDIA[$((_OSET_MDIA+6))]%%%20*}" "-")"
 		__SUPE="$(fnTrim "${__MDIA[$((_OSET_MDIA+7))]%%%20*}" "-")"
 		__MESG="$(fnTrim "${__MESG:-"${__SEED}"}" "-")"
-		[[ -n "$(fnTrim "${__MDIA[$((_OSET_MDIA+15))]}" "-")" ]] && __RDAT="$(fnTrim "${__MDIA[$((_OSET_MDIA+15))]%%%20*}" "-")"	# iso_tstamp
-		[[ -n "$(fnTrim "${__MDIA[$((_OSET_MDIA+13))]}" "-")" ]] && __RDAT="$(fnTrim "${__MDIA[$((_OSET_MDIA+10))]%%%20*}" "-")"	# web_tstamp
+		__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+15))]}" "-")"
+		[[ -n "${__WORK:-}" ]] && __RDAT="$(fnTrim "${__MDIA[$((_OSET_MDIA+15))]%%%20*}" "-")"	# iso_tstamp
+		__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+13))]}" "-")"
+		[[ -n "${__WORK:-}" ]] && __RDAT="$(fnTrim "${__MDIA[$((_OSET_MDIA+10))]%%%20*}" "-")"	# web_tstamp
 		printf "\033[m%c\033[%sm${__FMTT}\033[m%c\n" "#" "${__COLR:-}" "${__MDIA[1]}" "${__BASE}" "${__RDAT:-"20xx-xx-xx"}" "${__SUPE:-"20xx-xx-xx"}" "${__MESG:-}" "#"
 		# --- data registration -------------------------------------------
 		__MDIA=("${__MDIA[@]// /%20}")

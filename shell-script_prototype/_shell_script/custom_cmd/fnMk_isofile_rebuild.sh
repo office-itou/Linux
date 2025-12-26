@@ -42,13 +42,16 @@ function fnMk_isofile_rebuild() {
 		-eltorito-alt-boot -e '--interval:appended_partition_2:all::' \
 		-no-emul-boot
 	)
+	declare       __TEMP=""				# temporary file
+	              __TEMP="$(mktemp -q "${_DIRS_TEMP:-/tmp}/${__FUNC_NAME}.XXXXXX")"
+	readonly      __TEMP
 
 	echo "create iso image file ..."
 	pushd "${__DIRS_TGET:?}" > /dev/null || exit
-		if ! nice -n 19 xorrisofs "${__OPTN[@]}" -output "${__FILE_WORK}" .; then
+		if ! nice -n 19 xorrisofs "${__OPTN[@]}" -output "${__TEMP}" .; then
 			printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [xorriso]" "${__FILE_ISOS##*/}" 1>&2
 		else
-			if ! cp --preserve=timestamps "${__FILE_WORK}" "${__FILE_ISOS}"; then
+			if ! cp --preserve=timestamps "${__TEMP}" "${__FILE_ISOS}"; then
 				printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [cp]" "${__FILE_ISOS##*/}" 1>&2
 			else
 				ls -lh "${__FILE_ISOS}"

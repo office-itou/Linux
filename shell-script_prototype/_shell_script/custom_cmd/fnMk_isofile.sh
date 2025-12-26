@@ -97,7 +97,8 @@ function fnMk_isofile() {
 								c) ;;
 								d)
 									__RETN="- - - -"
-									if [[ -n "$(fnTrim "${__MDIA[$((_OSET_MDIA+14))]}" "-")" ]]; then
+									__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+14))]}" "-")"
+									if [[ -n "${__WORK:-}" ]]; then
 										fnDownload "${__MDIA[$((_OSET_MDIA+9))]}" "${__MDIA[$((_OSET_MDIA+14))]}" "${__MDIA[$((_OSET_MDIA+11))]}"
 										__RETN="$(fnGetFileinfo "${__MDIA[$((_OSET_MDIA+14))]}")"
 									fi
@@ -134,14 +135,27 @@ function fnMk_isofile() {
 							fnMk_isofile_grub "${__DMRG}" "${__FNAM:-}" "${__TSMP:-}" "${__FKNL:-}" "${__FIRD:-}" "${__HOST:-}" "${__CIDR:-}" "${__BOPT[@]:-}"
 							fnMk_isofile_ilnx "${__DMRG}" "${__FNAM:-}" "${__TSMP:-}" "${__FKNL:-}" "${__FIRD:-}" "${__HOST:-}" "${__CIDR:-}" "${__BOPT[@]:-}"
 							# --- rebuild -------------------------------------
-							fnMk_isofile_rebuild "${__DMRG}" "${__MDIA[$((_OSET_MDIA+18))]}" "${__MDIA[$((_OSET_MDIA+17))]}"
-#	declare -r    __DIRS_TGET="${1:?}"	# target directory
-#	declare -r    __FILE_ISOS="${2:?}"	# output file name
-#	declare -r    __FILE_VLID="${3:?}"	# volume id
-#	declare -r    __FILE_BIOS="${4:?}"	# grub mbr file name
-#	declare -r    __FILE_UEFI="${5:?}"	# uefi file name
-#	declare -r    __FILE_BCAT="${6:?}"	# eltorito catalog file name
-#	declare -r    __FILE_ETRI="${7:?}"	# eltorito boot file name
+							__LABL="$(blkid -o value -s PTTYPE "${__MDIA[$((_OSET_MDIA+14))]}")"
+							case "${_LABL:-}" in
+								dos) ;;
+								gpt)
+									__FMBR="${__TEMP}/mbr.img"
+									__FEFI="${__TEMP}/efi.img"
+									__WORK="$(fdisk -l "${__MDIA[$((_OSET_MDIA+14))]}" 2>&1 | awk '$6~/EFI|ef/ {print $2, $4;}')"
+									read -r  __SKIP __SIZE < <(echo "${__WORK:-}")
+									dd if="${__MDIA[$((_OSET_MDIA+14))]}" bs=1 count=446 of="${__FMBR}" > /dev/null 2>&1
+									dd if="${__MDIA[$((_OSET_MDIA+14))]}" bs=512 skip="${__SKIP}" count="${__SIZE}" of="${__FEFI}" > /dev/null 2>&1
+									;;
+								*  ) ;;
+							esac
+							__FCAT="$(find "${__DMRG}" \( -iname 'boot.cat'     -o -iname 'boot.catalog' \))"
+							__FBIN="$(find "${__DMRG}" \( -iname 'isolinux.bin' -o -iname 'eltorito.img' \))"
+							fnMk_isofile_rebuild "${__DMRG}" "${__MDIA[$((_OSET_MDIA+18))]}" "${__MDIA[$((_OSET_MDIA+17))]}" "${__FMBR:-}" "${__FEFI:-}" "${__FCAT:-}" "${__FBIN:-}"
+							__RETN="$(fnGetFileinfo "${__MDIA[$((_OSET_MDIA+18))]}")"
+							read -r -a __ARRY < <(echo "${__RETN}")
+							__MDIA[_OSET_MDIA+19]="${__ARRY[1]:-}"	# rmk_tstamp
+							__MDIA[_OSET_MDIA+20]="${__ARRY[2]:-}"	# rmk_size
+							__MDIA[_OSET_MDIA+21]="${__ARRY[3]:-}"	# rmk_volume
 							# --- umount --------------------------------------
 							umount "${__DMRG}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
 							umount "${__DLOW}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")

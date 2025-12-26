@@ -10,7 +10,7 @@
 #   g-var : _MENU_SPLS : read
 #   g-var : _MENU_TOUT : read
 #   g-var : _OSET_MDIA : read
-function fnMk_isofile_ilnx_theme() {
+function fnMk_isofile_grub_theme() {
 	declare -r    __FILE_NAME="${1:?}"
 	declare -r    __TIME_STMP="${2:?}"
 	declare       __TITL=""

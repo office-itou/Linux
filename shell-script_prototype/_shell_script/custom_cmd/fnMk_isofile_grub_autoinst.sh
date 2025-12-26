@@ -2,6 +2,9 @@
 
 # -----------------------------------------------------------------------------
 # descript: make autoinst.cfg files for grub.cfg
+#   input :     $1     : target directory
+#   input :     $2     : iso file name
+#   input :     $3     : theme.txt file name
 #   input :     $4     : kernel path
 #   input :     $5     : initrd path
 #   input :     $6     : host name
@@ -18,14 +21,15 @@
 #   g-var : _IPV4_MASK : read
 #   g-var : _IPV4_GWAY : read
 #   g-var : _IPV4_NSVR : read
-function fnMk_isofile_ilnx_autoinst() {
+function fnMk_isofile_grub_autoinst() {
 	declare -r    __FILE_NAME="${1:?}"
 	declare -r    __TIME_STMP="${2:?}"
-	declare -r    __PATH_FKNL="${3:?}"
-	declare -r    __PATH_FIRD="${4:?}"
-	declare -r    __NWRK_HOST="${5:?}"
-	declare -r    __IPV4_CIDR="${6:?}"
-	declare -a    __OPTN_BOOT=("${@:6}")
+	declare -r    __PATH_THME="${3:?}"
+	declare -r    __PATH_FKNL="${4:?}"
+	declare -r    __PATH_FIRD="${5:?}"
+	declare -r    __HOST_NAME="${6:?}"
+	declare -r    __IPV4_CIDR="${7:?}"
+	declare -a    __OPTN_BOOT=("${@:7}")
 	declare       __DIRS=""
 	declare       __TITL=""
 	__TITL="$(printf "%s%19.19s" "${__FILE_NAME:-}" "${__TIME_STMP:-}")"
@@ -68,7 +72,7 @@ function fnMk_isofile_ilnx_autoinst() {
 		fi
 
 		set timeout_style=menu
-		set theme=${__FTHM#"${__DIRS_TGET}"}
+		set theme=${__PATH_THME:-}
 		export theme
 
 		#export lang
@@ -85,7 +89,7 @@ _EOT_
 
 		menuentry 'Automatic installation' {
 		  echo 'Loading ${__TITL:+"${__TITL} "}...'
-		  set hostname=${_NWRK_HOST/:_DISTRO_:/${__NWRK_HOST:-}}
+		  set hostname=${_NWRK_HOST/:_DISTRO_:/${__HOST_NAME:-}}
 		  set ethrname=${_NICS_NAME:-ens160}
 		  set ipv4addr=${_IPV4_ADDR:-}${__IPV4_CIDR:-}
 		  set ipv4mask=${_IPV4_MASK:-}
@@ -112,7 +116,7 @@ _EOT_
 
 			menuentry 'Automatic installation gui' {
 			  echo 'Loading ${__TITL:+"${__TITL} "}...'
-			  set hostname=${_NWRK_HOST/:_DISTRO_:/${__NWRK_HOST:-}}
+			  set hostname=${_NWRK_HOST/:_DISTRO_:/${__HOST_NAME:-}}
 			  set ethrname=${_NICS_NAME:-ens160}
 			  set ipv4addr=${_IPV4_ADDR:-}${__IPV4_CIDR:-}
 			  set ipv4mask=${_IPV4_MASK:-}

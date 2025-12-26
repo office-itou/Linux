@@ -34,19 +34,19 @@ function fnMk_isofile_grub() {
 	__PTHM="${__DIRS%/}/theme.txt"
 	# --- create files --------------------------------------------------------
 	fnMk_isofile_grub_theme "${__FILE_NAME:-}" "${__TIME_STMP:-}" > "${__PTHM}"
-	fnMk_isofile_grub_autoinst "${__FILE_NAME:-}" "${__TIME_STMP:-}" "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__NWRK_HOST:-}" "${__IPV4_CIDR:-}" "${__OPTN_BOOT[@]:-}" > "${__PAUT}"
+	fnMk_isofile_grub_autoinst "${__FILE_NAME:-}" "${__TIME_STMP:-}" "${__PTHM#"${__TGET_DIRS}"}" "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__NWRK_HOST:-}" "${__IPV4_CIDR:-}" "${__OPTN_BOOT[@]:-}" > "${__PAUT}"
 	# --- insert autoinst.cfg -------------------------------------------------
 	sed -i "${__PATH}"                            \
 	    -e '0,/^menuentry/ {'                     \
 	    -e '/^menuentry/i source '"${__PAUT}"'\n' \
 	    -e '}'
 	# --- comment out ---------------------------------------------------------
-	while read -r __PATH
+	find "${__DIRS:-"/"}" \( -name '*.cfg' -a ! -name "${_AUTO_INST:-"autoinst.cfg"}" \) | while read -r __PATH
 	do
 		sed -i "${__PATH}"                           \
 		    -e '/^[ \t]*\(\|set[ \t]\+\)default=/ d' \
 		    -e '/^[ \t]*\(\|set[ \t]\+\)timeout=/ d' \
 		    -e '/^[ \t]*\(\|set[ \t]\+\)gfxmode=/ d' \
 		    -e '/^[ \t]*\(\|set[ \t]\+\)theme=/   d'
-	done < <(find "${__DIRS:-"/"}" \( -name '*.cfg' -a ! -name "${_AUTO_INST:-"autoinst.cfg"}" \))
+	done
 }

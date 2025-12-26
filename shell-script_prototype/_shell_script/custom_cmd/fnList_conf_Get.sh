@@ -61,7 +61,7 @@ function fnList_conf_Get() {
 		__NAME="${__NAME:+"_${__NAME}"}"
 		read -r "${__NAME:?}" < <(eval echo "${__VALU}" || true)
 		_LIST_PARM+=("${__NAME}=${!__NAME}")
-	done < <(printf "%s\n" "${_LIST_CONF[@]:-}" | grep -E '^[[:alnum:]]+_[[:alnum:]]+=')
+	done < <(printf "%s\n" "${_LIST_CONF[@]:-}" | grep -E '^[[:alnum:]]+_[[:alnum:]]+=' || true)
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
