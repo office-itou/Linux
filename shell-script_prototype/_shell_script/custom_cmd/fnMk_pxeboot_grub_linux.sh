@@ -41,6 +41,7 @@ function fnMk_pxeboot_grub_linux() {
 		  set language=${__BOPT[2]:-}
 		  set networks=${__BOPT[3]:-}
 		  set otheropt=${__BOPT[@]:4}
+		  set options=\${autoinst} \${language} \${networks} \${otheropt}
 		  set knladdr=\${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
 		  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 		  insmod net

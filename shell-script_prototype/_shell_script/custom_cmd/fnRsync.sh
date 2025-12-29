@@ -23,12 +23,12 @@ function fnRsync() {
 	if [[ ! -s "${__TGET_ISOS}" ]]; then
 		return
 	fi
-	printf "\033[mrsync   : %s\033[m\n" "${__TGET_ISOS##*/}"
+	printf "\033[m%-8s: %s\033[m\n" "rsync" "${__TGET_ISOS##*/}"
 	rm -rf "${__TEMP:?}"
 	mkdir -p "${__TEMP}" "${__TGET_DEST}"
 	mount -o ro,loop "${__TGET_ISOS}" "${__TEMP}"
 	nice -n "${_NICE_VALU:-19}" rsync "${_OPTN_RSYC[@]}" "${__TEMP}/." "${__TGET_DEST}/" 2>/dev/null || true
 	umount "${__TEMP}"
-	chmod -R +r "${__TGET_DEST}/" 2>/dev/null || true
+	chmod -R +r,u+w "${__TGET_DEST}/" 2>/dev/null || true
 	rm -rf "${__TEMP:?}"
 }

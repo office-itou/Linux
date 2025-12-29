@@ -1,5 +1,6 @@
 # shellcheck disable=SC2148
 
+# -----------------------------------------------------------------------------
 # descript: make customize iso files
 #   input :     $1     : target directory
 #   input :     $2     : output file name
@@ -19,34 +20,48 @@ function fnMk_isofile_rebuild() {
 
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __FILE_ISOS="${2:?}"	# output file name
-	declare -r    __FILE_VLID="${3:?}"	# volume id
-	declare -r    __FILE_BIOS="${4:?}"	# grub mbr file name
-	declare -r    __FILE_UEFI="${5:?}"	# uefi file name
-	declare -r    __FILE_BCAT="${6:?}"	# eltorito catalog file name
-	declare -r    __FILE_ETRI="${7:?}"	# eltorito boot file name
-	declare -r -a __OPTN=(\
-		-quiet -rational-rock \
-		${__FILE_VLID:+-volid "${__FILE_VLID}"} \
-		-joliet -joliet-long \
-		-full-iso9660-filenames -iso-level 3 \
-		-partition_offset 16 \
-		${__FILE_BIOS:+--grub2-mbr "${__FILE_BIOS}"} \
-		--mbr-force-bootable \
-		${__FILE_UEFI:+-append_partition 2 0xEF "${__FILE_UEFI}"} \
-		-appended_part_as_gpt \
-		${__FILE_BCAT:+-eltorito-catalog "${__FILE_BCAT}"} \
-		${__FILE_ETRI:+-eltorito-boot "${__FILE_ETRI}"} \
-		-no-emul-boot \
-		-boot-load-size 4 -boot-info-table \
-		--grub2-boot-info \
-		-eltorito-alt-boot -e '--interval:appended_partition_2:all::' \
-		-no-emul-boot
-	)
+	declare -r    __FILE_VLID="${3:-}"	# volume id
+	declare -r    __FILE_HBRD="${4:-}"	# iso hybrid mbr file name
+	declare -r    __FILE_BIOS="${5:-}"	# grub mbr file name
+	declare -r    __FILE_UEFI="${6:-}"	# uefi file name
+	declare -r    __FILE_BCAT="${7:-}"	# eltorito catalog file name
+	declare -r    __FILE_ETRI="${8:-}"	# eltorito boot file name
+	if [[ -n "${__FILE_HBRD:-}" ]]; then
+		declare -r -a __OPTN=(\
+			-quiet -rational-rock \
+			${__FILE_VLID:+-volid "${__FILE_VLID}"} \
+			-joliet -joliet-long \
+			-cache-inodes \
+			-isohybrid-mbr "${__FILE_HBRD}" \
+			${__FILE_ETRI:+-eltorito-boot "${__FILE_ETRI}"} \
+			${__FILE_BCAT:+-eltorito-catalog "${__FILE_BCAT}"} \
+			-no-emul-boot -boot-load-size 4 -boot-info-table \
+			-eltorito-alt-boot -e "${__FILE_UEFI}" -no-emul-boot \
+			-isohybrid-gpt-basdat -isohybrid-apm-hfsplus
+		)
+	else
+		declare -r -a __OPTN=(\
+			-quiet -rational-rock \
+			${__FILE_VLID:+-volid "${__FILE_VLID}"} \
+			-joliet -joliet-long \
+			-full-iso9660-filenames -iso-level 3 \
+			-partition_offset 16 \
+			--grub2-mbr "${__FILE_BIOS}" \
+			--mbr-force-bootable \
+			-append_partition 2 0xEF "${__FILE_UEFI}" \
+			-appended_part_as_gpt \
+			${__FILE_BCAT:+-eltorito-catalog "${__FILE_BCAT}"} \
+			${__FILE_ETRI:+-eltorito-boot "${__FILE_ETRI}"} \
+			-no-emul-boot -boot-load-size 4 -boot-info-table --grub2-boot-info \
+			-eltorito-alt-boot -e '--interval:appended_partition_2:all::' -no-emul-boot
+		)
+	fi
 	declare       __TEMP=""				# temporary file
 	              __TEMP="$(mktemp -q "${_DIRS_TEMP:-/tmp}/${__FUNC_NAME}.XXXXXX")"
 	readonly      __TEMP
-
 	echo "create iso image file ..."
+	[[ -n "${__FILE_HBRD:-}" ]] && echo "hybrid mode"
+	[[ -n "${__FILE_BIOS:-}" ]] && echo "eltorito mode"
 	pushd "${__DIRS_TGET:?}" > /dev/null || exit
 		if ! nice -n 19 xorrisofs "${__OPTN[@]}" -output "${__TEMP}" .; then
 			printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [xorriso]" "${__FILE_ISOS##*/}" 1>&2
@@ -54,11 +69,12 @@ function fnMk_isofile_rebuild() {
 			if ! cp --preserve=timestamps "${__TEMP}" "${__FILE_ISOS}"; then
 				printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [cp]" "${__FILE_ISOS##*/}" 1>&2
 			else
+				chmod +r,u+w "${__FILE_ISOS}" 2>/dev/null || true
 				ls -lh "${__FILE_ISOS}"
 				printf "\033[m\033[42m%20.20s: %s\033[m\n" "complete" "${__FILE_ISOS}" 1>&2
 			fi
 		fi
-		rm -f "${__FILE_WORK:?}"
+		rm -f "${__TEMP:?}"
 	popd > /dev/null || exit
 
 	# --- complete ------------------------------------------------------------

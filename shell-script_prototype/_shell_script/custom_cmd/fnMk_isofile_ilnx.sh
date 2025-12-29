@@ -21,7 +21,7 @@ function fnMk_isofile_ilnx() {
 	declare -r    __PATH_FIRD="${5:?}"
 	declare -r    __NWRK_HOST="${6:?}"
 	declare -r    __IPV4_CIDR="${7:?}"
-	declare -a    __OPTN_BOOT=("${@:7}")
+	declare -a    __OPTN_BOOT=("${@:8}")
 	declare       __PATH=""				# full path
 	declare       __DIRS=""				# directory
 	declare       __FILE=""				# file name
@@ -33,8 +33,8 @@ function fnMk_isofile_ilnx() {
 	__PAUT="${__DIRS%/}/${_AUTO_INST:-"autoinst.cfg"}"
 	__PTHM="${__DIRS%/}/theme.txt"
 	# --- create files --------------------------------------------------------
-	fnMk_isofile_ilnx_theme "${__FILE_NAME:-}" "${__TIME_STMP:-}" > "${__PTHM}"
-	fnMk_isofile_ilnx_autoinst "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__NWRK_HOST:-}" "${__IPV4_CIDR:-}" "${__OPTN_BOOT[@]:-}" > "${__PAUT}"
+	fnMk_isofile_ilnx_theme "${__FILE_NAME:-}" "${__TIME_STMP:-}" > "${__TGET_DIRS}/${__PTHM}"
+	fnMk_isofile_ilnx_autoinst "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__NWRK_HOST:-}" "${__IPV4_CIDR:-}" "${__OPTN_BOOT[@]:-}" > "${__TGET_DIRS}/${__PAUT}"
 	# --- insert autoinst.cfg -------------------------------------------------
 	if grep -qEi '^include[ \t]+menu.cfg[ \t]*.*$' "${__PATH}"; then
 		sed -i "${__PATH}"                                                                   \
@@ -47,7 +47,7 @@ function fnMk_isofile_ilnx() {
 		    -e '}'
 	fi
 	# --- comment out ---------------------------------------------------------
-	find "${__DIRS:-"/"}" \( -name '*.cfg' -a ! -name "${_AUTO_INST:-"autoinst.cfg"}" \) | while read -r __PATH
+	find "${__TGET_DIRS}/${__DIRS:-"/"}" \( -name '*.cfg' -a ! -name "${_AUTO_INST:-"autoinst.cfg"}" \) | while read -r __PATH
 	do
 		sed -i "${__PATH}"                                                               \
 		    -e '/^[ \t]*\([Dd]efault\|DEFAULT\)[ \t]*/ {/.*\.c32/!                   d}' \

@@ -78,7 +78,7 @@ fnGet_conf_file() {
 				;;
 			file:*|/*)
 				fnMsgout "${_PROG_NAME:-}" "copy" "${__LINE}"
-				if ! cp --preserve=timestamps "${__LINE#*:*//}" "${_DIRS_TGET:-}${_DIRS_INST}/"; then
+				if ! cp -p "${__LINE#*:*//}" "${_DIRS_TGET:-}${_DIRS_INST}/"; then
 					fnMsgout "${_PROG_NAME:-}" "failed" "${__LINE}"
 					__PATH="${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}"
 					rm -rf "${__PATH:?}"

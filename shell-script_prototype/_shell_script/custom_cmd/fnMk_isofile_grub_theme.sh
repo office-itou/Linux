@@ -14,8 +14,9 @@ function fnMk_isofile_grub_theme() {
 	declare -r    __FILE_NAME="${1:?}"
 	declare -r    __TIME_STMP="${2:?}"
 	declare       __TITL=""
-	__TITL="$(printf "%s%19.19s" "${__FILE_NAME:-}" "${__TIME_STMP:-}")"
+	__TITL="$(printf "%s%s" "${__FILE_NAME:-}" "${__TIME_STMP:-}")"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+		desktop-image: ":_DTPIMG_:"
 		desktop-color: "#000000"
 		title-color: "#ffffff"
 		title-font: "Unifont Regular 16"

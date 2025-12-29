@@ -184,6 +184,9 @@
 	source "${_SHEL_COMD}"/fnMk_pxeboot.sh					# make pxeboot files
 
 	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnMk_isofile_conf.sh				# copy the configuration file
+
+	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_isofile_grub_autoinst.sh	# make autoinst.cfg files for grub.cfg
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_isofile_grub_theme.sh		# make theme.txt files for grub.cfg

@@ -20,12 +20,13 @@ function fnMk_isofile() {
 	declare -A    __PTRN=()				# pattern
 	declare       __TYPE=""				# target type
 	declare       __TGID=""				# target id
+	declare       __NAME=""
 	declare       __LINE=""				# data line
 	declare -a    __TGET=()				# target data line
 	declare -a    __MDIA=()				# media info data
 	declare       __RETN=""				# return value
+	declare       __WORK=""
 	declare -a    __ARRY=()				# data array
-	declare -i    __TABS=0				# tab count
 	declare       __TEMP=""				# temporary file
 	              __TEMP="$(mktemp -qd "${_DIRS_TEMP:-/tmp}/${__FUNC_NAME}.XXXXXX")"
 	readonly      __TEMP
@@ -34,15 +35,24 @@ function fnMk_isofile() {
 	declare -r    __DLOW="${__DOVL}/lower"					# lowerdir
 	declare -r    __DWKD="${__DOVL}/work"					# workdir
 	declare -r    __DMRG="${__DOVL}/merged"					# merged
-	declare       __WORK=""
+	declare -a    __BOPT=()
+	declare       __FNAM=""
+	declare       __TSMP=""
 	declare       __FKNL=""
 	declare       __FIRD=""
 	declare       __HOST=""
 	declare       __CIDR=""
-	declare -r    __BOPT=()
+	declare       __LABL=""
+	declare       __FMBR=""
+	declare       __FEFI=""
+	declare       __SKIP=""
+	declare       __SIZE=""
+	declare       __FCAT=""
+	declare       __FBIN=""
+	declare       __HBRD=""
+	declare -i    __TABS=0				# tab count
 	declare -i    I=0
 	declare -i    J=0
-
 	# --- get target ----------------------------------------------------------
 	__PTRN=()
 	set -f -- "${@:-}"
@@ -114,43 +124,53 @@ function fnMk_isofile() {
 							# --- mount ---------------------------------------
 							rm -rf "${__DOVL:?}"
 							mkdir -p "${__DUPR}" "${__DLOW}" "${__DWKD}" "${__DMRG}"
-							mount -r "${__MDIA[$((_OSET_MDIA+14))]}" "${__DLOW}" && _LIST_RMOV+=("${__DLOW:?}")
+#							mount -r "${__MDIA[$((_OSET_MDIA+14))]}" "${__DLOW}" && _LIST_RMOV+=("${__DLOW:?}")
+							mount --bind "${_DIRS_IMGS}/${__MDIA[$((_OSET_MDIA+2))]}" "${__DLOW}" && _LIST_RMOV+=("${__DLOW:?}")
 							mount -t overlay overlay -o lowerdir="${__DLOW}",upperdir="${__DUPR}",workdir="${__DWKD}" "${__DMRG}" && _LIST_RMOV+=("${__DMRG:?}")
 							# --- create auto install configuration file ------
-							__WORK="$(fnMk_boot_options "pxeboot" "${@}")"
+							__WORK="$(fnMk_boot_options "remake" "${__MDIA[@]:-}")"
 							IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
 							__FNAM="${__MDIA[$((_OSET_MDIA+14))]##*/}"
-							__TSMP="${__MDIA[$((_OSET_MDIA+15))]:+" (${__MDIA[$((_OSET_MDIA+15))]//%20/ })"}"
-							__FKNL="${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/}"
-							__FIRD="${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/}"
+							__TSMP="${__MDIA[$((_OSET_MDIA+15))]:+"${__MDIA[$((_OSET_MDIA+15))]//%20/ }"}"
+							__TSMP="${__TSMP:+" (${__TSMP:0:19})"}"
+							__FKNL="${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"}"
+							__FIRD="${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"}"
 							case "${__MDIA[$((_OSET_MDIA+3))]:-}" in
 								*-mini-*) __FIRD="${__FIRD%/*}/${_MINI_IRAM:?}";;
 								*       ) ;;
 							esac
-							__HOST="${__MDIA[$((_OSET_MDIA+2))]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
+							__HOST="${__MDIA[$((_OSET_MDIA+2))]%%-*}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
 							case "${__MDIA[$((_OSET_MDIA+3))]:-}" in
 								ubuntu*) __CIDR="";;
 								*      ) __CIDR="/${_IPV4_CIDR:-}";;
 							esac
+							fnMk_isofile_conf "${__DMRG}" "${__MDIA[$((_OSET_MDIA+24))]}"
 							fnMk_isofile_grub "${__DMRG}" "${__FNAM:-}" "${__TSMP:-}" "${__FKNL:-}" "${__FIRD:-}" "${__HOST:-}" "${__CIDR:-}" "${__BOPT[@]:-}"
 							fnMk_isofile_ilnx "${__DMRG}" "${__FNAM:-}" "${__TSMP:-}" "${__FKNL:-}" "${__FIRD:-}" "${__HOST:-}" "${__CIDR:-}" "${__BOPT[@]:-}"
 							# --- rebuild -------------------------------------
 							__LABL="$(blkid -o value -s PTTYPE "${__MDIA[$((_OSET_MDIA+14))]}")"
-							case "${_LABL:-}" in
-								dos) ;;
-								gpt)
-									__FMBR="${__TEMP}/mbr.img"
-									__FEFI="${__TEMP}/efi.img"
-									__WORK="$(fdisk -l "${__MDIA[$((_OSET_MDIA+14))]}" 2>&1 | awk '$6~/EFI|ef/ {print $2, $4;}')"
-									read -r  __SKIP __SIZE < <(echo "${__WORK:-}")
-									dd if="${__MDIA[$((_OSET_MDIA+14))]}" bs=1 count=446 of="${__FMBR}" > /dev/null 2>&1
-									dd if="${__MDIA[$((_OSET_MDIA+14))]}" bs=512 skip="${__SKIP}" count="${__SIZE}" of="${__FEFI}" > /dev/null 2>&1
-									;;
-								*  ) ;;
+							__HBRD=""
+							__FMBR=""
+							__FEFI="$(find "${__DMRG}" -name 'efi*.img')"
+							case "${__LABL:-}" in
+#								dos) __HBRD="/usr/lib/ISOLINUX/isohdpfx.bin";;
+								dos) __HBRD="${__TEMP}/mbr.img"; __FEFI="${__FEFI#"${__DMRG}/"}";;
+								gpt) __FMBR="${__TEMP}/mbr.img";;
+								*  ) exit 1;;
 							esac
+							# --- get mbr image file --------------------------
+							dd if="${__MDIA[$((_OSET_MDIA+14))]}" bs=1 count=446 of="${__FMBR:-"${__HBRD:-}"}" > /dev/null 2>&1
+							# --- get uefi image file -------------------------
+							if [[ -z "${__FEFI:-}" ]]; then
+								__WORK="$(fdisk -l "${__MDIA[$((_OSET_MDIA+14))]}" 2>&1 | awk '$6~/EFI|ef/ {print $2, $4;}')"
+								read -r  __SKIP __SIZE < <(echo "${__WORK:-}")
+								__FEFI="${__TEMP}/efi.img"
+								dd if="${__MDIA[$((_OSET_MDIA+14))]}" bs=512 skip="${__SKIP}" count="${__SIZE}" of="${__FEFI}" > /dev/null 2>&1
+							fi
+							# -------------------------------------------------
 							__FCAT="$(find "${__DMRG}" \( -iname 'boot.cat'     -o -iname 'boot.catalog' \))"
 							__FBIN="$(find "${__DMRG}" \( -iname 'isolinux.bin' -o -iname 'eltorito.img' \))"
-							fnMk_isofile_rebuild "${__DMRG}" "${__MDIA[$((_OSET_MDIA+18))]}" "${__MDIA[$((_OSET_MDIA+17))]}" "${__FMBR:-}" "${__FEFI:-}" "${__FCAT:-}" "${__FBIN:-}"
+							fnMk_isofile_rebuild "${__DMRG}" "${__MDIA[$((_OSET_MDIA+18))]}" "${__MDIA[$((_OSET_MDIA+17))]}" "${__HBRD:-}" "${__FMBR:-}" "${__FEFI:-}" "${__FCAT#"${__DMRG}/"}" "${__FBIN#"${__DMRG}/"}"
 							__RETN="$(fnGetFileinfo "${__MDIA[$((_OSET_MDIA+18))]}")"
 							read -r -a __ARRY < <(echo "${__RETN}")
 							__MDIA[_OSET_MDIA+19]="${__ARRY[1]:-}"	# rmk_tstamp

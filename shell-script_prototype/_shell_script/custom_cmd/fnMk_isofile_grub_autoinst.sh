@@ -27,12 +27,13 @@ function fnMk_isofile_grub_autoinst() {
 	declare -r    __PATH_THME="${3:?}"
 	declare -r    __PATH_FKNL="${4:?}"
 	declare -r    __PATH_FIRD="${5:?}"
-	declare -r    __HOST_NAME="${6:?}"
-	declare -r    __IPV4_CIDR="${7:?}"
-	declare -a    __OPTN_BOOT=("${@:7}")
+	declare -r    __PATH_GUIS="${6:-}"
+	declare -r    __HOST_NAME="${7:?}"
+	declare -r    __IPV4_CIDR="${8:?}"
+	declare -a    __OPTN_BOOT=("${@:9}")
 	declare       __DIRS=""
 	declare       __TITL=""
-	__TITL="$(printf "%s%19.19s" "${__FILE_NAME:-}" "${__TIME_STMP:-}")"
+	__TITL="$(printf "%s%s" "${__FILE_NAME:-}" "${__TIME_STMP:-}")"
 	# --- common settings -----------------------------------------------------
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		set default="0"
@@ -55,25 +56,28 @@ function fnMk_isofile_grub_autoinst() {
 		    insmod vbe
 		    insmod vga
 		  fi
+		  insmod video_bochs
+		  insmod video_cirrus
 		  insmod gfxterm
 		  insmod gettext
+		  insmod png
 		  terminal_output gfxterm
-		fi
-
-		if background_image /isolinux/${_MENU_SPLS:-} 2> /dev/null; then
-		  set color_normal=light-gray/black
-		  set color_highlight=white/black
-		elif background_image /${_MENU_SPLS:-} 2> /dev/null; then
-		  set color_normal=light-gray/black
-		  set color_highlight=white/black
-		else
-		  set menu_color_normal=cyan/blue
-		  set menu_color_highlight=white/blue
 		fi
 
 		set timeout_style=menu
 		set theme=${__PATH_THME:-}
 		export theme
+
+		#if background_image /isolinux/${_MENU_SPLS:-} 2> /dev/null; then
+		#  set color_normal=light-gray/black
+		#  set color_highlight=white/black
+		#elif background_image /${_MENU_SPLS:-} 2> /dev/null; then
+		#  set color_normal=light-gray/black
+		#  set color_highlight=white/black
+		#else
+		#  set menu_color_normal=cyan/blue
+		#  set menu_color_highlight=white/blue
+		#fi
 
 		#export lang
 		export gfxmode
@@ -89,80 +93,79 @@ _EOT_
 
 		menuentry 'Automatic installation' {
 		  echo 'Loading ${__TITL:+"${__TITL} "}...'
-		  set hostname=${_NWRK_HOST/:_DISTRO_:/${__HOST_NAME:-}}
-		  set ethrname=${_NICS_NAME:-ens160}
-		  set ipv4addr=${_IPV4_ADDR:-}${__IPV4_CIDR:-}
-		  set ipv4mask=${_IPV4_MASK:-}
-		  set ipv4gway=${_IPV4_GWAY:-}
-		  set ipv4nsvr=${_IPV4_NSVR:-}
-		  set srvraddr=${_SRVR_PROT:?}://${_SRVR_ADDR:?}
-		  set autoinst=${__OPTN_BOOT[0]:-} ${__OPTN_BOOT[1]:-}
-		  set language=${__OPTN_BOOT[2]:-}
-		  set networks=${__OPTN_BOOT[3]:-}
-		  set otheropt=${__OPTN_BOOT[@]:4}
+		  set gfxpayload=keep
+		  set background_color=black
+		  set hostname="${_NWRK_HOST/:_DISTRO_:/${__HOST_NAME:-}}"
+		  set ethrname="${_NICS_NAME:-ens160}"
+		  set ipv4addr="${_IPV4_ADDR:-}${__IPV4_CIDR:-}"
+		  set ipv4mask="${_IPV4_MASK:-}"
+		  set ipv4gway="${_IPV4_GWAY:-}"
+		  set ipv4nsvr="${_IPV4_NSVR:-}"
+		  set srvraddr="${_SRVR_PROT:?}://${_SRVR_ADDR:?}"
+		  set autoinst="${__OPTN_BOOT[0]:-} ${__OPTN_BOOT[1]:-}"
+		  set language="${__OPTN_BOOT[2]:-}"
+		  set networks="${__OPTN_BOOT[3]:-}"
+		  set otheropt="${__OPTN_BOOT[@]:4}"
+		  set options="\${autoinst} \${language} \${networks} \${otheropt}"
 		  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-		  insmod net
-		  insmod http
-		  insmod progress
-		  echo Loading boot files ...
-		  linux  ${__PATH_FKNL:-}
+		  echo 'Loading boot files ...'
+		  linux  ${__PATH_FKNL:-} \${options} --- quiet
 		  initrd ${__PATH_FIRD:-}
 		}
 _EOT_
 	# --- gui -----------------------------------------------------------------
-	__DIRS="$(fnDirname  "${__PATH_FIRD}")"
-	if [[ -e "${__DIRS:-}"/gtk/${__PATH_FKNL##*/} ]]; then
+	if [[ -n "${__PATH_GUIS:-}" ]]; then
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 
 			menuentry 'Automatic installation gui' {
 			  echo 'Loading ${__TITL:+"${__TITL} "}...'
-			  set hostname=${_NWRK_HOST/:_DISTRO_:/${__HOST_NAME:-}}
-			  set ethrname=${_NICS_NAME:-ens160}
-			  set ipv4addr=${_IPV4_ADDR:-}${__IPV4_CIDR:-}
-			  set ipv4mask=${_IPV4_MASK:-}
-			  set ipv4gway=${_IPV4_GWAY:-}
-			  set ipv4nsvr=${_IPV4_NSVR:-}
-			  set srvraddr=${_SRVR_PROT:?}://${_SRVR_ADDR:?}
-			  set autoinst=${__OPTN_BOOT[0]:-} ${__OPTN_BOOT[1]:-}
-			  set language=${__OPTN_BOOT[2]:-}
-			  set networks=${__OPTN_BOOT[3]:-}
-			  set otheropt=${__OPTN_BOOT[@]:4}
+			  set gfxpayload=keep
+			  set background_color=black
+			  set hostname="${_NWRK_HOST/:_DISTRO_:/${__HOST_NAME:-}}"
+			  set ethrname="${_NICS_NAME:-ens160}"
+			  set ipv4addr="${_IPV4_ADDR:-}${__IPV4_CIDR:-}"
+			  set ipv4mask="${_IPV4_MASK:-}"
+			  set ipv4gway="${_IPV4_GWAY:-}"
+			  set ipv4nsvr="${_IPV4_NSVR:-}"
+			  set srvraddr="${_SRVR_PROT:?}://${_SRVR_ADDR:?}"
+			  set autoinst="${__OPTN_BOOT[0]:-} ${__OPTN_BOOT[1]:-}"
+			  set language="${__OPTN_BOOT[2]:-}"
+			  set networks="${__OPTN_BOOT[3]:-}"
+			  set otheropt="${__OPTN_BOOT[@]:4}"
+			  set options="\${autoinst} \${language} \${networks} \${otheropt}"
 			  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-			  insmod net
-			  insmod http
-			  insmod progress
-			  echo Loading boot files ...
-			  linux  ${__PATH_FKNL:-}
-			  initrd ${__DIRS:-}/gtk/${__PATH_FKNL##*/}
+			  echo 'Loading boot files ...'
+			  linux  ${__PATH_FKNL:-} \${options} --- quiet
+			  initrd ${__PATH_GUIS:-}
 			}
 _EOT_
 	fi
 	# --- system command ------------------------------------------------------
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
-
-		menuentry '[ System command ]' {
-		  true
-		}
-
-		menuentry '- System shutdown' {
-		  echo "System shutting down ..."
-		  halt
-		}
-
-		menuentry '- System restart' {
-		  echo "System rebooting ..."
-		  reboot
-		}
-
-		if [ "\${grub_platform}" = "efi" ]; then
-		  menuentry '- Boot from next volume' {
-		    exit 1
-		  }
-
-		  menuentry '- UEFI Firmware Settings' {
-		    fwsetup
-		  }
-		fi
-_EOT_
+#	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+#
+#		menuentry '[ System command ]' {
+#		  true
+#		}
+#
+#		menuentry '- System shutdown' {
+#		  echo "System shutting down ..."
+#		  halt
+#		}
+#
+#		menuentry '- System restart' {
+#		  echo "System rebooting ..."
+#		  reboot
+#		}
+#
+#		if [ "\${grub_platform}" = "efi" ]; then
+#		  menuentry '- Boot from next volume' {
+#		    exit 1
+#		  }
+#
+#		  menuentry '- UEFI Firmware Settings' {
+#		    fwsetup
+#		  }
+#		fi
+#_EOT_
 	unset __DIRS
 }

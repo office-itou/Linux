@@ -27,6 +27,7 @@ function fnMk_print_list() {
 	declare       __WRK1=""
 	declare       __WRK2=""
 	declare       __WRK3=""
+	declare       __WRK3=""
 	declare       __COLR=""
 	declare       __CASH=""
 	declare -i    __TSMP=0
@@ -78,7 +79,7 @@ function fnMk_print_list() {
 		__RETN="- - - - - -"
 		__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+8))]}" "-")"
 		if [[ -n "${__WORK:-}" ]] && [[ "${__MDIA[$((_OSET_MDIA+9))]##*.}" = "iso" ]]; then
-			__TSMP="${__MDIA[$((_OSET_MDIA+10))]:-"0"}${__MDIA[$((_OSET_MDIA+10))]:+"$(TZ=UTC date -d "${__MDIA[$((_OSET_MDIA+10))]}" "+%s")"}"
+			__TSMP="${__MDIA[$((_OSET_MDIA+10))]:-"0"}${__MDIA[$((_OSET_MDIA+10))]:+"$(TZ=UTC date -d "${__MDIA[$((_OSET_MDIA+10))]//%20/ }" "+%s")"}"
 			__TNOW="$(TZ=UTC date "+%s")"
 			__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+9))]}" "-")"
 			if [[ "${__TSMP}" -le $((__TNOW-5*60)) ]] || [[ -z "${__WORK:-}" ]]; then
@@ -180,10 +181,13 @@ function fnMk_print_list() {
 						__MDIA[_OSET_MDIA+27]="d"	# create_flag (download: timestamp or size differs)
 					elif [[ -n "${__WRK1:-}" ]] \
 					&&   [[ -n "${__WRK2:-}" ]]; then
+						__WRK1="${__MDIA[$((_OSET_MDIA+19))]:+"$(TZ=UTC date -d "${__MDIA[$((_OSET_MDIA+19))]//%20/ }" "+%s")"}"
+						__WRK2="${__MDIA[$((_OSET_MDIA+15))]:+"$(TZ=UTC date -d "${__MDIA[$((_OSET_MDIA+15))]//%20/ }" "+%s")"}"
+						__WRK3="${__MDIA[$((_OSET_MDIA+25))]:+"$(TZ=UTC date -d "${__MDIA[$((_OSET_MDIA+25))]//%20/ }" "+%s")"}"
 						if   [[ ! -e "${__MDIA[$((_OSET_MDIA+18))]}" ]]; then
 							__MDIA[_OSET_MDIA+27]="c"	# create_flag (create: remake file not found)
-						elif [[ "${__MDIA[$((_OSET_MDIA+15))]:-}" -gt "${__MDIA[$((_OSET_MDIA+19))]:-}" ]] \
-						||   [[ "${__MDIA[$((_OSET_MDIA+25))]:-}" -gt "${__MDIA[$((_OSET_MDIA+19))]:-}" ]]; then
+						elif [[ "${__WRK2:-"0"}" -gt "${__WRK1:-"0"}" ]] \
+						||   [[ "${__WRK3:-"0"}" -gt "${__WRK1:-"0"}" ]]; then
 							__MDIA[_OSET_MDIA+27]="c"	# create_flag (create: remake file is out of date)
 						else
 							__WORK="$(find -L "${_DIRS_SHEL:?}" -newer "${__MDIA[$((_OSET_MDIA+18))]}" -name 'auto*sh')"

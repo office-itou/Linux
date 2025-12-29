@@ -23,7 +23,7 @@ function fnMk_isofile_ilnx_autoinst() {
 	declare -r    __PATH_FIRD="${2:?}"
 	declare -r    __NWRK_HOST="${3:?}"
 	declare -r    __IPV4_CIDR="${4:?}"
-	declare -a    __OPTN_BOOT=("${@:4}")
+	declare -a    __OPTN_BOOT=("${@:5}")
 	declare       __DIRS=""
 	# --- convert -------------------------------------------------------------
 	__OPTN_BOOT=("${__OPTN_BOOT[@]//\$\{srvraddr\}/}")
@@ -56,22 +56,22 @@ _EOT_
 _EOT_
 	fi
 	# --- system command ------------------------------------------------------
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
-
-		label System-command
-		  menu label ^[ System command ... ]
-
-		label Hardware-info
-		  menu label ^- Hardware info
-		  com32 hdt.c32
-
-		label System-shutdown
-		  menu label ^- System shutdown
-		  com32 poweroff.c32
-
-		label System-restart
-		  menu label ^- System restart
-		  com32 reboot.c32
-_EOT_
+#	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+#
+#		label System-command
+#		  menu label ^[ System command ... ]
+#
+#		label Hardware-info
+#		  menu label ^- Hardware info
+#		  com32 hdt.c32
+#
+#		label System-shutdown
+#		  menu label ^- System shutdown
+#		  com32 poweroff.c32
+#
+#		label System-restart
+#		  menu label ^- System restart
+#		  com32 reboot.c32
+#_EOT_
 	unset __DIRS
 }

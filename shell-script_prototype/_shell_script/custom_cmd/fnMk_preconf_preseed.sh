@@ -26,6 +26,6 @@ function fnMk_preconf_preseed() {
 		*)	;;
 	esac
 	# -------------------------------------------------------------------------
-	chmod ugo-x "${__TGET_PATH}"
+	chmod ugo+r-x,ug+w "${__TGET_PATH}"
 #	unset __TGET_PATH
 }

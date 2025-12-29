@@ -14,7 +14,7 @@ function fnMk_isofile_ilnx_theme() {
 	declare -r    __FILE_NAME="${1:?}"
 	declare -r    __TIME_STMP="${2:?}"
 	declare       __TITL=""
-	__TITL="$(printf "%s%19.19s" "${__FILE_NAME:-}" "${__TIME_STMP:-}")"
+	__TITL="$(printf "%s%s" "${__FILE_NAME:-}" "${__TIME_STMP:-}")"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		path ./
 		prompt 0
@@ -50,7 +50,6 @@ function fnMk_isofile_ilnx_theme() {
 		menu helpmsgrow         37
 		menu hekomsgendrow      39
 
-		menu title - Boot Menu -
 		menu tabmsg Press ENTER to boot or TAB to edit a menu entry
 
 		${_MENU_TOUT:+"timeout ${_MENU_TOUT}0"}
