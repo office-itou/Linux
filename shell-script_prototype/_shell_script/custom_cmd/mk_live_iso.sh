@@ -68,7 +68,7 @@
 
 	# --- temporary directory -------------------------------------------------
 	declare       _DIRS_TEMP="${_DIRS_WTOP}"
-	              _DIRS_TEMP="$(mktemp -qtd -p "${_DIRS_TEMP}" "${_PROG_NAME}.XXXXXX")"
+	              _DIRS_TEMP="$(mktemp -qd "${_DIRS_TEMP}/${_PROG_NAME}.XXXXXX")"
 	readonly      _DIRS_TEMP
 
 	# --- trap list -----------------------------------------------------------
@@ -257,6 +257,10 @@
 	declare       _MENU_MODE="864"							# screen mode (vga=nnn)
 	declare       _MENU_SPLS="splash.png"					# splash file
 
+	# --- auto install --------------------------------------------------------
+	declare       _AUTO_INST="autoinst.cfg"					# autoinstall configuration file
+	declare       _MINI_IRAM="initps.gz"					# initial ram disk of mini.iso including preseed
+
 	# --- list data -----------------------------------------------------------
 	declare -a    _LIST_PARM=()								# PARAMETER LIST
 	declare -a    _LIST_CONF=()								# common configuration data
@@ -265,6 +269,7 @@
 	declare -a    _LIST_DSTP=()								# debstrap information
 															# media type
 	declare -a    _LIST_TYPE=("mini" "netinst" "dvd" "liveinst" "live" "tool" "clive" "cnetinst" "system")
+	declare -r -i _OSET_MDIA=2								# media information data offset
 
 	# --- wget / curl options -------------------------------------------------
 	declare -r -a _OPTN_CURL=("--location" "--http1.1" "--no-progress-bar" "--remote-time" "--show-error" "--fail" "--retry-max-time" "3" "--retry" "3" "--connect-timeout" "60")
@@ -1370,7 +1375,7 @@ function fnList_conf_Get() {
 		__NAME="${__NAME:+"_${__NAME}"}"
 		read -r "${__NAME:?}" < <(eval echo "${__VALU}" || true)
 		_LIST_PARM+=("${__NAME}=${!__NAME}")
-	done < <(printf "%s\n" "${_LIST_CONF[@]:-}" | grep -E '^[[:alnum:]]+_[[:alnum:]]+=')
+	done < <(printf "%s\n" "${_LIST_CONF[@]:-}" | grep -E '^[[:alnum:]]+_[[:alnum:]]+=' || true)
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -1642,20 +1647,20 @@ function fnMk_symlink() {
 			o ) ;;
 			* ) continue;;
 		esac
-		case "${__LIST[13]##-}" in		# iso_path
+		case "${__LIST[14]##-}" in		# iso_path
 			'') continue;;
 			- ) continue;;
 			* ) ;;
 		esac
-		case "${__LIST[25]##-}" in		# lnk_path
+		case "${__LIST[26]##-}" in		# lnk_path
 			'') continue;;
 			- ) continue;;
 			* ) ;;
 		esac
-		[[ -h "${__LIST[13]}" ]] && continue
+		[[ -h "${__LIST[14]}" ]] && continue
 		fnMsgout "${_PROG_NAME:-}" "create" "${__LIST[13]}"
-		mkdir -p "${__LIST[13]%/*}"
-		ln -s "${__LIST[25]}/${__LIST[13]##*/}" "${__LIST[13]}"
+		mkdir -p "${__LIST[14]%/*}"
+		ln -s "${__LIST[26]}/${__LIST[14]##*/}" "${__LIST[14]}"
 	done
 	unset __OPTN __FORC __PTRN __LINE __LIST I
 
@@ -1690,7 +1695,7 @@ function fnMk_preconf_preseed() {
 		*)	;;
 	esac
 	# -------------------------------------------------------------------------
-	chmod ugo-x "${__TGET_PATH}"
+	chmod ugo+r-x,ug+w "${__TGET_PATH}"
 #	unset __TGET_PATH
 }
 
@@ -1720,7 +1725,7 @@ function fnMk_preconf_nocloud() {
 #	touch -m "${__TGET_PATH%/*}/user-data"      --reference "${__TGET_PATH}"
 	touch -m "${__TGET_PATH%/*}/vendor-data"    --reference "${__TGET_PATH}"
 	# -------------------------------------------------------------------------
-	chmod ugo-x "${__TGET_PATH%/*}"/*
+	chmod ugo+r-x,ug+w "${__TGET_PATH%/*}"/*
 #	unset __TGET_PATH
 }
 
@@ -1821,7 +1826,7 @@ function fnMk_preconf_kickstart() {
 			;;
 	esac
 	# -------------------------------------------------------------------------
-	chmod ugo-x "${__TGET_PATH}" "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
+	chmod ugo+r-x,ug+w "${__TGET_PATH}" "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
 	unset __VERS __NUMS __NAME __SECT __ADDR __WORK
 }
 
@@ -1892,7 +1897,7 @@ function fnMk_preconf_autoyast() {
 	    "${__TGET_PATH}"                               \
 	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
 	# -------------------------------------------------------------------------
-	chmod ugo-x "${__TGET_PATH}"
+	chmod ugo+r-x,ug+w "${__TGET_PATH}"
 	unset __VERS __NUMS __WORK
 }
 
@@ -1953,7 +1958,7 @@ function fnMk_preconf_agama() {
 	    -e '/"packages": \[/,/\]/          {' \
 	    -e '\%^//.*$%d                     }'
 	# -------------------------------------------------------------------------
-	chmod ugo-x "${__TGET_PATH}" "${__WORK}"
+	chmod ugo+r-x,ug+w "${__TGET_PATH}" "${__WORK}"
 	unset __VERS __NUMS __PDCT __PDID __WORK
 }
 
@@ -2002,16 +2007,16 @@ function fnMk_preconf() {
 	if [[ -n "${__PTRN:-}" ]]; then
 		IFS= mapfile -d $'\n' -t __TGET < <(\
 			printf "%s\n" "${_LIST_MDIA[@]}" | \
-			awk -v ptrn="@/.*\/${__PTRN}\/.*/" '$2=="o" && $24!~/.*-$/ && $24~ptrn {
-				print $24
-				switch ($24) {
+			awk -v ptrn="@/.*\/${__PTRN}\/.*/" '$2=="o" && $25!~/.*-$/ && $25~ptrn {
+				print $25
+				switch ($25) {
 					case /.*\/agama\/.*/:
-						sub("_leap-[0-9]+.[0-9]+", "_tumbleweed", $24)
-						print $24
+						sub("_leap-[0-9]+.[0-9]+", "_tumbleweed", $25)
+						print $25
 						break
 					case /.*\/kickstart\/.*/:
-						sub("_dvd", "_web", $24)
-						print $24
+						sub("_dvd", "_web", $25)
+						print $25
 						break
 					default:
 						break
@@ -2055,14 +2060,16 @@ function fnMk_pxeboot() {
 	shift
 	              __NAME_REFR="${*:-}"
 #	declare -a    __OPTN=("${@:-}")		# options
-	declare       __PTRN=""				# pattern
+	declare -A    __PTRN=()				# pattern
 	declare       __TYPE=""				# target type
+	declare       __TGID=""				# target id
 	declare       __LINE=""				# data line
 	declare -a    __TGET=()				# target data line
 	declare -a    __MDIA=()				# media info data
 	declare       __RETN=""				# return value
 	declare -a    __ARRY=()				# data array
 	declare -i    __TABS=0				# tab count
+	declare       __WORK=""
 	declare -i    I=0
 	declare -i    J=0
 
@@ -2072,20 +2079,28 @@ function fnMk_pxeboot() {
 	set +f
 	while [[ -n "${1:-}" ]]
 	do
-		case "${1%%:*}" in
-			a|all    ) __PTRN=("mini" "netinst" "dvd" "liveinst" "live" "tool" "clive" "cnetinst" "system"); shift; break;;
+		__TYPE="${1%%:*}"
+		__TGID="${1#"${__TYPE:+"${__TYPE}":}"}"
+		__TYPE="${__TYPE,,}"
+		__TGID="${__TGID,,}"
+		case "${__TYPE:-}" in
+			a|all    ) __PTRN=(["mini"]=".*" ["netinst"]=".*" ["dvd"]=".*" ["liveinst"]=".*" ["live"]=".*" ["tool"]=".*"); shift; break;;
 			mini     ) ;;
 			netinst  ) ;;
 			dvd      ) ;;
 			liveinst ) ;;
 			live     ) ;;
 			tool     ) ;;
-			clive    ) ;;
-			cnetinst ) ;;
-			system   ) ;;
+			clive    ) shift; continue;;
+			cnetinst ) shift; continue;;
+			system   ) shift; continue;;
 			*) break;;
 		esac
-		__PTRN+=("${1:-}")
+		case "${__TGID:-}" in
+			a|all           ) __PTRN["${__TYPE}"]=".*";;
+			[0-9]|[0-9][0-9]) __PTRN["${__TYPE}"]="${__PTRN["${__TYPE}"]:+"${__PTRN["${__TYPE}"]} "}${__TGID}";;
+			*               ) ;;
+		esac
 		shift
 	done
 	__NAME_REFR="${*:-}"
@@ -2096,47 +2111,64 @@ function fnMk_pxeboot() {
 	fnMk_pxeboot_clear_menu "${_PATH_UEFI:?}"				# syslinux (efi64)
 	for __TYPE in "${_LIST_TYPE[@]}"
 	do
-		fnMk_print_list __LINE "${__TYPE}"
+		[[ -z "${__PTRN["${__TYPE:-}"]:-}" ]] && continue
+		__TGID="${__PTRN["${__TYPE:-}"]// /|}"
+		fnMk_print_list __LINE "${__TYPE:-}" "${__TGID:-}"
 		IFS= mapfile -d $'\n' -t __TGET < <(echo -n "${__LINE}")
 		for I in "${!__TGET[@]}"
 		do
 			read -r -a __MDIA < <(echo "${__TGET[I]}")
-			case "${__MDIA[2]}" in
-				m) ;;
-				*)
-					case "${__MDIA[27]}" in
+			case "${__MDIA[$((_OSET_MDIA+1))]}" in
+				m)						# (menu)
+					[[ "${__MDIA[$((_OSET_MDIA+3))]}" = "%20" ]] && __TABS=$((__TABS-1))
+					[[ "${__TABS}" -lt 0 ]] && __TABS=0
+					;;
+				o)						# (output)
+					case "${__MDIA[$((_OSET_MDIA+27))]}" in
 						c) ;;
 						d)
 							__RETN="- - - -"
-							if [[ -n "$(fnTrim "${__MDIA[14]}" "-")" ]]; then
-								fnDownload "${__MDIA[10]}" "${__MDIA[14]}"
-								__RETN="$(fnGetFileinfo "${__MDIA[14]}")"
+							__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+14))]}" "-")"
+							if [[ -n "${__WORK:-}" ]]; then
+								fnDownload "${__MDIA[$((_OSET_MDIA+9))]}" "${__MDIA[$((_OSET_MDIA+14))]}" "${__MDIA[$((_OSET_MDIA+11))]}"
+								__RETN="$(fnGetFileinfo "${__MDIA[$((_OSET_MDIA+14))]}")"
 							fi
 							read -r -a __ARRY < <(echo "${__RETN}")
-							__MDIA[15]="${__ARRY[1]:-}"	# iso_tstamp
-							__MDIA[16]="${__ARRY[2]:-}"	# iso_size
-							__MDIA[17]="${__ARRY[3]:-}"	# iso_volume
+							__MDIA[_OSET_MDIA+15]="${__ARRY[1]:-}"	# iso_tstamp
+							__MDIA[_OSET_MDIA+16]="${__ARRY[2]:-}"	# iso_size
+							__MDIA[_OSET_MDIA+17]="${__ARRY[3]:-}"	# iso_volume
 							;;
 						*) ;;
 					esac
 					# --- rsync -----------------------------------------------
-					fnRsync "${__MDIA[14]}" "${_DIRS_IMGS}/${__MDIA[3]}"
+					fnRsync "${__MDIA[$((_OSET_MDIA+14))]}" "${_DIRS_IMGS}/${__MDIA[$((_OSET_MDIA+2))]}"
 					;;
+				*) ;;					# (hidden)
 			esac
 			# --- create menu file --------------------------------------------
 			fnMk_pxeboot_ipxe "${_PATH_IPXE:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# ipxe
 			fnMk_pxeboot_grub "${_PATH_GRUB:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# grub
 			fnMk_pxeboot_slnx "${_PATH_SLNX:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# syslinux (bios)
 			fnMk_pxeboot_slnx "${_PATH_UEFI:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# syslinux (efi64)
+			# --- tab ---------------------------------------------------------
+			case "${__MDIA[$((_OSET_MDIA+1))]}" in
+				m)						# (menu)
+					[[ "${__MDIA[$((_OSET_MDIA+3))]}" != "%20" ]] && __TABS=$((__TABS+1))
+					[[ "${__TABS}" -lt 0 ]] && __TABS=0
+					;;
+				o) ;;					# (output)
+				*) ;;					# (hidden)
+			esac
 			# --- data registration -------------------------------------------
 			__MDIA=("${__MDIA[@]// /%20}")
 			J="${__MDIA[0]}"
 			_LIST_MDIA[J]="$(
-				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-11s \n" \
-				"${__MDIA[@]:1}"
+				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-47s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-11s \n" \
+				"${__MDIA[@]:"${_OSET_MDIA}"}"
 			)"
 		done
 	done
+	fnList_mdia_Put "work.txt"
 	unset __OPTN __PTRN __TYPE __LINE __TGET __MDIA __RETN __ARRY __TABS I J
 
 	# --- complete ------------------------------------------------------------
@@ -2162,6 +2194,185 @@ function fnMk_isofile() {
 	shift
 	              __NAME_REFR="${*:-}"
 #	declare -a    __OPTN=("${@:-}")		# options
+	declare -A    __PTRN=()				# pattern
+	declare       __TYPE=""				# target type
+	declare       __TGID=""				# target id
+	declare       __NAME=""
+	declare       __LINE=""				# data line
+	declare -a    __TGET=()				# target data line
+	declare -a    __MDIA=()				# media info data
+	declare       __RETN=""				# return value
+	declare       __WORK=""
+	declare -a    __ARRY=()				# data array
+	declare       __TEMP=""				# temporary file
+	              __TEMP="$(mktemp -qd "${_DIRS_TEMP:-/tmp}/${__FUNC_NAME}.XXXXXX")"
+	readonly      __TEMP
+	declare -r    __DOVL="${__TEMP}/overlay"				# overlay
+	declare -r    __DUPR="${__DOVL}/upper"					# upperdir
+	declare -r    __DLOW="${__DOVL}/lower"					# lowerdir
+	declare -r    __DWKD="${__DOVL}/work"					# workdir
+	declare -r    __DMRG="${__DOVL}/merged"					# merged
+	declare -a    __BOPT=()
+	declare       __FNAM=""
+	declare       __TSMP=""
+	declare       __FKNL=""
+	declare       __FIRD=""
+	declare       __HOST=""
+	declare       __CIDR=""
+	declare       __LABL=""
+	declare       __FMBR=""
+	declare       __FEFI=""
+	declare       __SKIP=""
+	declare       __SIZE=""
+	declare       __FCAT=""
+	declare       __FBIN=""
+	declare       __HBRD=""
+	declare -i    __TABS=0				# tab count
+	declare -i    I=0
+	declare -i    J=0
+	# --- get target ----------------------------------------------------------
+	__PTRN=()
+	set -f -- "${@:-}"
+	set +f
+	while [[ -n "${1:-}" ]]
+	do
+		__TYPE="${1%%:*}"
+		__TGID="${1#"${__TYPE:+"${__TYPE}":}"}"
+		__TYPE="${__TYPE,,}"
+		__TGID="${__TGID,,}"
+		case "${__TYPE:-}" in
+			a|all    ) __PTRN=(["mini"]=".*" ["netinst"]=".*" ["dvd"]=".*" ["liveinst"]=".*"); shift; break;;
+			mini     ) ;;
+			netinst  ) ;;
+			dvd      ) ;;
+			liveinst ) ;;
+			live     ) shift; continue;;
+			tool     ) shift; continue;;
+			clive    ) shift; continue;;
+			cnetinst ) shift; continue;;
+			system   ) shift; continue;;
+			*) break;;
+		esac
+		case "${__TGID:-}" in
+			a|all           ) __PTRN["${__TYPE}"]=".*";;
+			[0-9]|[0-9][0-9]) __PTRN["${__TYPE}"]="${__PTRN["${__TYPE}"]:+"${__PTRN["${__TYPE}"]} "}${__TGID}";;
+			*               ) ;;
+		esac
+		shift
+	done
+	__NAME_REFR="${*:-}"
+	# --- create custom iso file ----------------------------------------------
+	for __TYPE in "${_LIST_TYPE[@]}"
+	do
+		[[ -z "${__PTRN["${__TYPE:-}"]:-}" ]] && continue
+		__TGID="${__PTRN["${__TYPE:-}"]// /|}"
+		fnMk_print_list __LINE "${__TYPE:-}" "${__TGID:-}"
+		IFS= mapfile -d $'\n' -t __TGET < <(echo -n "${__LINE}")
+		for I in "${!__TGET[@]}"
+		do
+			read -r -a __MDIA < <(echo "${__TGET[I]}")
+			case "${__MDIA[$((_OSET_MDIA+1))]}" in
+				m) continue;;			# (menu)
+				o)						# (output)
+					case "${__MDIA[$((_OSET_MDIA+2))]}" in
+						windows-*              ) continue;;
+						winpe-*|ati*x64|ati*x86) continue;;
+						aomei-backupper        ) continue;;
+						memtest86*             ) continue;;
+						*                      )
+							case "${__MDIA[$((_OSET_MDIA+27))]}" in
+								c) ;;
+								d)
+									__RETN="- - - -"
+									__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+14))]}" "-")"
+									if [[ -n "${__WORK:-}" ]]; then
+										fnDownload "${__MDIA[$((_OSET_MDIA+9))]}" "${__MDIA[$((_OSET_MDIA+14))]}" "${__MDIA[$((_OSET_MDIA+11))]}"
+										__RETN="$(fnGetFileinfo "${__MDIA[$((_OSET_MDIA+14))]}")"
+									fi
+									read -r -a __ARRY < <(echo "${__RETN}")
+									__MDIA[_OSET_MDIA+15]="${__ARRY[1]:-}"	# iso_tstamp
+									__MDIA[_OSET_MDIA+16]="${__ARRY[2]:-}"	# iso_size
+									__MDIA[_OSET_MDIA+17]="${__ARRY[3]:-}"	# iso_volume
+									;;
+								*) ;;
+							esac
+							# --- rsync ---------------------------------------
+							fnRsync "${__MDIA[$((_OSET_MDIA+14))]}" "${_DIRS_IMGS}/${__MDIA[$((_OSET_MDIA+2))]}"
+							# --- mount ---------------------------------------
+							rm -rf "${__DOVL:?}"
+							mkdir -p "${__DUPR}" "${__DLOW}" "${__DWKD}" "${__DMRG}"
+#							mount -r "${__MDIA[$((_OSET_MDIA+14))]}" "${__DLOW}" && _LIST_RMOV+=("${__DLOW:?}")
+							mount --bind "${_DIRS_IMGS}/${__MDIA[$((_OSET_MDIA+2))]}" "${__DLOW}" && _LIST_RMOV+=("${__DLOW:?}")
+							mount -t overlay overlay -o lowerdir="${__DLOW}",upperdir="${__DUPR}",workdir="${__DWKD}" "${__DMRG}" && _LIST_RMOV+=("${__DMRG:?}")
+							# --- create auto install configuration file ------
+							__WORK="$(fnMk_boot_options "remake" "${__MDIA[@]:-}")"
+							IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
+							__FNAM="${__MDIA[$((_OSET_MDIA+14))]##*/}"
+							__TSMP="${__MDIA[$((_OSET_MDIA+15))]:+"${__MDIA[$((_OSET_MDIA+15))]//%20/ }"}"
+							__TSMP="${__TSMP:+" (${__TSMP:0:19})"}"
+							__FKNL="${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"}"
+							__FIRD="${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"}"
+							case "${__MDIA[$((_OSET_MDIA+3))]:-}" in
+								*-mini-*) __FIRD="${__FIRD%/*}/${_MINI_IRAM:?}";;
+								*       ) ;;
+							esac
+							__HOST="${__MDIA[$((_OSET_MDIA+2))]%%-*}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
+							case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
+								ubuntu*) __CIDR="";;
+								*      ) __CIDR="/${_IPV4_CIDR:-}";;
+							esac
+							fnMk_isofile_conf "${__DMRG}" "${__MDIA[$((_OSET_MDIA+24))]}"
+							fnMk_isofile_grub "${__DMRG}" "${__FNAM:-}" "${__TSMP:-}" "${__FKNL:-}" "${__FIRD:-}" "${__HOST:-}" "${__CIDR:-}" "${__BOPT[@]:-}"
+							fnMk_isofile_ilnx "${__DMRG}" "${__FNAM:-}" "${__TSMP:-}" "${__FKNL:-}" "${__FIRD:-}" "${__HOST:-}" "${__CIDR:-}" "${__BOPT[@]:-}"
+							# --- rebuild -------------------------------------
+							__LABL="$(blkid -o value -s PTTYPE "${__MDIA[$((_OSET_MDIA+14))]}")"
+							__HBRD=""
+							__FMBR=""
+							__FEFI="$(find "${__DMRG}" -name 'efi*.img')"
+							case "${__LABL:-}" in
+#								dos) __HBRD="/usr/lib/ISOLINUX/isohdpfx.bin";;
+								dos) __HBRD="${__TEMP}/mbr.img"; __FEFI="${__FEFI#"${__DMRG}/"}";;
+								gpt) __FMBR="${__TEMP}/mbr.img";;
+								*  ) exit 1;;
+							esac
+							# --- get mbr image file --------------------------
+							dd if="${__MDIA[$((_OSET_MDIA+14))]}" bs=1 count=446 of="${__FMBR:-"${__HBRD:-}"}" > /dev/null 2>&1
+							# --- get uefi image file -------------------------
+							if [[ -z "${__FEFI:-}" ]]; then
+								__WORK="$(fdisk -l "${__MDIA[$((_OSET_MDIA+14))]}" 2>&1 | awk '$6~/EFI|ef/ {print $2, $4;}')"
+								read -r  __SKIP __SIZE < <(echo "${__WORK:-}")
+								__FEFI="${__TEMP}/efi.img"
+								dd if="${__MDIA[$((_OSET_MDIA+14))]}" bs=512 skip="${__SKIP}" count="${__SIZE}" of="${__FEFI}" > /dev/null 2>&1
+							fi
+							# -------------------------------------------------
+							__FCAT="$(find "${__DMRG}" \( -iname 'boot.cat'     -o -iname 'boot.catalog' \))"
+							__FBIN="$(find "${__DMRG}" \( -iname 'isolinux.bin' -o -iname 'eltorito.img' \))"
+							fnMk_isofile_rebuild "${__DMRG}" "${__MDIA[$((_OSET_MDIA+18))]}" "${__MDIA[$((_OSET_MDIA+17))]}" "${__HBRD:-}" "${__FMBR:-}" "${__FEFI:-}" "${__FCAT#"${__DMRG}/"}" "${__FBIN#"${__DMRG}/"}"
+							__RETN="$(fnGetFileinfo "${__MDIA[$((_OSET_MDIA+18))]}")"
+							read -r -a __ARRY < <(echo "${__RETN}")
+							__MDIA[_OSET_MDIA+19]="${__ARRY[1]:-}"	# rmk_tstamp
+							__MDIA[_OSET_MDIA+20]="${__ARRY[2]:-}"	# rmk_size
+							__MDIA[_OSET_MDIA+21]="${__ARRY[3]:-}"	# rmk_volume
+							# --- umount --------------------------------------
+							umount "${__DMRG}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
+							umount "${__DLOW}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
+							rm -rf "${__TEMP:?}"
+							;;
+					esac
+					;;
+				*) continue;;			# (hidden)
+			esac
+			# --- data registration -------------------------------------------
+			__MDIA=("${__MDIA[@]// /%20}")
+			J="${__MDIA[0]}"
+			_LIST_MDIA[J]="$(
+				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-47s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-11s \n" \
+				"${__MDIA[@]:"${_OSET_MDIA}"}"
+			)"
+		done
+	done
+	fnList_mdia_Put "work.txt"
+	unset __OPTN __PTRN __TYPE __LINE __TGET __MDIA __RETN __ARRY __TABS I J
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
