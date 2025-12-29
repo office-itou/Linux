@@ -20,13 +20,8 @@ function fnMk_isofile_ilnx() {
 	declare -r    __PATH_FKNL="${4:?}"
 	declare -r    __PATH_FIRD="${5:?}"
 	declare -r    __NWRK_HOST="${6:?}"
-	declare -r    __IPV4_CIDR="${7:?}"
-	declare -a    __OPTN_BOOT=("${@:8}")
-	declare       __PATH=""				# full path
-	declare       __DIRS=""				# directory
-	declare       __FILE=""				# file name
-	declare       __PAUT=""				# autoinst.cfg
-	declare       __PTHM=""				# theme.txt
+	declare -r    __IPV4_CIDR="${7:-}"
+	declare -r -a __OPTN_BOOT=("${@:8}")
 	__PATH="$(find "${__TGET_DIRS}" -name isolinux.cfg)"
 	[[ -z "${__PATH:-}" ]] && return
 	__DIRS="$(fnDirname "${__PATH#"${__TGET_DIRS}"}")"
@@ -61,4 +56,5 @@ function fnMk_isofile_ilnx() {
 		    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Hh]shift\|HSHIFT\)[ \t]*/         d'  \
 		    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Ww]idth\|WIDTH\)[ \t]*/           d'
 	done
+	unset __PATH __DIRS __FILE __PAUT __PTHM
 }

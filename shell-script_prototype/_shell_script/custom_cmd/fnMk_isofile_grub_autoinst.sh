@@ -29,8 +29,8 @@ function fnMk_isofile_grub_autoinst() {
 	declare -r    __PATH_FIRD="${5:?}"
 	declare -r    __PATH_GUIS="${6:-}"
 	declare -r    __HOST_NAME="${7:?}"
-	declare -r    __IPV4_CIDR="${8:?}"
-	declare -a    __OPTN_BOOT=("${@:9}")
+	declare -r    __IPV4_CIDR="${8:-}"
+	declare -r -a __OPTN_BOOT=("${@:9}")
 	declare       __DIRS=""
 	declare       __TITL=""
 	__TITL="$(printf "%s%s" "${__FILE_NAME:-}" "${__TIME_STMP:-}")"
@@ -167,5 +167,5 @@ _EOT_
 #		  }
 #		fi
 #_EOT_
-	unset __DIRS
+	unset __DIRS __TITL
 }

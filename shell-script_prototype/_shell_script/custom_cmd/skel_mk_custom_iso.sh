@@ -1,16 +1,22 @@
 #!/bin/bash
 
-	export LANG=C
-
-#	set -n								# Check for syntax errors
-#	set -x								# Show command and argument expansion
-	set -o ignoreeof					# Do not exit with Ctrl+D
-	set +m								# Disable job control
-	set -e								# End with status other than 0
-	set -u								# End with undefined variable reference
-	set -o pipefail						# End with in pipe error
-
-	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
+###############################################################################
+#
+#	custom iso image creation and pxeboot configuration shell
+#	  developed for debian
+#
+#	developer   : J.Itou
+#	release     : 2025/11/01
+#
+#	history     :
+#	   data    version    developer    point
+#	---------- -------- -------------- ----------------------------------------
+#	2025/11/01 000.0000 J.Itou         first release
+#
+#	shell check : shellcheck -o all "filename"
+#	            : shellcheck -o all -e SC2154 *.sh
+#
+###############################################################################
 
 # *** global section **********************************************************
 

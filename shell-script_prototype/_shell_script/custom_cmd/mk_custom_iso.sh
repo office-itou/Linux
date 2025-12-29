@@ -1,16 +1,22 @@
 #!/bin/bash
 
-	export LANG=C
-
-#	set -n								# Check for syntax errors
-#	set -x								# Show command and argument expansion
-	set -o ignoreeof					# Do not exit with Ctrl+D
-	set +m								# Disable job control
-	set -e								# End with status other than 0
-	set -u								# End with undefined variable reference
-	set -o pipefail						# End with in pipe error
-
-	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
+###############################################################################
+#
+#	custom iso image creation and pxeboot configuration shell
+#	  developed for debian
+#
+#	developer   : J.Itou
+#	release     : 2025/11/01
+#
+#	history     :
+#	   data    version    developer    point
+#	---------- -------- -------------- ----------------------------------------
+#	2025/11/01 000.0000 J.Itou         first release
+#
+#	shell check : shellcheck -o all "filename"
+#	            : shellcheck -o all -e SC2154 *.sh
+#
+###############################################################################
 
 # *** global section **********************************************************
 
@@ -3306,8 +3312,8 @@ function fnMk_isofile_grub_autoinst() {
 	declare -r    __PATH_FIRD="${5:?}"
 	declare -r    __PATH_GUIS="${6:-}"
 	declare -r    __HOST_NAME="${7:?}"
-	declare -r    __IPV4_CIDR="${8:?}"
-	declare -a    __OPTN_BOOT=("${@:9}")
+	declare -r    __IPV4_CIDR="${8:-}"
+	declare -r -a __OPTN_BOOT=("${@:9}")
 	declare       __DIRS=""
 	declare       __TITL=""
 	__TITL="$(printf "%s%s" "${__FILE_NAME:-}" "${__TIME_STMP:-}")"
@@ -3444,7 +3450,7 @@ _EOT_
 #		  }
 #		fi
 #_EOT_
-	unset __DIRS
+	unset __DIRS __TITL
 }
 
 # -----------------------------------------------------------------------------
@@ -3535,8 +3541,8 @@ function fnMk_isofile_grub() {
 	declare -r    __PATH_FKNL="${4:?}"
 	declare -r    __PATH_FIRD="${5:?}"
 	declare -r    __NWRK_HOST="${6:?}"
-	declare -r    __IPV4_CIDR="${7:?}"
-	declare -a    __OPTN_BOOT=("${@:8}")
+	declare -r    __IPV4_CIDR="${7:-}"
+	declare -r -a __OPTN_BOOT=("${@:8}")
 	declare       __PATH=""				# full path
 	declare       __DIRS=""				# directory
 	declare       __BASE=""				# base name
@@ -3583,6 +3589,7 @@ function fnMk_isofile_grub() {
 		sed -i "${__TGET_DIRS}/${__PTHM}" \
 		    -e '/desktop-image:/d'
 	fi
+	unset __PATH __DIRS __BASE __FILE __PAUT __PTHM
 }
 
 # -----------------------------------------------------------------------------
@@ -3598,18 +3605,20 @@ function fnMk_isofile_ilnx_autoinst() {
 	declare -r    __PATH_FKNL="${1:?}"
 	declare -r    __PATH_FIRD="${2:?}"
 	declare -r    __NWRK_HOST="${3:?}"
-	declare -r    __IPV4_CIDR="${4:?}"
-	declare -a    __OPTN_BOOT=("${@:5}")
+	declare -r    __IPV4_CIDR="${4:-}"
+	declare -r -a __OPTN_BOOT=("${@:5}")
+	declare -a    __BOPT=()				# boot options
 	declare       __DIRS=""
 	# --- convert -------------------------------------------------------------
-	__OPTN_BOOT=("${__OPTN_BOOT[@]//\$\{srvraddr\}/}")
-	__OPTN_BOOT=("${__OPTN_BOOT[@]//\$\{hostname\}/${_NWRK_HOST/:_DISTRO_:/${__MDIA[$((_OSET_MDIA+2))]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}}")
-	__OPTN_BOOT=("${__OPTN_BOOT[@]//\$\{ethrname\}/${_NICS_NAME:-ens160}}")
-	__OPTN_BOOT=("${__OPTN_BOOT[@]//\$\{ipv4addr\}/${_IPV4_ADDR:-}${__IPV4_CIDR:-}}")
-	__OPTN_BOOT=("${__OPTN_BOOT[@]//\$\{ipv4mask\}/${_IPV4_MASK:-}}")
-	__OPTN_BOOT=("${__OPTN_BOOT[@]//\$\{ipv4gway\}/${_IPV4_GWAY:-}}")
-	__OPTN_BOOT=("${__OPTN_BOOT[@]//\$\{ipv4nsvr\}/${_IPV4_NSVR:-}}")
-	__OPTN_BOOT=("${__OPTN_BOOT[@]:1}")
+	__BOPT=("${__OPTN_BOOT[@]:-}")
+	__BOPT=("${__BOPT[@]//\$\{srvraddr\}/}")
+	__BOPT=("${__BOPT[@]//\$\{hostname\}/${_NWRK_HOST/:_DISTRO_:/${__MDIA[$((_OSET_MDIA+2))]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}}")
+	__BOPT=("${__BOPT[@]//\$\{ethrname\}/${_NICS_NAME:-ens160}}")
+	__BOPT=("${__BOPT[@]//\$\{ipv4addr\}/${_IPV4_ADDR:-}${__IPV4_CIDR:-}}")
+	__BOPT=("${__BOPT[@]//\$\{ipv4mask\}/${_IPV4_MASK:-}}")
+	__BOPT=("${__BOPT[@]//\$\{ipv4gway\}/${_IPV4_GWAY:-}}")
+	__BOPT=("${__BOPT[@]//\$\{ipv4nsvr\}/${_IPV4_NSVR:-}}")
+	__BOPT=("${__BOPT[@]:1}")
 	# --- default--------------------------------------------------------------
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		label auto-install
@@ -3617,7 +3626,7 @@ function fnMk_isofile_ilnx_autoinst() {
 		  menu default
 		  linux  ${__PATH_FKNL}
 		  initrd ${__PATH_FIRD}
-		  append ${__OPTN_BOOT[@]} --- quiet
+		  append ${__BOPT[@]} --- quiet
 _EOT_
 	# --- gui -----------------------------------------------------------------
 	__DIRS="$(fnDirname  "${__PATH_FIRD}")"
@@ -3628,7 +3637,7 @@ _EOT_
 			  menu label ^Automatic installation gui
 			  linux  ${__PATH_FKNL}
 			  initrd ${__DIRS:-}/gtk/${__PATH_FKNL##*/}
-			  append ${__OPTN_BOOT[@]} --- quiet
+			  append ${__BOPT[@]} --- quiet
 _EOT_
 	fi
 	# --- system command ------------------------------------------------------
@@ -3725,13 +3734,8 @@ function fnMk_isofile_ilnx() {
 	declare -r    __PATH_FKNL="${4:?}"
 	declare -r    __PATH_FIRD="${5:?}"
 	declare -r    __NWRK_HOST="${6:?}"
-	declare -r    __IPV4_CIDR="${7:?}"
-	declare -a    __OPTN_BOOT=("${@:8}")
-	declare       __PATH=""				# full path
-	declare       __DIRS=""				# directory
-	declare       __FILE=""				# file name
-	declare       __PAUT=""				# autoinst.cfg
-	declare       __PTHM=""				# theme.txt
+	declare -r    __IPV4_CIDR="${7:-}"
+	declare -r -a __OPTN_BOOT=("${@:8}")
 	__PATH="$(find "${__TGET_DIRS}" -name isolinux.cfg)"
 	[[ -z "${__PATH:-}" ]] && return
 	__DIRS="$(fnDirname "${__PATH#"${__TGET_DIRS}"}")"
@@ -3766,6 +3770,7 @@ function fnMk_isofile_ilnx() {
 		    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Hh]shift\|HSHIFT\)[ \t]*/         d'  \
 		    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Ww]idth\|WIDTH\)[ \t]*/           d'
 	done
+	unset __PATH __DIRS __FILE __PAUT __PTHM
 }
 
 # -----------------------------------------------------------------------------
@@ -3989,7 +3994,7 @@ function fnMk_isofile() {
 								*       ) ;;
 							esac
 							__HOST="${__MDIA[$((_OSET_MDIA+2))]%%-*}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
-							case "${__MDIA[$((_OSET_MDIA+3))]:-}" in
+							case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 								ubuntu*) __CIDR="";;
 								*      ) __CIDR="/${_IPV4_CIDR:-}";;
 							esac

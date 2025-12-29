@@ -20,8 +20,8 @@ function fnMk_isofile_grub() {
 	declare -r    __PATH_FKNL="${4:?}"
 	declare -r    __PATH_FIRD="${5:?}"
 	declare -r    __NWRK_HOST="${6:?}"
-	declare -r    __IPV4_CIDR="${7:?}"
-	declare -a    __OPTN_BOOT=("${@:8}")
+	declare -r    __IPV4_CIDR="${7:-}"
+	declare -r -a __OPTN_BOOT=("${@:8}")
 	declare       __PATH=""				# full path
 	declare       __DIRS=""				# directory
 	declare       __BASE=""				# base name
@@ -68,4 +68,5 @@ function fnMk_isofile_grub() {
 		sed -i "${__TGET_DIRS}/${__PTHM}" \
 		    -e '/desktop-image:/d'
 	fi
+	unset __PATH __DIRS __BASE __FILE __PAUT __PTHM
 }

@@ -22,18 +22,20 @@ function fnMk_isofile_ilnx_autoinst() {
 	declare -r    __PATH_FKNL="${1:?}"
 	declare -r    __PATH_FIRD="${2:?}"
 	declare -r    __NWRK_HOST="${3:?}"
-	declare -r    __IPV4_CIDR="${4:?}"
-	declare -a    __OPTN_BOOT=("${@:5}")
+	declare -r    __IPV4_CIDR="${4:-}"
+	declare -r -a __OPTN_BOOT=("${@:5}")
+	declare -a    __BOPT=()				# boot options
 	declare       __DIRS=""
 	# --- convert -------------------------------------------------------------
-	__OPTN_BOOT=("${__OPTN_BOOT[@]//\$\{srvraddr\}/}")
-	__OPTN_BOOT=("${__OPTN_BOOT[@]//\$\{hostname\}/${_NWRK_HOST/:_DISTRO_:/${__MDIA[$((_OSET_MDIA+2))]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}}")
-	__OPTN_BOOT=("${__OPTN_BOOT[@]//\$\{ethrname\}/${_NICS_NAME:-ens160}}")
-	__OPTN_BOOT=("${__OPTN_BOOT[@]//\$\{ipv4addr\}/${_IPV4_ADDR:-}${__IPV4_CIDR:-}}")
-	__OPTN_BOOT=("${__OPTN_BOOT[@]//\$\{ipv4mask\}/${_IPV4_MASK:-}}")
-	__OPTN_BOOT=("${__OPTN_BOOT[@]//\$\{ipv4gway\}/${_IPV4_GWAY:-}}")
-	__OPTN_BOOT=("${__OPTN_BOOT[@]//\$\{ipv4nsvr\}/${_IPV4_NSVR:-}}")
-	__OPTN_BOOT=("${__OPTN_BOOT[@]:1}")
+	__BOPT=("${__OPTN_BOOT[@]:-}")
+	__BOPT=("${__BOPT[@]//\$\{srvraddr\}/}")
+	__BOPT=("${__BOPT[@]//\$\{hostname\}/${_NWRK_HOST/:_DISTRO_:/${__MDIA[$((_OSET_MDIA+2))]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}}")
+	__BOPT=("${__BOPT[@]//\$\{ethrname\}/${_NICS_NAME:-ens160}}")
+	__BOPT=("${__BOPT[@]//\$\{ipv4addr\}/${_IPV4_ADDR:-}${__IPV4_CIDR:-}}")
+	__BOPT=("${__BOPT[@]//\$\{ipv4mask\}/${_IPV4_MASK:-}}")
+	__BOPT=("${__BOPT[@]//\$\{ipv4gway\}/${_IPV4_GWAY:-}}")
+	__BOPT=("${__BOPT[@]//\$\{ipv4nsvr\}/${_IPV4_NSVR:-}}")
+	__BOPT=("${__BOPT[@]:1}")
 	# --- default--------------------------------------------------------------
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		label auto-install
@@ -41,7 +43,7 @@ function fnMk_isofile_ilnx_autoinst() {
 		  menu default
 		  linux  ${__PATH_FKNL}
 		  initrd ${__PATH_FIRD}
-		  append ${__OPTN_BOOT[@]} --- quiet
+		  append ${__BOPT[@]} --- quiet
 _EOT_
 	# --- gui -----------------------------------------------------------------
 	__DIRS="$(fnDirname  "${__PATH_FIRD}")"
@@ -52,7 +54,7 @@ _EOT_
 			  menu label ^Automatic installation gui
 			  linux  ${__PATH_FKNL}
 			  initrd ${__DIRS:-}/gtk/${__PATH_FKNL##*/}
-			  append ${__OPTN_BOOT[@]} --- quiet
+			  append ${__BOPT[@]} --- quiet
 _EOT_
 	fi
 	# --- system command ------------------------------------------------------
