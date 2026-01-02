@@ -36,7 +36,7 @@ function fnMk_boot_option_autoyast() {
 	# --- 3: network ----------------------------------------------------------
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
-		__WORK="${__WORK:+"${__WORK} "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr}/${_IPV4_CIDR:-},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
+		__WORK="${__WORK:+"${__WORK} "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
 	fi
 	case "${__MDIA[$((_OSET_MDIA+0))]}" in
 		live) __WORK="dhcp";;

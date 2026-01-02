@@ -39,7 +39,7 @@ function fnMk_boot_option_agama() {
 	# --- 3: network ----------------------------------------------------------
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
-		__WORK="${__WORK:+"${__WORK} "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr}/${_IPV4_CIDR:-},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
+		__WORK="${__WORK:+"${__WORK} "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
 		case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 			opensuse-*-15*) __WORK="${__WORK//"${_NICS_NAME:-ens160}"/"eth0"}";;
 			*             ) ;;
