@@ -78,6 +78,7 @@ function fnMk_isofile() {
 			*) break;;
 		esac
 		case "${__TGID:-}" in
+			''              ) __PTRN["${__TYPE}"]="";;
 			a|all           ) __PTRN["${__TYPE}"]=".*";;
 			[0-9]|[0-9][0-9]) __PTRN["${__TYPE}"]="${__PTRN["${__TYPE}"]:+"${__PTRN["${__TYPE}"]} "}${__TGID}";;
 			*               ) ;;
@@ -88,10 +89,42 @@ function fnMk_isofile() {
 	# --- create custom iso file ----------------------------------------------
 	for __TYPE in "${_LIST_TYPE[@]}"
 	do
-		[[ -z "${__PTRN["${__TYPE:-}"]:-}" ]] && continue
-		__TGID="${__PTRN["${__TYPE:-}"]// /|}"
-		fnMk_print_list __LINE "${__TYPE:-}" "${__TGID:-}"
-		IFS= mapfile -d $'\n' -t __TGET < <(echo -n "${__LINE}")
+		if [[ -z "${__PTRN["${__TYPE:-}"]:-}" ]]; then
+			if ! echo "${!__PTRN[@]}" | grep -q "${__TYPE}"; then
+				continue
+			fi
+			fnMk_print_list __LINE "${__TYPE:-}" ".*"
+			IFS= mapfile -d $'\n' -t __TGET < <(echo -n "${__LINE}")
+			read -r -p "enter the number to create:" __RANG
+			read -r -a __ARRY < <(echo "${__RANG}")
+			__PTRN["${__TYPE}"]=""
+			for I in "${!__ARRY[@]}"
+			do
+				__TGID="${__ARRY[I]:-}"
+				case "${__TGID:-}" in
+					e|exit          ) break 2;;
+					a|all           ) __PTRN["${__TYPE}"]="$(seq --separator=' ' 1 "${#__TGET[@]}")"; break;;
+					[0-9]|[0-9][0-9]) __PTRN["${__TYPE}"]="${__PTRN["${__TYPE}"]:+"${__PTRN["${__TYPE}"]} "}${__TGID}";;
+					*               ) ;;
+				esac
+			done < <(echo "${__RANG:-}" || true)
+			[[ -z "${__PTRN["${__TYPE:-}"]:-}" ]] && continue
+			__TGID="${__PTRN["${__TYPE:-}"]// /|}"
+			__ARRY=()
+			for I in "${!__TGET[@]}"
+			do
+				read -r -a __MDIA < <(echo "${__TGET[I]}")
+				if echo "${__MDIA[1]}" | grep -qE "${__TGID:-}"; then
+					__ARRY+=("${__TGET[I]}")
+				fi
+			done
+			__TGET=("${__ARRY[@]:-}")
+		else
+			[[ -z "${__PTRN["${__TYPE:-}"]:-}" ]] && continue
+			__TGID="${__PTRN["${__TYPE:-}"]// /|}"
+			fnMk_print_list __LINE "${__TYPE:-}" "${__TGID:-}"
+			IFS= mapfile -d $'\n' -t __TGET < <(echo -n "${__LINE}")
+		fi
 		for I in "${!__TGET[@]}"
 		do
 			read -r -a __MDIA < <(echo "${__TGET[I]}")
