@@ -95,6 +95,7 @@ function fnMk_isofile() {
 		for I in "${!__TGET[@]}"
 		do
 			read -r -a __MDIA < <(echo "${__TGET[I]}")
+			__MDIA=("${__MDIA[@]//%20/ }")
 			case "${__MDIA[$((_OSET_MDIA+1))]}" in
 				m) continue;;			# (menu)
 				o)						# (output)
@@ -132,7 +133,7 @@ function fnMk_isofile() {
 							__WORK="$(fnMk_boot_options "remake" "${__MDIA[@]:-}")"
 							IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
 							__FNAM="${__MDIA[$((_OSET_MDIA+14))]##*/}"
-							__TSMP="${__MDIA[$((_OSET_MDIA+15))]:+"${__MDIA[$((_OSET_MDIA+15))]//%20/ }"}"
+							__TSMP="${__MDIA[$((_OSET_MDIA+15))]:-}"
 							__TSMP="${__TSMP:+" (${__TSMP:0:19})"}"
 							__FKNL="${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"}"
 							__FIRD="${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"}"
@@ -157,7 +158,7 @@ function fnMk_isofile() {
 							__LABL="$(blkid -o value -s PTTYPE "${__MDIA[$((_OSET_MDIA+14))]}")"
 							__HBRD=""
 							__FMBR=""
-							__FEFI="$(find "${__DMRG}" -type f \( -name 'efi*.img' -o -name 'efi' \))"
+							__FEFI="$(find "${__DMRG}" -type f \( \( -ipath '*/boot/*/*' -o -ipath '*/images/*' \) -a \( -iname 'efi*.img' -o -ipath '*/boot/*/efi' \) \))"
 							case "${__LABL:-}" in
 #								dos) __HBRD="/usr/lib/ISOLINUX/isohdpfx.bin";;
 								dos) __HBRD="${__TEMP}/mbr.img"; __FEFI="${__FEFI#"${__DMRG}/"}";;

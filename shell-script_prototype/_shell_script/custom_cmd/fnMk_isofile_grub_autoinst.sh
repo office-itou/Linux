@@ -46,11 +46,15 @@ function fnMk_isofile_grub_autoinst() {
 		else
 		  font="\${prefix}/fonts/font.pf2"
 		fi
+		export font
 
 		if loadfont "\$font" ; then
 		# set lang="ja_JP"
+		# export lang
 		  set gfxmode=${_MENU_RESO:+"${_MENU_RESO}x${_MENU_DPTH},"}auto
 		  set gfxpayload="keep"
+		  export gfxmode
+		  export gfxpayload
 		  if [ "\${grub_platform}" = "efi" ]; then
 		    insmod efi_gop
 		    insmod efi_uga
@@ -58,34 +62,22 @@ function fnMk_isofile_grub_autoinst() {
 		    insmod vbe
 		    insmod vga
 		  fi
-		#  insmod video_bochs
-		#  insmod video_cirrus
+		  insmod video_bochs
+		  insmod video_cirrus
 		  insmod gfxterm
 		  insmod gettext
 		  insmod png
 		  terminal_output gfxterm
 		fi
 
-		set timeout_style=menu
+		#set timeout_style=menu
+		#set color_normal=light-gray/black
+		#set color_highlight=white/dark-gray
+		#export color_normal
+		#export color_highlight
+
 		set theme=${__PATH_THME:-}
 		export theme
-
-		#if background_image /isolinux/${_MENU_SPLS:-} 2> /dev/null; then
-		#  set color_normal=light-gray/black
-		#  set color_highlight=white/black
-		#elif background_image /${_MENU_SPLS:-} 2> /dev/null; then
-		#  set color_normal=light-gray/black
-		#  set color_highlight=white/black
-		#else
-		#  set menu_color_normal=cyan/blue
-		#  set menu_color_highlight=white/blue
-		#fi
-
-		#export lang
-		export gfxmode
-		export gfxpayload
-		#export menu_color_normal
-		#export menu_color_highlight
 
 		#insmod play
 		#play 960 440 1 0 4 440 1

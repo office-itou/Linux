@@ -3386,11 +3386,15 @@ function fnMk_isofile_grub_autoinst() {
 		else
 		  font="\${prefix}/fonts/font.pf2"
 		fi
+		export font
 
 		if loadfont "\$font" ; then
 		# set lang="ja_JP"
+		# export lang
 		  set gfxmode=${_MENU_RESO:+"${_MENU_RESO}x${_MENU_DPTH},"}auto
 		  set gfxpayload="keep"
+		  export gfxmode
+		  export gfxpayload
 		  if [ "\${grub_platform}" = "efi" ]; then
 		    insmod efi_gop
 		    insmod efi_uga
@@ -3398,34 +3402,22 @@ function fnMk_isofile_grub_autoinst() {
 		    insmod vbe
 		    insmod vga
 		  fi
-		#  insmod video_bochs
-		#  insmod video_cirrus
+		  insmod video_bochs
+		  insmod video_cirrus
 		  insmod gfxterm
 		  insmod gettext
 		  insmod png
 		  terminal_output gfxterm
 		fi
 
-		set timeout_style=menu
+		#set timeout_style=menu
+		#set color_normal=light-gray/black
+		#set color_highlight=white/dark-gray
+		#export color_normal
+		#export color_highlight
+
 		set theme=${__PATH_THME:-}
 		export theme
-
-		#if background_image /isolinux/${_MENU_SPLS:-} 2> /dev/null; then
-		#  set color_normal=light-gray/black
-		#  set color_highlight=white/black
-		#elif background_image /${_MENU_SPLS:-} 2> /dev/null; then
-		#  set color_normal=light-gray/black
-		#  set color_highlight=white/black
-		#else
-		#  set menu_color_normal=cyan/blue
-		#  set menu_color_highlight=white/blue
-		#fi
-
-		#export lang
-		export gfxmode
-		export gfxpayload
-		#export menu_color_normal
-		#export menu_color_highlight
 
 		#insmod play
 		#play 960 440 1 0 4 440 1
@@ -3610,10 +3602,13 @@ function fnMk_isofile_grub() {
 	declare       __FILE=""				# file name
 	declare       __PAUT=""				# autoinst.cfg
 	declare       __PTHM=""				# theme.txt
+	declare       __SPLS=""				# splash.png
+	declare       __CONF=""				# configuration files
 	declare       __WORK=""
-	while read -r __PATH
+	__SPLS=""
+	while read -r __CONF
 	do
-		__DIRS="$(fnDirname "${__PATH#"${__TGET_DIRS}"}")"
+		__DIRS="$(fnDirname "${__CONF#"${__TGET_DIRS}"}")"
 		__PAUT="${__DIRS%/}/${_AUTO_INST:-"autoinst.cfg"}"
 		__PTHM="${__DIRS%/}/theme.txt"
 		__DIRS="$(fnDirname  "${__PATH_FIRD}")"
@@ -3626,37 +3621,38 @@ function fnMk_isofile_grub() {
 		fnMk_isofile_grub_theme "${__FILE_NAME:-}" "${__TIME_STMP:-}" > "${__TGET_DIRS}/${__PTHM}"
 		fnMk_isofile_grub_autoinst "${__FILE_NAME:-}" "${__TIME_STMP:-}" "${__PTHM#"${__TGET_DIRS}"}" "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__GUIS}" "${__NICS_NAME:-}" "${__NWRK_HOST:-}" "${__IPV4_CIDR:-}" "${__OPTN_BOOT[@]:-}" > "${__TGET_DIRS}/${__PAUT}"
 		# --- insert autoinst.cfg ---------------------------------------------
-		sed -i "${__PATH}"                            \
+		sed -i "${__CONF}"                            \
 		    -e '0,/^menuentry/ {'                     \
 		    -e '/^menuentry/i source '"${__PAUT}"'\n' \
 		    -e '}'
 		# --- splash.png ------------------------------------------------------
-		__PATH="$(find "${__TGET_DIRS}" -name "${_MENU_SPLS:-}")"
+		                          __PATH="$(find "${__TGET_DIRS}" -depth -type f -ipath '*/boot/*'     -iname "${_MENU_SPLS:-}")"
+		[[ -z "${__PATH:-}" ]] && __PATH="$(find "${__TGET_DIRS}" -depth -type f -ipath '*/isolinux/*' -iname "${_MENU_SPLS:-}")"
+		[[ -z "${__PATH:-}" ]] && __PATH="$(find "${__TGET_DIRS}" -depth -type f -ipath '*/*'          -iname "${_MENU_SPLS:-}")"
 		if [[ -n "${__PATH:-}" ]]; then
-			__WORK="$(file "{__PATH:-}" | awk '{sub("[^0-9]+","",$8); print $8;}')"
-			[[ "${__WORK:-"0"}" -lt 8 ]] && __PATH=""
-		fi
-		if [[ -n "${__PATH:-}" ]]; then
-			__PATH="${__PATH#"${__TGET_DIRS}"}"
-			sed -i "${__TGET_DIRS}/${__PTHM}"                              \
-			    -e '/desktop-image:/ s/:_DTPIMG_:/'"${__PATH//\//\\\/}"'/'
-		else
-			sed -i "${__TGET_DIRS}/${__PTHM}" \
-			    -e '/desktop-image:/d'
+			__WORK="$(file "${__PATH:-}" | awk '{sub("[^0-9]+","",$8); print $8;}')"
+			[[ "${__WORK:-"0"}" -ge 8 ]] && __SPLS="${__PATH}"
 		fi
 	done < <(find "${__TGET_DIRS}" -name grub.cfg -exec grep -ilE 'menuentry .*install' {} \;)
-#	[[ -z "${__PATH:-}" ]] && return
+	if [[ -n "${__SPLS:-}" ]]; then
+		__SPLS="${__SPLS#"${__TGET_DIRS}"}"
+		sed -i "${__TGET_DIRS}/${__PTHM}"                              \
+			-e '/desktop-image:/ s/:_DTPIMG_:/'"${__SPLS//\//\\\/}"'/'
+	else
+		sed -i "${__TGET_DIRS}/${__PTHM}" \
+			-e '/desktop-image:/d'
+	fi
 	# --- comment out ---------------------------------------------------------
-	find "${__TGET_DIRS}" \( -name '*.cfg' -a ! -name "${_AUTO_INST:-"autoinst.cfg"}" \) | while read -r __PATH
+	find "${__TGET_DIRS}" \( -name '*.cfg' -a ! -name "${_AUTO_INST:-"autoinst.cfg"}" \) | while read -r __CONF
 	do
-		sed -i "${__PATH}"                                              \
+		sed -i "${__CONF}"                                              \
 		    -e '/^[ \t]*\(\|set[ \t]\+\)default=/              s/^/#/g' \
 		    -e '/^[ \t]*\(\|set[ \t]\+\)timeout=/              s/^/#/g' \
-		    -e '/^[ \t]*\(\|set[ \t]\+\)gfxmode=/              s/^/#/g' \
-		    -e '/^[ \t]*\(\|set[ \t]\+\)theme=/                s/^/#/g' \
-		    -e '/^[ \t]*export theme/                          s/^/#/g' \
- 		    -e '/^[ \t]*if[ \t]\+sleep/,/^[ \t]*fi/            s/^/#/g' \
-		    -e '/^[ \t]*if[ \t]\+background_image/,/^[ \t]*fi/ s/^/#/g'
+		    -e '/^[ \t]*\(\|set[ \t]\+\)gfxmode=/              s/^/#/g'
+#		    -e '/^[ \t]*\(\|set[ \t]\+\)theme=/                s/^/#/g' \
+#		    -e '/^[ \t]*export theme/                          s/^/#/g' \
+# 		    -e '/^[ \t]*if[ \t]\+sleep/,/^[ \t]*fi/            s/^/#/g' \
+#		    -e '/^[ \t]*if[ \t]\+background_image/,/^[ \t]*fi/ s/^/#/g'
 #		    -e '/^[ \t]*play/                                  s/^/#/g'
 	done
 	unset __PATH __DIRS __BASE __FILE __PAUT __PTHM
@@ -3874,7 +3870,7 @@ function fnMk_isofile_rebuild() {
 	if [[ -n "${__FILE_HBRD:-}" ]]; then
 		declare -r -a __OPTN=(\
 			-quiet -rational-rock \
-			${__FILE_VLID:+-volid "${__FILE_VLID}"} \
+			${__FILE_VLID:+-volid "'${__FILE_VLID}'"} \
 			-joliet -joliet-long \
 			-cache-inodes \
 			-isohybrid-mbr "${__FILE_HBRD}" \
@@ -3887,7 +3883,7 @@ function fnMk_isofile_rebuild() {
 	else
 		declare -r -a __OPTN=(\
 			-quiet -rational-rock \
-			${__FILE_VLID:+-volid "${__FILE_VLID}"} \
+			${__FILE_VLID:+-volid "'${__FILE_VLID}'"} \
 			-joliet -joliet-long \
 			-full-iso9660-filenames -iso-level 3 \
 			-partition_offset 16 \
@@ -3913,6 +3909,8 @@ function fnMk_isofile_rebuild() {
 	pushd "${__DIRS_TGET:?}" > /dev/null || exit
 		if ! nice -n 19 xorrisofs "${__OPTN[@]}" -output "${__TEMP}" .; then
 			printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [xorriso]" "${__FILE_ISOS##*/}" 1>&2
+			printf "%s\n" "xorrisofs ${__OPTN[*]} -output ${__TEMP} ."
+sleep 600
 		else
 			if ! cp --preserve=timestamps "${__TEMP}" "${__FILE_ISOS}"; then
 				printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [cp]" "${__FILE_ISOS##*/}" 1>&2
@@ -4031,6 +4029,7 @@ function fnMk_isofile() {
 		for I in "${!__TGET[@]}"
 		do
 			read -r -a __MDIA < <(echo "${__TGET[I]}")
+			__MDIA=("${__MDIA[@]//%20/ }")
 			case "${__MDIA[$((_OSET_MDIA+1))]}" in
 				m) continue;;			# (menu)
 				o)						# (output)
@@ -4068,7 +4067,7 @@ function fnMk_isofile() {
 							__WORK="$(fnMk_boot_options "remake" "${__MDIA[@]:-}")"
 							IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
 							__FNAM="${__MDIA[$((_OSET_MDIA+14))]##*/}"
-							__TSMP="${__MDIA[$((_OSET_MDIA+15))]:+"${__MDIA[$((_OSET_MDIA+15))]//%20/ }"}"
+							__TSMP="${__MDIA[$((_OSET_MDIA+15))]:-}"
 							__TSMP="${__TSMP:+" (${__TSMP:0:19})"}"
 							__FKNL="${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"}"
 							__FIRD="${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"}"
@@ -4093,7 +4092,7 @@ function fnMk_isofile() {
 							__LABL="$(blkid -o value -s PTTYPE "${__MDIA[$((_OSET_MDIA+14))]}")"
 							__HBRD=""
 							__FMBR=""
-							__FEFI="$(find "${__DMRG}" -type f \( -name 'efi*.img' -o -name 'efi' \))"
+							__FEFI="$(find "${__DMRG}" -type f \( \( -ipath '*/boot/*/*' -o -ipath '*/images/*' \) -a \( -iname 'efi*.img' -o -ipath '*/boot/*/efi' \) \))"
 							case "${__LABL:-}" in
 #								dos) __HBRD="/usr/lib/ISOLINUX/isohdpfx.bin";;
 								dos) __HBRD="${__TEMP}/mbr.img"; __FEFI="${__FEFI#"${__DMRG}/"}";;
