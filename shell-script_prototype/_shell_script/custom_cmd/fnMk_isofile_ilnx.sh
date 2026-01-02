@@ -7,8 +7,9 @@
 #   input :     $3     : iso file time stamp
 #   input :     $4     : kernel path
 #   input :     $5     : initrd path
-#   input :     $6     : host name
-#   input :     $7     : ipv4 cidr
+#   input :     $6     : nic name
+#   input :     $7     : host name
+#   input :     $8     : ipv4 cidr
 #   input :     $@     : option parameter
 #   output:   stdout   : message
 #   return:            : unused
@@ -19,9 +20,10 @@ function fnMk_isofile_ilnx() {
 	declare -r    __TIME_STMP="${3:?}"
 	declare -r    __PATH_FKNL="${4:?}"
 	declare -r    __PATH_FIRD="${5:?}"
-	declare -r    __NWRK_HOST="${6:?}"
-	declare -r    __IPV4_CIDR="${7:-}"
-	declare -r -a __OPTN_BOOT=("${@:8}")
+	declare -r    __NICS_NAME="${6:?}"
+	declare -r    __NWRK_HOST="${7:?}"
+	declare -r    __IPV4_CIDR="${8:-}"
+	declare -r -a __OPTN_BOOT=("${@:9}")
 	__PATH="$(find "${__TGET_DIRS}" -name isolinux.cfg)"
 	[[ -z "${__PATH:-}" ]] && return
 	__DIRS="$(fnDirname "${__PATH#"${__TGET_DIRS}"}")"
@@ -29,7 +31,7 @@ function fnMk_isofile_ilnx() {
 	__PTHM="${__DIRS%/}/theme.txt"
 	# --- create files --------------------------------------------------------
 	fnMk_isofile_ilnx_theme "${__FILE_NAME:-}" "${__TIME_STMP:-}" > "${__TGET_DIRS}/${__PTHM}"
-	fnMk_isofile_ilnx_autoinst "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__NWRK_HOST:-}" "${__IPV4_CIDR:-}" "${__OPTN_BOOT[@]:-}" > "${__TGET_DIRS}/${__PAUT}"
+	fnMk_isofile_ilnx_autoinst "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__NICS_NAME:-}" "${__NWRK_HOST:-}" "${__IPV4_CIDR:-}" "${__OPTN_BOOT[@]:-}" > "${__TGET_DIRS}/${__PAUT}"
 	# --- insert autoinst.cfg -------------------------------------------------
 	if grep -qEi '^include[ \t]+menu.cfg[ \t]*.*$' "${__PATH}"; then
 		sed -i "${__PATH}"                                                                   \

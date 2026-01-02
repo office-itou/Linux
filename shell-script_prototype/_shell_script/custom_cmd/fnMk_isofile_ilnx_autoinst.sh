@@ -2,10 +2,11 @@
 
 # -----------------------------------------------------------------------------
 # descript: make autoinst.cfg files for isolinux
-#   input :     $4     : kernel path
-#   input :     $5     : initrd path
-#   input :     $6     : host name
-#   input :     $7     : ipv4 cidr
+#   input :     $1     : kernel path
+#   input :     $2     : initrd path
+#   input :     $3     : nic name
+#   input :     $4     : host name
+#   input :     $5     : ipv4 cidr
 #   input :     $@     : option parameter
 #   output:   stdout   : message
 #   return:            : unused
@@ -21,16 +22,17 @@
 function fnMk_isofile_ilnx_autoinst() {
 	declare -r    __PATH_FKNL="${1:?}"
 	declare -r    __PATH_FIRD="${2:?}"
-	declare -r    __NWRK_HOST="${3:?}"
-	declare -r    __IPV4_CIDR="${4:-}"
-	declare -r -a __OPTN_BOOT=("${@:5}")
+	declare -r    __NICS_NAME="${3:?}"
+	declare -r    __NWRK_HOST="${4:?}"
+	declare -r    __IPV4_CIDR="${5:-}"
+	declare -r -a __OPTN_BOOT=("${@:6}")
 	declare -a    __BOPT=()				# boot options
 	declare       __DIRS=""
 	# --- convert -------------------------------------------------------------
 	__BOPT=("${__OPTN_BOOT[@]:-}")
 	__BOPT=("${__BOPT[@]//\$\{srvraddr\}/}")
-	__BOPT=("${__BOPT[@]//\$\{hostname\}/${_NWRK_HOST/:_DISTRO_:/${__MDIA[$((_OSET_MDIA+2))]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}}")
-	__BOPT=("${__BOPT[@]//\$\{ethrname\}/${_NICS_NAME:-ens160}}")
+	__BOPT=("${__BOPT[@]//\$\{hostname\}/${__NWRK_HOST:-}}")
+	__BOPT=("${__BOPT[@]//\$\{ethrname\}/${__NICS_NAME:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ipv4addr\}/${_IPV4_ADDR:-}${__IPV4_CIDR:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ipv4mask\}/${_IPV4_MASK:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ipv4gway\}/${_IPV4_GWAY:-}}")

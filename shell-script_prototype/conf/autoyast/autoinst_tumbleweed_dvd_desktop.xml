@@ -48,9 +48,9 @@ leap -->
     <image_installation t="boolean">true</image_installation>
   </deploy_image>
   <general t="map">
-    <self_update config:type="boolean">true</self_update>
+    <self_update t="boolean">true</self_update>
 <!--
-    <semi-automatic config:type="list">
+    <semi-automatic t="list">
       <semi-automatic_entry>networking</semi-automatic_entry>
     </semi-automatic>
 -->
@@ -161,11 +161,13 @@ fixed address -->
         <notification/>
         <param-list t="list"/>
         <rerun t="boolean">false</rerun>
-        <source><![CDATA[#!/bin/sh
+        <source><![CDATA[
+  set -eu
+  echo "zzz_pre-scripts.sh"
   mkdir -p /var/admin/autoinst/
   {
     _FILE_SEED=""
-    _COMD_LINE="$(cat /proc/cmdline || true)"
+    _COMD_LINE="$(cat /proc/cmdline)"
     for __LINE in ${_COMD_LINE:-}
     do
       case "${__LINE}" in
@@ -175,23 +177,64 @@ fixed address -->
         inst.ks=*               ) _FILE_SEED="${__LINE#*inst.ks=}";;
         autoyast=*              ) _FILE_SEED="${__LINE#*autoyast=}";;
         inst.auto=*             ) _FILE_SEED="${__LINE#*inst.auto=}";;
-        *) ;;
+        *) echo "${__LINE:-}";;
       esac
     done
     __DIRS="${_FILE_SEED%/user-data}"
     __DIRS="${__DIRS%/*/*}"
     __DIRS="${__DIRS%%/}"
-    cd /var/admin/autoinst/ || exit 1
+    cd /var/admin/autoinst/
     echo "download/copy: [${__DIRS:-}]"
     case "${__DIRS:-}" in
       http:*|https:*|ftp:*|tftp:*) curl -L -# -O -R -S "${__DIRS:-}/script/autoinst_cmd_early.sh";;
+      hd:sr0:*|cdrom|cdrom:*     ) cp -p "/mnt/install/repo/${__DIRS#*:/}/script/autoinst_cmd_early.sh" ./;;
+      hd:*|dvd:*|cd:*            )
+        if [[ -e /var/log/YaST2/y2start.log ]]; then
+          while read -r __LINE
+          do
+            case "${__LINE:-}" in
+              *AutoYaST=*)
+                __SEED="${__LINE%%=*}"
+                __SEED="${__LINE#"${__SEED:-}="}"
+                __SEED="${__SEED#\"}"
+                __SEED="${__SEED%\"}"
+                __SEED="${__SEED#*://}"
+                ;;
+              *autoyast=*)
+                __YAST="${__LINE%%=*}"
+                __YAST="${__LINE#"${__YAST:-}="}"
+                __YAST="${__YAST#\"}"
+                __YAST="${__YAST%\"}"
+                __YAST="${__YAST#*:/}"
+                ;;
+              *) ;;
+            esac
+          done < /var/log/YaST2/y2start.log
+          __DEVS="${__SEED%"/${__YAST:-}"}"
+          if [[ -n "${__DEVS:-}" ]] && [[ -e "/dev/${__DEVS}" ]]; then
+            mkdir -p /media
+            mount -r "/dev/${__DEVS}" /media
+            cp -p "/media/${__DIRS#*:/}/script/autoinst_cmd_early.sh" ./
+            umount /media
+          fi
+        fi
+        ;;
+      device:*                   ) echo "${__DIRS}";;
+      label:*                    ) echo "${__DIRS}";;
+      usb:*                      ) echo "${__DIRS}";;
+      smb:*                      ) echo "${__DIRS}";;
+      nfs:*                      ) echo "${__DIRS}";;
+      hmc                        ) echo "${__DIRS}";;
       file:*|/*                  ) cp -p "${__DIRS#*:*//}/script/autoinst_cmd_early.sh" ./;;
-      *) ;;
+      *) echo "${__DIRS:-}";;
     esac
-    chmod +x ./autoinst_cmd_early.sh
-    ./autoinst_cmd_early.sh
-  } >> /var/admin/autoinst/autoinst_cmd_early.sh.log 2>&1
-  exit 0]]></source>
+    if [[ -e ./autoinst_cmd_early.sh ]]; then
+      chmod +x ./autoinst_cmd_early.sh
+      ./autoinst_cmd_early.sh
+    fi
+  } | tee -a /var/admin/autoinst/zzz_pre-scripts.sh.log 2>&1
+]]>
+        </source>
       </script>
     </pre-scripts>
     <!-- *** postpartitioning-scripts ************************************** -->
@@ -206,14 +249,21 @@ fixed address -->
         <notification/>
         <param-list t="list"/>
         <rerun t="boolean">false</rerun>
-        <source><![CDATA[#!/bin/sh
-  exit 0]]></source>
+        <source><![CDATA[
+  set -eu
+  echo "zzz_postpartitioning-scripts.sh"
+  mkdir -p /mnt/var/admin/autoinst/
+  {
+    cp -pv /var/admin/autoinst/* /mnt/var/admin/autoinst/
+  } | tee -a /mnt/var/admin/autoinst/zzz_postpartitioning-scripts.sh.log 2>&1
+]]>
+        </source>
       </script>
     </postpartitioning-scripts>
     <!-- *** chroot-scripts ************************************************ -->
     <chroot-scripts t="list">
       <script t="map">
-        <chrooted t="boolean">false</chrooted>
+        <chrooted t="boolean">true</chrooted>
         <debug t="boolean">false</debug>
         <feedback t="boolean">false</feedback>
         <feedback_type/>
@@ -223,8 +273,14 @@ fixed address -->
         <notification/>
         <param-list t="list"/>
         <rerun t="boolean">false</rerun>
-        <source><![CDATA[#!/bin/sh
-  exit 0]]></source>
+        <source><![CDATA[
+  set -eu
+  echo "zzz_chroot-scripts.sh"
+  {
+    /var/admin/autoinst/autoinst_cmd_late.sh
+  } | tee -a /var/admin/autoinst/zzz_chroot-scripts.sh.log 2>&1
+]]>
+        </source>
       </script>
     </chroot-scripts>
     <!-- *** post-scripts ************************************************** -->
@@ -239,18 +295,16 @@ fixed address -->
         <notification/>
         <param-list t="list"/>
         <rerun t="boolean">false</rerun>
-        <source><![CDATA[#!/bin/sh
+        <source><![CDATA[
+  set -eu
+  echo "zzz_post-scripts.sh"
+  __DIRS="/mnt/var/admin/autoinst"
+  [[ ! -e "${__DIRS:-}"/. ]] && __DIRS="${__DIRS#/mnt}"
   {
-    mkdir -p /mnt/sysimage/var/admin/
-    mount --bind /var/admin/ /mnt/sysimage/var/admin/
-    mount --bind /run/     /mnt/sysimage/run/
-    mount --bind /proc/    /mnt/sysimage/proc/
-    mount --bind /sys/     /mnt/sysimage/sys/
-    chroot /mnt/sysimage/ /var/admin/autoinst/autoinst_cmd_late.sh
-    umount /mnt/sysimage/sys/ /mnt/sysimage/proc/ /mnt/sysimage/run/ /mnt/sysimage/var/admin/
-  } >> /var/admin/autoinst/autoinst_cmd_late.sh.log 2>&1
-  cp -pr /var/admin/* /mnt/sysimage/var/admin/
-  exit 0]]></source>
+    echo "no processing"
+  } | tee -a "${__DIRS:-}"/zzz_post-scripts.sh.log 2>&1
+]]>
+        </source>
       </script>
     </post-scripts>
     <!-- *** init-scripts ************************************************** -->
@@ -259,8 +313,14 @@ fixed address -->
         <debug t="boolean">false</debug>
         <filename>zzz_init-scripts.sh</filename>
         <location/>
-        <source><![CDATA[#!/bin/sh
-  exit 0]]></source>
+        <source><![CDATA[
+  set -eu
+  echo "zzz_init-scripts.sh"
+  {
+    eject --verbose --cdrom || true
+  } | tee -a /var/admin/autoinst/zzz_init-scripts.sh.log 2>&1
+]]>
+        </source>
       </script>
     </init-scripts>
     <!-- *** scripts end *************************************************** -->
@@ -283,8 +343,8 @@ fixed address -->
       <disable t="list">
 <!--
         <service>avahi-daemon</service>
--->
         <service>wicked</service>
+-->
       </disable>
       <on_demand t="list">
 <!--
@@ -297,11 +357,12 @@ fixed address -->
     <install_recommended t="boolean">true</install_recommended>
     <instsource/>
     <packages t="list">
-      <package>selinux-utils</package>
+<!--  <package>selinux-utils</package> -->
       <package>sudo</package>
       <package>firewalld</package>
       <package>traceroute</package>
       <package>NetworkManager</package>
+      <package>ShellCheck</package>
       <package>bash-completion</package>
       <package>curl</package>
       <package>vim</package>

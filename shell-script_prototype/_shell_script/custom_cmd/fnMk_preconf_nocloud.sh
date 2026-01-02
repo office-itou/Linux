@@ -10,6 +10,9 @@
 # shellcheck disable=SC2317,SC2329
 function fnMk_preconf_nocloud() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
+	declare       __REAL=""
+	declare       __DIRS=""
+	declare       __OWNR=""
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
 	mkdir -p "${__TGET_PATH%/*}"
@@ -29,6 +32,11 @@ function fnMk_preconf_nocloud() {
 #	touch -m "${__TGET_PATH%/*}/user-data"      --reference "${__TGET_PATH}"
 	touch -m "${__TGET_PATH%/*}/vendor-data"    --reference "${__TGET_PATH}"
 	# -------------------------------------------------------------------------
+	__REAL="$(realpath "${__TGET_PATH}")"
+	__DIRS="$(fnDirname "${__TGET_PATH}")"
+	__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
+	chown "${__OWNR:-"${_SAMB_USER}"}" "${__TGET_PATH}"
 	chmod ugo+r-x,ug+w "${__TGET_PATH%/*}"/*
+	unset __REAL __DIRS __OWNR
 #	unset __TGET_PATH
 }

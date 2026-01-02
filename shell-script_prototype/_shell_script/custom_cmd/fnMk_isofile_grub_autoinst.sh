@@ -7,8 +7,9 @@
 #   input :     $3     : theme.txt file name
 #   input :     $4     : kernel path
 #   input :     $5     : initrd path
-#   input :     $6     : host name
-#   input :     $7     : ipv4 cidr
+#   input :     $6     : nic name
+#   input :     $7     : host name
+#   input :     $8     : ipv4 cidr
 #   input :     $@     : option parameter
 #   output:   stdout   : message
 #   return:            : unused
@@ -28,9 +29,10 @@ function fnMk_isofile_grub_autoinst() {
 	declare -r    __PATH_FKNL="${4:?}"
 	declare -r    __PATH_FIRD="${5:?}"
 	declare -r    __PATH_GUIS="${6:-}"
-	declare -r    __HOST_NAME="${7:?}"
-	declare -r    __IPV4_CIDR="${8:-}"
-	declare -r -a __OPTN_BOOT=("${@:9}")
+	declare -r    __NICS_NAME="${7:?}"
+	declare -r    __NWRK_HOST="${8:?}"
+	declare -r    __IPV4_CIDR="${9:-}"
+	declare -r -a __OPTN_BOOT=("${@:10}")
 	declare       __DIRS=""
 	declare       __TITL=""
 	__TITL="$(printf "%s%s" "${__FILE_NAME:-}" "${__TIME_STMP:-}")"
@@ -56,8 +58,8 @@ function fnMk_isofile_grub_autoinst() {
 		    insmod vbe
 		    insmod vga
 		  fi
-		  insmod video_bochs
-		  insmod video_cirrus
+		#  insmod video_bochs
+		#  insmod video_cirrus
 		  insmod gfxterm
 		  insmod gettext
 		  insmod png
@@ -82,30 +84,30 @@ function fnMk_isofile_grub_autoinst() {
 		#export lang
 		export gfxmode
 		export gfxpayload
-		export menu_color_normal
-		export menu_color_highlight
+		#export menu_color_normal
+		#export menu_color_highlight
 
-		insmod play
-		play 960 440 1 0 4 440 1
+		#insmod play
+		#play 960 440 1 0 4 440 1
 _EOT_
 	# --- default--------------------------------------------------------------
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 
 		menuentry 'Automatic installation' {
 		  echo 'Loading ${__TITL:+"${__TITL} "}...'
-		  set gfxpayload=keep
-		  set background_color=black
-		  set hostname="${_NWRK_HOST/:_DISTRO_:/${__HOST_NAME:-}}"
-		  set ethrname="${_NICS_NAME:-ens160}"
+		  set gfxpayload="keep"
+		  set background_color="black"
+		  set hostname="${__NWRK_HOST}"
+		  set ethrname="${__NICS_NAME}"
 		  set ipv4addr="${_IPV4_ADDR:-}${__IPV4_CIDR:-}"
 		  set ipv4mask="${_IPV4_MASK:-}"
 		  set ipv4gway="${_IPV4_GWAY:-}"
 		  set ipv4nsvr="${_IPV4_NSVR:-}"
 		  set srvraddr="${_SRVR_PROT:?}://${_SRVR_ADDR:?}"
-		  set autoinst="${__OPTN_BOOT[0]:-} ${__OPTN_BOOT[1]:-}"
-		  set language="${__OPTN_BOOT[2]:-}"
-		  set networks="${__OPTN_BOOT[3]:-}"
-		  set otheropt="${__OPTN_BOOT[@]:4}"
+		  set autoinst="${__OPTN_BOOT[0]:-}"
+		  set language="${__OPTN_BOOT[1]:-}"
+		  set networks="${__OPTN_BOOT[2]:-}"
+		  set otheropt="${__OPTN_BOOT[@]:3}"
 		  set options="\${autoinst} \${language} \${networks} \${otheropt}"
 		  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 		  echo 'Loading boot files ...'
@@ -119,19 +121,19 @@ _EOT_
 
 			menuentry 'Automatic installation gui' {
 			  echo 'Loading ${__TITL:+"${__TITL} "}...'
-			  set gfxpayload=keep
-			  set background_color=black
-			  set hostname="${_NWRK_HOST/:_DISTRO_:/${__HOST_NAME:-}}"
-			  set ethrname="${_NICS_NAME:-ens160}"
+			  set gfxpayload="keep"
+			  set background_color="black"
+			  set hostname="${__NWRK_HOST}"
+			  set ethrname="${__NICS_NAME}"
 			  set ipv4addr="${_IPV4_ADDR:-}${__IPV4_CIDR:-}"
 			  set ipv4mask="${_IPV4_MASK:-}"
 			  set ipv4gway="${_IPV4_GWAY:-}"
 			  set ipv4nsvr="${_IPV4_NSVR:-}"
 			  set srvraddr="${_SRVR_PROT:?}://${_SRVR_ADDR:?}"
-			  set autoinst="${__OPTN_BOOT[0]:-} ${__OPTN_BOOT[1]:-}"
-			  set language="${__OPTN_BOOT[2]:-}"
-			  set networks="${__OPTN_BOOT[3]:-}"
-			  set otheropt="${__OPTN_BOOT[@]:4}"
+			  set autoinst="${__OPTN_BOOT[0]:-}"
+			  set language="${__OPTN_BOOT[1]:-}"
+			  set networks="${__OPTN_BOOT[2]:-}"
+			  set otheropt="${__OPTN_BOOT[@]:3}"
 			  set options="\${autoinst} \${language} \${networks} \${otheropt}"
 			  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 			  echo 'Loading boot files ...'

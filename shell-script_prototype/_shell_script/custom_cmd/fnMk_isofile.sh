@@ -40,6 +40,7 @@ function fnMk_isofile() {
 	declare       __TSMP=""
 	declare       __FKNL=""
 	declare       __FIRD=""
+	declare       __NICS="${_NICS_NAME:-"ens160"}"
 	declare       __HOST=""
 	declare       __CIDR=""
 	declare       __LABL=""
@@ -140,18 +141,23 @@ function fnMk_isofile() {
 								*       ) ;;
 							esac
 							__HOST="${__MDIA[$((_OSET_MDIA+2))]%%-*}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
+							__HOST="${_NWRK_HOST/:_DISTRO_:/"${__HOST:-"localhost.localdomain"}"}"
+							case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
+								opensuse-*-15.*) __NICS="eth0";;
+								*              ) ;;
+							esac
 							case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 								ubuntu*) __CIDR="";;
 								*      ) __CIDR="/${_IPV4_CIDR:-}";;
 							esac
 							fnMk_isofile_conf "${__DMRG}" "${__MDIA[$((_OSET_MDIA+24))]}"
-							fnMk_isofile_grub "${__DMRG}" "${__FNAM:-}" "${__TSMP:-}" "${__FKNL:-}" "${__FIRD:-}" "${__HOST:-}" "${__CIDR:-}" "${__BOPT[@]:-}"
-							fnMk_isofile_ilnx "${__DMRG}" "${__FNAM:-}" "${__TSMP:-}" "${__FKNL:-}" "${__FIRD:-}" "${__HOST:-}" "${__CIDR:-}" "${__BOPT[@]:-}"
+							fnMk_isofile_grub "${__DMRG}" "${__FNAM:-}" "${__TSMP:-}" "${__FKNL:-}" "${__FIRD:-}" "${__NICS:-}" "${__HOST:-}" "${__CIDR:-}" "${__BOPT[@]:-}"
+							fnMk_isofile_ilnx "${__DMRG}" "${__FNAM:-}" "${__TSMP:-}" "${__FKNL:-}" "${__FIRD:-}" "${__NICS:-}" "${__HOST:-}" "${__CIDR:-}" "${__BOPT[@]:-}"
 							# --- rebuild -------------------------------------
 							__LABL="$(blkid -o value -s PTTYPE "${__MDIA[$((_OSET_MDIA+14))]}")"
 							__HBRD=""
 							__FMBR=""
-							__FEFI="$(find "${__DMRG}" -name 'efi*.img')"
+							__FEFI="$(find "${__DMRG}" -type f \( -name 'efi*.img' -o -name 'efi' \))"
 							case "${__LABL:-}" in
 #								dos) __HBRD="/usr/lib/ISOLINUX/isohdpfx.bin";;
 								dos) __HBRD="${__TEMP}/mbr.img"; __FEFI="${__FEFI#"${__DMRG}/"}";;

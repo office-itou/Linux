@@ -15,6 +15,9 @@ function fnMk_preconf_agama() {
 #	declare       __PDCT=""				# product name
 	declare       __PDID=""				# "       id
 	declare       __WORK=""				# work variables
+	declare       __REAL=""
+	declare       __DIRS=""
+	declare       __OWNR=""
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
 	mkdir -p "${__TGET_PATH%/*}"
@@ -60,6 +63,10 @@ function fnMk_preconf_agama() {
 	    -e '/"packages": \[/,/\]/          {' \
 	    -e '\%^//.*$%d                     }'
 	# -------------------------------------------------------------------------
+	__REAL="$(realpath "${__TGET_PATH}")"
+	__DIRS="$(fnDirname "${__TGET_PATH}")"
+	__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
+	chown "${__OWNR:-"${_SAMB_USER}"}" "${__TGET_PATH}"
 	chmod ugo+r-x,ug+w "${__TGET_PATH}" "${__WORK}"
-	unset __VERS __NUMS __PDCT __PDID __WORK
+	unset __VERS __NUMS __PDCT __PDID __WORK __REAL __DIRS __OWNR
 }

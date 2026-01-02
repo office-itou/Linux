@@ -17,6 +17,9 @@ function fnMk_preconf_kickstart() {
 	declare       __ADDR=""				# repository
 	declare -r    __ARCH="x86_64"		# base architecture
 	declare       __WORK=""				# work
+	declare       __REAL=""
+	declare       __DIRS=""
+	declare       __OWNR=""
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
 	mkdir -p "${__TGET_PATH%/*}"
@@ -100,6 +103,10 @@ function fnMk_preconf_kickstart() {
 			;;
 	esac
 	# -------------------------------------------------------------------------
+	__REAL="$(realpath "${__TGET_PATH}")"
+	__DIRS="$(fnDirname "${__TGET_PATH}")"
+	__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
+	chown "${__OWNR:-"${_SAMB_USER}"}" "${__TGET_PATH}"
 	chmod ugo+r-x,ug+w "${__TGET_PATH}" "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
-	unset __VERS __NUMS __NAME __SECT __ADDR __WORK
+	unset __VERS __NUMS __NAME __SECT __ADDR __WORK __REAL __DIRS __OWNR
 }

@@ -13,6 +13,9 @@ function fnMk_preconf_autoyast() {
 	declare       __VERS=""				# distribution version
 	declare       __NUMS=""				# "            number
 	declare       __WORK=""				# work
+	declare       __REAL=""
+	declare       __DIRS=""
+	declare       __OWNR=""
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
 	mkdir -p "${__TGET_PATH%/*}"
@@ -70,6 +73,10 @@ function fnMk_preconf_autoyast() {
 	    "${__TGET_PATH}"                               \
 	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
 	# -------------------------------------------------------------------------
+	__REAL="$(realpath "${__TGET_PATH}")"
+	__DIRS="$(fnDirname "${__TGET_PATH}")"
+	__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
+	chown "${__OWNR:-"${_SAMB_USER}"}" "${__TGET_PATH}"
 	chmod ugo+r-x,ug+w "${__TGET_PATH}"
-	unset __VERS __NUMS __WORK
+	unset __VERS __NUMS __WORK __REAL __DIRS __OWNR
 }

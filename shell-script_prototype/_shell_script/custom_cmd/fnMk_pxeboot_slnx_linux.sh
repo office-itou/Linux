@@ -18,17 +18,25 @@ function fnMk_pxeboot_slnx_linux() {
 	declare -a    __MDIA=("${@:-}")
 	declare -a    __BOPT=()
 	declare       __ENTR=""
+	declare       __NICS="${_NICS_NAME:-"ens160"}"
+	declare       __HOST=""
 	declare       __CIDR=""
 	declare       __WORK=""
 	__WORK="$(fnMk_boot_options "pxeboot" "${@}")"
 	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
+	__HOST="${__MDIA[$((_OSET_MDIA+2))]%%-*}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
+	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__HOST:-"localhost.localdomain"}"}"
+	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
+		opensuse-*-15.*) __NICS="eth0";;
+		*              ) ;;
+	esac
 	case "${__MDIA[$((_OSET_MDIA+3))]:-}" in
 		ubuntu*) __CIDR="";;
 		*      ) __CIDR="/${_IPV4_CIDR:-}";;
 	esac
 	__BOPT=("${__BOPT[@]//\$\{srvraddr\}/${_SRVR_PROT:?}:\/\/${_SRVR_ADDR:?}}")
-	__BOPT=("${__BOPT[@]//\$\{hostname\}/${_NWRK_HOST/:_DISTRO_:/${__MDIA[$((_OSET_MDIA+2))]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}}")
-	__BOPT=("${__BOPT[@]//\$\{ethrname\}/${_NICS_NAME:-ens160}}")
+	__BOPT=("${__BOPT[@]//\$\{hostname\}/${__HOST:-}}")
+	__BOPT=("${__BOPT[@]//\$\{ethrname\}/${__NICS:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ipv4addr\}/${_IPV4_ADDR:-}${__CIDR:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ipv4mask\}/${_IPV4_MASK:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ipv4gway\}/${_IPV4_GWAY:-}}")

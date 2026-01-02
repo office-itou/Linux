@@ -18,10 +18,18 @@ function fnMk_pxeboot_grub_linux() {
 	declare -a    __MDIA=("${@:-}")
 	declare -a    __BOPT=()
 	declare       __ENTR=""
+	declare       __NICS="${_NICS_NAME:-"ens160"}"
+	declare       __HOST=""
 	declare       __CIDR=""
 	declare       __WORK=""
 	__WORK="$(fnMk_boot_options "pxeboot" "${@}")"
 	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
+	__HOST="${__MDIA[$((_OSET_MDIA+2))]%%-*}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
+	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__HOST:-"localhost.localdomain"}"}"
+	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
+		opensuse-*-15.*) __NICS="eth0";;
+		*              ) ;;
+	esac
 	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 		ubuntu*) __CIDR="";;
 		*      ) __CIDR="/${_IPV4_CIDR:-}";;
@@ -30,17 +38,17 @@ function fnMk_pxeboot_grub_linux() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		menuentry '${__ENTR:-}' {
 		  echo 'Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...'
-		  set hostname=${_NWRK_HOST/:_DISTRO_:/${__MDIA[$((_OSET_MDIA+2))]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
-		  set ethrname=${_NICS_NAME:-ens160}
+		  set hostname=${__HOST:-}
+		  set ethrname=${__NICS:-}
 		  set ipv4addr=${_IPV4_ADDR:-}${__CIDR:-}
 		  set ipv4mask=${_IPV4_MASK:-}
 		  set ipv4gway=${_IPV4_GWAY:-}
 		  set ipv4nsvr=${_IPV4_NSVR:-}
 		  set srvraddr=${_SRVR_PROT:?}://${_SRVR_ADDR:?}
-		  set autoinst=${__BOPT[0]:-} ${__BOPT[1]:-}
-		  set language=${__BOPT[2]:-}
-		  set networks=${__BOPT[3]:-}
-		  set otheropt=${__BOPT[@]:4}
+		  set autoinst=${__BOPT[0]:-}
+		  set language=${__BOPT[1]:-}
+		  set networks=${__BOPT[2]:-}
+		  set otheropt=${__BOPT[@]:3}
 		  set options=\${autoinst} \${language} \${networks} \${otheropt}
 		  set knladdr=\${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
 		  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi

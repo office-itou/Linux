@@ -62,7 +62,7 @@ function fnMk_isofile_conf() {
 				fi
 				find "${__PATH%/*}" -maxdepth 1 -name "${__WORK:-}" | sort -uV | while read -r __SRCS
 				do
-					printf "\033[m%-8s: %s\033[m\n" "copy" "${__SRCS#"${_DIRS_CONF}/"}"
+					printf "\033[m%-8s: %s\033[m\n" "copy" "${__SRCS#"${_DIRS_CONF%/*}/"}"
 					mkdir -p "${__DEST:?}"
 					if [[ -d "${__SRCS:?}"/. ]]; then
 						cp -R --preserve=timestamps "${__SRCS}" "${__DEST}"

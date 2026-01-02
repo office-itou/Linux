@@ -1035,6 +1035,73 @@ fnGet_conf_file() {
 					fi
 				fi
 				;;
+			hd:sr0:*|cdrom|cdrom:*)
+				fnMsgout "${_PROG_NAME:-}" "copy" "${__LINE}"
+				if ! cp -p "/mnt/install/repo/${__LINE#*:/}" "${_DIRS_TGET:-}${_DIRS_INST}/"; then
+					fnMsgout "${_PROG_NAME:-}" "failed" "${__LINE}"
+					__PATH="${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}"
+					rm -rf "${__PATH:?}"
+					continue
+				fi
+				;;
+			hd:*|dvd:*|cd:*)
+				fnMsgout "${_PROG_NAME:-}" "copy" "${__LINE}"
+				if [ -e /var/log/YaST2/y2start.log ]; then
+					while read -r __READ
+					do
+						case "${__READ:-}" in
+						*AutoYaST=*)
+							__SEED="${__READ%%=*}"
+							__SEED="${__READ#"${__SEED:-}="}"
+							__SEED="${__SEED#\"}"
+							__SEED="${__SEED%\"}"
+							__SEED="${__SEED#*://}"
+							;;
+						*autoyast=*)
+							__YAST="${__READ%%=*}"
+							__YAST="${__READ#"${__YAST:-}="}"
+							__YAST="${__YAST#\"}"
+							__YAST="${__YAST%\"}"
+							__YAST="${__YAST#*:/}"
+							;;
+						*) ;;
+						esac
+					done < /var/log/YaST2/y2start.log
+					__DEVS="${__SEED%"/${__YAST:-}"}"
+					if [ -n "${__DEVS:-}" ] && [ -e "/dev/${__DEVS}" ]; then
+						mkdir -p /media
+						mount -r "/dev/${__DEVS}" /media
+						if ! cp -p "/media/${__LINE#*:/}" "${_DIRS_TGET:-}${_DIRS_INST}/"; then
+							fnMsgout "${_PROG_NAME:-}" "failed" "${__LINE}"
+							__PATH="${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}"
+							rm -rf "${__PATH:?}"
+#							continue
+						fi
+						umount /media
+					fi
+				fi
+				;;
+			device:*)
+				fnMsgout "${_PROG_NAME:-}" "copy" "${__LINE}"
+#				_PATH_DEVS="${_PATH_SEED#device://}"
+#				_PATH_DEVS="${_PATH_DEVS%/*}"
+#				_PATH_SEED="${_PATH_SEED#*"${_PATH_DEVS}"}"
+				;;
+			label:*)
+				fnMsgout "${_PROG_NAME:-}" "copy" "${__LINE}"
+				;;
+			usb:*)
+				fnMsgout "${_PROG_NAME:-}" "copy" "${__LINE}"
+				;;
+			smb:*)
+				fnMsgout "${_PROG_NAME:-}" "copy" "${__LINE}"
+				;;
+			nfs:*)
+				fnMsgout "${_PROG_NAME:-}" "copy" "${__LINE}"
+				;;
+			hmc)
+				fnMsgout "${_PROG_NAME:-}" "copy" "${__LINE}"
+				;;
 			file:*|/*)
 				fnMsgout "${_PROG_NAME:-}" "copy" "${__LINE}"
 				if ! cp -p "${__LINE#*:*//}" "${_DIRS_TGET:-}${_DIRS_INST}/"; then

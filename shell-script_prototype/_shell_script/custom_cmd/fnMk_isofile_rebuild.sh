@@ -59,6 +59,9 @@ function fnMk_isofile_rebuild() {
 	declare       __TEMP=""				# temporary file
 	              __TEMP="$(mktemp -q "${_DIRS_TEMP:-/tmp}/${__FUNC_NAME}.XXXXXX")"
 	readonly      __TEMP
+	declare       __REAL=""
+	declare       __DIRS=""
+	declare       __OWNR=""
 	echo "create iso image file ..."
 	[[ -n "${__FILE_HBRD:-}" ]] && echo "hybrid mode"
 	[[ -n "${__FILE_BIOS:-}" ]] && echo "eltorito mode"
@@ -69,13 +72,18 @@ function fnMk_isofile_rebuild() {
 			if ! cp --preserve=timestamps "${__TEMP}" "${__FILE_ISOS}"; then
 				printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [cp]" "${__FILE_ISOS##*/}" 1>&2
 			else
-				chmod +r,u+w "${__FILE_ISOS}" 2>/dev/null || true
+				__REAL="$(realpath "${__FILE_ISOS}")"
+				__DIRS="$(fnDirname "${__FILE_ISOS}")"
+				__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
+				chown "${__OWNR:-"${_SAMB_USER}"}" "${__FILE_ISOS}"
+				chmod ugo+r-x,ug+w "${__FILE_ISOS}"
 				ls -lh "${__FILE_ISOS}"
 				printf "\033[m\033[42m%20.20s: %s\033[m\n" "complete" "${__FILE_ISOS}" 1>&2
 			fi
 		fi
 		rm -f "${__TEMP:?}"
 	popd > /dev/null || exit
+	unset __REAL __DIRS __OWNR
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"

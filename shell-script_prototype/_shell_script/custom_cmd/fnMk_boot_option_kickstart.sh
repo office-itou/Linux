@@ -18,7 +18,7 @@ function fnMk_boot_option_kickstart() {
 	declare -a    __BOPT=()
 	declare       __WORK=""
 	# --- 0: server -----------------------------------------------------------
-	__BOPT=("server=\${srvraddr}")
+#	__BOPT=("server=\${srvraddr}")
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then

@@ -1327,6 +1327,9 @@ function fnMk_symlink() {
 #   return:            : unused
 function fnMk_preconf_preseed() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
+	declare       __REAL=""
+	declare       __DIRS=""
+	declare       __OWNR=""
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
 	mkdir -p "${__TGET_PATH%/*}"
@@ -1343,7 +1346,12 @@ function fnMk_preconf_preseed() {
 		*)	;;
 	esac
 	# -------------------------------------------------------------------------
+	__REAL="$(realpath "${__TGET_PATH}")"
+	__DIRS="$(fnDirname "${__TGET_PATH}")"
+	__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
+	chown "${__OWNR:-"${_SAMB_USER}"}" "${__TGET_PATH}"
 	chmod ugo+r-x,ug+w "${__TGET_PATH}"
+	unset __REAL __DIRS __OWNR
 #	unset __TGET_PATH
 }
 
@@ -1354,6 +1362,9 @@ function fnMk_preconf_preseed() {
 #   return:            : unused
 function fnMk_preconf_nocloud() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
+	declare       __REAL=""
+	declare       __DIRS=""
+	declare       __OWNR=""
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
 	mkdir -p "${__TGET_PATH%/*}"
@@ -1373,7 +1384,12 @@ function fnMk_preconf_nocloud() {
 #	touch -m "${__TGET_PATH%/*}/user-data"      --reference "${__TGET_PATH}"
 	touch -m "${__TGET_PATH%/*}/vendor-data"    --reference "${__TGET_PATH}"
 	# -------------------------------------------------------------------------
+	__REAL="$(realpath "${__TGET_PATH}")"
+	__DIRS="$(fnDirname "${__TGET_PATH}")"
+	__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
+	chown "${__OWNR:-"${_SAMB_USER}"}" "${__TGET_PATH}"
 	chmod ugo+r-x,ug+w "${__TGET_PATH%/*}"/*
+	unset __REAL __DIRS __OWNR
 #	unset __TGET_PATH
 }
 
@@ -1391,6 +1407,9 @@ function fnMk_preconf_kickstart() {
 	declare       __ADDR=""				# repository
 	declare -r    __ARCH="x86_64"		# base architecture
 	declare       __WORK=""				# work
+	declare       __REAL=""
+	declare       __DIRS=""
+	declare       __OWNR=""
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
 	mkdir -p "${__TGET_PATH%/*}"
@@ -1474,8 +1493,12 @@ function fnMk_preconf_kickstart() {
 			;;
 	esac
 	# -------------------------------------------------------------------------
+	__REAL="$(realpath "${__TGET_PATH}")"
+	__DIRS="$(fnDirname "${__TGET_PATH}")"
+	__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
+	chown "${__OWNR:-"${_SAMB_USER}"}" "${__TGET_PATH}"
 	chmod ugo+r-x,ug+w "${__TGET_PATH}" "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
-	unset __VERS __NUMS __NAME __SECT __ADDR __WORK
+	unset __VERS __NUMS __NAME __SECT __ADDR __WORK __REAL __DIRS __OWNR
 }
 
 # -----------------------------------------------------------------------------
@@ -1488,6 +1511,9 @@ function fnMk_preconf_autoyast() {
 	declare       __VERS=""				# distribution version
 	declare       __NUMS=""				# "            number
 	declare       __WORK=""				# work
+	declare       __REAL=""
+	declare       __DIRS=""
+	declare       __OWNR=""
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
 	mkdir -p "${__TGET_PATH%/*}"
@@ -1545,8 +1571,12 @@ function fnMk_preconf_autoyast() {
 	    "${__TGET_PATH}"                               \
 	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
 	# -------------------------------------------------------------------------
+	__REAL="$(realpath "${__TGET_PATH}")"
+	__DIRS="$(fnDirname "${__TGET_PATH}")"
+	__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
+	chown "${__OWNR:-"${_SAMB_USER}"}" "${__TGET_PATH}"
 	chmod ugo+r-x,ug+w "${__TGET_PATH}"
-	unset __VERS __NUMS __WORK
+	unset __VERS __NUMS __WORK __REAL __DIRS __OWNR
 }
 
 # -----------------------------------------------------------------------------
@@ -1561,6 +1591,9 @@ function fnMk_preconf_agama() {
 #	declare       __PDCT=""				# product name
 	declare       __PDID=""				# "       id
 	declare       __WORK=""				# work variables
+	declare       __REAL=""
+	declare       __DIRS=""
+	declare       __OWNR=""
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
 	mkdir -p "${__TGET_PATH%/*}"
@@ -1606,8 +1639,12 @@ function fnMk_preconf_agama() {
 	    -e '/"packages": \[/,/\]/          {' \
 	    -e '\%^//.*$%d                     }'
 	# -------------------------------------------------------------------------
+	__REAL="$(realpath "${__TGET_PATH}")"
+	__DIRS="$(fnDirname "${__TGET_PATH}")"
+	__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
+	chown "${__OWNR:-"${_SAMB_USER}"}" "${__TGET_PATH}"
 	chmod ugo+r-x,ug+w "${__TGET_PATH}" "${__WORK}"
-	unset __VERS __NUMS __PDCT __PDID __WORK
+	unset __VERS __NUMS __PDCT __PDID __WORK __REAL __DIRS __OWNR
 }
 
 # -----------------------------------------------------------------------------
@@ -1933,7 +1970,7 @@ function fnMk_boot_option_preseed() {
 	declare -a    __BOPT=()
 	declare       __WORK=""
 	# --- 0: server -----------------------------------------------------------
-	__BOPT=("server=\${srvraddr}")
+#	__BOPT=("server=\${srvraddr}")
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
@@ -2012,7 +2049,7 @@ function fnMk_boot_option_nocloud() {
 	declare -a    __BOPT=()
 	declare       __WORK=""
 	# --- 0: server -----------------------------------------------------------
-	__BOPT=("server=\${srvraddr}")
+#	__BOPT=("server=\${srvraddr}")
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
@@ -2079,7 +2116,7 @@ function fnMk_boot_option_kickstart() {
 	declare -a    __BOPT=()
 	declare       __WORK=""
 	# --- 0: server -----------------------------------------------------------
-	__BOPT=("server=\${srvraddr}")
+#	__BOPT=("server=\${srvraddr}")
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
@@ -2136,7 +2173,7 @@ function fnMk_boot_option_autoyast() {
 	declare -a    __BOPT=()
 	declare       __WORK=""
 	# --- 0: server -----------------------------------------------------------
-	__BOPT=("server=\${srvraddr}")
+#	__BOPT=("server=\${srvraddr}")
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
@@ -2155,10 +2192,6 @@ function fnMk_boot_option_autoyast() {
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		__WORK="${__WORK:+"${__WORK} "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr}/${_IPV4_CIDR:-},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
-		case "${__MDIA[$((_OSET_MDIA+2))]}" in
-			opensuse-*-15*) __WORK="${__WORK//"${_NICS_NAME:-ens160}"/"eth0"}";;
-			*             ) ;;
-		esac
 	fi
 	case "${__MDIA[$((_OSET_MDIA+0))]}" in
 		live) __WORK="dhcp";;
@@ -2194,7 +2227,7 @@ function fnMk_boot_option_agama() {
 	declare -a    __BOPT=()
 	declare       __WORK=""
 	# --- 0: server -----------------------------------------------------------
-	__BOPT=("server=\${srvraddr}")
+#	__BOPT=("server=\${srvraddr}")
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
@@ -2459,6 +2492,8 @@ function fnMk_pxeboot_ipxe_linux() {
 	declare -a    __MDIA=("${@:-}")
 	declare -a    __BOPT=()
 	declare       __ENTR=""
+	declare       __NICS="${_NICS_NAME:-"ens160"}"
+	declare       __HOST=""
 	declare       __CIDR=""
 	declare       __WORK=""
 	__WORK="$(fnMk_boot_options "pxeboot" "${@}")"
@@ -2475,6 +2510,12 @@ function fnMk_pxeboot_ipxe_linux() {
 #		system  ) ;;					# system command
 		*       ) __ENTR="";;			# original media install mode
 	esac
+	__HOST="${__MDIA[$((_OSET_MDIA+2))]%%-*}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
+	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__HOST:-"localhost.localdomain"}"}"
+	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
+		opensuse-*-15.*) __NICS="eth0";;
+		*              ) ;;
+	esac
 	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 		ubuntu*) __CIDR="";;
 		*      ) __CIDR="/${_IPV4_CIDR:-}";;
@@ -2483,8 +2524,8 @@ function fnMk_pxeboot_ipxe_linux() {
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 			:${__MDIA[$((_OSET_MDIA+2))]}
 			prompt --key e --timeout \${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
-			set hostname ${_NWRK_HOST/:_DISTRO_:/${__MDIA[$((_OSET_MDIA+2))]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
-			set ethrname ${_NICS_NAME:-ens160}
+			set hostname ${__HOST:-}
+			set ethrname ${__NICS:-}
 			set ipv4addr ${_IPV4_ADDR:-}${__CIDR:-}
 			set ipv4mask ${_IPV4_MASK:-}
 			set ipv4gway ${_IPV4_GWAY:-}
@@ -2497,10 +2538,10 @@ function fnMk_pxeboot_ipxe_linux() {
 			item ipv4nsvr                           IPv4 nameservers
 			isset \${openmenu} && present ||
 			set srvraddr ${_SRVR_PROT:?}://\${66}
-			set autoinst ${__BOPT[0]:-} ${__BOPT[1]:-}
-			set language ${__BOPT[2]:-}
-			set networks ${__BOPT[3]:-}
-			set otheropt ${__BOPT[@]:4}
+			set autoinst ${__BOPT[0]:-}
+			set language ${__BOPT[1]:-}
+			set networks ${__BOPT[2]:-}
+			set otheropt ${__BOPT[@]:3}
 			form                                    Configure Autoinstall Options
 			item autoinst                           Auto install
 			item language                           Language
@@ -2519,16 +2560,16 @@ _EOT_
 	else
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 			:${__ENTR:-}${__MDIA[$((_OSET_MDIA+2))]}
-			set hostname ${_NWRK_HOST/:_DISTRO_:/${__MDIA[$((_OSET_MDIA+2))]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
-			set ethrname ${_NICS_NAME:-ens160}
+			set hostname ${__HOST:-}
+			set ethrname ${__NICS:-}
 			set ipv4addr ${_IPV4_ADDR:-}/${_IPV4_CIDR:-}
 			set ipv4gway ${_IPV4_GWAY:-}
 			set ipv4nsvr ${_IPV4_NSVR:-}
 			set srvraddr ${_SRVR_PROT:?}://\${66}
-			set autoinst ${__BOPT[0]:-} ${__BOPT[1]:-}
-			set language ${__BOPT[2]:-}
-			set networks ${__BOPT[3]:-}
-			set otheropt ${__BOPT[@]:4}
+			set autoinst ${__BOPT[0]:-}
+			set language ${__BOPT[1]:-}
+			set networks ${__BOPT[2]:-}
+			set otheropt ${__BOPT[@]:3}
 			echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
 			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
 			set options \${autoinst} \${language} \${networks} \${otheropt}
@@ -2792,10 +2833,18 @@ function fnMk_pxeboot_grub_linux() {
 	declare -a    __MDIA=("${@:-}")
 	declare -a    __BOPT=()
 	declare       __ENTR=""
+	declare       __NICS="${_NICS_NAME:-"ens160"}"
+	declare       __HOST=""
 	declare       __CIDR=""
 	declare       __WORK=""
 	__WORK="$(fnMk_boot_options "pxeboot" "${@}")"
 	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
+	__HOST="${__MDIA[$((_OSET_MDIA+2))]%%-*}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
+	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__HOST:-"localhost.localdomain"}"}"
+	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
+		opensuse-*-15.*) __NICS="eth0";;
+		*              ) ;;
+	esac
 	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 		ubuntu*) __CIDR="";;
 		*      ) __CIDR="/${_IPV4_CIDR:-}";;
@@ -2804,17 +2853,17 @@ function fnMk_pxeboot_grub_linux() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		menuentry '${__ENTR:-}' {
 		  echo 'Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...'
-		  set hostname=${_NWRK_HOST/:_DISTRO_:/${__MDIA[$((_OSET_MDIA+2))]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
-		  set ethrname=${_NICS_NAME:-ens160}
+		  set hostname=${__HOST:-}
+		  set ethrname=${__NICS:-}
 		  set ipv4addr=${_IPV4_ADDR:-}${__CIDR:-}
 		  set ipv4mask=${_IPV4_MASK:-}
 		  set ipv4gway=${_IPV4_GWAY:-}
 		  set ipv4nsvr=${_IPV4_NSVR:-}
 		  set srvraddr=${_SRVR_PROT:?}://${_SRVR_ADDR:?}
-		  set autoinst=${__BOPT[0]:-} ${__BOPT[1]:-}
-		  set language=${__BOPT[2]:-}
-		  set networks=${__BOPT[3]:-}
-		  set otheropt=${__BOPT[@]:4}
+		  set autoinst=${__BOPT[0]:-}
+		  set language=${__BOPT[1]:-}
+		  set networks=${__BOPT[2]:-}
+		  set otheropt=${__BOPT[@]:3}
 		  set options=\${autoinst} \${language} \${networks} \${otheropt}
 		  set knladdr=\${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
 		  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
@@ -3018,17 +3067,25 @@ function fnMk_pxeboot_slnx_linux() {
 	declare -a    __MDIA=("${@:-}")
 	declare -a    __BOPT=()
 	declare       __ENTR=""
+	declare       __NICS="${_NICS_NAME:-"ens160"}"
+	declare       __HOST=""
 	declare       __CIDR=""
 	declare       __WORK=""
 	__WORK="$(fnMk_boot_options "pxeboot" "${@}")"
 	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
+	__HOST="${__MDIA[$((_OSET_MDIA+2))]%%-*}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
+	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__HOST:-"localhost.localdomain"}"}"
+	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
+		opensuse-*-15.*) __NICS="eth0";;
+		*              ) ;;
+	esac
 	case "${__MDIA[$((_OSET_MDIA+3))]:-}" in
 		ubuntu*) __CIDR="";;
 		*      ) __CIDR="/${_IPV4_CIDR:-}";;
 	esac
 	__BOPT=("${__BOPT[@]//\$\{srvraddr\}/${_SRVR_PROT:?}:\/\/${_SRVR_ADDR:?}}")
-	__BOPT=("${__BOPT[@]//\$\{hostname\}/${_NWRK_HOST/:_DISTRO_:/${__MDIA[$((_OSET_MDIA+2))]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}}")
-	__BOPT=("${__BOPT[@]//\$\{ethrname\}/${_NICS_NAME:-ens160}}")
+	__BOPT=("${__BOPT[@]//\$\{hostname\}/${__HOST:-}}")
+	__BOPT=("${__BOPT[@]//\$\{ethrname\}/${__NICS:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ipv4addr\}/${_IPV4_ADDR:-}${__CIDR:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ipv4mask\}/${_IPV4_MASK:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ipv4gway\}/${_IPV4_GWAY:-}}")
@@ -3276,7 +3333,7 @@ function fnMk_isofile_conf() {
 				fi
 				find "${__PATH%/*}" -maxdepth 1 -name "${__WORK:-}" | sort -uV | while read -r __SRCS
 				do
-					printf "\033[m%-8s: %s\033[m\n" "copy" "${__SRCS#"${_DIRS_CONF}/"}"
+					printf "\033[m%-8s: %s\033[m\n" "copy" "${__SRCS#"${_DIRS_CONF%/*}/"}"
 					mkdir -p "${__DEST:?}"
 					if [[ -d "${__SRCS:?}"/. ]]; then
 						cp -R --preserve=timestamps "${__SRCS}" "${__DEST}"
@@ -3299,8 +3356,9 @@ function fnMk_isofile_conf() {
 #   input :     $3     : theme.txt file name
 #   input :     $4     : kernel path
 #   input :     $5     : initrd path
-#   input :     $6     : host name
-#   input :     $7     : ipv4 cidr
+#   input :     $6     : nic name
+#   input :     $7     : host name
+#   input :     $8     : ipv4 cidr
 #   input :     $@     : option parameter
 #   output:   stdout   : message
 #   return:            : unused
@@ -3311,9 +3369,10 @@ function fnMk_isofile_grub_autoinst() {
 	declare -r    __PATH_FKNL="${4:?}"
 	declare -r    __PATH_FIRD="${5:?}"
 	declare -r    __PATH_GUIS="${6:-}"
-	declare -r    __HOST_NAME="${7:?}"
-	declare -r    __IPV4_CIDR="${8:-}"
-	declare -r -a __OPTN_BOOT=("${@:9}")
+	declare -r    __NICS_NAME="${7:?}"
+	declare -r    __NWRK_HOST="${8:?}"
+	declare -r    __IPV4_CIDR="${9:-}"
+	declare -r -a __OPTN_BOOT=("${@:10}")
 	declare       __DIRS=""
 	declare       __TITL=""
 	__TITL="$(printf "%s%s" "${__FILE_NAME:-}" "${__TIME_STMP:-}")"
@@ -3339,8 +3398,8 @@ function fnMk_isofile_grub_autoinst() {
 		    insmod vbe
 		    insmod vga
 		  fi
-		  insmod video_bochs
-		  insmod video_cirrus
+		#  insmod video_bochs
+		#  insmod video_cirrus
 		  insmod gfxterm
 		  insmod gettext
 		  insmod png
@@ -3365,30 +3424,30 @@ function fnMk_isofile_grub_autoinst() {
 		#export lang
 		export gfxmode
 		export gfxpayload
-		export menu_color_normal
-		export menu_color_highlight
+		#export menu_color_normal
+		#export menu_color_highlight
 
-		insmod play
-		play 960 440 1 0 4 440 1
+		#insmod play
+		#play 960 440 1 0 4 440 1
 _EOT_
 	# --- default--------------------------------------------------------------
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 
 		menuentry 'Automatic installation' {
 		  echo 'Loading ${__TITL:+"${__TITL} "}...'
-		  set gfxpayload=keep
-		  set background_color=black
-		  set hostname="${_NWRK_HOST/:_DISTRO_:/${__HOST_NAME:-}}"
-		  set ethrname="${_NICS_NAME:-ens160}"
+		  set gfxpayload="keep"
+		  set background_color="black"
+		  set hostname="${__NWRK_HOST}"
+		  set ethrname="${__NICS_NAME}"
 		  set ipv4addr="${_IPV4_ADDR:-}${__IPV4_CIDR:-}"
 		  set ipv4mask="${_IPV4_MASK:-}"
 		  set ipv4gway="${_IPV4_GWAY:-}"
 		  set ipv4nsvr="${_IPV4_NSVR:-}"
 		  set srvraddr="${_SRVR_PROT:?}://${_SRVR_ADDR:?}"
-		  set autoinst="${__OPTN_BOOT[0]:-} ${__OPTN_BOOT[1]:-}"
-		  set language="${__OPTN_BOOT[2]:-}"
-		  set networks="${__OPTN_BOOT[3]:-}"
-		  set otheropt="${__OPTN_BOOT[@]:4}"
+		  set autoinst="${__OPTN_BOOT[0]:-}"
+		  set language="${__OPTN_BOOT[1]:-}"
+		  set networks="${__OPTN_BOOT[2]:-}"
+		  set otheropt="${__OPTN_BOOT[@]:3}"
 		  set options="\${autoinst} \${language} \${networks} \${otheropt}"
 		  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 		  echo 'Loading boot files ...'
@@ -3402,19 +3461,19 @@ _EOT_
 
 			menuentry 'Automatic installation gui' {
 			  echo 'Loading ${__TITL:+"${__TITL} "}...'
-			  set gfxpayload=keep
-			  set background_color=black
-			  set hostname="${_NWRK_HOST/:_DISTRO_:/${__HOST_NAME:-}}"
-			  set ethrname="${_NICS_NAME:-ens160}"
+			  set gfxpayload="keep"
+			  set background_color="black"
+			  set hostname="${__NWRK_HOST}"
+			  set ethrname="${__NICS_NAME}"
 			  set ipv4addr="${_IPV4_ADDR:-}${__IPV4_CIDR:-}"
 			  set ipv4mask="${_IPV4_MASK:-}"
 			  set ipv4gway="${_IPV4_GWAY:-}"
 			  set ipv4nsvr="${_IPV4_NSVR:-}"
 			  set srvraddr="${_SRVR_PROT:?}://${_SRVR_ADDR:?}"
-			  set autoinst="${__OPTN_BOOT[0]:-} ${__OPTN_BOOT[1]:-}"
-			  set language="${__OPTN_BOOT[2]:-}"
-			  set networks="${__OPTN_BOOT[3]:-}"
-			  set otheropt="${__OPTN_BOOT[@]:4}"
+			  set autoinst="${__OPTN_BOOT[0]:-}"
+			  set language="${__OPTN_BOOT[1]:-}"
+			  set networks="${__OPTN_BOOT[2]:-}"
+			  set otheropt="${__OPTN_BOOT[@]:3}"
 			  set options="\${autoinst} \${language} \${networks} \${otheropt}"
 			  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 			  echo 'Loading boot files ...'
@@ -3529,8 +3588,9 @@ _EOT_
 #   input :     $3     : iso file time stamp
 #   input :     $4     : kernel path
 #   input :     $5     : initrd path
-#   input :     $6     : host name
-#   input :     $7     : ipv4 cidr
+#   input :     $6     : nic name
+#   input :     $7     : host name
+#   input :     $8     : ipv4 cidr
 #   input :     $@     : option parameter
 #   output:   stdout   : message
 #   return:            : unused
@@ -3540,80 +3600,92 @@ function fnMk_isofile_grub() {
 	declare -r    __TIME_STMP="${3:?}"
 	declare -r    __PATH_FKNL="${4:?}"
 	declare -r    __PATH_FIRD="${5:?}"
-	declare -r    __NWRK_HOST="${6:?}"
-	declare -r    __IPV4_CIDR="${7:-}"
-	declare -r -a __OPTN_BOOT=("${@:8}")
+	declare -r    __NICS_NAME="${6:?}"
+	declare -r    __NWRK_HOST="${7:?}"
+	declare -r    __IPV4_CIDR="${8:-}"
+	declare -r -a __OPTN_BOOT=("${@:9}")
 	declare       __PATH=""				# full path
 	declare       __DIRS=""				# directory
 	declare       __BASE=""				# base name
 	declare       __FILE=""				# file name
 	declare       __PAUT=""				# autoinst.cfg
 	declare       __PTHM=""				# theme.txt
-	__PATH="$(find "${__TGET_DIRS}" -name grub.cfg -exec grep -ilE 'menuentry .*install' {} \;)"
-	[[ -z "${__PATH:-}" ]] && return
-	__DIRS="$(fnDirname "${__PATH#"${__TGET_DIRS}"}")"
-	__PAUT="${__DIRS%/}/${_AUTO_INST:-"autoinst.cfg"}"
-	__PTHM="${__DIRS%/}/theme.txt"
-	__DIRS="$(fnDirname  "${__PATH_FIRD}")"
-	__BASE="$(fnBasename "${__PATH_FIRD}")"
-	__GUIS=""
-	if [[ -e "${__TGET_DIRS}/${__DIRS#/}/gtk/${__BASE:?}" ]]; then
-		__GUIS="/${__DIRS#/}/gtk/${__BASE}"
-	fi
-	# --- create files --------------------------------------------------------
-	fnMk_isofile_grub_theme "${__FILE_NAME:-}" "${__TIME_STMP:-}" > "${__TGET_DIRS}/${__PTHM}"
-	fnMk_isofile_grub_autoinst "${__FILE_NAME:-}" "${__TIME_STMP:-}" "${__PTHM#"${__TGET_DIRS}"}" "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__GUIS}" "${__NWRK_HOST:-}" "${__IPV4_CIDR:-}" "${__OPTN_BOOT[@]:-}" > "${__TGET_DIRS}/${__PAUT}"
-	# --- insert autoinst.cfg -------------------------------------------------
-	sed -i "${__PATH}"                            \
-	    -e '0,/^menuentry/ {'                     \
-	    -e '/^menuentry/i source '"${__PAUT}"'\n' \
-	    -e '}'
+	declare       __WORK=""
+	while read -r __PATH
+	do
+		__DIRS="$(fnDirname "${__PATH#"${__TGET_DIRS}"}")"
+		__PAUT="${__DIRS%/}/${_AUTO_INST:-"autoinst.cfg"}"
+		__PTHM="${__DIRS%/}/theme.txt"
+		__DIRS="$(fnDirname  "${__PATH_FIRD}")"
+		__BASE="$(fnBasename "${__PATH_FIRD}")"
+		__GUIS=""
+		if [[ -e "${__TGET_DIRS}/${__DIRS#/}/gtk/${__BASE:?}" ]]; then
+			__GUIS="/${__DIRS#/}/gtk/${__BASE}"
+		fi
+		# --- create files ----------------------------------------------------
+		fnMk_isofile_grub_theme "${__FILE_NAME:-}" "${__TIME_STMP:-}" > "${__TGET_DIRS}/${__PTHM}"
+		fnMk_isofile_grub_autoinst "${__FILE_NAME:-}" "${__TIME_STMP:-}" "${__PTHM#"${__TGET_DIRS}"}" "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__GUIS}" "${__NICS_NAME:-}" "${__NWRK_HOST:-}" "${__IPV4_CIDR:-}" "${__OPTN_BOOT[@]:-}" > "${__TGET_DIRS}/${__PAUT}"
+		# --- insert autoinst.cfg ---------------------------------------------
+		sed -i "${__PATH}"                            \
+		    -e '0,/^menuentry/ {'                     \
+		    -e '/^menuentry/i source '"${__PAUT}"'\n' \
+		    -e '}'
+		# --- splash.png ------------------------------------------------------
+		__PATH="$(find "${__TGET_DIRS}" -name "${_MENU_SPLS:-}")"
+		if [[ -n "${__PATH:-}" ]]; then
+			__WORK="$(file "{__PATH:-}" | awk '{sub("[^0-9]+","",$8); print $8;}')"
+			[[ "${__WORK:-"0"}" -lt 8 ]] && __PATH=""
+		fi
+		if [[ -n "${__PATH:-}" ]]; then
+			__PATH="${__PATH#"${__TGET_DIRS}"}"
+			sed -i "${__TGET_DIRS}/${__PTHM}"                              \
+			    -e '/desktop-image:/ s/:_DTPIMG_:/'"${__PATH//\//\\\/}"'/'
+		else
+			sed -i "${__TGET_DIRS}/${__PTHM}" \
+			    -e '/desktop-image:/d'
+		fi
+	done < <(find "${__TGET_DIRS}" -name grub.cfg -exec grep -ilE 'menuentry .*install' {} \;)
+#	[[ -z "${__PATH:-}" ]] && return
 	# --- comment out ---------------------------------------------------------
-	find "${__TGET_DIRS}/${__DIRS:-"/"}" \( -name '*.cfg' -a ! -name "${_AUTO_INST:-"autoinst.cfg"}" \) | while read -r __PATH
+	find "${__TGET_DIRS}" \( -name '*.cfg' -a ! -name "${_AUTO_INST:-"autoinst.cfg"}" \) | while read -r __PATH
 	do
 		sed -i "${__PATH}"                                              \
 		    -e '/^[ \t]*\(\|set[ \t]\+\)default=/              s/^/#/g' \
 		    -e '/^[ \t]*\(\|set[ \t]\+\)timeout=/              s/^/#/g' \
 		    -e '/^[ \t]*\(\|set[ \t]\+\)gfxmode=/              s/^/#/g' \
 		    -e '/^[ \t]*\(\|set[ \t]\+\)theme=/                s/^/#/g' \
-		    -e '/^[ \t]*if[ \t]\+background_image/,/^[ \t]*fi/ s/^/#/g' \
-		    -e '/^[ \t]*play/ s/^/#/g'
+		    -e '/^[ \t]*export theme/                          s/^/#/g' \
+ 		    -e '/^[ \t]*if[ \t]\+sleep/,/^[ \t]*fi/            s/^/#/g' \
+		    -e '/^[ \t]*if[ \t]\+background_image/,/^[ \t]*fi/ s/^/#/g'
+#		    -e '/^[ \t]*play/                                  s/^/#/g'
 	done
-	# --- splash.png ----------------------------------------------------------
-	__PATH="$(find "${__TGET_DIRS}" -name "${_MENU_SPLS:-}")"
-	if [[ -n "${__PATH:-}" ]]; then
-		__PATH="${__PATH#"${__TGET_DIRS}"}"
-		sed -i "${__TGET_DIRS}/${__PTHM}"                              \
-		    -e '/desktop-image:/ s/:_DTPIMG_:/'"${__PATH//\//\\\/}"'/'
-	else
-		sed -i "${__TGET_DIRS}/${__PTHM}" \
-		    -e '/desktop-image:/d'
-	fi
 	unset __PATH __DIRS __BASE __FILE __PAUT __PTHM
 }
 
 # -----------------------------------------------------------------------------
 # descript: make autoinst.cfg files for isolinux
-#   input :     $4     : kernel path
-#   input :     $5     : initrd path
-#   input :     $6     : host name
-#   input :     $7     : ipv4 cidr
+#   input :     $1     : kernel path
+#   input :     $2     : initrd path
+#   input :     $3     : nic name
+#   input :     $4     : host name
+#   input :     $5     : ipv4 cidr
 #   input :     $@     : option parameter
 #   output:   stdout   : message
 #   return:            : unused
 function fnMk_isofile_ilnx_autoinst() {
 	declare -r    __PATH_FKNL="${1:?}"
 	declare -r    __PATH_FIRD="${2:?}"
-	declare -r    __NWRK_HOST="${3:?}"
-	declare -r    __IPV4_CIDR="${4:-}"
-	declare -r -a __OPTN_BOOT=("${@:5}")
+	declare -r    __NICS_NAME="${3:?}"
+	declare -r    __NWRK_HOST="${4:?}"
+	declare -r    __IPV4_CIDR="${5:-}"
+	declare -r -a __OPTN_BOOT=("${@:6}")
 	declare -a    __BOPT=()				# boot options
 	declare       __DIRS=""
 	# --- convert -------------------------------------------------------------
 	__BOPT=("${__OPTN_BOOT[@]:-}")
 	__BOPT=("${__BOPT[@]//\$\{srvraddr\}/}")
-	__BOPT=("${__BOPT[@]//\$\{hostname\}/${_NWRK_HOST/:_DISTRO_:/${__MDIA[$((_OSET_MDIA+2))]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}}")
-	__BOPT=("${__BOPT[@]//\$\{ethrname\}/${_NICS_NAME:-ens160}}")
+	__BOPT=("${__BOPT[@]//\$\{hostname\}/${__NWRK_HOST:-}}")
+	__BOPT=("${__BOPT[@]//\$\{ethrname\}/${__NICS_NAME:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ipv4addr\}/${_IPV4_ADDR:-}${__IPV4_CIDR:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ipv4mask\}/${_IPV4_MASK:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ipv4gway\}/${_IPV4_GWAY:-}}")
@@ -3722,8 +3794,9 @@ _EOT_
 #   input :     $3     : iso file time stamp
 #   input :     $4     : kernel path
 #   input :     $5     : initrd path
-#   input :     $6     : host name
-#   input :     $7     : ipv4 cidr
+#   input :     $6     : nic name
+#   input :     $7     : host name
+#   input :     $8     : ipv4 cidr
 #   input :     $@     : option parameter
 #   output:   stdout   : message
 #   return:            : unused
@@ -3733,9 +3806,10 @@ function fnMk_isofile_ilnx() {
 	declare -r    __TIME_STMP="${3:?}"
 	declare -r    __PATH_FKNL="${4:?}"
 	declare -r    __PATH_FIRD="${5:?}"
-	declare -r    __NWRK_HOST="${6:?}"
-	declare -r    __IPV4_CIDR="${7:-}"
-	declare -r -a __OPTN_BOOT=("${@:8}")
+	declare -r    __NICS_NAME="${6:?}"
+	declare -r    __NWRK_HOST="${7:?}"
+	declare -r    __IPV4_CIDR="${8:-}"
+	declare -r -a __OPTN_BOOT=("${@:9}")
 	__PATH="$(find "${__TGET_DIRS}" -name isolinux.cfg)"
 	[[ -z "${__PATH:-}" ]] && return
 	__DIRS="$(fnDirname "${__PATH#"${__TGET_DIRS}"}")"
@@ -3743,7 +3817,7 @@ function fnMk_isofile_ilnx() {
 	__PTHM="${__DIRS%/}/theme.txt"
 	# --- create files --------------------------------------------------------
 	fnMk_isofile_ilnx_theme "${__FILE_NAME:-}" "${__TIME_STMP:-}" > "${__TGET_DIRS}/${__PTHM}"
-	fnMk_isofile_ilnx_autoinst "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__NWRK_HOST:-}" "${__IPV4_CIDR:-}" "${__OPTN_BOOT[@]:-}" > "${__TGET_DIRS}/${__PAUT}"
+	fnMk_isofile_ilnx_autoinst "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__NICS_NAME:-}" "${__NWRK_HOST:-}" "${__IPV4_CIDR:-}" "${__OPTN_BOOT[@]:-}" > "${__TGET_DIRS}/${__PAUT}"
 	# --- insert autoinst.cfg -------------------------------------------------
 	if grep -qEi '^include[ \t]+menu.cfg[ \t]*.*$' "${__PATH}"; then
 		sed -i "${__PATH}"                                                                   \
@@ -3830,6 +3904,9 @@ function fnMk_isofile_rebuild() {
 	declare       __TEMP=""				# temporary file
 	              __TEMP="$(mktemp -q "${_DIRS_TEMP:-/tmp}/${__FUNC_NAME}.XXXXXX")"
 	readonly      __TEMP
+	declare       __REAL=""
+	declare       __DIRS=""
+	declare       __OWNR=""
 	echo "create iso image file ..."
 	[[ -n "${__FILE_HBRD:-}" ]] && echo "hybrid mode"
 	[[ -n "${__FILE_BIOS:-}" ]] && echo "eltorito mode"
@@ -3840,13 +3917,18 @@ function fnMk_isofile_rebuild() {
 			if ! cp --preserve=timestamps "${__TEMP}" "${__FILE_ISOS}"; then
 				printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [cp]" "${__FILE_ISOS##*/}" 1>&2
 			else
-				chmod +r,u+w "${__FILE_ISOS}" 2>/dev/null || true
+				__REAL="$(realpath "${__FILE_ISOS}")"
+				__DIRS="$(fnDirname "${__FILE_ISOS}")"
+				__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
+				chown "${__OWNR:-"${_SAMB_USER}"}" "${__FILE_ISOS}"
+				chmod ugo+r-x,ug+w "${__FILE_ISOS}"
 				ls -lh "${__FILE_ISOS}"
 				printf "\033[m\033[42m%20.20s: %s\033[m\n" "complete" "${__FILE_ISOS}" 1>&2
 			fi
 		fi
 		rm -f "${__TEMP:?}"
 	popd > /dev/null || exit
+	unset __REAL __DIRS __OWNR
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -3894,6 +3976,7 @@ function fnMk_isofile() {
 	declare       __TSMP=""
 	declare       __FKNL=""
 	declare       __FIRD=""
+	declare       __NICS="${_NICS_NAME:-"ens160"}"
 	declare       __HOST=""
 	declare       __CIDR=""
 	declare       __LABL=""
@@ -3994,18 +4077,23 @@ function fnMk_isofile() {
 								*       ) ;;
 							esac
 							__HOST="${__MDIA[$((_OSET_MDIA+2))]%%-*}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
+							__HOST="${_NWRK_HOST/:_DISTRO_:/"${__HOST:-"localhost.localdomain"}"}"
+							case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
+								opensuse-*-15.*) __NICS="eth0";;
+								*              ) ;;
+							esac
 							case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 								ubuntu*) __CIDR="";;
 								*      ) __CIDR="/${_IPV4_CIDR:-}";;
 							esac
 							fnMk_isofile_conf "${__DMRG}" "${__MDIA[$((_OSET_MDIA+24))]}"
-							fnMk_isofile_grub "${__DMRG}" "${__FNAM:-}" "${__TSMP:-}" "${__FKNL:-}" "${__FIRD:-}" "${__HOST:-}" "${__CIDR:-}" "${__BOPT[@]:-}"
-							fnMk_isofile_ilnx "${__DMRG}" "${__FNAM:-}" "${__TSMP:-}" "${__FKNL:-}" "${__FIRD:-}" "${__HOST:-}" "${__CIDR:-}" "${__BOPT[@]:-}"
+							fnMk_isofile_grub "${__DMRG}" "${__FNAM:-}" "${__TSMP:-}" "${__FKNL:-}" "${__FIRD:-}" "${__NICS:-}" "${__HOST:-}" "${__CIDR:-}" "${__BOPT[@]:-}"
+							fnMk_isofile_ilnx "${__DMRG}" "${__FNAM:-}" "${__TSMP:-}" "${__FKNL:-}" "${__FIRD:-}" "${__NICS:-}" "${__HOST:-}" "${__CIDR:-}" "${__BOPT[@]:-}"
 							# --- rebuild -------------------------------------
 							__LABL="$(blkid -o value -s PTTYPE "${__MDIA[$((_OSET_MDIA+14))]}")"
 							__HBRD=""
 							__FMBR=""
-							__FEFI="$(find "${__DMRG}" -name 'efi*.img')"
+							__FEFI="$(find "${__DMRG}" -type f \( -name 'efi*.img' -o -name 'efi' \))"
 							case "${__LABL:-}" in
 #								dos) __HBRD="/usr/lib/ISOLINUX/isohdpfx.bin";;
 								dos) __HBRD="${__TEMP}/mbr.img"; __FEFI="${__FEFI#"${__DMRG}/"}";;
