@@ -48,7 +48,7 @@ function fnMk_isofile_ilnx_theme() {
 		menu margin             3
 		menu vshift             2
 		menu rows               20
-		menu tabmsgrow          28
+		menu tabmsgrow          26
 		menu cmdlinerow         30
 		menu timeoutrow         30
 		menu helpmsgrow         32

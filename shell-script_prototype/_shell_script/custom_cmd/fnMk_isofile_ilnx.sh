@@ -29,9 +29,15 @@ function fnMk_isofile_ilnx() {
 	__DIRS="$(fnDirname "${__PATH#"${__TGET_DIRS}"}")"
 	__PAUT="${__DIRS%/}/${_AUTO_INST:-"autoinst.cfg"}"
 	__PTHM="${__DIRS%/}/theme.txt"
+	__DIRS="$(fnDirname  "${__PATH_FIRD}")"
+	__BASE="$(fnBasename "${__PATH_FIRD}")"
+	__GUIS=""
+	if [[ -e "${__TGET_DIRS}/${__DIRS#/}/gtk/${__BASE:?}" ]]; then
+		__GUIS="/${__DIRS#/}/gtk/${__BASE}"
+	fi
 	# --- create files --------------------------------------------------------
 	fnMk_isofile_ilnx_theme "${__FILE_NAME:-}" "${__TIME_STMP:-}" > "${__TGET_DIRS}/${__PTHM}"
-	fnMk_isofile_ilnx_autoinst "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__NICS_NAME:-}" "${__NWRK_HOST:-}" "${__IPV4_CIDR:-}" "${__OPTN_BOOT[@]:-}" > "${__TGET_DIRS}/${__PAUT}"
+	fnMk_isofile_ilnx_autoinst "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__GUIS:-}" "${__NICS_NAME:-}" "${__NWRK_HOST:-}" "${__IPV4_CIDR:-}" "${__OPTN_BOOT[@]:-}" > "${__TGET_DIRS}/${__PAUT}"
 	# --- insert autoinst.cfg -------------------------------------------------
 	if grep -qEi '^include[ \t]+menu.cfg[ \t]*.*$' "${__PATH}"; then
 		sed -i "${__PATH}"                                                                   \

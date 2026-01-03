@@ -29,7 +29,7 @@ function fnMk_isofile_rebuild() {
 	if [[ -n "${__FILE_HBRD:-}" ]]; then
 		declare -r -a __OPTN=(\
 			-quiet -rational-rock \
-			${__FILE_VLID:+-volid "'${__FILE_VLID}'"} \
+			${__FILE_VLID:+-volid "${__FILE_VLID// /$'\x20'}"} \
 			-joliet -joliet-long \
 			-cache-inodes \
 			-isohybrid-mbr "${__FILE_HBRD}" \
@@ -42,7 +42,7 @@ function fnMk_isofile_rebuild() {
 	else
 		declare -r -a __OPTN=(\
 			-quiet -rational-rock \
-			${__FILE_VLID:+-volid "'${__FILE_VLID}'"} \
+			${__FILE_VLID:+-volid "${__FILE_VLID// /$'\x20'}"} \
 			-joliet -joliet-long \
 			-full-iso9660-filenames -iso-level 3 \
 			-partition_offset 16 \
@@ -69,7 +69,6 @@ function fnMk_isofile_rebuild() {
 		if ! nice -n 19 xorrisofs "${__OPTN[@]}" -output "${__TEMP}" .; then
 			printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [xorriso]" "${__FILE_ISOS##*/}" 1>&2
 			printf "%s\n" "xorrisofs ${__OPTN[*]} -output ${__TEMP} ."
-sleep 600
 		else
 			if ! cp --preserve=timestamps "${__TEMP}" "${__FILE_ISOS}"; then
 				printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [cp]" "${__FILE_ISOS##*/}" 1>&2

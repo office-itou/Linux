@@ -7,9 +7,10 @@
 #   input :     $3     : theme.txt file name
 #   input :     $4     : kernel path
 #   input :     $5     : initrd path
-#   input :     $6     : nic name
-#   input :     $7     : host name
-#   input :     $8     : ipv4 cidr
+#   input :     $6     : initrd path (gui)
+#   input :     $7     : nic name
+#   input :     $8     : host name
+#   input :     $9     : ipv4 cidr
 #   input :     $@     : option parameter
 #   output:   stdout   : message
 #   return:            : unused

@@ -3448,9 +3448,10 @@ function fnMk_isofile_conf() {
 #   input :     $3     : theme.txt file name
 #   input :     $4     : kernel path
 #   input :     $5     : initrd path
-#   input :     $6     : nic name
-#   input :     $7     : host name
-#   input :     $8     : ipv4 cidr
+#   input :     $6     : initrd path (gui)
+#   input :     $7     : nic name
+#   input :     $8     : host name
+#   input :     $9     : ipv4 cidr
 #   input :     $@     : option parameter
 #   output:   stdout   : message
 #   return:            : unused
@@ -3711,7 +3712,7 @@ function fnMk_isofile_grub() {
 		fi
 		# --- create files ----------------------------------------------------
 		fnMk_isofile_grub_theme "${__FILE_NAME:-}" "${__TIME_STMP:-}" > "${__TGET_DIRS}/${__PTHM}"
-		fnMk_isofile_grub_autoinst "${__FILE_NAME:-}" "${__TIME_STMP:-}" "${__PTHM#"${__TGET_DIRS}"}" "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__GUIS}" "${__NICS_NAME:-}" "${__NWRK_HOST:-}" "${__IPV4_CIDR:-}" "${__OPTN_BOOT[@]:-}" > "${__TGET_DIRS}/${__PAUT}"
+		fnMk_isofile_grub_autoinst "${__FILE_NAME:-}" "${__TIME_STMP:-}" "${__PTHM#"${__TGET_DIRS}"}" "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__GUIS:-}" "${__NICS_NAME:-}" "${__NWRK_HOST:-}" "${__IPV4_CIDR:-}" "${__OPTN_BOOT[@]:-}" > "${__TGET_DIRS}/${__PAUT}"
 		# --- insert autoinst.cfg ---------------------------------------------
 		sed -i "${__CONF}"                            \
 		    -e '0,/^menuentry/ {'                     \
@@ -3754,19 +3755,21 @@ function fnMk_isofile_grub() {
 # descript: make autoinst.cfg files for isolinux
 #   input :     $1     : kernel path
 #   input :     $2     : initrd path
-#   input :     $3     : nic name
-#   input :     $4     : host name
-#   input :     $5     : ipv4 cidr
+#   input :     $3     : initrd path (gui)
+#   input :     $4     : nic name
+#   input :     $5     : host name
+#   input :     $6     : ipv4 cidr
 #   input :     $@     : option parameter
 #   output:   stdout   : message
 #   return:            : unused
 function fnMk_isofile_ilnx_autoinst() {
 	declare -r    __PATH_FKNL="${1:?}"
 	declare -r    __PATH_FIRD="${2:?}"
-	declare -r    __NICS_NAME="${3:?}"
-	declare -r    __NWRK_HOST="${4:?}"
-	declare -r    __IPV4_CIDR="${5:-}"
-	declare -r -a __OPTN_BOOT=("${@:6}")
+	declare -r    __PATH_GUIS="${3:-}"
+	declare -r    __NICS_NAME="${4:?}"
+	declare -r    __NWRK_HOST="${5:?}"
+	declare -r    __IPV4_CIDR="${6:-}"
+	declare -r -a __OPTN_BOOT=("${@:7}")
 	declare -a    __BOPT=()				# boot options
 	declare       __DIRS=""
 	# --- convert -------------------------------------------------------------
@@ -3789,14 +3792,13 @@ function fnMk_isofile_ilnx_autoinst() {
 		  append ${__BOPT[@]} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
 _EOT_
 	# --- gui -----------------------------------------------------------------
-	__DIRS="$(fnDirname  "${__PATH_FIRD}")"
-	if [[ -e "${__DIRS:-}"/gtk/${__PATH_FKNL##*/} ]]; then
+	if [[ -n "${__PATH_GUIS:-}" ]]; then
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 
 			label auto-install-gui
 			  menu label ^Automatic installation gui
 			  linux  ${__PATH_FKNL}
-			  initrd ${__DIRS:-}/gtk/${__PATH_FKNL##*/}
+			  initrd ${__PATH_GUIS}
 			  append ${__BOPT[@]} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
 _EOT_
 	fi
@@ -3865,7 +3867,7 @@ function fnMk_isofile_ilnx_theme() {
 		menu margin             3
 		menu vshift             2
 		menu rows               20
-		menu tabmsgrow          28
+		menu tabmsgrow          26
 		menu cmdlinerow         30
 		menu timeoutrow         30
 		menu helpmsgrow         32
@@ -3907,9 +3909,15 @@ function fnMk_isofile_ilnx() {
 	__DIRS="$(fnDirname "${__PATH#"${__TGET_DIRS}"}")"
 	__PAUT="${__DIRS%/}/${_AUTO_INST:-"autoinst.cfg"}"
 	__PTHM="${__DIRS%/}/theme.txt"
+	__DIRS="$(fnDirname  "${__PATH_FIRD}")"
+	__BASE="$(fnBasename "${__PATH_FIRD}")"
+	__GUIS=""
+	if [[ -e "${__TGET_DIRS}/${__DIRS#/}/gtk/${__BASE:?}" ]]; then
+		__GUIS="/${__DIRS#/}/gtk/${__BASE}"
+	fi
 	# --- create files --------------------------------------------------------
 	fnMk_isofile_ilnx_theme "${__FILE_NAME:-}" "${__TIME_STMP:-}" > "${__TGET_DIRS}/${__PTHM}"
-	fnMk_isofile_ilnx_autoinst "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__NICS_NAME:-}" "${__NWRK_HOST:-}" "${__IPV4_CIDR:-}" "${__OPTN_BOOT[@]:-}" > "${__TGET_DIRS}/${__PAUT}"
+	fnMk_isofile_ilnx_autoinst "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__GUIS:-}" "${__NICS_NAME:-}" "${__NWRK_HOST:-}" "${__IPV4_CIDR:-}" "${__OPTN_BOOT[@]:-}" > "${__TGET_DIRS}/${__PAUT}"
 	# --- insert autoinst.cfg -------------------------------------------------
 	if grep -qEi '^include[ \t]+menu.cfg[ \t]*.*$' "${__PATH}"; then
 		sed -i "${__PATH}"                                                                   \
@@ -3966,7 +3974,7 @@ function fnMk_isofile_rebuild() {
 	if [[ -n "${__FILE_HBRD:-}" ]]; then
 		declare -r -a __OPTN=(\
 			-quiet -rational-rock \
-			${__FILE_VLID:+-volid "'${__FILE_VLID}'"} \
+			${__FILE_VLID:+-volid "${__FILE_VLID// /$'\x20'}"} \
 			-joliet -joliet-long \
 			-cache-inodes \
 			-isohybrid-mbr "${__FILE_HBRD}" \
@@ -3979,7 +3987,7 @@ function fnMk_isofile_rebuild() {
 	else
 		declare -r -a __OPTN=(\
 			-quiet -rational-rock \
-			${__FILE_VLID:+-volid "'${__FILE_VLID}'"} \
+			${__FILE_VLID:+-volid "${__FILE_VLID// /$'\x20'}"} \
 			-joliet -joliet-long \
 			-full-iso9660-filenames -iso-level 3 \
 			-partition_offset 16 \
@@ -4006,7 +4014,6 @@ function fnMk_isofile_rebuild() {
 		if ! nice -n 19 xorrisofs "${__OPTN[@]}" -output "${__TEMP}" .; then
 			printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [xorriso]" "${__FILE_ISOS##*/}" 1>&2
 			printf "%s\n" "xorrisofs ${__OPTN[*]} -output ${__TEMP} ."
-sleep 600
 		else
 			if ! cp --preserve=timestamps "${__TEMP}" "${__FILE_ISOS}"; then
 				printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [cp]" "${__FILE_ISOS##*/}" 1>&2

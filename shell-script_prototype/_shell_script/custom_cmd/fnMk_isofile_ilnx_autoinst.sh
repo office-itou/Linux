@@ -4,9 +4,10 @@
 # descript: make autoinst.cfg files for isolinux
 #   input :     $1     : kernel path
 #   input :     $2     : initrd path
-#   input :     $3     : nic name
-#   input :     $4     : host name
-#   input :     $5     : ipv4 cidr
+#   input :     $3     : initrd path (gui)
+#   input :     $4     : nic name
+#   input :     $5     : host name
+#   input :     $6     : ipv4 cidr
 #   input :     $@     : option parameter
 #   output:   stdout   : message
 #   return:            : unused
@@ -22,10 +23,11 @@
 function fnMk_isofile_ilnx_autoinst() {
 	declare -r    __PATH_FKNL="${1:?}"
 	declare -r    __PATH_FIRD="${2:?}"
-	declare -r    __NICS_NAME="${3:?}"
-	declare -r    __NWRK_HOST="${4:?}"
-	declare -r    __IPV4_CIDR="${5:-}"
-	declare -r -a __OPTN_BOOT=("${@:6}")
+	declare -r    __PATH_GUIS="${3:-}"
+	declare -r    __NICS_NAME="${4:?}"
+	declare -r    __NWRK_HOST="${5:?}"
+	declare -r    __IPV4_CIDR="${6:-}"
+	declare -r -a __OPTN_BOOT=("${@:7}")
 	declare -a    __BOPT=()				# boot options
 	declare       __DIRS=""
 	# --- convert -------------------------------------------------------------
@@ -48,14 +50,13 @@ function fnMk_isofile_ilnx_autoinst() {
 		  append ${__BOPT[@]} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
 _EOT_
 	# --- gui -----------------------------------------------------------------
-	__DIRS="$(fnDirname  "${__PATH_FIRD}")"
-	if [[ -e "${__DIRS:-}"/gtk/${__PATH_FKNL##*/} ]]; then
+	if [[ -n "${__PATH_GUIS:-}" ]]; then
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 
 			label auto-install-gui
 			  menu label ^Automatic installation gui
 			  linux  ${__PATH_FKNL}
-			  initrd ${__DIRS:-}/gtk/${__PATH_FKNL##*/}
+			  initrd ${__PATH_GUIS}
 			  append ${__BOPT[@]} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
 _EOT_
 	fi
