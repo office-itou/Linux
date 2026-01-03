@@ -127,6 +127,9 @@
 	source "${_SHEL_COMD}"/fnMk_print_list.sh				# print media list
 
 	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnXinitrd.sh						# extract the initrd
+
+	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_boot_option_preseed.sh		# make boot options for preseed
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnMk_boot_option_nocloud.sh		# make boot options for nocloud

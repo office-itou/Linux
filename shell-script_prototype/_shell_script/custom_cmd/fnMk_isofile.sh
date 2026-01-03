@@ -38,11 +38,12 @@ function fnMk_isofile() {
 	declare -a    __BOPT=()
 	declare       __FNAM=""
 	declare       __TSMP=""
-	declare       __FKNL=""
-	declare       __FIRD=""
+	declare       __DIRD=""				# initrd directory
+	declare       __FIRD=""				# initrd file path
+	declare       __FKNL=""				# kernel file path
 	declare       __NICS="${_NICS_NAME:-"ens160"}"
 	declare       __HOST=""
-	declare       __CIDR=""
+	declare       __CIDR="/${_IPV4_CIDR:-}"
 	declare       __LABL=""
 	declare       __FMBR=""
 	declare       __FEFI=""
@@ -120,7 +121,7 @@ function fnMk_isofile() {
 			done
 			__TGET=("${__ARRY[@]:-}")
 		else
-			[[ -z "${__PTRN["${__TYPE:-}"]:-}" ]] && continue
+#			[[ -z "${__PTRN["${__TYPE:-}"]:-}" ]] && continue
 			__TGID="${__PTRN["${__TYPE:-}"]// /|}"
 			fnMk_print_list __LINE "${__TYPE:-}" "${__TGID:-}"
 			IFS= mapfile -d $'\n' -t __TGET < <(echo -n "${__LINE}")
@@ -165,13 +166,14 @@ function fnMk_isofile() {
 							# --- create auto install configuration file ------
 							__WORK="$(fnMk_boot_options "remake" "${__MDIA[@]:-}")"
 							IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
-							__FNAM="${__MDIA[$((_OSET_MDIA+14))]##*/}"
-							__TSMP="${__MDIA[$((_OSET_MDIA+15))]:-}"
+							__FNAM="${__MDIA[$((_OSET_MDIA+14))]##*/}"				# iso_path
+							__TSMP="${__MDIA[$((_OSET_MDIA+15))]:-}"				# iso_tstamp
 							__TSMP="${__TSMP:+" (${__TSMP:0:19})"}"
-							__FKNL="${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"}"
-							__FIRD="${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"}"
+							__ENTR="${__MDIA[$((_OSET_MDIA+2))]:-}"					# entry_name
+							__FIRD="${__MDIA[$((_OSET_MDIA+22))]#*/"${__ENTR:-}"}"	# ldr_initrd
+							__FKNL="${__MDIA[$((_OSET_MDIA+23))]#*/"${__ENTR:-}"}"	# ldr_kernel
 							case "${__MDIA[$((_OSET_MDIA+3))]:-}" in
-								*-mini-*) __FIRD="${__FIRD%/*}/${_MINI_IRAM:?}";;
+								*-mini-*) __FIRD="${__FIRD%/*}/${_MINI_IRAM:?}";;	# initial ram disk of mini.iso including preseed
 								*       ) ;;
 							esac
 							__HOST="${__MDIA[$((_OSET_MDIA+2))]%%-*}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
@@ -182,9 +184,28 @@ function fnMk_isofile() {
 							esac
 							case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 								ubuntu*) __CIDR="";;
-								*      ) __CIDR="/${_IPV4_CIDR:-}";;
+								*      ) ;;
 							esac
-							fnMk_isofile_conf "${__DMRG}" "${__MDIA[$((_OSET_MDIA+24))]}"
+							fnMk_isofile_conf "${__DMRG}" "${__MDIA[$((_OSET_MDIA+24))]}"	# cfg_path
+							# --- rebuilding initrd ---------------------------
+							case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
+								*-mini-*)
+									__DIRS="${__TEMP:?}/${__FIRD##*/}"			# extract directory
+									fnXinitrd "${__DMRG}${__FIRD}" "${__DIRS}"	# extract the initrd
+									__DIRD="${__DIRS}"							# initramfs directory
+									[[ -d "${__DIRD}/main/." ]] && __DIRD+="/main"
+									# --- copying files for automatic installation
+									cp --preserve=timestamps -R "${__DMRG}/${_DIRS_CONF#"${_DIRS_SHAR}"}" "${__DIRD:?}"
+									chmod ugo+r-xw "${__DIRD:?}${_DIRS_CONF#"${_DIRS_SHAR}"}/${_DIRS_SHEL#"${_DIRS_CONF:-}"/}"/*
+									# --- rebuilding initrd -------------------
+									__FIRD="${__FIRD%/*}/${_MINI_IRAM}"
+									pushd "${__DIRD}" > /dev/null || exit
+										find . | cpio --format=newc --create --quiet | gzip > "${__DMRG}${__FIRD:?}" || true
+									popd > /dev/null || exit
+									rm -rf "${__DIRS:?}"
+									;;
+								*       ) ;;
+							esac
 							fnMk_isofile_grub "${__DMRG}" "${__FNAM:-}" "${__TSMP:-}" "${__FKNL:-}" "${__FIRD:-}" "${__NICS:-}" "${__HOST:-}" "${__CIDR:-}" "${__BOPT[@]:-}"
 							fnMk_isofile_ilnx "${__DMRG}" "${__FNAM:-}" "${__TSMP:-}" "${__FKNL:-}" "${__FIRD:-}" "${__NICS:-}" "${__HOST:-}" "${__CIDR:-}" "${__BOPT[@]:-}"
 							# --- rebuild -------------------------------------

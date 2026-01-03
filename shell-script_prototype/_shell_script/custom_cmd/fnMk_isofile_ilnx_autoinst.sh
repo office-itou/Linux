@@ -37,7 +37,7 @@ function fnMk_isofile_ilnx_autoinst() {
 	__BOPT=("${__BOPT[@]//\$\{ipv4mask\}/${_IPV4_MASK:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ipv4gway\}/${_IPV4_GWAY:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ipv4nsvr\}/${_IPV4_NSVR:-}}")
-	__BOPT=("${__BOPT[@]:1}")
+	__BOPT=("${__BOPT[@]}")
 	# --- default--------------------------------------------------------------
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		label auto-install
@@ -45,7 +45,7 @@ function fnMk_isofile_ilnx_autoinst() {
 		  menu default
 		  linux  ${__PATH_FKNL}
 		  initrd ${__PATH_FIRD}
-		  append ${__BOPT[@]} --- quiet
+		  append ${__BOPT[@]} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
 _EOT_
 	# --- gui -----------------------------------------------------------------
 	__DIRS="$(fnDirname  "${__PATH_FIRD}")"
@@ -56,7 +56,7 @@ _EOT_
 			  menu label ^Automatic installation gui
 			  linux  ${__PATH_FKNL}
 			  initrd ${__DIRS:-}/gtk/${__PATH_FKNL##*/}
-			  append ${__BOPT[@]} --- quiet
+			  append ${__BOPT[@]} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
 _EOT_
 	fi
 	# --- system command ------------------------------------------------------

@@ -1959,6 +1959,98 @@ function fnMk_print_list() {
 }
 
 # -----------------------------------------------------------------------------
+# descript: extract the compressed cpio
+#   input :   $1   : target file
+#   input :   $2   : destination directory
+#   input :   $@   : cpio options
+#   output: stdout : unused
+#   return:        : unused
+function fnXcpio() {
+	  if gzip -t       "${1:?}" > /dev/null 2>&1 ; then gzip -c -d    "${1:?}"
+	elif zstd -q -c -t "${1:?}" > /dev/null 2>&1 ; then zstd -q -c -d "${1:?}"
+	elif xzcat -t      "${1:?}" > /dev/null 2>&1 ; then xzcat         "${1:?}"
+	elif lz4cat -t <   "${1:?}" > /dev/null 2>&1 ; then lz4cat        "${1:?}"
+	elif bzip2 -t      "${1:?}" > /dev/null 2>&1 ; then bzip2 -c -d   "${1:?}"
+	elif lzop -t       "${1:?}" > /dev/null 2>&1 ; then lzop -c -d    "${1:?}"
+	fi | (
+		if [[ -n "${2:?}" ]]; then
+			mkdir -p -- "${2:?}"
+			cd -- "${2:?}" || exit
+			shift
+		fi
+		shift
+		cpio "${@:-}"
+	)
+}
+
+# -----------------------------------------------------------------------------
+# descript: extract the initrd
+#   input :     $1     : target initrd file
+#   input :     $2     : destination directory
+#   output:   stdout   : message
+#   return:            : unused
+function fnXinitrd() {
+	declare -r    __TGET_FILE="${1:?}"	# target initrd file
+	declare -r    __DIRS_DEST="${2:-}"	# destination directory
+	declare -r -a __OPTS=("--preserve-modification-time" "--no-absolute-filenames" "--quiet")
+	declare -i    __CONT=0				# count
+	declare -i    __PSTR=0				# start point
+	declare -i    __PEND=0				# end point
+	declare       __MGIC=""				# magic word
+	declare -i    __NSIZ=0				# name size
+	declare -i    __FSIZ=0				# file size
+	declare       __DSUB=""				# sub directory
+	declare       __SARC=""				# sub archive
+
+	while true
+	do
+		__PEND="${__PSTR}"
+		while true
+		do
+			if dd if="${__TGET_FILE:?}" bs=1 skip="${__PEND:?}" count=1 2> /dev/null | LANG=C grep -q -z '^$'; then
+				__PEND=$((__PEND + 4))
+				while dd if="${__TGET_FILE:?}" bs=1 skip="${__PEND:?}" count=1 2> /dev/null | LANG=C grep -q -z '^$'
+				do
+					__PEND=$((__PEND + 4))
+				done
+				break
+			fi
+			__MGIC="$(dd if="${__TGET_FILE:?}" bs=1 skip="${__PEND:?}" count="6" 2> /dev/null | LANG=C grep -E '^[0-9A-Fa-f]6$')" || break
+			case "${__MGIC}" in
+				"070701" | "070702") ;;
+				*                  ) break;;
+			esac
+			__NSIZ=0x$(dd if="${__TGET_FILE:?}" bs=1 skip="$((__PEND + 94))" count="8" 2> /dev/null | LANG=C grep -E '^[0-9A-Fa-f]8$')
+			__FSIZ=0x$(dd if="${__TGET_FILE:?}" bs=1 skip="$((__PEND + 54))" count="8" 2> /dev/null | LANG=C grep -E '^[0-9A-Fa-f]8$')
+			__PEND=$((__PEND + 110))
+			__PEND=$(((__PEND + __NSIZ + 3) & ~3))
+			__PEND=$(((__PEND + __FSIZ + 3) & ~3))
+		done
+		[[ "${__PEND}" -eq "${__PSTR}" ]] && break
+		((__CONT+=1))
+		__DSUB="early"
+		[[ "${__CONT}" -gt 1 ]] && __DSUB+="${__CONT}"
+		dd if="${__TGET_FILE}" skip="${__PSTR}" count="$((__PEND - __PSTR))" iflag=skip_bytes 2> /dev/null | (
+			if [[ -n "${__DIRS_DEST}" ]]; then
+				mkdir -p -- "${__DIRS_DEST}/${__DSUB}"
+				cd -- "${__DIRS_DEST}/${__DSUB}" || exit
+			fi
+			cpio -i "${__OPTS[@]}"
+		)
+		__PSTR="${__PEND}"
+	done
+	if [[ "${__PEND}" -le 0 ]]; then
+		fnXcpio "${__TGET_FILE}" "${__DIRS_DEST}" -i "${__OPTS[@]}"
+	else
+		__SARC="${TMPDIR:-/tmp}/${FUNCNAME[0]}"
+		mkdir -p "${__SARC%/*}"
+		dd if="${__TGET_FILE}" skip="${__PEND}" iflag=skip_bytes 2> /dev/null > "${__SARC}"
+		fnXcpio "${__SARC}" "${__DIRS_DEST:+${__DIRS_DEST}/main}" -i "${__OPTS[@]}"
+		rm -f "${__SARC:?}"
+	fi
+}
+
+# -----------------------------------------------------------------------------
 # descript: make boot options for preseed
 #   input :     $1     : target type (remake or pxeboot)
 #   input :   $2..$@   : media info data
@@ -3686,7 +3778,7 @@ function fnMk_isofile_ilnx_autoinst() {
 	__BOPT=("${__BOPT[@]//\$\{ipv4mask\}/${_IPV4_MASK:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ipv4gway\}/${_IPV4_GWAY:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ipv4nsvr\}/${_IPV4_NSVR:-}}")
-	__BOPT=("${__BOPT[@]:1}")
+	__BOPT=("${__BOPT[@]}")
 	# --- default--------------------------------------------------------------
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		label auto-install
@@ -3694,7 +3786,7 @@ function fnMk_isofile_ilnx_autoinst() {
 		  menu default
 		  linux  ${__PATH_FKNL}
 		  initrd ${__PATH_FIRD}
-		  append ${__BOPT[@]} --- quiet
+		  append ${__BOPT[@]} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
 _EOT_
 	# --- gui -----------------------------------------------------------------
 	__DIRS="$(fnDirname  "${__PATH_FIRD}")"
@@ -3705,7 +3797,7 @@ _EOT_
 			  menu label ^Automatic installation gui
 			  linux  ${__PATH_FKNL}
 			  initrd ${__DIRS:-}/gtk/${__PATH_FKNL##*/}
-			  append ${__BOPT[@]} --- quiet
+			  append ${__BOPT[@]} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
 _EOT_
 	fi
 	# --- system command ------------------------------------------------------
@@ -3744,36 +3836,40 @@ function fnMk_isofile_ilnx_theme() {
 		path ./
 		prompt 0
 		timeout 0
-		default vesamenu.c32
+		UI vesamenu.c32
 
 		${_MENU_RESO:+"menu resolution ${_MENU_RESO/x/ }"}
 		${__TITL:+"menu title Boot Menu: ${__TITL}"}
 		${_MENU_SPLS:+"menu background ${_MENU_SPLS}"}
 
-		menu color screen       * #ffffffff #ee000080 *
-		menu color title        * #ffffffff #ee000080 *
-		menu color border       * #ffffffff #ee000080 *
-		menu color sel          * #ffffffff #76a1d0ff *
-		menu color hotsel       * #ffffffff #76a1d0ff *
-		menu color unsel        * #ffffffff #ee000080 *
-		menu color hotkey       * #ffffffff #ee000080 *
-		menu color tabmsg       * #ffffffff #ee000080 *
-		menu color timeout_msg  * #ffffffff #ee000080 *
-		menu color timeout      * #ffffffff #ee000080 *
-		menu color disabled     * #ffffffff #ee000080 *
-		menu color cmdmark      * #ffffffff #ee000080 *
-		menu color cmdline      * #ffffffff #ee000080 *
-		menu color scrollbar    * #ffffffff #ee000080 *
-		menu color help         * #ffffffff #ee000080 *
+		# MENU COLOR <Item>  <ANSI Seq.> <foreground> <background> <shadow type>
+		menu color   screen       0       #80ffffff    #00000000        std      # background colour not covered by the splash image
+		menu color   border       0       #ffffffff    #ee000000        std      # The wire-frame border
+		menu color   title        0       #ffff3f7f    #ee000000        std      # Menu title text
+		menu color   sel          0       #ff00dfdf    #ee000000        std      # Selected menu option
+		menu color   hotsel       0       #ff7f7fff    #ee000000        std      # The selected hotkey (set with ^ in MENU LABEL)
+		menu color   unsel        0       #ffffffff    #ee000000        std      # Unselected menu options
+		menu color   hotkey       0       #ff7f7fff    #ee000000        std      # Unselected hotkeys (set with ^ in MENU LABEL)
+		menu color   tabmsg       0       #c07f7fff    #00000000        std      # Tab text
+		menu color   timeout_msg  0       #8000dfdf    #00000000        std      # Timout text
+		menu color   timeout      0       #c0ff3f7f    #00000000        std      # Timout counter
+		menu color   disabled     0       #807f7f7f    #ee000000        std      # Disabled menu options, including SEPARATORs
+		menu color   cmdmark      0       #c000ffff    #ee000000        std      # Command line marker - The '> ' on the left when editing an option
+		menu color   cmdline      0       #c0ffffff    #ee000000        std      # Command line - The text being edited
+		menu color   scrollbar    0       #40000000    #00000000        std      # Scroll bar
+		menu color   pwdborder    0       #80ffffff    #20ffffff        std      # Password box wire-frame border
+		menu color   pwdheader    0       #80ff8080    #20ffffff        std      # Password box header
+		menu color   pwdentry     0       #80ffffff    #20ffffff        std      # Password entry field
+		menu color   help         0       #c0ffffff    #00000000        std      # Help text, if set via 'TEXT HELP ... ENDTEXT'
 
-		menu margin             4
-		menu vshift             5
-		menu rows               25
-		menu tabmsgrow          31
-		menu cmdlinerow         33
-		menu timeoutrow         33
-		menu helpmsgrow         37
-		menu hekomsgendrow      39
+		menu margin             3
+		menu vshift             2
+		menu rows               20
+		menu tabmsgrow          28
+		menu cmdlinerow         30
+		menu timeoutrow         30
+		menu helpmsgrow         32
+		menu hekomsgendrow      35
 
 		menu tabmsg Press ENTER to boot or TAB to edit a menu entry
 
@@ -3972,11 +4068,12 @@ function fnMk_isofile() {
 	declare -a    __BOPT=()
 	declare       __FNAM=""
 	declare       __TSMP=""
-	declare       __FKNL=""
-	declare       __FIRD=""
+	declare       __DIRD=""				# initrd directory
+	declare       __FIRD=""				# initrd file path
+	declare       __FKNL=""				# kernel file path
 	declare       __NICS="${_NICS_NAME:-"ens160"}"
 	declare       __HOST=""
-	declare       __CIDR=""
+	declare       __CIDR="/${_IPV4_CIDR:-}"
 	declare       __LABL=""
 	declare       __FMBR=""
 	declare       __FEFI=""
@@ -4054,7 +4151,7 @@ function fnMk_isofile() {
 			done
 			__TGET=("${__ARRY[@]:-}")
 		else
-			[[ -z "${__PTRN["${__TYPE:-}"]:-}" ]] && continue
+#			[[ -z "${__PTRN["${__TYPE:-}"]:-}" ]] && continue
 			__TGID="${__PTRN["${__TYPE:-}"]// /|}"
 			fnMk_print_list __LINE "${__TYPE:-}" "${__TGID:-}"
 			IFS= mapfile -d $'\n' -t __TGET < <(echo -n "${__LINE}")
@@ -4099,13 +4196,14 @@ function fnMk_isofile() {
 							# --- create auto install configuration file ------
 							__WORK="$(fnMk_boot_options "remake" "${__MDIA[@]:-}")"
 							IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
-							__FNAM="${__MDIA[$((_OSET_MDIA+14))]##*/}"
-							__TSMP="${__MDIA[$((_OSET_MDIA+15))]:-}"
+							__FNAM="${__MDIA[$((_OSET_MDIA+14))]##*/}"				# iso_path
+							__TSMP="${__MDIA[$((_OSET_MDIA+15))]:-}"				# iso_tstamp
 							__TSMP="${__TSMP:+" (${__TSMP:0:19})"}"
-							__FKNL="${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"}"
-							__FIRD="${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"}"
+							__ENTR="${__MDIA[$((_OSET_MDIA+2))]:-}"					# entry_name
+							__FIRD="${__MDIA[$((_OSET_MDIA+22))]#*/"${__ENTR:-}"}"	# ldr_initrd
+							__FKNL="${__MDIA[$((_OSET_MDIA+23))]#*/"${__ENTR:-}"}"	# ldr_kernel
 							case "${__MDIA[$((_OSET_MDIA+3))]:-}" in
-								*-mini-*) __FIRD="${__FIRD%/*}/${_MINI_IRAM:?}";;
+								*-mini-*) __FIRD="${__FIRD%/*}/${_MINI_IRAM:?}";;	# initial ram disk of mini.iso including preseed
 								*       ) ;;
 							esac
 							__HOST="${__MDIA[$((_OSET_MDIA+2))]%%-*}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
@@ -4116,9 +4214,28 @@ function fnMk_isofile() {
 							esac
 							case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 								ubuntu*) __CIDR="";;
-								*      ) __CIDR="/${_IPV4_CIDR:-}";;
+								*      ) ;;
 							esac
-							fnMk_isofile_conf "${__DMRG}" "${__MDIA[$((_OSET_MDIA+24))]}"
+							fnMk_isofile_conf "${__DMRG}" "${__MDIA[$((_OSET_MDIA+24))]}"	# cfg_path
+							# --- rebuilding initrd ---------------------------
+							case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
+								*-mini-*)
+									__DIRS="${__TEMP:?}/${__FIRD##*/}"			# extract directory
+									fnXinitrd "${__DMRG}${__FIRD}" "${__DIRS}"	# extract the initrd
+									__DIRD="${__DIRS}"							# initramfs directory
+									[[ -d "${__DIRD}/main/." ]] && __DIRD+="/main"
+									# --- copying files for automatic installation
+									cp --preserve=timestamps -R "${__DMRG}/${_DIRS_CONF#"${_DIRS_SHAR}"}" "${__DIRD:?}"
+									chmod ugo+r-xw "${__DIRD:?}${_DIRS_CONF#"${_DIRS_SHAR}"}/${_DIRS_SHEL#"${_DIRS_CONF:-}"/}"/*
+									# --- rebuilding initrd -------------------
+									__FIRD="${__FIRD%/*}/${_MINI_IRAM}"
+									pushd "${__DIRD}" > /dev/null || exit
+										find . | cpio --format=newc --create --quiet | gzip > "${__DMRG}${__FIRD:?}" || true
+									popd > /dev/null || exit
+									rm -rf "${__DIRS:?}"
+									;;
+								*       ) ;;
+							esac
 							fnMk_isofile_grub "${__DMRG}" "${__FNAM:-}" "${__TSMP:-}" "${__FKNL:-}" "${__FIRD:-}" "${__NICS:-}" "${__HOST:-}" "${__CIDR:-}" "${__BOPT[@]:-}"
 							fnMk_isofile_ilnx "${__DMRG}" "${__FNAM:-}" "${__TSMP:-}" "${__FKNL:-}" "${__FIRD:-}" "${__NICS:-}" "${__HOST:-}" "${__CIDR:-}" "${__BOPT[@]:-}"
 							# --- rebuild -------------------------------------
