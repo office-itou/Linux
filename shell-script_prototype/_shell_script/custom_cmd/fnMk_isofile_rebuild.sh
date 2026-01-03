@@ -62,7 +62,13 @@ function fnMk_isofile_rebuild() {
 	declare       __REAL=""
 	declare       __DIRS=""
 	declare       __OWNR=""
+	declare -i    __time_start=0
+	declare -i    __time_end=0
+	declare -i    __time_elapsed=0
+
+	__time_start=$(date +%s)
 	echo "create iso image file ..."
+	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
 	[[ -n "${__FILE_HBRD:-}" ]] && echo "hybrid mode"
 	[[ -n "${__FILE_BIOS:-}" ]] && echo "eltorito mode"
 	pushd "${__DIRS_TGET:?}" > /dev/null || exit
@@ -84,7 +90,11 @@ function fnMk_isofile_rebuild() {
 		fi
 		rm -f "${__TEMP:?}"
 	popd > /dev/null || exit
-	unset __REAL __DIRS __OWNR
+	__time_end=$(date +%s)
+	__time_elapsed=$((__time_end - __time_start))
+	fnMsgout "${_PROG_NAME:-}" "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"
+	fnMsgout "${_PROG_NAME:-}" "elapsed" "$(printf "%dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60)) || true)"
+	unset __REAL __DIRS __OWNR __time_start __time_end __time_elapsed
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"

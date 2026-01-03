@@ -3544,7 +3544,7 @@ _EOT_
 	if [[ -n "${__PATH_GUIS:-}" ]]; then
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 
-			menuentry 'Automatic installation gui' {
+			menuentry 'Graphical automatic installation' {
 			  echo 'Loading ${__TITL:+"${__TITL} "}...'
 			  set gfxpayload="keep"
 			  set background_color="black"
@@ -3796,7 +3796,7 @@ _EOT_
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 
 			label auto-install-gui
-			  menu label ^Automatic installation gui
+			  menu label ^Graphical automatic installation
 			  linux  ${__PATH_FKNL}
 			  initrd ${__PATH_GUIS}
 			  append ${__BOPT[@]} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
@@ -3838,7 +3838,7 @@ function fnMk_isofile_ilnx_theme() {
 		path ./
 		prompt 0
 		timeout 0
-		UI vesamenu.c32
+		default vesamenu.c32
 
 		${_MENU_RESO:+"menu resolution ${_MENU_RESO/x/ }"}
 		${__TITL:+"menu title Boot Menu: ${__TITL}"}
@@ -3864,14 +3864,14 @@ function fnMk_isofile_ilnx_theme() {
 		menu color   pwdentry     0       #80ffffff    #20ffffff        std      # Password entry field
 		menu color   help         0       #c0ffffff    #00000000        std      # Help text, if set via 'TEXT HELP ... ENDTEXT'
 
-		menu margin             3
-		menu vshift             2
-		menu rows               20
-		menu tabmsgrow          26
-		menu cmdlinerow         30
-		menu timeoutrow         30
-		menu helpmsgrow         32
-		menu hekomsgendrow      35
+		menu margin               2
+		menu vshift               3
+		menu rows                12
+		menu tabmsgrow           28
+		menu cmdlinerow          26
+		menu timeoutrow          26
+		menu helpmsgrow          24
+		#menu hekomsgendrow      38
 
 		menu tabmsg Press ENTER to boot or TAB to edit a menu entry
 
@@ -3930,19 +3930,21 @@ function fnMk_isofile_ilnx() {
 		    -e '}'
 	fi
 	# --- comment out ---------------------------------------------------------
-	find "${__TGET_DIRS}/${__DIRS:-"/"}" \( -name '*.cfg' -a ! -name "${_AUTO_INST:-"autoinst.cfg"}" \) | while read -r __PATH
+	__DIRS="$(fnDirname "${__PATH}")"
+	find "${__DIRS:-"/"}" \( -name '*.cfg' -a ! -name "${_AUTO_INST:-"autoinst.cfg"}" \) | while read -r __PATH
 	do
-		sed -i "${__PATH}"                                                               \
-		    -e '/^[ \t]*\([Dd]efault\|DEFAULT\)[ \t]*/ {/.*\.c32/!                   d}' \
-		    -e '/^[ \t]*\([Tt]imeout\|TIMEOUT\)[ \t]*/                               d'  \
-		    -e '/^[ \t]*\([Pp]rompt\|PROMPT\)[ \t]*/                                 d'  \
-		    -e '/^[ \t]*\([Oo]ntimeout\|ONTIMEOUT\)[ \t]*/                           d'  \
-		    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Dd]efault\|DEFAULT\)[ \t]*/       d'  \
-		    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Aa]utoboot\|AUTOBOOT\)[ \t]*/     d'  \
-		    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Tt]abmsg\|TABMSG\)[ \t]*/         d'  \
-		    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Rr]esolution\|RESOLUTION\)[ \t]*/ d'  \
-		    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Hh]shift\|HSHIFT\)[ \t]*/         d'  \
-		    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Ww]idth\|WIDTH\)[ \t]*/           d'
+		sed -i "${__PATH}"                                                                    \
+		    -e '/^[ \t]*\([Dd]efault\|DEFAULT\)[ \t]*/ {/.*\.c32/!                   s/^/#/}' \
+		    -e '/^[ \t]*\([Tt]imeout\|TIMEOUT\)[ \t]*/                               s/^/#/'  \
+		    -e '/^[ \t]*\([Pp]rompt\|PROMPT\)[ \t]*/                                 s/^/#/'  \
+		    -e '/^[ \t]*\([Oo]ntimeout\|ONTIMEOUT\)[ \t]*/                           s/^/#/'  \
+		    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Dd]efault\|DEFAULT\)[ \t]*/       s/^/#/'  \
+		    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Aa]utoboot\|AUTOBOOT\)[ \t]*/     s/^/#/'  \
+		    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Tt]abmsg\|TABMSG\)[ \t]*/         s/^/#/'  \
+		    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Rr]esolution\|RESOLUTION\)[ \t]*/ s/^/#/'  \
+		    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Hh]shift\|HSHIFT\)[ \t]*/         s/^/#/'  \
+		    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Ww]idth\|WIDTH\)[ \t]*/           s/^/#/'  \
+		    -e '/^[ \t]*\([Ii]nclude\|INCLUDE\)[ \t]\+stdmenu.cfg/                         s/^/#/'
 	done
 	unset __PATH __DIRS __FILE __PAUT __PTHM
 }
@@ -4007,7 +4009,13 @@ function fnMk_isofile_rebuild() {
 	declare       __REAL=""
 	declare       __DIRS=""
 	declare       __OWNR=""
+	declare -i    __time_start=0
+	declare -i    __time_end=0
+	declare -i    __time_elapsed=0
+
+	__time_start=$(date +%s)
 	echo "create iso image file ..."
+	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
 	[[ -n "${__FILE_HBRD:-}" ]] && echo "hybrid mode"
 	[[ -n "${__FILE_BIOS:-}" ]] && echo "eltorito mode"
 	pushd "${__DIRS_TGET:?}" > /dev/null || exit
@@ -4029,7 +4037,11 @@ function fnMk_isofile_rebuild() {
 		fi
 		rm -f "${__TEMP:?}"
 	popd > /dev/null || exit
-	unset __REAL __DIRS __OWNR
+	__time_end=$(date +%s)
+	__time_elapsed=$((__time_end - __time_start))
+	fnMsgout "${_PROG_NAME:-}" "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"
+	fnMsgout "${_PROG_NAME:-}" "elapsed" "$(printf "%dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60)) || true)"
+	unset __REAL __DIRS __OWNR __time_start __time_end __time_elapsed
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"

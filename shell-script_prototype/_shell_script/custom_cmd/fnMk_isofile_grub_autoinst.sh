@@ -112,7 +112,7 @@ _EOT_
 	if [[ -n "${__PATH_GUIS:-}" ]]; then
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 
-			menuentry 'Automatic installation gui' {
+			menuentry 'Graphical automatic installation' {
 			  echo 'Loading ${__TITL:+"${__TITL} "}...'
 			  set gfxpayload="keep"
 			  set background_color="black"

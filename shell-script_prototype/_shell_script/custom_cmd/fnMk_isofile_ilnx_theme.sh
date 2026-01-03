@@ -19,7 +19,7 @@ function fnMk_isofile_ilnx_theme() {
 		path ./
 		prompt 0
 		timeout 0
-		UI vesamenu.c32
+		default vesamenu.c32
 
 		${_MENU_RESO:+"menu resolution ${_MENU_RESO/x/ }"}
 		${__TITL:+"menu title Boot Menu: ${__TITL}"}
@@ -45,14 +45,14 @@ function fnMk_isofile_ilnx_theme() {
 		menu color   pwdentry     0       #80ffffff    #20ffffff        std      # Password entry field
 		menu color   help         0       #c0ffffff    #00000000        std      # Help text, if set via 'TEXT HELP ... ENDTEXT'
 
-		menu margin             3
-		menu vshift             2
-		menu rows               20
-		menu tabmsgrow          26
-		menu cmdlinerow         30
-		menu timeoutrow         30
-		menu helpmsgrow         32
-		menu hekomsgendrow      35
+		menu margin               2
+		menu vshift               3
+		menu rows                12
+		menu tabmsgrow           28
+		menu cmdlinerow          26
+		menu timeoutrow          26
+		menu helpmsgrow          24
+		#menu hekomsgendrow      38
 
 		menu tabmsg Press ENTER to boot or TAB to edit a menu entry
 

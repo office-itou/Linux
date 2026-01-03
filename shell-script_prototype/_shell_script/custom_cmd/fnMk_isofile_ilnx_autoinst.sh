@@ -54,7 +54,7 @@ _EOT_
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 
 			label auto-install-gui
-			  menu label ^Automatic installation gui
+			  menu label ^Graphical automatic installation
 			  linux  ${__PATH_FKNL}
 			  initrd ${__PATH_GUIS}
 			  append ${__BOPT[@]} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
