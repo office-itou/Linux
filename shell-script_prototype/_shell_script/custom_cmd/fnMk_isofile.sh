@@ -161,7 +161,7 @@ function fnMk_isofile() {
 							rm -rf "${__DOVL:?}"
 							mkdir -p "${__DUPR}" "${__DLOW}" "${__DWKD}" "${__DMRG}"
 #							mount -r "${__MDIA[$((_OSET_MDIA+14))]}" "${__DLOW}" && _LIST_RMOV+=("${__DLOW:?}")
-							mount --bind "${_DIRS_IMGS}/${__MDIA[$((_OSET_MDIA+2))]}" "${__DLOW}" && _LIST_RMOV+=("${__DLOW:?}")
+							mount -r --bind "${_DIRS_IMGS}/${__MDIA[$((_OSET_MDIA+2))]}" "${__DLOW}" && _LIST_RMOV+=("${__DLOW:?}")
 							mount -t overlay overlay -o lowerdir="${__DLOW}",upperdir="${__DUPR}",workdir="${__DWKD}" "${__DMRG}" && _LIST_RMOV+=("${__DMRG:?}")
 							# --- create auto install configuration file ------
 							__WORK="$(fnMk_boot_options "remake" "${__MDIA[@]:-}")"

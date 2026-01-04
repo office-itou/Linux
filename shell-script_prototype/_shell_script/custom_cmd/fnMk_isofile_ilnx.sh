@@ -24,9 +24,9 @@ function fnMk_isofile_ilnx() {
 	declare -r    __NWRK_HOST="${7:?}"
 	declare -r    __IPV4_CIDR="${8:-}"
 	declare -r -a __OPTN_BOOT=("${@:9}")
-	__PATH="$(find "${__TGET_DIRS}" -name isolinux.cfg)"
-	[[ -z "${__PATH:-}" ]] && return
-	__DIRS="$(fnDirname "${__PATH#"${__TGET_DIRS}"}")"
+	__ILNX="$(find "${__TGET_DIRS}" -name isolinux.cfg)"
+	[[ -z "${__ILNX:-}" ]] && return
+	__DIRS="$(fnDirname "${__ILNX#"${__TGET_DIRS}"}")"
 	__PAUT="${__DIRS%/}/${_AUTO_INST:-"autoinst.cfg"}"
 	__PTHM="${__DIRS%/}/theme.txt"
 	__DIRS="$(fnDirname  "${__PATH_FIRD}")"
@@ -39,18 +39,18 @@ function fnMk_isofile_ilnx() {
 	fnMk_isofile_ilnx_theme "${__FILE_NAME:-}" "${__TIME_STMP:-}" > "${__TGET_DIRS}/${__PTHM}"
 	fnMk_isofile_ilnx_autoinst "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__GUIS:-}" "${__NICS_NAME:-}" "${__NWRK_HOST:-}" "${__IPV4_CIDR:-}" "${__OPTN_BOOT[@]:-}" > "${__TGET_DIRS}/${__PAUT}"
 	# --- insert autoinst.cfg -------------------------------------------------
-	if grep -qEi '^include[ \t]+menu.cfg[ \t]*.*$' "${__PATH}"; then
-		sed -i "${__PATH}"                                                                   \
+	if grep -qEi '^include[ \t]+menu.cfg[ \t]*.*$' "${__ILNX}"; then
+		sed -i "${__ILNX}"                                                                   \
 		    -e '/^\([Ii]nclude\|INCLUDE\)[ \t]\+menu.cfg[ \t]*.*$/i include '"${__PAUT:?}"'' \
 		    -e '/^\([Ii]nclude\|INCLUDE\)[ \t]\+menu.cfg[ \t]*.*$/a include '"${__PTHM:?}"''
 	else
-		sed -i "${__PATH}"                                      \
+		sed -i "${__ILNX}"                                      \
 		    -e '0,/\([Ll]abel\|LABEL\)/ {'                      \
 		    -e '/\([Ll]abel\|LABEL\)/i include '"${__PAUT}"'\n' \
 		    -e '}'
 	fi
 	# --- comment out ---------------------------------------------------------
-	__DIRS="$(fnDirname "${__PATH}")"
+	__DIRS="$(fnDirname "${__ILNX}")"
 	find "${__DIRS:-"/"}" \( -name '*.cfg' -a ! -name "${_AUTO_INST:-"autoinst.cfg"}" \) | while read -r __PATH
 	do
 		sed -i "${__PATH}"                                                                    \
