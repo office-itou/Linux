@@ -61,15 +61,15 @@ function fnMk_isofile_grub() {
 			__WORK="$(file "${__PATH:-}" | awk '{sub("[^0-9]+","",$8); print $8;}')"
 			[[ "${__WORK:-"0"}" -ge 8 ]] && __SPLS="${__PATH}"
 		fi
+		if [[ -n "${__SPLS:-}" ]]; then
+			__SPLS="${__SPLS#"${__TGET_DIRS}"}"
+			sed -i "${__TGET_DIRS}/${__PTHM}"                              \
+				-e '/desktop-image:/ s/:_DTPIMG_:/'"${__SPLS//\//\\\/}"'/'
+		else
+			sed -i "${__TGET_DIRS}/${__PTHM}" \
+				-e '/desktop-image:/d'
+		fi
 	done < <(find "${__TGET_DIRS}" -name grub.cfg -exec grep -ilE 'menuentry .*install' {} \;)
-	if [[ -n "${__SPLS:-}" ]]; then
-		__SPLS="${__SPLS#"${__TGET_DIRS}"}"
-		sed -i "${__TGET_DIRS}/${__PTHM}"                              \
-			-e '/desktop-image:/ s/:_DTPIMG_:/'"${__SPLS//\//\\\/}"'/'
-	else
-		sed -i "${__TGET_DIRS}/${__PTHM}" \
-			-e '/desktop-image:/d'
-	fi
 	# --- comment out ---------------------------------------------------------
 	find "${__TGET_DIRS}" \( -name '*.cfg' -a ! -name "${_AUTO_INST:-"autoinst.cfg"}" \) | while read -r __CONF
 	do

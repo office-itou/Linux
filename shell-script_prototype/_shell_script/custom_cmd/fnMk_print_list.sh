@@ -30,8 +30,8 @@ function fnMk_print_list() {
 	declare       __WRK3=""
 	declare       __COLR=""
 	declare       __CASH=""
-	declare -i    __TSMP=0
-	declare -i    __TNOW=0
+	declare       __TSMP=0
+	declare       __TNOW=0
 	declare -i    I=0
 #	declare -i    J=0
 
@@ -79,7 +79,8 @@ function fnMk_print_list() {
 		__RETN="- - - - - -"
 		__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+8))]}" "-")"
 		if [[ -n "${__WORK:-}" ]] && [[ "${__MDIA[$((_OSET_MDIA+9))]##*.}" = "iso" ]]; then
-			__TSMP="${__MDIA[$((_OSET_MDIA+10))]:-"0"}${__MDIA[$((_OSET_MDIA+10))]:+"$(TZ=UTC date -d "${__MDIA[$((_OSET_MDIA+10))]//%20/ }" "+%s")"}"
+			__WORK="${__MDIA[$((_OSET_MDIA+10))]:-"0"}"
+			__TSMP="$(TZ=UTC date -d "${__WORK//%20/ }" "+%s")"
 			__TNOW="$(TZ=UTC date "+%s")"
 			__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+9))]}" "-")"
 			if [[ "${__TSMP}" -le $((__TNOW-5*60)) ]] || [[ -z "${__WORK:-}" ]]; then

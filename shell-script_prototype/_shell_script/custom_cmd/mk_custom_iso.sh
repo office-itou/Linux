@@ -1757,8 +1757,8 @@ function fnMk_print_list() {
 	declare       __WRK3=""
 	declare       __COLR=""
 	declare       __CASH=""
-	declare -i    __TSMP=0
-	declare -i    __TNOW=0
+	declare       __TSMP=0
+	declare       __TNOW=0
 	declare -i    I=0
 #	declare -i    J=0
 
@@ -1806,7 +1806,8 @@ function fnMk_print_list() {
 		__RETN="- - - - - -"
 		__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+8))]}" "-")"
 		if [[ -n "${__WORK:-}" ]] && [[ "${__MDIA[$((_OSET_MDIA+9))]##*.}" = "iso" ]]; then
-			__TSMP="${__MDIA[$((_OSET_MDIA+10))]:-"0"}${__MDIA[$((_OSET_MDIA+10))]:+"$(TZ=UTC date -d "${__MDIA[$((_OSET_MDIA+10))]//%20/ }" "+%s")"}"
+			__WORK="${__MDIA[$((_OSET_MDIA+10))]:-"0"}"
+			__TSMP="$(TZ=UTC date -d "${__WORK//%20/ }" "+%s")"
 			__TNOW="$(TZ=UTC date "+%s")"
 			__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+9))]}" "-")"
 			if [[ "${__TSMP}" -le $((__TNOW-5*60)) ]] || [[ -z "${__WORK:-}" ]]; then
@@ -3726,15 +3727,15 @@ function fnMk_isofile_grub() {
 			__WORK="$(file "${__PATH:-}" | awk '{sub("[^0-9]+","",$8); print $8;}')"
 			[[ "${__WORK:-"0"}" -ge 8 ]] && __SPLS="${__PATH}"
 		fi
+		if [[ -n "${__SPLS:-}" ]]; then
+			__SPLS="${__SPLS#"${__TGET_DIRS}"}"
+			sed -i "${__TGET_DIRS}/${__PTHM}"                              \
+				-e '/desktop-image:/ s/:_DTPIMG_:/'"${__SPLS//\//\\\/}"'/'
+		else
+			sed -i "${__TGET_DIRS}/${__PTHM}" \
+				-e '/desktop-image:/d'
+		fi
 	done < <(find "${__TGET_DIRS}" -name grub.cfg -exec grep -ilE 'menuentry .*install' {} \;)
-	if [[ -n "${__SPLS:-}" ]]; then
-		__SPLS="${__SPLS#"${__TGET_DIRS}"}"
-		sed -i "${__TGET_DIRS}/${__PTHM}"                              \
-			-e '/desktop-image:/ s/:_DTPIMG_:/'"${__SPLS//\//\\\/}"'/'
-	else
-		sed -i "${__TGET_DIRS}/${__PTHM}" \
-			-e '/desktop-image:/d'
-	fi
 	# --- comment out ---------------------------------------------------------
 	find "${__TGET_DIRS}" \( -name '*.cfg' -a ! -name "${_AUTO_INST:-"autoinst.cfg"}" \) | while read -r __CONF
 	do
