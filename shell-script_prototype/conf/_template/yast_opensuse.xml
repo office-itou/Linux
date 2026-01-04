@@ -42,7 +42,7 @@ tumbleweed -->
       <append>-B console=force-text</append>
       <cpu_mitigations>auto</cpu_mitigations>
     </global>
-    <loader_type>grub2-efi</loader_type>
+    <loader_type>default</loader_type>
   </bootloader>
   <deploy_image t="map">
     <image_installation t="boolean">false</image_installation>

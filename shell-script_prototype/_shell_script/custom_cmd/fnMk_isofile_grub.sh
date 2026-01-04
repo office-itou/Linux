@@ -54,6 +54,7 @@ function fnMk_isofile_grub() {
 		    -e '/^menuentry/i source '"${__PAUT}"'\n' \
 		    -e '}'
 		# --- splash.png ------------------------------------------------------
+		__SPLS=""
 		                          __PATH="$(find "${__TGET_DIRS}" -depth -type f -ipath '*/boot/*'     -iname "${_MENU_SPLS:-}")"
 		[[ -z "${__PATH:-}" ]] && __PATH="$(find "${__TGET_DIRS}" -depth -type f -ipath '*/isolinux/*' -iname "${_MENU_SPLS:-}")"
 		[[ -z "${__PATH:-}" ]] && __PATH="$(find "${__TGET_DIRS}" -depth -type f -ipath '*/*'          -iname "${_MENU_SPLS:-}")"
@@ -64,10 +65,10 @@ function fnMk_isofile_grub() {
 		if [[ -n "${__SPLS:-}" ]]; then
 			__SPLS="${__SPLS#"${__TGET_DIRS}"}"
 			sed -i "${__TGET_DIRS}/${__PTHM}"                              \
-				-e '/desktop-image:/ s/:_DTPIMG_:/'"${__SPLS//\//\\\/}"'/'
+			    -e '/desktop-image:/ s/:_DTPIMG_:/'"${__SPLS//\//\\\/}"'/'
 		else
 			sed -i "${__TGET_DIRS}/${__PTHM}" \
-				-e '/desktop-image:/d'
+			    -e '/desktop-image:/d'
 		fi
 	done < <(find "${__TGET_DIRS}" -name grub.cfg -exec grep -ilE 'menuentry .*install' {} \;)
 	# --- comment out ---------------------------------------------------------
