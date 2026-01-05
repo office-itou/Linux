@@ -34,27 +34,7 @@ $ sudo tree --charset C --filesfirst -n /srv/
 |   |   |       `-- sounds
 |   |   |-- hardware
 |   |   |-- resource
-|   |   |   |-- image
-|   |   |   |   |-- creations
-|   |   |   |   |   `-- rmak
-|   |   |   |   |-- linux
-|   |   |   |   |   |-- almalinux
-|   |   |   |   |   |-- centos
-|   |   |   |   |   |-- debian
-|   |   |   |   |   |-- fedora
-|   |   |   |   |   |-- memtest86plus
-|   |   |   |   |   |-- miraclelinux
-|   |   |   |   |   |-- opensuse
-|   |   |   |   |   |-- rockylinux
-|   |   |   |   |   `-- ubuntu
-|   |   |   |   `-- windows
-|   |   |   |       |-- aomei
-|   |   |   |       |-- ati
-|   |   |   |       |-- windows-10
-|   |   |   |       |-- windows-11
-|   |   |   |       `-- winpe
-|   |   |   `-- source
-|   |   |       `-- git
+|   |   |   `-- git
 |   |   `-- software
 |   `-- usr
 |       `-- administrator
