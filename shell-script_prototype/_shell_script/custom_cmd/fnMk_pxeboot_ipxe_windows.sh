@@ -15,7 +15,7 @@ function fnMk_pxeboot_ipxe_windows() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		:${__MDIA[$((_OSET_MDIA+2))]}
 		echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
-		set srvraddr ${_SRVR_PROT:?}://${_SRVR_ADDR:?}
+		#set srvraddr ${_SRVR_PROT:?}://\${66}
 		set ipxaddr \${srvraddr}/${_DIRS_TFTP##*/}/ipxe
 		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
 		set cfgaddr \${srvraddr}/${_DIRS_CONF##*/}/windows

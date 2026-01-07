@@ -14,7 +14,7 @@ function fnMk_pxeboot_ipxe_m86p() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		:${__MDIA[$((_OSET_MDIA+2))]}
 		echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
-		set srvraddr ${_SRVR_PROT:?}://${_SRVR_ADDR:?}
+		#set srvraddr ${_SRVR_PROT:?}://\${66}
 		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
 		iseq \${platform} efi && set knlfile \${knladdr}/${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} || set knlfile \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/}
 		echo Loading boot files ...

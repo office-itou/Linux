@@ -7,16 +7,17 @@
 #   return:            : unused
 #   g-var :            : unused
 function fnMk_pxeboot_ipxe_hdrftr() {
-	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		#!ipxe
 
 		cpuid --ext 29 && set arch amd64 || set arch x86
 
 		dhcp
+		isset \${66} && set srvraddr ${_SRVR_PROT:?}://\${66} || set srvraddr ${_SRVR_PROT:?}://${_SRVR_ADDR:?}
 
 		set optn-timeout 1000
 		set menu-timeout 0
-		isset ${menu-default} || set menu-default exit
+		isset \${menu-default} || set menu-default exit
 
 		:start
 
@@ -28,8 +29,8 @@ function fnMk_pxeboot_ipxe_hdrftr() {
 		#item -- shutdown                               - System shutdown
 		item -- restart                                 - System reboot
 		item --gap --                                   --------------------------------------------------------------------------
-		choose --timeout ${menu-timeout} --default ${menu-default} selected || goto menu
-		goto ${selected}
+		choose --timeout \${menu-timeout} --default \${menu-default} selected || goto menu
+		goto \${selected}
 
 		:shell
 		echo "Booting iPXE shell ..."

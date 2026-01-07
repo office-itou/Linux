@@ -118,13 +118,11 @@ fnSetup_samba() {
 	#	|   `-- software
 	#	`-- usr
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__CONF}"
-		[homes]
+			[homes]
 		        browseable = No
 		        comment = Home Directories
-		        create mask = 0660
-		        directory mask = 2770
-		        force group = ${_SAMB_GRUP}
-		        force user = ${_SAMB_USER}
+		        create mask = 0700
+		        directory mask = 2700
 		        valid users = %S
 		        write list = @${_SAMB_GRUP}
 		[printers]

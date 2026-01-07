@@ -2429,16 +2429,17 @@ function fnMk_pxeboot_clear_menu() {
 #   output:   stdout   : output
 #   return:            : unused
 function fnMk_pxeboot_ipxe_hdrftr() {
-	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		#!ipxe
 
 		cpuid --ext 29 && set arch amd64 || set arch x86
 
 		dhcp
+		isset \${66} && set srvraddr ${_SRVR_PROT:?}://\${66} || set srvraddr ${_SRVR_PROT:?}://${_SRVR_ADDR:?}
 
 		set optn-timeout 1000
 		set menu-timeout 0
-		isset ${menu-default} || set menu-default exit
+		isset \${menu-default} || set menu-default exit
 
 		:start
 
@@ -2450,8 +2451,8 @@ function fnMk_pxeboot_ipxe_hdrftr() {
 		#item -- shutdown                               - System shutdown
 		item -- restart                                 - System reboot
 		item --gap --                                   --------------------------------------------------------------------------
-		choose --timeout ${menu-timeout} --default ${menu-default} selected || goto menu
-		goto ${selected}
+		choose --timeout \${menu-timeout} --default \${menu-default} selected || goto menu
+		goto \${selected}
 
 		:shell
 		echo "Booting iPXE shell ..."
@@ -2487,7 +2488,7 @@ function fnMk_pxeboot_ipxe_windows() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		:${__MDIA[$((_OSET_MDIA+2))]}
 		echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
-		set srvraddr ${_SRVR_PROT:?}://${_SRVR_ADDR:?}
+		#set srvraddr ${_SRVR_PROT:?}://\${66}
 		set ipxaddr \${srvraddr}/${_DIRS_TFTP##*/}/ipxe
 		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
 		set cfgaddr \${srvraddr}/${_DIRS_CONF##*/}/windows
@@ -2516,7 +2517,7 @@ function fnMk_pxeboot_ipxe_winpe() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		:${__MDIA[$((_OSET_MDIA+2))]}
 		echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
-		set srvraddr ${_SRVR_PROT:?}://${_SRVR_ADDR:?}
+		#set srvraddr ${_SRVR_PROT:?}://\${66}
 		set ipxaddr \${srvraddr}/${_DIRS_TFTP##*/}/ipxe
 		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
 		set cfgaddr \${srvraddr}/${_DIRS_CONF##*/}/windows
@@ -2541,7 +2542,7 @@ function fnMk_pxeboot_ipxe_aomei() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		:${__MDIA[$((_OSET_MDIA+2))]}
 		echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
-		set srvraddr ${_SRVR_PROT:?}://${_SRVR_ADDR:?}
+		#set srvraddr ${_SRVR_PROT:?}://\${66}
 		set ipxaddr \${srvraddr}/${_DIRS_TFTP##*/}/ipxe
 		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
 		set cfgaddr \${srvraddr}/${_DIRS_CONF##*/}/windows
@@ -2566,7 +2567,7 @@ function fnMk_pxeboot_ipxe_m86p() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		:${__MDIA[$((_OSET_MDIA+2))]}
 		echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
-		set srvraddr ${_SRVR_PROT:?}://${_SRVR_ADDR:?}
+		#set srvraddr ${_SRVR_PROT:?}://\${66}
 		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
 		iseq \${platform} efi && set knlfile \${knladdr}/${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} || set knlfile \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/}
 		echo Loading boot files ...
@@ -2630,7 +2631,7 @@ function fnMk_pxeboot_ipxe_linux() {
 			item ipv4gway                           IPv4 gateway
 			item ipv4nsvr                           IPv4 nameservers
 			isset \${openmenu} && present ||
-			set srvraddr ${_SRVR_PROT:?}://\${66}
+			#set srvraddr ${_SRVR_PROT:?}://\${66}
 			set autoinst ${__BOPT[0]:-}
 			set language ${__BOPT[1]:-}
 			set networks ${__BOPT[2]:-}
@@ -2645,7 +2646,7 @@ function fnMk_pxeboot_ipxe_linux() {
 			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
 			set options \${autoinst} \${language} \${networks} \${otheropt}
 			echo Loading boot files ...
-			kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} --- quiet || goto error
+			kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"} || goto error
 			initrd \${knladdr}/${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} || goto error
 			boot || goto error
 			exit
@@ -2658,7 +2659,7 @@ _EOT_
 			set ipv4addr ${_IPV4_ADDR:-}/${_IPV4_CIDR:-}
 			set ipv4gway ${_IPV4_GWAY:-}
 			set ipv4nsvr ${_IPV4_NSVR:-}
-			set srvraddr ${_SRVR_PROT:?}://\${66}
+			#set srvraddr ${_SRVR_PROT:?}://\${66}
 			set autoinst ${__BOPT[0]:-}
 			set language ${__BOPT[1]:-}
 			set networks ${__BOPT[2]:-}
@@ -2667,7 +2668,7 @@ _EOT_
 			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
 			set options \${autoinst} \${language} \${networks} \${otheropt}
 			echo Loading boot files ...
-			kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} --- quiet || goto error
+			kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"} || goto error
 			initrd \${knladdr}/${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} || goto error
 			boot || goto error
 			exit
