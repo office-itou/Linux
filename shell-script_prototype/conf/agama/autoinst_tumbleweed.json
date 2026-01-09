@@ -56,6 +56,7 @@
       "firewalld",
       "traceroute",
       "NetworkManager",
+      "ShellCheck",
       "bash-completion",
       "curl",
       "vim",
