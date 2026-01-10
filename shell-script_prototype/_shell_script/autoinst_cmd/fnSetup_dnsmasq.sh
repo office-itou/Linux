@@ -91,6 +91,7 @@ fnSetup_dnsmasq() {
 		$(printf "%-60s" "#dhcp-option=option:tftp-server,${_NICS_IPV4:-}")# 66 tftp-server
 		#dhcp-option=option:bootfile-name,                          # 67 bootfile-name
 		dhcp-no-override                                            # disable re-use of the dhcp servername and filename fields as extra option space
+		dhcp-reply-delay=1                                          # 
 
 		# --- dnsmasq manual page -----------------------------------------------------
 		# https://thekelleys.org.uk/dnsmasq/docs/dnsmasq-man.html

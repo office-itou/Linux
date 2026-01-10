@@ -3738,7 +3738,7 @@ function fnMk_isofile_grub() {
 			sed -i "${__TGET_DIRS}/${__PTHM}" \
 			    -e '/desktop-image:/d'
 		fi
-	done < <(find "${__TGET_DIRS}" -name grub.cfg -exec grep -ilE 'menuentry .*install' {} \;)
+	done < <(find "${__TGET_DIRS}" -name grub.cfg -exec grep -ilE 'menuentry .*install' {} \; || true)
 	# --- comment out ---------------------------------------------------------
 	find "${__TGET_DIRS}" \( -name '*.cfg' -a ! -name "${_AUTO_INST:-"autoinst.cfg"}" \) | while read -r __CONF
 	do

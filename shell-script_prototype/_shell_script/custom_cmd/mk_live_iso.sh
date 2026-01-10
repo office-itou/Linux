@@ -285,7 +285,7 @@
 	readonly      _COMD_WGET
 
 	# --- rsync options -------------------------------------------------------
-	declare -r -a _OPTN_RSYC=("--recursive" "--links" "--perms" "--times" "--group" "--owner" "--devices" "--specials" "--hard-links" "--acls" "--xattrs" "--human-readable" "--update" "--delete")
+	declare -r -a _OPTN_RSYC=("--recursive" "--links" "--perms" "--times" "--group" "--owner" "--devices" "--specials" "--hard-links" "--acls" "--xattrs" "--human-readable" "--delete")
 
 # *** function section (common functions) *************************************
 
@@ -1679,6 +1679,9 @@ function fnMk_symlink() {
 #   return:            : unused
 function fnMk_preconf_preseed() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
+	declare       __REAL=""
+	declare       __DIRS=""
+	declare       __OWNR=""
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
 	mkdir -p "${__TGET_PATH%/*}"
@@ -1695,7 +1698,12 @@ function fnMk_preconf_preseed() {
 		*)	;;
 	esac
 	# -------------------------------------------------------------------------
+	__REAL="$(realpath "${__TGET_PATH}")"
+	__DIRS="$(fnDirname "${__TGET_PATH}")"
+	__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
+	chown "${__OWNR:-"${_SAMB_USER}"}" "${__TGET_PATH}"
 	chmod ugo+r-x,ug+w "${__TGET_PATH}"
+	unset __REAL __DIRS __OWNR
 #	unset __TGET_PATH
 }
 
@@ -1706,6 +1714,9 @@ function fnMk_preconf_preseed() {
 #   return:            : unused
 function fnMk_preconf_nocloud() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
+	declare       __REAL=""
+	declare       __DIRS=""
+	declare       __OWNR=""
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
 	mkdir -p "${__TGET_PATH%/*}"
@@ -1725,7 +1736,12 @@ function fnMk_preconf_nocloud() {
 #	touch -m "${__TGET_PATH%/*}/user-data"      --reference "${__TGET_PATH}"
 	touch -m "${__TGET_PATH%/*}/vendor-data"    --reference "${__TGET_PATH}"
 	# -------------------------------------------------------------------------
+	__REAL="$(realpath "${__TGET_PATH}")"
+	__DIRS="$(fnDirname "${__TGET_PATH}")"
+	__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
+	chown "${__OWNR:-"${_SAMB_USER}"}" "${__TGET_PATH}"
 	chmod ugo+r-x,ug+w "${__TGET_PATH%/*}"/*
+	unset __REAL __DIRS __OWNR
 #	unset __TGET_PATH
 }
 
@@ -1743,6 +1759,9 @@ function fnMk_preconf_kickstart() {
 	declare       __ADDR=""				# repository
 	declare -r    __ARCH="x86_64"		# base architecture
 	declare       __WORK=""				# work
+	declare       __REAL=""
+	declare       __DIRS=""
+	declare       __OWNR=""
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
 	mkdir -p "${__TGET_PATH%/*}"
@@ -1826,8 +1845,12 @@ function fnMk_preconf_kickstart() {
 			;;
 	esac
 	# -------------------------------------------------------------------------
+	__REAL="$(realpath "${__TGET_PATH}")"
+	__DIRS="$(fnDirname "${__TGET_PATH}")"
+	__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
+	chown "${__OWNR:-"${_SAMB_USER}"}" "${__TGET_PATH}"
 	chmod ugo+r-x,ug+w "${__TGET_PATH}" "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
-	unset __VERS __NUMS __NAME __SECT __ADDR __WORK
+	unset __VERS __NUMS __NAME __SECT __ADDR __WORK __REAL __DIRS __OWNR
 }
 
 # -----------------------------------------------------------------------------
@@ -1840,6 +1863,9 @@ function fnMk_preconf_autoyast() {
 	declare       __VERS=""				# distribution version
 	declare       __NUMS=""				# "            number
 	declare       __WORK=""				# work
+	declare       __REAL=""
+	declare       __DIRS=""
+	declare       __OWNR=""
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
 	mkdir -p "${__TGET_PATH%/*}"
@@ -1897,8 +1923,12 @@ function fnMk_preconf_autoyast() {
 	    "${__TGET_PATH}"                               \
 	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
 	# -------------------------------------------------------------------------
+	__REAL="$(realpath "${__TGET_PATH}")"
+	__DIRS="$(fnDirname "${__TGET_PATH}")"
+	__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
+	chown "${__OWNR:-"${_SAMB_USER}"}" "${__TGET_PATH}"
 	chmod ugo+r-x,ug+w "${__TGET_PATH}"
-	unset __VERS __NUMS __WORK
+	unset __VERS __NUMS __WORK __REAL __DIRS __OWNR
 }
 
 # -----------------------------------------------------------------------------
@@ -1913,6 +1943,9 @@ function fnMk_preconf_agama() {
 #	declare       __PDCT=""				# product name
 	declare       __PDID=""				# "       id
 	declare       __WORK=""				# work variables
+	declare       __REAL=""
+	declare       __DIRS=""
+	declare       __OWNR=""
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
 	mkdir -p "${__TGET_PATH%/*}"
@@ -1958,8 +1991,12 @@ function fnMk_preconf_agama() {
 	    -e '/"packages": \[/,/\]/          {' \
 	    -e '\%^//.*$%d                     }'
 	# -------------------------------------------------------------------------
+	__REAL="$(realpath "${__TGET_PATH}")"
+	__DIRS="$(fnDirname "${__TGET_PATH}")"
+	__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
+	chown "${__OWNR:-"${_SAMB_USER}"}" "${__TGET_PATH}"
 	chmod ugo+r-x,ug+w "${__TGET_PATH}" "${__WORK}"
-	unset __VERS __NUMS __PDCT __PDID __WORK
+	unset __VERS __NUMS __PDCT __PDID __WORK __REAL __DIRS __OWNR
 }
 
 # -----------------------------------------------------------------------------
@@ -2215,10 +2252,12 @@ function fnMk_isofile() {
 	declare -a    __BOPT=()
 	declare       __FNAM=""
 	declare       __TSMP=""
-	declare       __FKNL=""
-	declare       __FIRD=""
+	declare       __DIRD=""				# initrd directory
+	declare       __FIRD=""				# initrd file path
+	declare       __FKNL=""				# kernel file path
+	declare       __NICS="${_NICS_NAME:-"ens160"}"
 	declare       __HOST=""
-	declare       __CIDR=""
+	declare       __CIDR="/${_IPV4_CIDR:-}"
 	declare       __LABL=""
 	declare       __FMBR=""
 	declare       __FEFI=""
@@ -2254,6 +2293,7 @@ function fnMk_isofile() {
 			*) break;;
 		esac
 		case "${__TGID:-}" in
+			''              ) __PTRN["${__TYPE}"]="";;
 			a|all           ) __PTRN["${__TYPE}"]=".*";;
 			[0-9]|[0-9][0-9]) __PTRN["${__TYPE}"]="${__PTRN["${__TYPE}"]:+"${__PTRN["${__TYPE}"]} "}${__TGID}";;
 			*               ) ;;
@@ -2264,13 +2304,46 @@ function fnMk_isofile() {
 	# --- create custom iso file ----------------------------------------------
 	for __TYPE in "${_LIST_TYPE[@]}"
 	do
-		[[ -z "${__PTRN["${__TYPE:-}"]:-}" ]] && continue
-		__TGID="${__PTRN["${__TYPE:-}"]// /|}"
-		fnMk_print_list __LINE "${__TYPE:-}" "${__TGID:-}"
-		IFS= mapfile -d $'\n' -t __TGET < <(echo -n "${__LINE}")
+		if [[ -z "${__PTRN["${__TYPE:-}"]:-}" ]]; then
+			if ! echo "${!__PTRN[@]}" | grep -q "${__TYPE}"; then
+				continue
+			fi
+			fnMk_print_list __LINE "${__TYPE:-}" ".*"
+			IFS= mapfile -d $'\n' -t __TGET < <(echo -n "${__LINE}")
+			read -r -p "enter the number to create:" __RANG
+			read -r -a __ARRY < <(echo "${__RANG}")
+			__PTRN["${__TYPE}"]=""
+			for I in "${!__ARRY[@]}"
+			do
+				__TGID="${__ARRY[I]:-}"
+				case "${__TGID:-}" in
+					e|exit          ) break 2;;
+					a|all           ) __PTRN["${__TYPE}"]="$(seq --separator=' ' 1 "${#__TGET[@]}")"; break;;
+					[0-9]|[0-9][0-9]) __PTRN["${__TYPE}"]="${__PTRN["${__TYPE}"]:+"${__PTRN["${__TYPE}"]} "}${__TGID}";;
+					*               ) ;;
+				esac
+			done < <(echo "${__RANG:-}" || true)
+			[[ -z "${__PTRN["${__TYPE:-}"]:-}" ]] && continue
+			__TGID="${__PTRN["${__TYPE:-}"]// /|}"
+			__ARRY=()
+			for I in "${!__TGET[@]}"
+			do
+				read -r -a __MDIA < <(echo "${__TGET[I]}")
+				if echo "${__MDIA[1]}" | grep -qE "${__TGID:-}"; then
+					__ARRY+=("${__TGET[I]}")
+				fi
+			done
+			__TGET=("${__ARRY[@]:-}")
+		else
+#			[[ -z "${__PTRN["${__TYPE:-}"]:-}" ]] && continue
+			__TGID="${__PTRN["${__TYPE:-}"]// /|}"
+			fnMk_print_list __LINE "${__TYPE:-}" "${__TGID:-}"
+			IFS= mapfile -d $'\n' -t __TGET < <(echo -n "${__LINE}")
+		fi
 		for I in "${!__TGET[@]}"
 		do
 			read -r -a __MDIA < <(echo "${__TGET[I]}")
+			__MDIA=("${__MDIA[@]//%20/ }")
 			case "${__MDIA[$((_OSET_MDIA+1))]}" in
 				m) continue;;			# (menu)
 				o)						# (output)
@@ -2302,33 +2375,58 @@ function fnMk_isofile() {
 							rm -rf "${__DOVL:?}"
 							mkdir -p "${__DUPR}" "${__DLOW}" "${__DWKD}" "${__DMRG}"
 #							mount -r "${__MDIA[$((_OSET_MDIA+14))]}" "${__DLOW}" && _LIST_RMOV+=("${__DLOW:?}")
-							mount --bind "${_DIRS_IMGS}/${__MDIA[$((_OSET_MDIA+2))]}" "${__DLOW}" && _LIST_RMOV+=("${__DLOW:?}")
+							mount -r --bind "${_DIRS_IMGS}/${__MDIA[$((_OSET_MDIA+2))]}" "${__DLOW}" && _LIST_RMOV+=("${__DLOW:?}")
 							mount -t overlay overlay -o lowerdir="${__DLOW}",upperdir="${__DUPR}",workdir="${__DWKD}" "${__DMRG}" && _LIST_RMOV+=("${__DMRG:?}")
 							# --- create auto install configuration file ------
 							__WORK="$(fnMk_boot_options "remake" "${__MDIA[@]:-}")"
 							IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
-							__FNAM="${__MDIA[$((_OSET_MDIA+14))]##*/}"
-							__TSMP="${__MDIA[$((_OSET_MDIA+15))]:+"${__MDIA[$((_OSET_MDIA+15))]//%20/ }"}"
+							__FNAM="${__MDIA[$((_OSET_MDIA+14))]##*/}"				# iso_path
+							__TSMP="${__MDIA[$((_OSET_MDIA+15))]:-}"				# iso_tstamp
 							__TSMP="${__TSMP:+" (${__TSMP:0:19})"}"
-							__FKNL="${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"}"
-							__FIRD="${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"}"
+							__ENTR="${__MDIA[$((_OSET_MDIA+2))]:-}"					# entry_name
+							__FIRD="${__MDIA[$((_OSET_MDIA+22))]#*/"${__ENTR:-}"}"	# ldr_initrd
+							__FKNL="${__MDIA[$((_OSET_MDIA+23))]#*/"${__ENTR:-}"}"	# ldr_kernel
 							case "${__MDIA[$((_OSET_MDIA+3))]:-}" in
-								*-mini-*) __FIRD="${__FIRD%/*}/${_MINI_IRAM:?}";;
+								*-mini-*) __FIRD="${__FIRD%/*}/${_MINI_IRAM:?}";;	# initial ram disk of mini.iso including preseed
 								*       ) ;;
 							esac
 							__HOST="${__MDIA[$((_OSET_MDIA+2))]%%-*}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
+							__HOST="${_NWRK_HOST/:_DISTRO_:/"${__HOST:-"localhost.localdomain"}"}"
+							case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
+								opensuse-*-15.*) __NICS="eth0";;
+								*              ) ;;
+							esac
 							case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 								ubuntu*) __CIDR="";;
-								*      ) __CIDR="/${_IPV4_CIDR:-}";;
+								*      ) ;;
 							esac
-							fnMk_isofile_conf "${__DMRG}" "${__MDIA[$((_OSET_MDIA+24))]}"
-							fnMk_isofile_grub "${__DMRG}" "${__FNAM:-}" "${__TSMP:-}" "${__FKNL:-}" "${__FIRD:-}" "${__HOST:-}" "${__CIDR:-}" "${__BOPT[@]:-}"
-							fnMk_isofile_ilnx "${__DMRG}" "${__FNAM:-}" "${__TSMP:-}" "${__FKNL:-}" "${__FIRD:-}" "${__HOST:-}" "${__CIDR:-}" "${__BOPT[@]:-}"
+							fnMk_isofile_conf "${__DMRG}" "${__MDIA[$((_OSET_MDIA+24))]}"	# cfg_path
+							# --- rebuilding initrd ---------------------------
+							case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
+								*-mini-*)
+									__DIRS="${__TEMP:?}/${__FIRD##*/}"			# extract directory
+									fnXinitrd "${__DMRG}${__FIRD}" "${__DIRS}"	# extract the initrd
+									__DIRD="${__DIRS}"							# initramfs directory
+									[[ -d "${__DIRD}/main/." ]] && __DIRD+="/main"
+									# --- copying files for automatic installation
+									cp --preserve=timestamps -R "${__DMRG}/${_DIRS_CONF#"${_DIRS_SHAR}"}" "${__DIRD:?}"
+									chmod ugo+r-xw "${__DIRD:?}${_DIRS_CONF#"${_DIRS_SHAR}"}/${_DIRS_SHEL#"${_DIRS_CONF:-}"/}"/*
+									# --- rebuilding initrd -------------------
+									__FIRD="${__FIRD%/*}/${_MINI_IRAM}"
+									pushd "${__DIRD}" > /dev/null || exit
+										find . | cpio --format=newc --create --quiet | gzip > "${__DMRG}${__FIRD:?}" || true
+									popd > /dev/null || exit
+									rm -rf "${__DIRS:?}"
+									;;
+								*       ) ;;
+							esac
+							fnMk_isofile_grub "${__DMRG}" "${__FNAM:-}" "${__TSMP:-}" "${__FKNL:-}" "${__FIRD:-}" "${__NICS:-}" "${__HOST:-}" "${__CIDR:-}" "${__BOPT[@]:-}"
+							fnMk_isofile_ilnx "${__DMRG}" "${__FNAM:-}" "${__TSMP:-}" "${__FKNL:-}" "${__FIRD:-}" "${__NICS:-}" "${__HOST:-}" "${__CIDR:-}" "${__BOPT[@]:-}"
 							# --- rebuild -------------------------------------
 							__LABL="$(blkid -o value -s PTTYPE "${__MDIA[$((_OSET_MDIA+14))]}")"
 							__HBRD=""
 							__FMBR=""
-							__FEFI="$(find "${__DMRG}" -name 'efi*.img')"
+							__FEFI="$(find "${__DMRG}" -type f \( \( -ipath '*/boot/*/*' -o -ipath '*/images/*' \) -a \( -iname 'efi*.img' -o -ipath '*/boot/*/efi' \) \))"
 							case "${__LABL:-}" in
 #								dos) __HBRD="/usr/lib/ISOLINUX/isohdpfx.bin";;
 								dos) __HBRD="${__TEMP}/mbr.img"; __FEFI="${__FEFI#"${__DMRG}/"}";;
