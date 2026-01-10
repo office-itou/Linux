@@ -3019,31 +3019,25 @@ fnSetup_grub_menu() {
 	__PATH="${_DIRS_TGET:-}/etc/default/grub"
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
-#	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
-	: > "${__PATH}"
-	while read -r __LINE
-	do
-		case "${__LINE:-}" in
-			GRUB_RECORDFAIL_TIMEOUT=*   ) __LINE="#${__LINE}${__ENTR}${__LINE%%=*}=10";;
-			GRUB_TIMEOUT=*              ) __LINE="#${__LINE}${__ENTR}${__LINE%%=*}=3";;
-			GRUB_CMDLINE_LINUX_DEFAULT=*) 
-				__WORK="$(echo "${__LINE:-}" |    \
-					sed -e 's/^.*="//'            \
-					    -e 's/"$//'               \
-					    -e 's/security=[^ ]\+//g' \
-					    -e 's/apparmor=[^ ]\+//g' \
-					    -e 's/selinux=[^ ]\+//g'  \
-					    -e 's/ \+/ /g'            \
-					    -e 's/^ \+//g'            \
-					    -e 's/ \+$//g'            \
-				)"
-				__LINE="#${__LINE}${__ENTR}${__LINE%%=*}=\"${__WORK}${__BOPT:+" ${__BOPT}"}\""
-				;;
-#			GRUB_CMDLINE_LINUX=*        ) __LINE="#${__LINE}${__ENTR}";;
-			*                           ) ;;
-		esac
-		printf "%s\n" "${__LINE:-}" >> "${__PATH}"
-	done < "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	if ! grep -q 'GRUB_CMDLINE_LINUX_DEFAULT' "${__PATH}"; then
+		sed -e '/^GRUB_CMDLINE_LINUX=.*$/i GRUB_CMDLINE_LINUX_DEFAULT=""' "${__PATH}"
+	fi
+	sed -i "${__PATH}"                                             \
+	    -e '/^GRUB_RECORDFAIL_TIMEOUT=.*$/                      {' \
+	    -e 'h; s/^/#/; p; g; s/[0-9]\+$/10/                      ' \
+	    -e '}                                                    ' \
+	    -e '/^GRUB_TIMEOUT=.*$/                                 {' \
+	    -e 'h; s/^/#/; p; g; s/[0-9]\+$/3/                       ' \
+	    -e '}                                                    ' \
+	    -e '/^GRUB_CMDLINE_LINUX_DEFAULT=.*$/                   {' \
+	    -e 'h; s/^/#/; p; g                                      ' \
+	    -e 's/security=[^ "]\+//g                                ' \
+	    -e 's/apparmor=[^ "]\+//g                                ' \
+	    -e 's/selinux=[^ "]\+//g                                 ' \
+	    -e 's/ \+/ /g                                            ' \
+	    -e 's/"\(.*[^ ]\+\) *"$/"\1'"${__BOPT:+" ${__BOPT}"}"'"/g' \
+	    -e '}'
 	__PATH="$(find /boot/ -ipath '/*/efi' -prune -o -name grub.cfg -print)"
 	  if command -v grub-mkconfig > /dev/null 2>&1; then
 		grub-mkconfig --output "${__PATH:?}"
