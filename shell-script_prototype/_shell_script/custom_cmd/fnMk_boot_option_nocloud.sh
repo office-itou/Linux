@@ -23,7 +23,7 @@ function fnMk_boot_option_nocloud() {
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		__WORK="${__WORK:+"${__WORK} "}automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom${__MDIA[$((_OSET_MDIA+24))]#"${_DIRS_CONF%/*}"}"
-		[[ "${__TGET_TYPE:-}" = "pxeboot" ]] && __WORK="${__WORK/\/cdrom/url=\$\{srvraddr\}}"
+		[[ "${__TGET_TYPE:-}" = "pxeboot" ]] && __WORK="${__WORK/\/cdrom/\$\{srvraddr\}}"
 	fi
 	case "${__MDIA[$((_OSET_MDIA+0))]}" in
 		live) __WORK="boot=live";;
