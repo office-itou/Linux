@@ -107,6 +107,11 @@ fnMain() {
 	fnDbgparam							# parameter debug output
 
 	# --- main processing -----------------------------------------------------
+	if [ ! -e /run/systemd/resolve/stub-resolv.conf ]; then
+		fnMsgout "${_PROG_NAME:-}" "info" "copy /run/systemd/resolve/stub-resolv.conf"
+		mkdir -p /run/systemd/resolve
+		cp -v /etc/resolv.conf /run/systemd/resolve/stub-resolv.conf
+	fi
 
 	# --- debug output --------------------------------------------------------
 	if [ -n "${_DBGS_FLAG:-}" ]; then

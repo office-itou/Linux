@@ -20,6 +20,7 @@ function fnMk_isofile() {
 	declare -A    __PTRN=()				# pattern
 	declare       __TYPE=""				# target type
 	declare       __TGID=""				# target id
+	declare       __FRCE=""				# force flag (empty: update, else: force create)
 	declare       __NAME=""
 	declare       __LINE=""				# data line
 	declare -a    __TGET=()				# target data line
@@ -66,6 +67,7 @@ function fnMk_isofile() {
 		__TYPE="${__TYPE,,}"
 		__TGID="${__TGID,,}"
 		case "${__TYPE:-}" in
+			f|force  ) __FRCE="true"; shift; continue;;
 			a|all    ) __PTRN=(["mini"]=".*" ["netinst"]=".*" ["dvd"]=".*" ["liveinst"]=".*"); shift; break;;
 			mini     ) ;;
 			netinst  ) ;;
@@ -90,6 +92,18 @@ function fnMk_isofile() {
 	# --- create custom iso file ----------------------------------------------
 	for __TYPE in "${_LIST_TYPE[@]}"
 	do
+		case "${__TYPE:-}" in
+			mini     ) ;;
+			netinst  ) ;;
+			dvd      ) ;;
+			liveinst ) ;;
+#			live     ) ;;
+#			tool     ) ;;
+#			clive    ) ;;
+#			cnetinst ) ;;
+#			system   ) ;;
+			*        ) continue;;
+		esac
 		if [[ -z "${__PTRN["${__TYPE:-}"]:-}" ]]; then
 			if ! echo "${!__PTRN[@]}" | grep -q "${__TYPE}"; then
 				continue
@@ -153,7 +167,7 @@ function fnMk_isofile() {
 									__MDIA[_OSET_MDIA+16]="${__ARRY[2]:-}"	# iso_size
 									__MDIA[_OSET_MDIA+17]="${__ARRY[3]:-}"	# iso_volume
 									;;
-								*) ;;
+								*) [[ -z "${__FRCE:-}" ]] && continue;;
 							esac
 							# --- rsync ---------------------------------------
 							fnRsync "${__MDIA[$((_OSET_MDIA+14))]}" "${_DIRS_IMGS}/${__MDIA[$((_OSET_MDIA+2))]}"
