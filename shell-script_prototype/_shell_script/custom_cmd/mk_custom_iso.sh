@@ -1805,7 +1805,7 @@ function fnMk_print_list() {
 		# --- web file ----------------------------------------------------
 		__RETN="- - - - - -"
 		__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+8))]}" "-")"
-		if [[ -n "${__WORK:-}" ]] && [[ "${__MDIA[$((_OSET_MDIA+9))]##*.}" = "iso" ]]; then
+		if [[ -n "${__WORK:-}" ]] && [[ "${__MDIA[$((_OSET_MDIA+8))]##*.}" = "iso" ]]; then
 			__WORK="${__MDIA[$((_OSET_MDIA+10))]:-"0"}"
 			__TSMP="$(TZ=UTC date -d "${__WORK//%20/ }" "+%s")"
 			__TNOW="$(TZ=UTC date "+%s")"
