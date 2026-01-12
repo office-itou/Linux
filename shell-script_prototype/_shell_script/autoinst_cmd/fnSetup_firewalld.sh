@@ -39,7 +39,7 @@ fnSetup_firewalld() {
 	__IPV6="${_IPV6_UADR%%::}::/${_IPV6_CIDR}"
 	__LINK="${_LINK_UADR%%::}::/10"
 	__SRVC="${__SRVC##*/}"
-	if [ -z "${_TGET_CNTR:-}" ] && systemctl --quiet is-active "${__SRVC}"; then
+	if [ -z "${_TGET_CHRT:-}" ] && systemctl --quiet is-active "${__SRVC}"; then
 		fnMsgout "${_PROG_NAME:-}" "active" "${__SRVC}"
 		firewall-cmd --quiet --permanent --set-default-zone="${_FWAL_ZONE}" || true
 		[ -n "${_NICS_NAME##-}" ] && { firewall-cmd --quiet --permanent --zone="${_FWAL_ZONE}" --change-interface="${_NICS_NAME}" || true; }

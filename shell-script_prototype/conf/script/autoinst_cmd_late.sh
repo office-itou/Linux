@@ -3043,7 +3043,8 @@ fnSetup_grub_menu() {
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
 	# --- grub.cfg ------------------------------------------------------------
-	__PATH="$(find /boot/ -ipath '/*/efi' -prune -o -name 'grub.cfg' -print)"
+	__PATH="$(find "${_DIRS_TGET:-}"/boot/ -ipath '/*/efi' -prune -o -name 'grub.cfg' -print)"
+	fnMsgout "${_PROG_NAME:-}" "create" "[${__PATH}]"
 	  if command -v grub-mkconfig > /dev/null 2>&1; then
 		grub-mkconfig --output "${__PATH:?}"
 	elif command -v grub2-mkconfig > /dev/null 2>&1; then

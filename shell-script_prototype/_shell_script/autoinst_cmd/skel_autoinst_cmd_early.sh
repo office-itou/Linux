@@ -35,6 +35,11 @@
 	# --- debug parameter -----------------------------------------------------
 	_DBGS_FLAG=""						# debug flag (empty: normal, else: debug)
 	_DBGS_PARM="true"					# debug flag (empty: normal, else: debug out parameter)
+	if [ -n "${debug:-}" ] || [ -n "${debugout:-}" ]; then
+		_DBGS_FLAG="true"
+		[ -n "${debug:-}" ] && set -x
+		export -p
+	fi
 
 	# --- working directory ---------------------------------------------------
 	readonly _PROG_PATH="$0"
@@ -153,6 +158,8 @@ fnMain() {
 	fnMsgout "${_PROG_NAME:-}" "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"
 	fnMsgout "${_PROG_NAME:-}" "elapsed" "$(printf "%dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60)) || true)"
 	unset __time_start __time_end __time_elapsed
+
+	mkdir -p "${_PROG_PATH:?}.success"
 
 	exit 0
 

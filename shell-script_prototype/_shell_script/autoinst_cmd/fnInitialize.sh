@@ -68,12 +68,18 @@ fnInitialize() {
 
 	# --- target virtualization -----------------------------------------------
 	__WORK="$(fnTargetsys)"
-	case "${__WORK##*,}" in
-		offline) _TGET_CNTR="true";;
-		*      ) _TGET_CNTR="";;
-	esac
-	readonly _TGET_CNTR
-	readonly _TGET_VIRT="${__WORK%,*}"
+	_TGET_VIRT="${__WORK%%,*}"
+	_TGET_CHRT="${__WORK#*,}"
+	_TGET_CHRT="${_TGET_CHRT#"${_TGET_VIRT:-}"}"
+	fnDbgout "system parameter" \
+		"info,_TGET_VIRT=[${_TGET_VIRT:-}]" \
+		"info,_TGET_CHRT=[${_TGET_CHRT:-}]"
+#	case "${_TGET_CNTR:-}" in
+#		offline) _TGET_CNTR="true";;
+#		*      ) _TGET_CNTR="";;
+#	esac	
+	readonly _TGET_CHRT
+	readonly _TGET_VIRT
 
 	_DIRS_TGET=""
 	for __DIRS in \

@@ -45,7 +45,7 @@ _EOT_
 		${__FSTB}
 _EOT_
 	# --- check mount ---------------------------------------------------------
-	if [ -z "${_TGET_CNTR:-}" ]; then
+	if [ -z "${_TGET_CHRT:-}" ]; then
 		systemctl --quiet daemon-reload
 		if mount "${_DIRS_HGFS}"; then
 			fnMsgout "${_PROG_NAME:-}" "success" "VMware shared directory mounted"

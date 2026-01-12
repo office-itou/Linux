@@ -47,7 +47,7 @@ fnSetup_netman() {
 		__PATH="${_DIRS_TGET:-}/etc/NetworkManager/system-connections/${_NICS_NAME}.nmconnection"
 		__SRVC="NetworkManager.service"
 		__UUID=""
-		if [ -z "${_TGET_CNTR:-}" ]; then
+		if [ -z "${_TGET_CHRT:-}" ]; then
 			if systemctl --quiet is-active "${__SRVC}"; then
 				__UUID="$(nmcli --fields DEVICE,UUID connection show | awk '$1=="'"${_NICS_NAME}"'" {print $2;}')"
 				for __FIND in "${_DIRS_TGET:-}/etc/NetworkManager/system-connections/"* "${_DIRS_TGET:-}/run/NetworkManager/system-connections/"*
@@ -139,7 +139,7 @@ _EOT_
 			systemctl --quiet mask "${__SVEX%.*}.socket"
 		fi
 	fi
-	if [ -z "${_TGET_CNTR:-}" ]; then
+	if [ -z "${_TGET_CHRT:-}" ]; then
 		if systemctl --quiet is-active "${__SRVC}"; then
 			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
 			systemctl --quiet daemon-reload

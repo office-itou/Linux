@@ -59,7 +59,7 @@ _EOT_
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
 	# --- service restart -----------------------------------------------------
-	if [ -z "${_TGET_CNTR:-}" ]; then
+	if [ -z "${_TGET_CHRT:-}" ]; then
 		__SRVC="${__SRVC##*/}"
 		if systemctl --quiet is-active "${__SRVC}"; then
 			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"

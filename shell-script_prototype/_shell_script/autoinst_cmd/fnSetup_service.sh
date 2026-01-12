@@ -46,7 +46,7 @@ fnSetup_service() {
 	if [ $# -gt 0 ]; then
 		systemctl enable "$@"
 		# --- service restart -------------------------------------------------
-		if [ -z "${_TGET_CNTR:-}" ]; then
+		if [ -z "${_TGET_CHRT:-}" ]; then
 			for __SRVC in "$@"
 			do
 				if systemctl --quiet is-active "${__SRVC}"; then

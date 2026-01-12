@@ -35,6 +35,11 @@
 	# --- debug parameter -----------------------------------------------------
 	_DBGS_FLAG=""						# debug flag (empty: normal, else: debug)
 	_DBGS_PARM="true"					# debug flag (empty: normal, else: debug out parameter)
+	if [ -n "${debug:-}" ] || [ -n "${debugout:-}" ]; then
+		_DBGS_FLAG="true"
+		[ -n "${debug:-}" ] && set -x
+		export -p
+	fi
 
 	# --- working directory ---------------------------------------------------
 	readonly _PROG_PATH="$0"
@@ -64,7 +69,8 @@
 	_FILE_SEED=""						# preseed file name
 	# --- target --------------------------------------------------------------
 	_TGET_VIRT=""						# virtualization (ex. vmware)
-	_TGET_CNTR=""						# is container   (empty: none, else: container)
+	_TGET_CHRT=""						# is chgroot     (empty: none, else: chroot)
+#	_TGET_CNTR=""						# is container   (empty: none, else: container)
 	# --- set system parameter ------------------------------------------------
 	_DIST_NAME=""						# distribution name (ex. debian)
 	_DIST_VERS=""						# release version   (ex. 13)
@@ -223,13 +229,16 @@ fnStrmsg() {
 fnTargetsys() {
 	___VIRT=""
 	___CNTR=""
+	___CHRT=""
 	if command -v systemctl > /dev/null 2>&1; then
-		___VIRT="$(systemd-detect-virt || true)"
-		___CNTR="$(systemctl is-system-running || true)"
+		___VIRT="$(systemd-detect-virt 2> /dev/null || true)"
+		___CNTR="$(systemctl --no-warn is-system-running 2> /dev/null || true)"
 	fi
-	printf "%s,%s" "${___VIRT:-}" "${___CNTR:-}"
-	unset ___VIRT
-	unset ___CNTR
+	if command -v ischroot > /dev/null 2>&1; then
+		ischroot -t && ___CHRT="true"
+	fi
+	printf "%s,%s" "${___VIRT:-}" "${___CHRT:-}"
+	unset ___VIRT ___CNTR ___CHRT
 }
 
 # -----------------------------------------------------------------------------
@@ -377,7 +386,7 @@ fnDbgparam() {
 	# --- system parameter ----------------------------------------------------
 	fnDbgout "system parameter" \
 		"info,_TGET_VIRT=[${_TGET_VIRT:-}]" \
-		"info,_TGET_CNTR=[${_TGET_CNTR:-}]" \
+		"info,_TGET_CHRT=[${_TGET_CHRT:-}]" \
 		"info,_DIRS_TGET=[${_DIRS_TGET:-}]" \
 		"info,_DIST_NAME=[${_DIST_NAME:-}]" \
 		"info,_DIST_VERS=[${_DIST_VERS:-}]" \
@@ -723,12 +732,18 @@ fnInitialize() {
 
 	# --- target virtualization -----------------------------------------------
 	__WORK="$(fnTargetsys)"
-	case "${__WORK##*,}" in
-		offline) _TGET_CNTR="true";;
-		*      ) _TGET_CNTR="";;
-	esac
-	readonly _TGET_CNTR
-	readonly _TGET_VIRT="${__WORK%,*}"
+	_TGET_VIRT="${__WORK%%,*}"
+	_TGET_CHRT="${__WORK#*,}"
+	_TGET_CHRT="${_TGET_CHRT#"${_TGET_VIRT:-}"}"
+	fnDbgout "system parameter" \
+		"info,_TGET_VIRT=[${_TGET_VIRT:-}]" \
+		"info,_TGET_CHRT=[${_TGET_CHRT:-}]"
+#	case "${_TGET_CNTR:-}" in
+#		offline) _TGET_CNTR="true";;
+#		*      ) _TGET_CNTR="";;
+#	esac	
+	readonly _TGET_CHRT
+	readonly _TGET_VIRT
 
 	_DIRS_TGET=""
 	for __DIRS in \
@@ -942,7 +957,7 @@ _EOT_
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
 	# --- service restart -----------------------------------------------------
-	if [ -z "${_TGET_CNTR:-}" ]; then
+	if [ -z "${_TGET_CHRT:-}" ]; then
 		__SRVC="${__SRVC##*/}"
 		if systemctl --quiet  is-active "${__SRVC}"; then
 			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
@@ -1250,6 +1265,8 @@ fnMain() {
 	fnMsgout "${_PROG_NAME:-}" "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"
 	fnMsgout "${_PROG_NAME:-}" "elapsed" "$(printf "%dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60)) || true)"
 	unset __time_start __time_end __time_elapsed
+
+	mkdir -p "${_PROG_PATH:?}.success"
 
 	exit 0
 

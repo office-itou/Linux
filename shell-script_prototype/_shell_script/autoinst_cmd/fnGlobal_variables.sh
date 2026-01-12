@@ -21,7 +21,8 @@
 	_FILE_SEED=""						# preseed file name
 	# --- target --------------------------------------------------------------
 	_TGET_VIRT=""						# virtualization (ex. vmware)
-	_TGET_CNTR=""						# is container   (empty: none, else: container)
+	_TGET_CHRT=""						# is chgroot     (empty: none, else: chroot)
+#	_TGET_CNTR=""						# is container   (empty: none, else: container)
 	# --- set system parameter ------------------------------------------------
 	_DIST_NAME=""						# distribution name (ex. debian)
 	_DIST_VERS=""						# release version   (ex. 13)

@@ -66,7 +66,7 @@ _EOT_
 				systemctl --quiet mask "${__SVEX%.*}.socket"
 			fi
 		fi
-		if [ -z "${_TGET_CNTR:-}" ]; then
+		if [ -z "${_TGET_CHRT:-}" ]; then
 			if systemctl --quiet is-active "${__SRVC}"; then
 				fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
 				systemctl --quiet daemon-reload
