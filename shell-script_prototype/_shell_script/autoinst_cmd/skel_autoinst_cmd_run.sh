@@ -112,8 +112,10 @@ fnMain() {
 	fnDbgparam							# parameter debug output
 
 	# --- main processing -----------------------------------------------------
-	/bin/kill-all-dhcp
-	/bin/netcfg
+	if ! command -v kill-all-dhcp > /dev/null 2>&1; then
+		/bin/kill-all-dhcp
+		/bin/netcfg
+	fi
 
 	# --- debug output --------------------------------------------------------
 	if [ -n "${_DBGS_FLAG:-}" ]; then

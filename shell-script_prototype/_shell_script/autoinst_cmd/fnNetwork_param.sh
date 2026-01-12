@@ -35,11 +35,13 @@ fnNetwork_param() {
 					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*:[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
 					_NICS_WGRP="${_NICS_WGRP:-"$(resolvectl domain 2> /dev/null | sed -ne '/^Global:/             s/^.*:[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
 					_NICS_WGRP="${_NICS_WGRP:-"$(resolvectl domain 2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*:[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
+					_NICS_WGRP="${_NICS_WGRP%.}"
 				fi
 				___PATH="${_DIRS_TGET:-}/etc/resolv.conf"
 				if [ -e "${___PATH}" ]; then
 					_NICS_DNS4="${_NICS_DNS4:-"$(sed -ne '/^nameserver/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' "${___PATH}")"}"
 					_NICS_WGRP="${_NICS_WGRP:-"$(sed -ne '/^search/     s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p'                      "${___PATH}")"}"
+					_NICS_WGRP="${_NICS_WGRP%.}"
 				fi
 			fi
 			_IPV6_ADDR="$(ip -6 -brief address show primary dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}')"
