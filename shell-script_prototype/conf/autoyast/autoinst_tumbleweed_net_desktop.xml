@@ -166,6 +166,10 @@ fixed address -->
   echo "zzz_pre-scripts.sh"
   mkdir -p /var/admin/autoinst/
   {
+    if [ -n "${debug:-}" ] || [ -n "${debugout:-}" ]; then
+      set -x
+      export -p
+    fi
     _FILE_SEED=""
     _COMD_LINE="$(cat /proc/cmdline)"
     for __LINE in ${_COMD_LINE:-}
@@ -254,6 +258,10 @@ fixed address -->
   echo "zzz_postpartitioning-scripts.sh"
   mkdir -p /mnt/var/admin/autoinst/
   {
+    if [ -n "${debug:-}" ] || [ -n "${debugout:-}" ]; then
+      set -x
+      export -p
+    fi
     cp -pv /var/admin/autoinst/* /mnt/var/admin/autoinst/
   } | tee -a /mnt/var/admin/autoinst/zzz_postpartitioning-scripts.sh.log 2>&1
 ]]>
@@ -301,6 +309,10 @@ fixed address -->
   __DIRS="/mnt/var/admin/autoinst"
   [[ ! -e "${__DIRS:-}"/. ]] && __DIRS="${__DIRS#/mnt}"
   {
+    if [ -n "${debug:-}" ] || [ -n "${debugout:-}" ]; then
+      set -x
+      export -p
+    fi
     echo "no processing"
   } | tee -a "${__DIRS:-}"/zzz_post-scripts.sh.log 2>&1
 ]]>
@@ -317,6 +329,10 @@ fixed address -->
   set -eu
   echo "zzz_init-scripts.sh"
   {
+    if [ -n "${debug:-}" ] || [ -n "${debugout:-}" ]; then
+      set -x
+      export -p
+    fi
     eject --verbose --cdrom || true
   } | tee -a /var/admin/autoinst/zzz_init-scripts.sh.log 2>&1
 ]]>
