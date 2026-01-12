@@ -2168,7 +2168,7 @@ function fnMk_boot_option_nocloud() {
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		case "${__MDIA[$((_OSET_MDIA+2))]}" in
 			ubuntu-live-18.04   ) __WORK="${__WORK:+"${__WORK} "}ip=\${ethrname},\${ipv4addr},\${ipv4mask},\${ipv4gway} hostname=\${hostname}";;
-			*                   ) __WORK="${__WORK:+"${__WORK} "}ip=\${ipv4addr}::\${ipv4gway}:\${ipv4mask}::\${ethrname}:${_IPV4_ADDR:+static}:\${ipv4nsvr} hostname=\${hostname}";;
+			*                   ) __WORK="${__WORK:+"${__WORK} "}ip=\${ipv4addr}:\${rootserv}:\${ipv4gway}:\${ipv4mask}:\${hostname}:\${ethrname}:${_IPV4_ADDR:+static}:\${ipv4nsvr}";;
 		esac
 	fi
 	case "${__MDIA[$((_OSET_MDIA+0))]}" in
