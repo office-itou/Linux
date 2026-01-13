@@ -98,6 +98,7 @@
 	declare       _FILE_SEED=""			# preseed file name
 	# --- target --------------------------------------------------------------
 	declare       _TGET_VIRT=""			# virtualization (ex. vmware)
+	declare       _TGET_CHRT=""			# is chgroot     (empty: none, else: chroot)
 	declare       _TGET_CNTR=""			# is container   (empty: none, else: container)
 	# --- set system parameter ------------------------------------------------
 	declare       _DIST_NAME=""			# distribution name (ex. debian)
@@ -300,21 +301,23 @@ function fnMsgout() {
 	case "${2:-}" in
 		start    | complete)
 			case "${3:-}" in
-				*/*/*) printf "\033[m${1:-}: \033[45m--- %-8.8s: %s ---\033[m\n" "${2:-}" "${3:-}";; # date
-				*    ) printf "\033[m${1:-}: \033[92m--- %-8.8s: %s ---\033[m\n" "${2:-}" "${3:-}";; # info
+				*/*/*) printf "\033[m${1:-}\033[m: \033[45m--- %-8.8s: %s ---\033[m\n" "${2:-}" "${3:-}";; # date
+				*    ) printf "\033[m${1:-}\033[m: \033[92m--- %-8.8s: %s ---\033[m\n" "${2:-}" "${3:-}";; # info
 			esac
 			;;
-		skip               ) printf "\033[m${1:-}: \033[92m--- %-8.8s: %s ---\033[m\n"    "${2:-}" "${3:-}";; # info
-		remove   | umount  ) printf "\033[m${1:-}:     \033[93m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # warn
-		archive            ) printf "\033[m${1:-}:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${2:-}" "${3:-}";; # warn
-		success            ) printf "\033[m${1:-}:     \033[92m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # info
-		failed             ) printf "\033[m${1:-}:     \033[41m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # alert
-		caution            ) printf "\033[m${1:-}:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${2:-}" "${3:-}";; # warn
-		-*                 ) printf "\033[m${1:-}:     \033[36m%-8.8s: %s\033[m\n"        "${1#-}" "${3:-}";; # gap
-		info               ) printf "\033[m${1:-}: \033[92m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # info
-		warn               ) printf "\033[m${1:-}: \033[93m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # warn
-		alert              ) printf "\033[m${1:-}: \033[91m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # alert
-		*                  ) printf "\033[m${1:-}: \033[37m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # normal
+		skip               ) printf "\033[m${1:-}\033[m: \033[92m--- %-8.8s: %s ---\033[m\n"    "${2:-}" "${3:-}";; # info
+		remove   | umount  ) printf "\033[m${1:-}\033[m:     \033[93m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # warn
+		archive            ) printf "\033[m${1:-}\033[m:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${2:-}" "${3:-}";; # warn
+		success            ) printf "\033[m${1:-}\033[m:     \033[92m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # info
+		failed             ) printf "\033[m${1:-}\033[m:     \033[41m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # alert
+		active             ) printf "\033[m${1:-}\033[m:     \033[92m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # info
+		inactive           ) printf "\033[m${1:-}\033[m:     \033[93m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # warn
+		caution            ) printf "\033[m${1:-}\033[m:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${2:-}" "${3:-}";; # warn
+		-*                 ) printf "\033[m${1:-}\033[m:     \033[36m%-8.8s: %s\033[m\n"        "${1#-}" "${3:-}";; # gap
+		info               ) printf "\033[m${1:-}\033[m: \033[92m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # info
+		warn               ) printf "\033[m${1:-}\033[m: \033[93m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # warn
+		alert              ) printf "\033[m${1:-}\033[m: \033[91m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # alert
+		*                  ) printf "\033[m${1:-}\033[m: \033[37m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # normal
 	esac
 }
 
@@ -354,13 +357,16 @@ function fnStrmsg() {
 function fnTargetsys() {
 	declare       ___VIRT=""
 	declare       ___CNTR=""
+	declare       ___CHRT=""
 	if command -v systemctl > /dev/null 2>&1; then
-		___VIRT="$(systemd-detect-virt || true)"
-		___CNTR="$(systemctl is-system-running || true)"
+		___VIRT="$(systemd-detect-virt 2> /dev/null || true)"
+		___CNTR="$(systemctl --no-warn is-system-running 2> /dev/null || true)"
 	fi
-	printf "%s,%s" "${___VIRT:-}" "${___CNTR:-}"
-	unset ___VIRT
-	unset ___CNTR
+	if command -v ischroot > /dev/null 2>&1; then
+		ischroot -t && ___CHRT="true"
+	fi
+	printf "%s,%s" "${___VIRT:-}" "${___CHRT:-}"
+	unset ___VIRT ___CNTR ___CHRT
 }
 
 # -----------------------------------------------------------------------------
@@ -752,10 +758,10 @@ function fnNetwork_param() {
 			if [[ -z "${_NICS_DNS4:-}" ]] || [[ -z "${_NICS_WGRP:-}" ]]; then
 				__PATH="$(fnFind_command 'resolvectl' | sort -V | head -n 1)"
 				if [[ -n "${__PATH:-}" ]]; then
-					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/^Global:/            s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
-					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
-					_NICS_WGRP="${_NICS_WGRP:-"$(resolvectl domain 2> /dev/null | sed -ne '/^Global:/            s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
-					_NICS_WGRP="${_NICS_WGRP:-"$(resolvectl domain 2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
+					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/^Global:/             s/^.*:[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
+					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*:[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
+					_NICS_WGRP="${_NICS_WGRP:-"$(resolvectl domain 2> /dev/null | sed -ne '/^Global:/             s/^.*:[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
+					_NICS_WGRP="${_NICS_WGRP:-"$(resolvectl domain 2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*:[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
 				fi
 				___PATH="${_DIRS_TGET:-}/etc/resolv.conf"
 				if [[ -e "${___PATH}" ]]; then
@@ -942,12 +948,18 @@ function fnInitialize() {
 
 	# --- target virtualization -----------------------------------------------
 	__WORK="$(fnTargetsys)"
-	case "${__WORK##*,}" in
-		offline) _TGET_CNTR="true";;
-		*      ) _TGET_CNTR="";;
-	esac
-	readonly _TGET_CNTR
-	readonly _TGET_VIRT="${__WORK%,*}"
+	_TGET_VIRT="${__WORK%%,*}"
+	_TGET_CHRT="${__WORK#*,}"
+	_TGET_CHRT="${_TGET_CHRT#"${_TGET_VIRT:-}"}"
+	fnDbgout "system parameter" \
+		"info,_TGET_VIRT=[${_TGET_VIRT:-}]" \
+		"info,_TGET_CHRT=[${_TGET_CHRT:-}]"
+#	case "${_TGET_CNTR:-}" in
+#		offline) _TGET_CNTR="true";;
+#		*      ) _TGET_CNTR="";;
+#	esac	
+	readonly _TGET_CHRT
+	readonly _TGET_VIRT
 
 	_DIRS_TGET=""
 	for __DIRS in \
@@ -2234,6 +2246,7 @@ function fnMk_isofile() {
 	declare -A    __PTRN=()				# pattern
 	declare       __TYPE=""				# target type
 	declare       __TGID=""				# target id
+	declare       __FRCE=""				# force flag (empty: update, else: force create)
 	declare       __NAME=""
 	declare       __LINE=""				# data line
 	declare -a    __TGET=()				# target data line
@@ -2280,6 +2293,7 @@ function fnMk_isofile() {
 		__TYPE="${__TYPE,,}"
 		__TGID="${__TGID,,}"
 		case "${__TYPE:-}" in
+			f|force  ) __FRCE="true"; shift; continue;;
 			a|all    ) __PTRN=(["mini"]=".*" ["netinst"]=".*" ["dvd"]=".*" ["liveinst"]=".*"); shift; break;;
 			mini     ) ;;
 			netinst  ) ;;
@@ -2304,6 +2318,18 @@ function fnMk_isofile() {
 	# --- create custom iso file ----------------------------------------------
 	for __TYPE in "${_LIST_TYPE[@]}"
 	do
+		case "${__TYPE:-}" in
+			mini     ) ;;
+			netinst  ) ;;
+			dvd      ) ;;
+			liveinst ) ;;
+#			live     ) ;;
+#			tool     ) ;;
+#			clive    ) ;;
+#			cnetinst ) ;;
+#			system   ) ;;
+			*        ) continue;;
+		esac
 		if [[ -z "${__PTRN["${__TYPE:-}"]:-}" ]]; then
 			if ! echo "${!__PTRN[@]}" | grep -q "${__TYPE}"; then
 				continue
@@ -2367,7 +2393,7 @@ function fnMk_isofile() {
 									__MDIA[_OSET_MDIA+16]="${__ARRY[2]:-}"	# iso_size
 									__MDIA[_OSET_MDIA+17]="${__ARRY[3]:-}"	# iso_volume
 									;;
-								*) ;;
+								*) [[ -z "${__FRCE:-}" ]] && continue;;
 							esac
 							# --- rsync ---------------------------------------
 							fnRsync "${__MDIA[$((_OSET_MDIA+14))]}" "${_DIRS_IMGS}/${__MDIA[$((_OSET_MDIA+2))]}"

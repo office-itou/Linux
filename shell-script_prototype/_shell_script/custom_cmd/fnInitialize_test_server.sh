@@ -55,7 +55,6 @@ function fnInitialize() {
 	readonly _COMD_BBOX
 	readonly _OPTN_COPY
 
-	# --- target virtualization -----------------------------------------------
 	__WORK="$(fnTargetsys)"
 	_TGET_VIRT="${__WORK%%,*}"
 	_TGET_CHRT="${__WORK#*,}"
@@ -69,41 +68,6 @@ function fnInitialize() {
 #	esac	
 	readonly _TGET_CHRT
 	readonly _TGET_VIRT
-
-	_DIRS_TGET=""
-	for __DIRS in \
-		/target \
-		/mnt/sysimage \
-		/mnt/
-	do
-		[[ ! -e "${__DIRS}"/root/. ]] && continue
-		_DIRS_TGET="${__DIRS}"
-		break
-	done
-	readonly _DIRS_TGET
-
-	# --- samba ---------------------------------------------------------------
-	_SHEL_NLIN="$(fnFind_command 'nologin' | sort -r | head -n 1)"
-	_SHEL_NLIN="${_SHEL_NLIN#*"${_DIRS_TGET:-}"}"
-	_SHEL_NLIN="${_SHEL_NLIN:-"$(if [[ -e /usr/sbin/nologin ]]; then echo "/usr/sbin/nologin"; fi)"}"
-	_SHEL_NLIN="${_SHEL_NLIN:-"$(if [[ -e /sbin/nologin     ]]; then echo "/sbin/nologin"; fi)"}"
-	readonly _SHEL_NLIN
-
-	# --- common configuration data -------------------------------------------
-	_PATH_CONF="${_PATH_CONF##*:_*_:*}"
-	_PATH_CONF="${_PATH_CONF:-"/srv/user/share/conf/_data/${_FILE_CONF:?}"}"
-	for __PATH in \
-		"${PWD:+"${PWD}/${_FILE_CONF:?}"}" \
-		"${_PATH_CONF:-}"
-	do
-		[[ ! -e "${__PATH}" ]] && continue
-		_PATH_CONF="${__PATH}"
-		break
-	done
-	fnList_conf_Get "${_PATH_CONF}"		# get common configuration data
-
-	# --- media information data ----------------------------------------------
-	fnList_mdia_Get "${_PATH_MDIA}"		# get media information data
 
 	unset __PATH __DIRS __WORK
 

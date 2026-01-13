@@ -43,7 +43,7 @@
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMN}"/fnString.sh						# string output
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMN}"/fnStrmsg.sh						# string output with message
+	source "${_SHEL_COMN}"/fnStrmsg.sh						# string output with message
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMN}"/fnTargetsys.sh					# target system state
 	# shellcheck source=/dev/null
@@ -60,7 +60,7 @@
 #	source "${_SHEL_COMN}"/fnWget.sh						# wget / curl
 
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnDbgout.sh						# message output (debug out)
+	source "${_SHEL_COMD}"/fnDbgout.sh						# message output (debug out)
 	# shellcheck source=/dev/null
 #	source "${_SHEL_COMD}"/fnDbgdump.sh						# dump output (debug out)
 	# shellcheck source=/dev/null

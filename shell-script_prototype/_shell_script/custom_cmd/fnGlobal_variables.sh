@@ -21,6 +21,7 @@
 	declare       _FILE_SEED=""			# preseed file name
 	# --- target --------------------------------------------------------------
 	declare       _TGET_VIRT=""			# virtualization (ex. vmware)
+	declare       _TGET_CHRT=""			# is chgroot     (empty: none, else: chroot)
 	declare       _TGET_CNTR=""			# is container   (empty: none, else: container)
 	# --- set system parameter ------------------------------------------------
 	declare       _DIST_NAME=""			# distribution name (ex. debian)

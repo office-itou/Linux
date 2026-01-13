@@ -96,6 +96,7 @@
 	declare       _FILE_SEED=""			# preseed file name
 	# --- target --------------------------------------------------------------
 	declare       _TGET_VIRT=""			# virtualization (ex. vmware)
+	declare       _TGET_CHRT=""			# is chgroot     (empty: none, else: chroot)
 	declare       _TGET_CNTR=""			# is container   (empty: none, else: container)
 	# --- set system parameter ------------------------------------------------
 	declare       _DIST_NAME=""			# distribution name (ex. debian)
@@ -383,21 +384,23 @@ function fnMsgout() {
 	case "${2:-}" in
 		start    | complete)
 			case "${3:-}" in
-				*/*/*) printf "\033[m${1:-}: \033[45m--- %-8.8s: %s ---\033[m\n" "${2:-}" "${3:-}";; # date
-				*    ) printf "\033[m${1:-}: \033[92m--- %-8.8s: %s ---\033[m\n" "${2:-}" "${3:-}";; # info
+				*/*/*) printf "\033[m${1:-}\033[m: \033[45m--- %-8.8s: %s ---\033[m\n" "${2:-}" "${3:-}";; # date
+				*    ) printf "\033[m${1:-}\033[m: \033[92m--- %-8.8s: %s ---\033[m\n" "${2:-}" "${3:-}";; # info
 			esac
 			;;
-		skip               ) printf "\033[m${1:-}: \033[92m--- %-8.8s: %s ---\033[m\n"    "${2:-}" "${3:-}";; # info
-		remove   | umount  ) printf "\033[m${1:-}:     \033[93m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # warn
-		archive            ) printf "\033[m${1:-}:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${2:-}" "${3:-}";; # warn
-		success            ) printf "\033[m${1:-}:     \033[92m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # info
-		failed             ) printf "\033[m${1:-}:     \033[41m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # alert
-		caution            ) printf "\033[m${1:-}:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${2:-}" "${3:-}";; # warn
-		-*                 ) printf "\033[m${1:-}:     \033[36m%-8.8s: %s\033[m\n"        "${1#-}" "${3:-}";; # gap
-		info               ) printf "\033[m${1:-}: \033[92m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # info
-		warn               ) printf "\033[m${1:-}: \033[93m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # warn
-		alert              ) printf "\033[m${1:-}: \033[91m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # alert
-		*                  ) printf "\033[m${1:-}: \033[37m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # normal
+		skip               ) printf "\033[m${1:-}\033[m: \033[92m--- %-8.8s: %s ---\033[m\n"    "${2:-}" "${3:-}";; # info
+		remove   | umount  ) printf "\033[m${1:-}\033[m:     \033[93m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # warn
+		archive            ) printf "\033[m${1:-}\033[m:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${2:-}" "${3:-}";; # warn
+		success            ) printf "\033[m${1:-}\033[m:     \033[92m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # info
+		failed             ) printf "\033[m${1:-}\033[m:     \033[41m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # alert
+		active             ) printf "\033[m${1:-}\033[m:     \033[92m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # info
+		inactive           ) printf "\033[m${1:-}\033[m:     \033[93m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # warn
+		caution            ) printf "\033[m${1:-}\033[m:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${2:-}" "${3:-}";; # warn
+		-*                 ) printf "\033[m${1:-}\033[m:     \033[36m%-8.8s: %s\033[m\n"        "${1#-}" "${3:-}";; # gap
+		info               ) printf "\033[m${1:-}\033[m: \033[92m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # info
+		warn               ) printf "\033[m${1:-}\033[m: \033[93m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # warn
+		alert              ) printf "\033[m${1:-}\033[m: \033[91m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # alert
+		*                  ) printf "\033[m${1:-}\033[m: \033[37m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # normal
 	esac
 }
 
@@ -412,6 +415,24 @@ function fnString() {
 }
 
 # -----------------------------------------------------------------------------
+# descript: string output with message
+#   input :     $1     : gaps
+#   input :     $2     : message
+#   output:   stdout   : output
+#   return:            : unused
+function fnStrmsg() {
+	declare      ___TEXT="${1:-}"
+	declare      ___TXT1=""
+	declare      ___TXT2=""
+	___TXT1="$(echo "${___TEXT:-}" | cut -c -3)"
+	___TXT2="$(echo "${___TEXT:-}" | cut -c "$((${#___TXT1}+2+${#2}+1+${#_PROG_NAME}+16))"-)"
+	printf "%s %s %s" "${___TXT1}" "${2:-}" "${___TXT2}"
+	unset ___TEXT
+	unset ___TXT1
+	unset ___TXT2
+}
+
+# -----------------------------------------------------------------------------
 # descript: target system state
 #   input :            : unused
 #   output:   stdout   : result
@@ -419,13 +440,16 @@ function fnString() {
 function fnTargetsys() {
 	declare       ___VIRT=""
 	declare       ___CNTR=""
+	declare       ___CHRT=""
 	if command -v systemctl > /dev/null 2>&1; then
-		___VIRT="$(systemd-detect-virt || true)"
-		___CNTR="$(systemctl is-system-running || true)"
+		___VIRT="$(systemd-detect-virt 2> /dev/null || true)"
+		___CNTR="$(systemctl --no-warn is-system-running 2> /dev/null || true)"
 	fi
-	printf "%s,%s" "${___VIRT:-}" "${___CNTR:-}"
-	unset ___VIRT
-	unset ___CNTR
+	if command -v ischroot > /dev/null 2>&1; then
+		ischroot -t && ___CHRT="true"
+	fi
+	printf "%s,%s" "${___VIRT:-}" "${___CHRT:-}"
+	unset ___VIRT ___CNTR ___CHRT
 }
 
 # -----------------------------------------------------------------------------
@@ -633,6 +657,31 @@ function fnGetFileinfo() {
 		__VLID="$(blkid -s LABEL -o value "${1}")"
 	fi
 	printf "%s %s %s %s" "${__LIST[0]// /%20}" "${__LIST[1]// /%20}" "${__LIST[2]// /%20}" "${__VLID// /%20}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: message output (debug out)
+#   input :     $1     : title
+#   input :     $@     : list
+#   output:   stdout   : message
+#   return:            : unused
+function fnDbgout() {
+	declare       ___STRT=""
+	declare       ___ENDS=""
+	___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${1:-}")"
+	___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${1:-}")"
+	shift
+	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___STRT}"
+	while [[ -n "${1:-}" ]]
+	do
+		if [[ "${1%%,*}" != "debug" ]] || [[ -n "${_DBGS_FLAG:-}" ]]; then
+			fnMsgout "${_PROG_NAME:-}" "${1%%,*}" "${1#*,}"
+		fi
+		shift
+	done
+	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
+	unset ___STRT
+	unset ___ENDS
 }
 
 # -----------------------------------------------------------------------------
@@ -871,12 +920,18 @@ function fnInitialize() {
 
 	# --- target virtualization -----------------------------------------------
 	__WORK="$(fnTargetsys)"
-	case "${__WORK##*,}" in
-		offline) _TGET_CNTR="true";;
-		*      ) _TGET_CNTR="";;
-	esac
-	readonly _TGET_CNTR
-	readonly _TGET_VIRT="${__WORK%,*}"
+	_TGET_VIRT="${__WORK%%,*}"
+	_TGET_CHRT="${__WORK#*,}"
+	_TGET_CHRT="${_TGET_CHRT#"${_TGET_VIRT:-}"}"
+	fnDbgout "system parameter" \
+		"info,_TGET_VIRT=[${_TGET_VIRT:-}]" \
+		"info,_TGET_CHRT=[${_TGET_CHRT:-}]"
+#	case "${_TGET_CNTR:-}" in
+#		offline) _TGET_CNTR="true";;
+#		*      ) _TGET_CNTR="";;
+#	esac	
+	readonly _TGET_CHRT
+	readonly _TGET_VIRT
 
 	_DIRS_TGET=""
 	for __DIRS in \
