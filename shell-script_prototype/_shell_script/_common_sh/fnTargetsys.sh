@@ -8,16 +8,17 @@
 #   g-var :            : unused
 # shellcheck disable=SC2148,SC2317,SC2329
 fnTargetsys() {
-	___VIRT=""
-	___CNTR=""
-	___CHRT=""
-	if command -v systemctl > /dev/null 2>&1; then
-		___VIRT="$(systemd-detect-virt 2> /dev/null || true)"
-		___CNTR="$(systemctl --no-warn is-system-running 2> /dev/null || true)"
+	___VIRT=""							# virtualization (ex. vmware)
+	___CHRT=""							# is chgroot     (empty: none, else: chroot)
+	___CNTR=""							# is container   (empty: none, else: container)
+	if command -v systemd-detect-virt > /dev/null 2>&1; then
+		___VIRT="$(systemd-detect-virt --vm || true)"
+		systemd-detect-virt --quiet --chroot    && ___CHRT="true"
+		systemd-detect-virt --quiet --container && ___CNTR="true"
 	fi
-	if command -v ischroot > /dev/null 2>&1; then
-		ischroot -t && ___CHRT="true"
-	fi
-	printf "%s,%s" "${___VIRT:-}" "${___CHRT:-}"
-	unset ___VIRT ___CNTR ___CHRT
+	readonly ___VIRT
+	readonly ___CHRT
+	readonly ___CNTR
+	printf "%s,%s,%s" "${___VIRT:-}" "${___CHRT:-}" "${___CNTR:-}"
+	unset ___VIRT ___CHRT ___CNTR
 }

@@ -64,7 +64,7 @@
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnStrmsg.sh							# string output with message
 	# shellcheck source=/dev/null
-	. "${_SHEL_COMN}"/fnTargetsys.sh						# target system state
+#	. "${_SHEL_COMN}"/fnTargetsys.sh						# target system state
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnIPv6FullAddr.sh						# IPv6 full address
 	# shellcheck source=/dev/null

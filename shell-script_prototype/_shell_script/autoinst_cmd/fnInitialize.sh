@@ -67,19 +67,24 @@ fnInitialize() {
 	fi
 
 	# --- target virtualization -----------------------------------------------
-	__WORK="$(fnTargetsys)"
-	_TGET_VIRT="${__WORK%%,*}"
-	_TGET_CHRT="${__WORK#*,}"
-	_TGET_CHRT="${_TGET_CHRT#"${_TGET_VIRT:-}"}"
+	_TGET_VIRT=""						# virtualization (ex. vmware)
+	_TGET_CHRT=""						# is chgroot     (empty: none, else: chroot)
+	_TGET_CNTR=""						# is container   (empty: none, else: container)
+	if command -v systemd-detect-virt > /dev/null 2>&1; then
+		_TGET_VIRT="$(systemd-detect-virt --vm || true)"
+		systemd-detect-virt --quiet --chroot    && _TGET_CHRT="true"
+		systemd-detect-virt --quiet --container && _TGET_CNTR="true"
+	fi
+	if command -v ischroot > /dev/null 2>&1; then
+		ischroot --default-true && _TGET_CHRT="true"
+	fi
+	readonly _TGET_VIRT
+	readonly _TGET_CHRT
+	readonly _TGET_CNTR
 	fnDbgout "system parameter" \
 		"info,_TGET_VIRT=[${_TGET_VIRT:-}]" \
-		"info,_TGET_CHRT=[${_TGET_CHRT:-}]"
-#	case "${_TGET_CNTR:-}" in
-#		offline) _TGET_CNTR="true";;
-#		*      ) _TGET_CNTR="";;
-#	esac	
-	readonly _TGET_CHRT
-	readonly _TGET_VIRT
+		"info,_TGET_CHRT=[${_TGET_CHRT:-}]" \
+		"info,_TGET_CNTR=[${_TGET_CNTR:-}]"
 
 	_DIRS_TGET=""
 	for __DIRS in \
