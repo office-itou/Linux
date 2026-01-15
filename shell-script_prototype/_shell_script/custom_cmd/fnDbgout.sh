@@ -16,15 +16,15 @@ function fnDbgout() {
 	___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${1:-}")"
 	___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${1:-}")"
 	shift
-	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___STRT}"
+	fnMsgout "\033[36m${_PROG_NAME:-}" "-debugout" "${___STRT}"
 	while [[ -n "${1:-}" ]]
 	do
 		if [[ "${1%%,*}" != "debug" ]] || [[ -n "${_DBGS_FLAG:-}" ]]; then
-			fnMsgout "${_PROG_NAME:-}" "${1%%,*}" "${1#*,}"
+			fnMsgout "\033[36m${_PROG_NAME:-}" "${1%%,*}" "${1#*,}"
 		fi
 		shift
 	done
-	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
+	fnMsgout "\033[36m${_PROG_NAME:-}" "-debugout" "${___ENDS}"
 	unset ___STRT
 	unset ___ENDS
 }

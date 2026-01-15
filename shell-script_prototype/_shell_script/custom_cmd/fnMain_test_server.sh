@@ -36,6 +36,8 @@ function fnMain() {
 			-T|--TREE) tree --charset C -x -a --filesfirst "${_DIRS_TOPS:-}"; break;;
 			*        )
 				echo "${_TEXT_GAP2:-}"
+				fnTest_cmdline			# test cmdline
+				echo "${_TEXT_GAP2:-}"
 				fnTest_param			# test parameter
 				echo "${_TEXT_GAP2:-}"
 				fnTest_dns_port			# test dns port

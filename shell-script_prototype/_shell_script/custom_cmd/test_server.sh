@@ -311,7 +311,7 @@ function fnMsgout() {
 		active             ) printf "\033[m${1:-}\033[m:     \033[92m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # info
 		inactive           ) printf "\033[m${1:-}\033[m:     \033[93m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # warn
 		caution            ) printf "\033[m${1:-}\033[m:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${2:-}" "${3:-}";; # warn
-		-*                 ) printf "\033[m${1:-}\033[m:     \033[36m%-8.8s: %s\033[m\n"        "${1#-}" "${3:-}";; # gap
+		-*                 ) printf "\033[m${1:-}\033[m:     \033[36m%-8.8s: %s\033[m\n"        "${2#-}" "${3:-}";; # gap
 		info               ) printf "\033[m${1:-}\033[m: \033[92m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # info
 		warn               ) printf "\033[m${1:-}\033[m: \033[93m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # warn
 		alert              ) printf "\033[m${1:-}\033[m: \033[91m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # alert
@@ -447,15 +447,15 @@ function fnDbgout() {
 	___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${1:-}")"
 	___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${1:-}")"
 	shift
-	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___STRT}"
+	fnMsgout "\033[36m${_PROG_NAME:-}" "-debugout" "${___STRT}"
 	while [[ -n "${1:-}" ]]
 	do
 		if [[ "${1%%,*}" != "debug" ]] || [[ -n "${_DBGS_FLAG:-}" ]]; then
-			fnMsgout "${_PROG_NAME:-}" "${1%%,*}" "${1#*,}"
+			fnMsgout "\033[36m${_PROG_NAME:-}" "${1%%,*}" "${1#*,}"
 		fi
 		shift
 	done
-	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
+	fnMsgout "\033[36m${_PROG_NAME:-}" "-debugout" "${___ENDS}"
 	unset ___STRT
 	unset ___ENDS
 }
@@ -658,14 +658,16 @@ function fnSystem_param() {
 	declare       ___PATH=""
 	if [[ -e "${_DIRS_TGET:-}"/etc/os-release ]]; then
 		___PATH="${_DIRS_TGET:-}/etc/os-release"
-		_DIST_NAME="$(sed -ne 's/^ID=//p'                                "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
-		_DIST_VERS="$(sed -ne 's/^VERSION=\"\([[:graph:]]\+\).*\"$/\1/p' "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
-		_DIST_CODE="$(sed -ne 's/^VERSION_CODENAME=//p'                  "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
+		_DIST_NAME="$(sed -ne 's/^ID=//p'                                       "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
+		_DIST_VERS="$(sed -ne 's/^VERSION=\"\([[:graph:]]\+\).*\"$/\1/p'        "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
+		_DIST_CODE="$(sed -ne 's/^VERSION_CODENAME=//p'                         "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
+		_DIST_CODE="${_DIST_CODE:-"$(sed -ne 's/^VERSION=\".*(\(.\+\))\"$/\1/p' "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"}"
 	elif [[ -e "${_DIRS_TGET:-}"/etc/lsb-release ]]; then
 		___PATH="${_DIRS_TGET:-}/etc/lsb-release"
 		_DIST_NAME="$(sed -ne 's/DISTRIB_ID=//p'                                     "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
 		_DIST_VERS="$(sed -ne 's/DISTRIB_RELEASE=\"\([[:graph:]]\+\)[ \t].*\"$/\1/p' "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
 		_DIST_CODE="$(sed -ne 's/^VERSION=\".*(\([[:graph:]]\+\)).*\"$/\1/p'         "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
+		_DIST_CODE="${_DIST_CODE:-"$(sed -ne 's/^VERSION=\".*(\(.\+\))\"$/\1/p'      "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"}"
 	fi
 	_DIST_NAME="${_DIST_NAME#\"}"
 	_DIST_NAME="${_DIST_NAME%\"}"
@@ -866,10 +868,10 @@ function fnInitialize() {
 	readonly _TGET_VIRT
 	readonly _TGET_CHRT
 	readonly _TGET_CNTR
-	fnDbgout "system parameter" \
-		"info,_TGET_VIRT=[${_TGET_VIRT:-}]" \
-		"info,_TGET_CHRT=[${_TGET_CHRT:-}]" \
-		"info,_TGET_CNTR=[${_TGET_CNTR:-}]"
+#	fnDbgout "system parameter" \
+#		"info,_TGET_VIRT=[${_TGET_VIRT:-}]" \
+#		"info,_TGET_CHRT=[${_TGET_CHRT:-}]" \
+#		"info,_TGET_CNTR=[${_TGET_CNTR:-}]"
 
 	_DIRS_TGET=""
 	for __DIRS in \
@@ -894,6 +896,34 @@ function fnInitialize() {
 }
 
 
+
+# -----------------------------------------------------------------------------
+# descript: test cmdline
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+function fnTest_cmdline() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	declare       __BOPT=""
+	declare       __LINE=""
+	# --- boot parameter selection --------------------------------------------
+	__BOPT="$(cat /proc/cmdline)"
+	for __LINE in ${__BOPT:-}
+	do
+		fnMsgout "\033[36m${_PROG_NAME:-}" "info" "${__LINE}"
+	done
+	unset __BOPT __LINE
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+	fnDbgparameters
+#	unset __FUNC_NAME
+}
 
 # -----------------------------------------------------------------------------
 # descript: test parameter
@@ -1724,6 +1754,8 @@ function fnMain() {
 			-P|--DBGP) fnDbgparameters_all; break;;
 			-T|--TREE) tree --charset C -x -a --filesfirst "${_DIRS_TOPS:-}"; break;;
 			*        )
+				echo "${_TEXT_GAP2:-}"
+				fnTest_cmdline			# test cmdline
 				echo "${_TEXT_GAP2:-}"
 				fnTest_param			# test parameter
 				echo "${_TEXT_GAP2:-}"

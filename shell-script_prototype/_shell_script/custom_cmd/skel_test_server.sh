@@ -98,6 +98,8 @@
 #	source "${_SHEL_COMD}"/fnList_mdia_Get.sh				# get media information data
 
 	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnTest_cmdline.sh				# test cmdline
+	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnTest_param.sh					# test parameter
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnTest_dns_port.sh				# test dns port

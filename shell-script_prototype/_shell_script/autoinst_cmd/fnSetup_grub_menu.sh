@@ -23,7 +23,7 @@ fnSetup_grub_menu() {
 			elif [ -n "${__SLNX:-}" ]; then __BOPT="security=selinux selinux=1"
 			fi
 			;;
-		fedora|centos|almalinux|rockylinux|miraclelinux)
+		fedora|centos|almalinux|rocky|miraclelinux)
 			  if [ -n "${__SLNX:-}" ]; then __BOPT="security=selinux selinux=1"
 			elif [ -n "${__APAR:-}" ]; then __BOPT="security=apparmor apparmor=1"
 			fi

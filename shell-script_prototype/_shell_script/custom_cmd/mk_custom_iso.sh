@@ -396,7 +396,7 @@ function fnMsgout() {
 		active             ) printf "\033[m${1:-}\033[m:     \033[92m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # info
 		inactive           ) printf "\033[m${1:-}\033[m:     \033[93m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # warn
 		caution            ) printf "\033[m${1:-}\033[m:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${2:-}" "${3:-}";; # warn
-		-*                 ) printf "\033[m${1:-}\033[m:     \033[36m%-8.8s: %s\033[m\n"        "${1#-}" "${3:-}";; # gap
+		-*                 ) printf "\033[m${1:-}\033[m:     \033[36m%-8.8s: %s\033[m\n"        "${2#-}" "${3:-}";; # gap
 		info               ) printf "\033[m${1:-}\033[m: \033[92m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # info
 		warn               ) printf "\033[m${1:-}\033[m: \033[93m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # warn
 		alert              ) printf "\033[m${1:-}\033[m: \033[91m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # alert
@@ -651,15 +651,15 @@ function fnDbgout() {
 	___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${1:-}")"
 	___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${1:-}")"
 	shift
-	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___STRT}"
+	fnMsgout "\033[36m${_PROG_NAME:-}" "-debugout" "${___STRT}"
 	while [[ -n "${1:-}" ]]
 	do
 		if [[ "${1%%,*}" != "debug" ]] || [[ -n "${_DBGS_FLAG:-}" ]]; then
-			fnMsgout "${_PROG_NAME:-}" "${1%%,*}" "${1#*,}"
+			fnMsgout "\033[36m${_PROG_NAME:-}" "${1%%,*}" "${1#*,}"
 		fi
 		shift
 	done
-	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
+	fnMsgout "\033[36m${_PROG_NAME:-}" "-debugout" "${___ENDS}"
 	unset ___STRT
 	unset ___ENDS
 }
