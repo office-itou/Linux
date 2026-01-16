@@ -1491,6 +1491,19 @@ function fnMk_preconf_kickstart() {
 			    -e "s/\$releasever/${__NUMS}/g    " \
 			    -e "s/\$basearch/${__ARCH}/g    } "
 			;;
+		*_fedora*_web*) # --- network install [ for pxeboot ] fedora ----------
+			sed -i "${__TGET_PATH}"                 \
+			    -e "/^cdrom$/ s/^/#/              " \
+			    -e "/^#.*(web address).*$/,/^$/ { " \
+			    -e "/^#url[ \t]\+/  s/^#//g       " \
+			    -e "s/\$releasever/${__NUMS}/g    " \
+			    -e "s/\$basearch/${__ARCH}/g      " \
+			    -e "s/\$stream/${__NUMS}/g      } " \
+			    -e "/^#.*(${__SECT}).*$/,/^$/   { " \
+			    -e "/^#repo[ \t]\+/ s/^#//g       " \
+			    -e "s/\$releasever/${__NUMS}/g    " \
+			    -e "s/\$basearch/${__ARCH}/g    } "
+			;;
 		*_web*)		# --- network install [ for pxeboot ] ---------------------
 			sed -i "${__TGET_PATH}"                 \
 			    -e "/^cdrom$/ s/^/#/              " \

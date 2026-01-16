@@ -2915,6 +2915,24 @@ fnSetup_service() {
 	__FUNC_NAME="fnSetup_skel"
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
+	# --- mask ----------------------------------------------------------------
+	set -f
+	set --
+	for __LIST in \
+		chronyd.service\
+		avahi-daemon.service
+	do
+		if [ ! -e "${_DIRS_TGET:-}/lib/systemd/system/${__LIST}"     ] \
+		&& [ ! -e "${_DIRS_TGET:-}/usr/lib/systemd/system/${__LIST}" ]; then
+			continue
+		fi
+		fnMsgout "${_PROG_NAME:-}" "mask" "${__LIST}"
+		set -- "$@" "${__LIST}"
+	done 
+	set +f
+	[ $# -gt 0 ] && systemctl mask "$@"
+	[ -z "${_TGET_CHRT:-}" ] && systemctl --quiet daemon-reload
+	# --- enable --------------------------------------------------------------
 	set -f
 	set --
 	for __LIST in \
@@ -2926,7 +2944,6 @@ fnSetup_service() {
 		systemd-resolved.service \
 		dnsmasq.service \
 		systemd-timesyncd.service \
-		chronyd.service\
 		open-vm-tools.service \
 		vmtoolsd.service \
 		ssh.service \
@@ -2936,8 +2953,7 @@ fnSetup_service() {
 		smb.service \
 		smbd.service \
 		nmb.service \
-		nmbd.service \
-		avahi-daemon.service
+		nmbd.service
 	do
 		if [ ! -e "${_DIRS_TGET:-}/lib/systemd/system/${__LIST}"     ] \
 		&& [ ! -e "${_DIRS_TGET:-}/usr/lib/systemd/system/${__LIST}" ]; then
@@ -2947,23 +2963,20 @@ fnSetup_service() {
 		set -- "$@" "${__LIST}"
 	done 
 	set +f
-	if [ $# -gt 0 ]; then
-		systemctl enable "$@"
-		# --- service restart -------------------------------------------------
-		if [ -z "${_TGET_CHRT:-}" ]; then
-			for __SRVC in "$@"
-			do
-				if systemctl --quiet is-active "${__SRVC}"; then
-					fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
-					systemctl --quiet daemon-reload
-					if systemctl --quiet restart "${__SRVC}"; then
-						fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
-					else
-						fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
-					fi
-				fi
-			done
-		fi
+	[ $# -gt 0 ] && systemctl enable "$@"
+	[ -z "${_TGET_CHRT:-}" ] && systemctl --quiet daemon-reload
+	# --- service restart -----------------------------------------------------
+	if [ -z "${_TGET_CHRT:-}" ] && [ $# -gt 0 ]; then
+		for __SRVC in "$@"
+		do
+#			systemctl --quiet is-active "${__SRVC}" || continue
+			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
+			if systemctl --quiet restart "${__SRVC}"; then
+				fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
+			else
+				fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
+			fi
+		done
 	fi
 	unset __LIST __SRVC
 
