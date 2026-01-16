@@ -14,41 +14,55 @@ fnSetup_grub_menu() {
 	# --- /etc/default/grub ---------------------------------------------------
 #	__NAME="${_DIST_NAME%"${_DIST_NAME#"${_DIST_NAME%%-*}"}"}"
 #	__VERS="${_DIST_VERS%"${_DIST_VERS#"${_DIST_VERS%%.*}"}"}"
-	__BOPT=""
 	__SLNX="$(fnFind_command "semanage")"
 	__APAR="$(fnFind_command "aa-enabled")"
+	__PATH="${_DIRS_TGET:-}/etc/default/grub"
+	__BOPT="$( \
+		sed -ne '/^GRUB_CMDLINE_LINUX_DEFAULT=/ {' \
+		    -e  's/^[^=]\+="//'                    \
+		    -e  's/[ "]*$//'                       \
+		    -e  's/ *security=[^ "]* *//'          \
+		    -e  's/ *apparmor=[^ "]* *//'          \
+		    -e  's/ *selinux=[^ "]* *//'           \
+		    -e  's/ *linux *//'                    \
+		    -e  'p}'                               \
+		    "${__PATH}"
+		)"
 	case "${_DIST_NAME:-}" in
 		debian|ubuntu)
-			  if [ -n "${__APAR:-}" ]; then __BOPT="security=apparmor apparmor=1"
-			elif [ -n "${__SLNX:-}" ]; then __BOPT="security=selinux selinux=1"
+			  if [ -n "${__APAR:-}" ]; then __BOPT="${__BOPT:+"${__BOPT} "}security=apparmor apparmor=1"
+			elif [ -n "${__SLNX:-}" ]; then __BOPT="${__BOPT:+"${__BOPT} "}security=selinux selinux=1"
 			fi
 			;;
 		fedora|centos|almalinux|rocky|miraclelinux)
-			  if [ -n "${__SLNX:-}" ]; then __BOPT="security=selinux selinux=1"
-			elif [ -n "${__APAR:-}" ]; then __BOPT="security=apparmor apparmor=1"
+			  if [ -n "${__SLNX:-}" ]; then __BOPT="${__BOPT:+"${__BOPT} "}security=selinux selinux=1"
+			elif [ -n "${__APAR:-}" ]; then __BOPT="${__BOPT:+"${__BOPT} "}security=apparmor apparmor=1"
 			fi
 			;;
 		opensuse-leap)
 			if [ "${_DIST_VERS%%.*}" -lt 16 ]; then
-				  if [ -n "${__APAR:-}" ]; then __BOPT="security=apparmor apparmor=1"
-				elif [ -n "${__SLNX:-}" ]; then __BOPT="security=selinux selinux=1"
+				  if [ -n "${__APAR:-}" ]; then __BOPT="${__BOPT:+"${__BOPT} "}security=apparmor apparmor=1"
+				elif [ -n "${__SLNX:-}" ]; then __BOPT="${__BOPT:+"${__BOPT} "}security=selinux selinux=1"
 				fi
 			else
-				  if [ -n "${__SLNX:-}" ]; then __BOPT="security=selinux selinux=1"
-				elif [ -n "${__APAR:-}" ]; then __BOPT="security=apparmor apparmor=1"
+				  if [ -n "${__SLNX:-}" ]; then __BOPT="${__BOPT:+"${__BOPT} "}security=selinux selinux=1"
+				elif [ -n "${__APAR:-}" ]; then __BOPT="${__BOPT:+"${__BOPT} "}security=apparmor apparmor=1"
 				fi
 			fi
 			;;
 		opensuse-tumbleweed)
-			  if [ -n "${__SLNX:-}" ]; then __BOPT="security=selinux selinux=1"
-			elif [ -n "${__APAR:-}" ]; then __BOPT="security=apparmor apparmor=1"
+			  if [ -n "${__SLNX:-}" ]; then __BOPT="${__BOPT:+"${__BOPT} "}security=selinux selinux=1"
+			elif [ -n "${__APAR:-}" ]; then __BOPT="${__BOPT:+"${__BOPT} "}security=apparmor apparmor=1"
 			fi
 			;;
 		*) ;;
 	esac
 	__ENTR='
 '
-	__PATH="${_DIRS_TGET:-}/etc/default/grub"
+	fnMsgout "${_PROG_NAME:-}" "info" "_DIST_NAME=[${_DIST_NAME:-}]"
+	fnMsgout "${_PROG_NAME:-}" "info" "    __BOPT=[${__BOPT:-}]"
+#	fnMsgout "${_PROG_NAME:-}" "info" "    __SLNX=[${__SLNX:-}]"
+#	fnMsgout "${_PROG_NAME:-}" "info" "    __APAR=[${__APAR:-}]"
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
 	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
@@ -64,14 +78,9 @@ fnSetup_grub_menu() {
 	    -e 'h; s/^/#/; p; g; s/[0-9]\+$/3/                 ' \
 	    -e '}                                              ' \
 	    -e '/^GRUB_CMDLINE_LINUX_DEFAULT=.*$/             {' \
-	    -e 'h; s/^/#/; p; g                                ' \
-	    -e 's/security=[^ "]\+//g                          ' \
-	    -e 's/apparmor=[^ "]\+//g                          ' \
-	    -e 's/selinux=[^ "]\+//g                           ' \
-	    -e 's/"\(.*\) *"$/"\1'"${__BOPT:+" ${__BOPT}"}"'"/g' \
-	    -e 's/ \+/ /g                                      ' \
-	    -e 's/ *" */"/g                                    ' \
+	    -e 'h; s/^/#/; p; g; s/=.*$/="'"${__BOPT:-}"'"/    ' \
 	    -e '}'
+	diff --suppress-common-lines --expand-tabs --side-by-side "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}" || true
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
 	# --- grub.cfg ------------------------------------------------------------

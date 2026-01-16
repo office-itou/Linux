@@ -476,26 +476,22 @@ fnFind_command() {
 }
 
 # -----------------------------------------------------------------------------
-# descript: get system parameter
+# descript: get system parameter (includes dash support)
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
 fnSystem_param() {
-	if [[ -e "${_DIRS_TGET:-}"/etc/os-release ]]; then
+	if [ -e "${_DIRS_TGET:-}"/etc/os-release ]; then
 		___PATH="${_DIRS_TGET:-}/etc/os-release"
-		_DIST_NAME="$(sed -ne 's/^ID=//p'                                       "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
-		_DIST_VERS="$(sed -ne 's/^VERSION=\"\([[:graph:]]\+\).*\"$/\1/p'        "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
-		_DIST_CODE="$(sed -ne 's/^VERSION_CODENAME=//p'                         "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
-		_DIST_CODE="${_DIST_CODE:-"$(sed -ne 's/^VERSION=\".*(\(.\+\))\"$/\1/p' "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"}"
-	elif [[ -e "${_DIRS_TGET:-}"/etc/lsb-release ]]; then
+		_DIST_NAME="$(sed -ne '/^ID=/      s/^[^=]\+="*\([^ "]\+\).*"*/\1/p' "${___PATH:-}" | awk '{print tolower($0);}')"
+		_DIST_VERS="$(sed -ne '/^VERSION=/ s/^[^=]\+="*\([^ "]\+\).*"*/\1/p' "${___PATH:-}" | awk '{print tolower($0);}')"
+		_DIST_CODE="$(sed -ne '/^VERSION=/ s/^[^=]\+="*.*(\(.\+\)).*"*/\1/p' "${___PATH:-}" | awk '{print tolower($0);}')"
+	elif [ -e "${_DIRS_TGET:-}"/etc/lsb-release ]; then
 		___PATH="${_DIRS_TGET:-}/etc/lsb-release"
-		_DIST_NAME="$(sed -ne 's/DISTRIB_ID=//p'                                     "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
-		_DIST_VERS="$(sed -ne 's/DISTRIB_RELEASE=\"\([[:graph:]]\+\)[ \t].*\"$/\1/p' "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
-		_DIST_CODE="$(sed -ne 's/^VERSION=\".*(\([[:graph:]]\+\)).*\"$/\1/p'         "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
-		_DIST_CODE="${_DIST_CODE:-"$(sed -ne 's/^VERSION=\".*(\(.\+\))\"$/\1/p'      "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"}"
+		_DIST_NAME="$(sed -ne '/^DISTRIB_ID=/      s/^[^=]\+="*\([^ "]\+\).*"*/\1/p' "${___PATH:-}" | awk '{print tolower($0);}')"
+		_DIST_VERS="$(sed -ne '/^DISTRIB_RELEASE=/ s/^[^=]\+="*\([^ "]\+\).*"*/\1/p' "${___PATH:-}" | awk '{print tolower($0);}')"
+		_DIST_CODE="$(sed -ne '/^DISTRIB_RELEASE=/ s/^[^=]\+="*.*(\(.\+\)).*"*/\1/p' "${___PATH:-}" | awk '{print tolower($0);}')"
 	fi
-	_DIST_NAME="${_DIST_NAME#\"}"
-	_DIST_NAME="${_DIST_NAME%\"}"
 	readonly _DIST_NAME
 	readonly _DIST_CODE
 	readonly _DIST_VERS

@@ -112,7 +112,7 @@ fnMain() {
 	fnDbgparam							# parameter debug output
 
 	# --- main processing -----------------------------------------------------
-	if ! command -v kill-all-dhcp > /dev/null 2>&1; then
+	if command -v kill-all-dhcp > /dev/null 2>&1; then
 		/bin/kill-all-dhcp
 		/bin/netcfg
 	fi
