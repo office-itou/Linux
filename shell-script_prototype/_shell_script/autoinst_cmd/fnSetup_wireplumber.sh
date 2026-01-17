@@ -17,90 +17,123 @@ fnSetup_wireplumber() {
 		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
-	# --- alsa ----------------------------------------------------------------
-	__CONF="${_DIRS_TGET:-}/usr/share/wireplumber/main.lua.d/50-alsa-config.lua"
-	if [ -e "${__CONF}" ]; then
-		fnFile_backup "${__CONF}"			# backup original file
-		# --- 50-alsa-config.lua ----------------------------------------------
-		__PATH="${_DIRS_TGET:-}/etc/wireplumber/main.lua.d/${__CONF##*/}"
+	# --- memo ----------------------------------------------------------------
+	# https://gitlab.freedesktop.org/pipewire/pipewire/-/wikis/Troubleshooting
+	__PATH="${_DIRS_TGET:-}/usr/share/wireplumber/main.lua.d/50-alsa-config.lua"
+	if [ -e "${__PATH}" ]; then
+		# --- memo ------------------------------------------------------------
+		# debian-12
+		#   wireplumber: 0.4.13
+		#   pipewire   : 0.3.65
+		# --- alsa: 51-alsa-config.lua ----------------------------------------
+		# stuttering audio (in virtual machine)
+		__PATH="${_DIRS_TGET:-}/etc/wireplumber/main.lua.d/51-alsa-config.lua"
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
-		cp --preserve=timestamps "${__CONF}" "${__PATH}"
-		sed -i "${__PATH}"                                                                    \
-		    -e '/^alsa_monitor.rules[ \t]*=[ \t]*{$/,/^}$/                                 {' \
-		    -e '/^[ \t]*apply_properties[ \t]*=[ \t]*{/,/^[ \t]*}/                         {' \
-		    -e '/\["api.alsa.period-size"\]/a \        \["api.alsa.period-size"\]   = 1024,'  \
-		    -e '/\["api.alsa.headroom"\]/a    \        \["api.alsa.headroom"\]      = 16384,' \
-		    -e '}}'
-	else
-		__CONF="${_DIRS_TGET:-}/usr/share/wireplumber/wireplumber.conf.d/alsa-vm.conf"
-		if [ -e "${__CONF}" ]; then
-			fnFile_backup "${__CONF}"			# backup original file
-			# --- alsa-vm.conf ------------------------------------------------
-			__PATH="${_DIRS_TGET:-}/etc/wireplumber/wireplumber.conf.d/${__CONF##*/}"
-			fnFile_backup "${__PATH}"			# backup original file
-			mkdir -p "${__PATH%/*}"
-			cp --preserve=timestamps "${__CONF}" "${__PATH}"
-			sed -i "${__PATH}"                                                      \
-			    -e '/^monitor.alsa.rules[ \t]*=[ \t]*\[$/,/^\]$/                 {' \
-			    -e '/^[ \t]*actions[ \t]*=[ \t]*{$/,/^[ \t]*}$/                  {' \
-			    -e '/^[ \t]*update-props[ \t]*=[ \t]*{$/,/^[ \t]*}$/             {' \
-			    -e '/^[ \t]*api.alsa.period-size[ \t]*/ s/=\([ \t]*\).*$/=\11024/'  \
-			    -e '/^[ \t]*api.alsa.headroom[ \t]*/    s/=\([ \t]*\).*$/=\116384/' \
-			    -e '}}}'
-		else
-			# --- 50-alsa-config.conf -----------------------------------------
-			__PATH="${_DIRS_TGET:-}/etc/wireplumber/wireplumber.conf.d/50-alsa-config.conf"
-			fnFile_backup "${__PATH}"			# backup original file
-			mkdir -p "${__PATH%/*}"
-			cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
-			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
-				monitor.alsa.rules = [
-				  {
-				    matches = [
-				      # This matches the value of the 'node.name' property of the node.
-				      {
-				        node.name = "~alsa_output.*"
-				      }
-				    ]
-				    actions = {
-				      # Apply all the desired node specific settings here.
-				      update-props = {
-				        api.alsa.period-size   = 1024
-				        api.alsa.headroom      = 16384
-				        session.suspend-timeout-seconds = 0
-				      }
-				    }
-				  }
-				]
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+			alsa_monitor.properties = {
+			  ["vm.node.defaults"] = {
+			    ["api.alsa.period-size"] = 1024,
+			    ["api.alsa.headroom"] = 16384,
+			  },
+			}
 _EOT_
-		fi
-	fi
-	fnDbgdump "${__PATH}"				# debugout
-	fnFile_backup "${__PATH}" "init"	# backup initial file
-	# --- bluetooth -----------------------------------------------------------
-	__CONF="${_DIRS_TGET:-}/usr/share/wireplumber/bluetooth.lua.d/50-bluez-config.lua"
-	if [ -e "${__CONF}" ]; then
-		fnFile_backup "${__CONF}"			# backup original file
-		# --- 50-bluez-config.lua ---------------------------------------------
-		__PATH="${_DIRS_TGET:-}/etc/wireplumber/bluetooth.lua.d/${__CONF##*/}"
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+		# --- bluetooth: 51-bluez-config.lua ----------------------------------
+		# headset disabled
+		__PATH="${_DIRS_TGET:-}/etc/wireplumber/bluetooth.lua.d/51-bluez-config.lua"
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
-		cp --preserve=timestamps "${__CONF}" "${__PATH}"
-		sed -i "${__PATH}"                                                                 \
-		    -e '/^bluez_monitor.properties[ \t]*=[ \t]*{$/,/^}$/                        {' \
-		    -e '/\["bluez5.headset-roles"\]/a  \    \["bluez5.headset-roles"\] = "[ ]",'   \
-		    -e '/\["bluez5.hfphsp-backend"\]/a \    \["bluez5.hfphsp-backend"\] = "none",' \
-		    -e '                                                                        }' \
-		    -e '/^bluez_monitor.rules[ \t]*=[ \t]*{$/,/^}$/                             {' \
-		    -e '/^[ \t]*apply_properties[ \t]*=[ \t]*{/,/^[ \t]*},/                     {' \
-		    -e '/\["bluez5.media-source-role"\]/,/^[ \t]*},/                            {' \
-		    -e '/^[ \t]*},/i \        \["bluez5.auto-connect"\] = "\[ a2dp_sink \]",'      \
-		    -e '/^[ \t]*},/i \        \["bluez5.hw-volume"\]    = "\[ a2dp_sink \]",'      \
-		    -e '}}}'
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+			bluez_monitor.properties = {
+			  ["bluez5.headset-roles"] = "[ ]",
+			  ["bluez5.hfphsp-backend"] = "none"
+			}
+
+			bluez_monitor.rules = {
+			  {
+			    matches = {
+			      {
+			        -- Matches all sources.
+			        { "node.name", "matches", "bluez_input.*" },
+			      },
+			      {
+			        -- Matches all sinks.
+			        { "node.name", "matches", "bluez_output.*" },
+			      },
+			    },
+			    apply_properties = {
+			      ["bluez5.auto-connect"] = "[ a2dp_sink ]",
+			      ["bluez5.hw-volume"]    = "[ a2dp_sink ]",
+			    },
+			  },
+			}
+_EOT_
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
 	else
-		# --- bluez.conf ------------------------------------------------------
-		__PATH="${_DIRS_TGET:-}/etc/wireplumber/wireplumber.conf.d/bluez.conf"
+		# --- memo ------------------------------------------------------------
+		# debian-13
+		#   wireplumber: 0.5.8
+		#   pipewire   : 1.4.2
+		# --- alsa: 50-alsa-suspend.conf --------------------------------------
+		# loud pops when starting a sound
+		__PATH="${_DIRS_TGET:-}/etc/wireplumber/wireplumber.conf.d/50-alsa-suspend.conf"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+			monitor.alsa.rules = [
+			  {
+			    matches = [
+			      # This matches the value of the 'node.name' property of the node.
+			      {
+			        node.name = "~alsa_output.*"
+			      }
+			    ]
+			    actions = {
+			      update-props = {
+			        session.suspend-timeout-seconds = 0
+			      }
+			    }
+			  }
+			]
+_EOT_
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+		# --- alsa: 50-alsa-config.conf ---------------------------------------
+		# stuttering audio (in virtual machine)
+		__PATH="${_DIRS_TGET:-}/etc/wireplumber/wireplumber.conf.d/50-alsa-config.conf"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+			monitor.alsa.rules = [
+			  {
+			    matches = [
+			      # This matches the value of the 'node.name' property of the node.
+			      {
+			        node.name = "~alsa_output.*"
+			      }
+			    ]
+			    actions = {
+			      # Apply all the desired node specific settings here.
+			      update-props = {
+			        api.alsa.period-size   = 1024
+			        api.alsa.headroom      = 8192
+			      }
+			    }
+			  }
+			]
+_EOT_
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+		# --- bluetooth: 50-bluez.conf ----------------------------------------
+		# headset disabled
+		__PATH="${_DIRS_TGET:-}/etc/wireplumber/wireplumber.conf.d/50-bluez.conf"
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
 		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
@@ -129,9 +162,9 @@ _EOT_
 			  }
 			]
 _EOT_
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
 	fi
-	fnDbgdump "${__PATH}"				# debugout
-	fnFile_backup "${__PATH}" "init"	# backup initial file
 	# --- service restart -----------------------------------------------------
 	if [ -z "${_TGET_CHRT:-}" ]; then
 		__SRVC="${__SRVC##*/}"

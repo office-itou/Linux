@@ -24,7 +24,6 @@ fnSetup_grub_menu() {
 		    -e  's/ *security=[^ "]* *//'          \
 		    -e  's/ *apparmor=[^ "]* *//'          \
 		    -e  's/ *selinux=[^ "]* *//'           \
-		    -e  's/ *linux *//'                    \
 		    -e  'p}'                               \
 		    "${__PATH}"
 		)"
@@ -71,14 +70,29 @@ fnSetup_grub_menu() {
 		    -e '/^GRUB_CMDLINE_LINUX=.*$/i GRUB_CMDLINE_LINUX_DEFAULT=""'
 	fi
 	sed -i "${__PATH}"                                       \
-	    -e '/^GRUB_RECORDFAIL_TIMEOUT=.*$/                {' \
+	    -e '/^#*GRUB_RECORDFAIL_TIMEOUT=.*$/              {' \
+	    -e 's/^#//                                         ' \
 	    -e 'h; s/^/#/; p; g; s/[0-9]\+$/10/                ' \
 	    -e '}                                              ' \
-	    -e '/^GRUB_TIMEOUT=.*$/                           {' \
+	    -e '/^#*GRUB_TIMEOUT=.*$/                         {' \
+	    -e 's/^#//                                         ' \
 	    -e 'h; s/^/#/; p; g; s/[0-9]\+$/3/                 ' \
 	    -e '}                                              ' \
-	    -e '/^GRUB_CMDLINE_LINUX_DEFAULT=.*$/             {' \
-	    -e 'h; s/^/#/; p; g; s/=.*$/="'"${__BOPT:-}"'"/    ' \
+	    -e '/^#*GRUB_CMDLINE_LINUX_DEFAULT=.*$/           {' \
+	    -e 's/^#//                                         ' \
+	    -e 'h; s/^/#/; p; g;                               ' \
+	    -e 's/=.*$/="'"${__BOPT:-}"'"/                     ' \
+	    -e 's/ *vga=[^ "]* *//                             ' \
+	    -e '}                                              ' \
+	    -e '/^#*GRUB_CMDLINE_LINUX=.*$/                   {' \
+	    -e 's/^#//                                         ' \
+	    -e 'h; s/^/#/; p; g;                               ' \
+	    -e 's/ *vga=[^ "]* *//'                              \
+	    -e '}                                              ' \
+	    -e '/^#*GRUB_GFXMODE=.*$/                         {' \
+	    -e 's/^#//                                         ' \
+	    -e 'h; s/^/#/; p; g;                               ' \
+	    -e 's/=.*$/="1920x1080x32,800x600x16,auto"/        ' \
 	    -e '}'
 	diff --suppress-common-lines --expand-tabs --side-by-side "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}" || true
 	fnDbgdump "${__PATH}"				# debugout

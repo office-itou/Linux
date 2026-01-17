@@ -680,7 +680,7 @@ function fnFind_command() {
 #   return:            : unused
 # --- file backup -------------------------------------------------------------
 function fnFind_serivce() {
-	find "${_DIRS_TGET:-}"/lib/systemd/system/ "${_DIRS_TGET:-}"/usr/lib/systemd/system/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \) 2> /dev/null || true
+	find "${_DIRS_TGET:-}"/lib/systemd/ "${_DIRS_TGET:-}"/usr/lib/systemd/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \) 2> /dev/null || true
 }
 
 # -----------------------------------------------------------------------------

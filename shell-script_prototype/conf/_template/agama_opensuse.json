@@ -40,139 +40,26 @@
     "pre": [
       {
         "name": "zzz_pre.sh",
-        "content": |||
-          #!/bin/sh
-          _COMD_LINE="$(cat /proc/cmdline || true)"
-          for __LINE in ${_COMD_LINE:-}
-          do
-            case "${__LINE}" in
-              debug=*   ) debug="${__LINE#debug=}"   ; export debug;;
-              debugout=*) debugout="${__LINE#debug=}"; export debugout;;
-              *) ;;
-            esac
-          done
-          mkdir -p /var/admin/autoinst/
-          {
-            if [ -n "${debug:-}" ] || [ -n "${debugout:-}" ]; then
-              set -x
-              export -p
-            fi
-            _FILE_SEED=""
-            _COMD_LINE="$(cat /proc/cmdline || true)"
-            for __LINE in ${_COMD_LINE:-}
-            do
-              case "${__LINE}" in
-                preseed/url=*  | url=*  ) _FILE_SEED="${__LINE#*url=}";;
-                preseed/file=* | file=* ) _FILE_SEED="${__LINE#*file=}";;
-                ds=nocloud*             ) _FILE_SEED="${__LINE#*ds=nocloud*=}";_FILE_SEED="${_FILE_SEED%%/}/user-data";;
-                inst.ks=*               ) _FILE_SEED="${__LINE#*inst.ks=}";;
-                autoyast=*              ) _FILE_SEED="${__LINE#*autoyast=}";;
-                inst.auto=*             ) _FILE_SEED="${__LINE#*inst.auto=}";;
-                *) ;;
-              esac
-            done
-            __DIRS="${_FILE_SEED%/user-data}"
-            __DIRS="${__DIRS%/*/*}"
-            __DIRS="${__DIRS%%/}"
-            cd /var/admin/autoinst/ || exit 1
-            echo "download/copy: [${__DIRS:-}]"
-            case "${__DIRS:-}" in
-              http:*|https:*|ftp:*|tftp:*) curl -L -# -O -R -S "${__DIRS:-}/script/autoinst_cmd_early.sh";;
-              nfs:*                      ) ;;
-              hd:sr0:*|cdrom|cdrom:*     ) cp -p "/mnt/install/repo/${__DIRS#*:/}/script/autoinst_cmd_early.sh" ./;;
-              hd:*                       ) ;;
-              hmc                        ) ;;
-              file:*|/*                  ) cp -p "${__DIRS#*:*//}/script/autoinst_cmd_early.sh" ./;;
-              *) ;;
-            esac
-            chmod +x ./autoinst_cmd_early.sh
-            ./autoinst_cmd_early.sh
-          } >> /var/admin/autoinst/autoinst_cmd_early.sh.log 2>&1
-          exit 0
-        |||
+        "content": "#!/bin/sh\n_COMD_LINE=\"$(cat /proc/cmdline || true)\"\nfor __LINE in ${_COMD_LINE:-}\ndo\n  case \"${__LINE}\" in\n    debug=*   ) debug=\"${__LINE#debug=}\"   ; export debug;;\n    debugout=*) debugout=\"${__LINE#debug=}\"; export debugout;;\n    *) ;;\n  esac\ndone\nmkdir -p /var/admin/autoinst/\n{\n  if [ -n \"${debug:-}\" ] || [ -n \"${debugout:-}\" ]; then\n    set -x\n    export -p\n  fi\n  _FILE_SEED=\"\"\n  _COMD_LINE=\"$(cat /proc/cmdline || true)\"\n  for __LINE in ${_COMD_LINE:-}\n  do\n    case \"${__LINE}\" in\n      preseed/url=*  | url=*  ) _FILE_SEED=\"${__LINE#*url=}\";;\n      preseed/file=* | file=* ) _FILE_SEED=\"${__LINE#*file=}\";;\n      ds=nocloud*             ) _FILE_SEED=\"${__LINE#*ds=nocloud*=}\";_FILE_SEED=\"${_FILE_SEED%%/}/user-data\";;\n      inst.ks=*               ) _FILE_SEED=\"${__LINE#*inst.ks=}\";;\n      autoyast=*              ) _FILE_SEED=\"${__LINE#*autoyast=}\";;\n      inst.auto=*             ) _FILE_SEED=\"${__LINE#*inst.auto=}\";;\n      *) ;;\n    esac\n  done\n  __DIRS=\"${_FILE_SEED%/user-data}\"\n  __DIRS=\"${__DIRS%/*/*}\"\n  __DIRS=\"${__DIRS%%/}\"\n  cd /var/admin/autoinst/ || exit 1\n  echo \"download/copy: [${__DIRS:-}]\"\n  case \"${__DIRS:-}\" in\n    http:*|https:*|ftp:*|tftp:*) curl -L -# -O -R -S \"${__DIRS:-}/script/autoinst_cmd_early.sh\";;\n    nfs:*                      ) ;;\n    hd:sr0:*|cdrom|cdrom:*     ) cp -p \"/mnt/install/repo/${__DIRS#*:/}/script/autoinst_cmd_early.sh\" ./;;\n    hd:*                       ) ;;\n    hmc                        ) ;;\n    file:*|/*                  ) cp -p \"${__DIRS#*:*//}/script/autoinst_cmd_early.sh\" ./;;\n    *) ;;\n  esac\n  chmod +x ./autoinst_cmd_early.sh\n  ./autoinst_cmd_early.sh\n} >> /var/admin/autoinst/autoinst_cmd_early.sh.log 2>&1\nexit 0\n"
       }
     ],
     "postPartitioning": [
       {
         "name": "zzz_postpartitioning.sh",
-        "content": |||
-          #!/bin/sh
-          _COMD_LINE="$(cat /proc/cmdline || true)"
-          for __LINE in ${_COMD_LINE:-}
-          do
-            case "${__LINE}" in
-              debug=*   ) debug="${__LINE#debug=}"   ; export debug;;
-              debugout=*) debugout="${__LINE#debug=}"; export debugout;;
-              *) ;;
-            esac
-          done
-          {
-            if [ -n "${debug:-}" ] || [ -n "${debugout:-}" ]; then
-              set -x
-              export -p
-            fi
-            cd /var/admin/autoinst/
-            ./autoinst_cmd_part.sh
-          } >> /var/admin/autoinst/autoinst_cmd_part.sh.log 2>&1
-          exit 0
-        |||
+        "content": "#!/bin/sh\n_COMD_LINE=\"$(cat /proc/cmdline || true)\"\nfor __LINE in ${_COMD_LINE:-}\ndo\n  case \"${__LINE}\" in\n    debug=*   ) debug=\"${__LINE#debug=}\"   ; export debug;;\n    debugout=*) debugout=\"${__LINE#debug=}\"; export debugout;;\n    *) ;;\n  esac\ndone\n{\n  if [ -n \"${debug:-}\" ] || [ -n \"${debugout:-}\" ]; then\n    set -x\n    export -p\n  fi\n  cd /var/admin/autoinst/ || exit\n  ./autoinst_cmd_part.sh\n} >> /var/admin/autoinst/autoinst_cmd_part.sh.log 2>&1\nexit 0\n"
       }
     ],
     "post": [
       {
         "name": "zzz_post.sh",
         "chroot": false,
-        "content": |||
-          #!/bin/sh
-          _COMD_LINE="$(cat /proc/cmdline || true)"
-          for __LINE in ${_COMD_LINE:-}
-          do
-            case "${__LINE}" in
-              debug=*   ) debug="${__LINE#debug=}"   ; export debug;;
-              debugout=*) debugout="${__LINE#debug=}"; export debugout;;
-              *) ;;
-            esac
-          done
-          {
-            if [ -n "${debug:-}" ] || [ -n "${debugout:-}" ]; then
-              set -x
-              export -p
-            fi
-            mkdir -p /mnt/var/admin/
-            mount --bind /var/admin/ /mnt/var/admin/
-            chroot /mnt/ /var/admin/autoinst/autoinst_cmd_late.sh || true
-            umount /mnt/var/admin/ || umount -f /mnt/var/admin/ || umount -l /mnt/var/admin/ || true
-          } >> /var/admin/autoinst/autoinst_cmd_late.sh.log 2>&1
-          [ -d /mnt/var/admin/. ] && cp -pr /var/admin/* /mnt/var/admin/
-          exit 0
-        |||
+        "content": "#!/bin/sh\n_COMD_LINE=\"$(cat /proc/cmdline || true)\"\nfor __LINE in ${_COMD_LINE:-}\ndo\n  case \"${__LINE}\" in\n    debug=*   ) debug=\"${__LINE#debug=}\"   ; export debug;;\n    debugout=*) debugout=\"${__LINE#debug=}\"; export debugout;;\n    *) ;;\n  esac\ndone\n{\n  if [ -n \"${debug:-}\" ] || [ -n \"${debugout:-}\" ]; then\n    set -x\n    export -p\n  fi\n  mkdir -p /mnt/var/admin/\n  mount --bind /var/admin/ /mnt/var/admin/\n  chroot /mnt/ /var/admin/autoinst/autoinst_cmd_late.sh || true\n  umount /mnt/var/admin/ || umount -f /mnt/var/admin/ || umount -l /mnt/var/admin/ || true\n} >> /var/admin/autoinst/autoinst_cmd_late.sh.log 2>&1\n[ -d /mnt/var/admin/. ] && cp -pr /var/admin/* /mnt/var/admin/\nexit 0\n"
       }
     ],
     "init": [
       {
         "name": "zzz_init.sh",
-        "content": |||
-          #!/bin/sh
-          _COMD_LINE="$(cat /proc/cmdline || true)"
-          for __LINE in ${_COMD_LINE:-}
-          do
-            case "${__LINE}" in
-              debug=*   ) debug="${__LINE#debug=}"   ; export debug;;
-              debugout=*) debugout="${__LINE#debug=}"; export debugout;;
-              *) ;;
-            esac
-          done
-          {
-            if [ -n "${debug:-}" ] || [ -n "${debugout:-}" ]; then
-              set -x
-              export -p
-            fi
-            cd /var/admin/autoinst/
-            ./autoinst_cmd_run.sh
-          } >> /var/admin/autoinst/autoinst_cmd_run.sh.log 2>&1
-          [ -d /mnt/var/admin/. ] && cp -pr /var/admin/* /mnt/var/admin/
-          exit 0
-        |||
+        "content": "#!/bin/sh\n_COMD_LINE=\"$(cat /proc/cmdline || true)\"\nfor __LINE in ${_COMD_LINE:-}\ndo\n  case \"${__LINE}\" in\n    debug=*   ) debug=\"${__LINE#debug=}\"   ; export debug;;\n    debugout=*) debugout=\"${__LINE#debug=}\"; export debugout;;\n    *) ;;\n  esac\ndone\n{\n  if [ -n \"${debug:-}\" ] || [ -n \"${debugout:-}\" ]; then\n    set -x\n    export -p\n  fi\n  cd /var/admin/autoinst/ || exit\n  ./autoinst_cmd_run.sh\n} >> /var/admin/autoinst/autoinst_cmd_run.sh.log 2>&1\n[ -d /mnt/var/admin/. ] && cp -pr /var/admin/* /mnt/var/admin/\nexit 0\n"
       }
     ]
   },
@@ -182,7 +69,6 @@
       "gnome",
 // desktop
       "base",
-      "documentation",
       "enhanced_base",
       "minimal_base"
     ],
