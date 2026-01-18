@@ -62,6 +62,13 @@
 		exit 1
 	fi
 
+	# --- check the command ---------------------------------------------------
+	__COMD="gawk"
+	if ! command -v "${__COMD}" > /dev/null 2>&1; then
+		printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n" "${__COMD} is not installed."
+		exit 1
+	fi
+
 	# --- working directory ---------------------------------------------------
 	declare -r    _DIRS_WTOP="${_SUDO_HOME:-"${TMPDIR:-"/tmp"}"}/.workdirs"
 	mkdir -p   "${_DIRS_WTOP}"
@@ -2001,6 +2008,8 @@ function fnMk_preconf_agama() {
 	cp "${__TGET_PATH}" "${__WORK}"
 	sed -i "${__TGET_PATH}"                   \
 	    -e '/"patterns": \[/,/\]/          {' \
+	    -e '\%^// desktop%,\%^// desktop%d }' \
+	    -e '/"patterns": {/,/}/            {' \
 	    -e '\%^// desktop%,\%^// desktop%d }' \
 	    -e '/"packages": \[/,/\]/          {' \
 	    -e '\%^// desktop%,\%^// desktop%d }'

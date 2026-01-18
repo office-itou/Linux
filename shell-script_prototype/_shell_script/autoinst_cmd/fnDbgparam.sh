@@ -13,6 +13,7 @@
 #   g-var : _DIST_NAME : read
 #   g-var : _DIST_VERS : read
 #   g-var : _DIST_CODE : read
+#   g-var : _NMAN_NAME : read
 #   g-var : _NICS_NAME : read
 #   g-var : _NICS_MADR : read
 #   g-var : _NICS_AUTO : read
@@ -113,6 +114,7 @@ fnDbgparam() {
 
 	# --- network parameter ---------------------------------------------------
 	fnDbgout "network info" \
+		"info,_NMAN_NAME=[${_NMAN_NAME:-}]" \
 		"info,_NICS_NAME=[${_NICS_NAME:-}]" \
 		"debug,_NICS_MADR=[${_NICS_MADR:-}]" \
 		"info,_NICS_AUTO=[${_NICS_AUTO:-}]" \

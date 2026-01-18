@@ -356,6 +356,7 @@ fnDbgparam() {
 
 	# --- network parameter ---------------------------------------------------
 	fnDbgout "network info" \
+		"info,_NMAN_NAME=[${_NMAN_NAME:-}]" \
 		"info,_NICS_NAME=[${_NICS_NAME:-}]" \
 		"debug,_NICS_MADR=[${_NICS_MADR:-}]" \
 		"info,_NICS_AUTO=[${_NICS_AUTO:-}]" \

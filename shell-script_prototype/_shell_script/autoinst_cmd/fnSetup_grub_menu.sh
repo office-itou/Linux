@@ -24,38 +24,42 @@ fnSetup_grub_menu() {
 		    -e  's/ *security=[^ "]* *//'          \
 		    -e  's/ *apparmor=[^ "]* *//'          \
 		    -e  's/ *selinux=[^ "]* *//'           \
+		    -e  's/ *vga=[^ "]* *//'               \
 		    -e  'p}'                               \
 		    "${__PATH}"
 		)"
+	__WORK=""
 	case "${_DIST_NAME:-}" in
 		debian|ubuntu)
-			  if [ -n "${__APAR:-}" ]; then __BOPT="${__BOPT:+"${__BOPT} "}security=apparmor apparmor=1"
-			elif [ -n "${__SLNX:-}" ]; then __BOPT="${__BOPT:+"${__BOPT} "}security=selinux selinux=1"
+			  if [ -n "${__APAR:-}" ]; then __WORK="security=apparmor apparmor=1"
+			elif [ -n "${__SLNX:-}" ]; then __WORK="security=selinux selinux=1"
 			fi
 			;;
 		fedora|centos|almalinux|rocky|miraclelinux)
-			  if [ -n "${__SLNX:-}" ]; then __BOPT="${__BOPT:+"${__BOPT} "}security=selinux selinux=1"
-			elif [ -n "${__APAR:-}" ]; then __BOPT="${__BOPT:+"${__BOPT} "}security=apparmor apparmor=1"
+			  if [ -n "${__SLNX:-}" ]; then __WORK="security=selinux selinux=1"
+			elif [ -n "${__APAR:-}" ]; then __WORK="security=apparmor apparmor=1"
 			fi
 			;;
 		opensuse-leap)
 			if [ "${_DIST_VERS%%.*}" -lt 16 ]; then
-				  if [ -n "${__APAR:-}" ]; then __BOPT="${__BOPT:+"${__BOPT} "}security=apparmor apparmor=1"
-				elif [ -n "${__SLNX:-}" ]; then __BOPT="${__BOPT:+"${__BOPT} "}security=selinux selinux=1"
+				  if [ -n "${__APAR:-}" ]; then __WORK="security=apparmor apparmor=1"
+				elif [ -n "${__SLNX:-}" ]; then __WORK="security=selinux selinux=1"
 				fi
 			else
-				  if [ -n "${__SLNX:-}" ]; then __BOPT="${__BOPT:+"${__BOPT} "}security=selinux selinux=1"
-				elif [ -n "${__APAR:-}" ]; then __BOPT="${__BOPT:+"${__BOPT} "}security=apparmor apparmor=1"
+				  if [ -n "${__SLNX:-}" ]; then __WORK="security=selinux selinux=1"
+				elif [ -n "${__APAR:-}" ]; then __WORK="security=apparmor apparmor=1"
 				fi
 			fi
 			;;
 		opensuse-tumbleweed)
-			  if [ -n "${__SLNX:-}" ]; then __BOPT="${__BOPT:+"${__BOPT} "}security=selinux selinux=1"
-			elif [ -n "${__APAR:-}" ]; then __BOPT="${__BOPT:+"${__BOPT} "}security=apparmor apparmor=1"
+			  if [ -n "${__SLNX:-}" ]; then __WORK="security=selinux selinux=1"
+			elif [ -n "${__APAR:-}" ]; then __WORK="security=apparmor apparmor=1"
 			fi
 			;;
 		*) ;;
 	esac
+	__BOPT="${__BOPT:+"${__BOPT} "}${__WORK:-}"
+	__BOPT="$(echo "${__BOPT:-}" | sed -e 's%/%\\/%g')"
 	__ENTR='
 '
 	fnMsgout "${_PROG_NAME:-}" "info" "_DIST_NAME=[${_DIST_NAME:-}]"
@@ -80,9 +84,7 @@ fnSetup_grub_menu() {
 	    -e '}                                              ' \
 	    -e '/^#*GRUB_CMDLINE_LINUX_DEFAULT=.*$/           {' \
 	    -e 's/^#//                                         ' \
-	    -e 'h; s/^/#/; p; g;                               ' \
-	    -e 's/=.*$/="'"${__BOPT:-}"'"/                     ' \
-	    -e 's/ *vga=[^ "]* *//                             ' \
+	    -e 'h; s/^/#/; p; g; s/=.*$/="'"${__BOPT:-}"'"/    ' \
 	    -e '}                                              ' \
 	    -e '/^#*GRUB_CMDLINE_LINUX=.*$/                   {' \
 	    -e 's/^#//                                         ' \

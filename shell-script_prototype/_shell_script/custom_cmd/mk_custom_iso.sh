@@ -60,6 +60,13 @@
 		exit 1
 	fi
 
+	# --- check the command ---------------------------------------------------
+	__COMD="gawk"
+	if ! command -v "${__COMD}" > /dev/null 2>&1; then
+		printf "\033[m${_PROG_NAME}: \033[91m%s\033[m\n" "${__COMD} is not installed."
+		exit 1
+	fi
+
 	# --- working directory ---------------------------------------------------
 	declare -r    _DIRS_WTOP="${_SUDO_HOME:-"${TMPDIR:-"/tmp"}"}/.workdirs"
 	mkdir -p   "${_DIRS_WTOP}"
@@ -1684,6 +1691,8 @@ function fnMk_preconf_agama() {
 	sed -i "${__TGET_PATH}"                   \
 	    -e '/"patterns": \[/,/\]/          {' \
 	    -e '\%^// desktop%,\%^// desktop%d }' \
+	    -e '/"patterns": {/,/}/            {' \
+	    -e '\%^// desktop%,\%^// desktop%d }' \
 	    -e '/"packages": \[/,/\]/          {' \
 	    -e '\%^// desktop%,\%^// desktop%d }'
 	sed -i "${__WORK}"                        \
@@ -2398,17 +2407,26 @@ function fnMk_boot_option_agama() {
 	# --- 3: network ----------------------------------------------------------
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
-		__WORK="${__WORK:+"${__WORK} "}ip=\${ipv4addr}::\${ipv4gway}:\${ipv4mask}:\${hostname}:\${ethrname}:none,auto6 nameserver=\${ipv4nsvr}"
-		case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
-			opensuse-*-15*) __WORK="${__WORK//"${_NICS_NAME:-ens160}"/"eth0"}";;
-			*             ) ;;
-		esac
+		__WORK="${__WORK:+"${__WORK} "}netsetup=dhcp hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
 	fi
-	case "${__MDIA[$((_OSET_MDIA+0))]:-}" in
+	case "${__MDIA[$((_OSET_MDIA+0))]}" in
 		live) __WORK="dhcp";;
 		*   ) __WORK="${__WORK:-"dhcp"}";;
 	esac
 	__BOPT+=("${__WORK}")
+#	__WORK=""
+#	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
+#		__WORK="${__WORK:+"${__WORK} "}ip=\${ipv4addr}::\${ipv4gway}:\${ipv4mask}:\${hostname}:\${ethrname}:none,auto6 nameserver=\${ipv4nsvr}"
+#		case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
+#			opensuse-*-15*) __WORK="${__WORK//"${_NICS_NAME:-ens160}"/"eth0"}";;
+#			*             ) ;;
+#		esac
+#	fi
+#	case "${__MDIA[$((_OSET_MDIA+0))]:-}" in
+#		live) __WORK="dhcp";;
+#		*   ) __WORK="${__WORK:-"dhcp"}";;
+#	esac
+#	__BOPT+=("${__WORK}")
 	# --- 4: otheropt ---------------------------------------------------------
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then

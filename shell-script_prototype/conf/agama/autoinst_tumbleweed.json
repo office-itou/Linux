@@ -8,12 +8,14 @@
     "id": "openSUSE_Leap"
   },
   "root": {
-    "password": "r00t"
+    "password": "r00t",
+    "hashedPassword": false
   },
   "user": {
     "userName": "master",
     "fullName": "Master",
-    "password": "master"
+    "password": "master",
+    "hashedPassword": false
   },
   "scripts": {
     "pre": [
@@ -43,11 +45,15 @@
     ]
   },
   "software": {
-    "patterns": [
-      "base",
-      "enhanced_base",
-      "minimal_base"
-    ],
+    "patterns": {
+      "add": [
+        "base",
+        "basesystem",
+        "documentation",
+        "enhanced_base",
+        "minimal_base"
+      ]
+    },
     "packages": [
       "lvm2",
       "selinux-policy-targeted",
@@ -81,7 +87,24 @@
       "wget",
       "which",
       "zypper"
-    ]
+    ],
+    "extraRepositories": [
+      {
+        "alias": "repo-oss",
+        "name": "Main Repository",
+        "url": "https://download.opensuse.org/distribution/leap/16.0/repo/oss/",
+        "productDir": "/",
+        "priority": 99
+      },
+      {
+        "alias": "repo-update-oss",
+        "name": "Main Update Repository",
+        "url": "https://download.opensuse.org/update/leap/16.0/oss/",
+        "productDir": "/",
+        "priority": 99
+      }
+    ],
+    "onlyRequired": false
   },
   "storage": {
     "drives": [

@@ -55,6 +55,8 @@ function fnMk_preconf_agama() {
 	sed -i "${__TGET_PATH}"                   \
 	    -e '/"patterns": \[/,/\]/          {' \
 	    -e '\%^// desktop%,\%^// desktop%d }' \
+	    -e '/"patterns": {/,/}/            {' \
+	    -e '\%^// desktop%,\%^// desktop%d }' \
 	    -e '/"packages": \[/,/\]/          {' \
 	    -e '\%^// desktop%,\%^// desktop%d }'
 	sed -i "${__WORK}"                        \

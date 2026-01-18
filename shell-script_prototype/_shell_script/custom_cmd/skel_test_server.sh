@@ -64,7 +64,7 @@
 	# shellcheck source=/dev/null
 #	source "${_SHEL_COMD}"/fnDbgdump.sh						# dump output (debug out)
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnDbgparam.sh					# parameter debug output
+#	source "${_SHEL_COMD}"/fnDbgparam.sh					# parameter debug output
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnDbgparameters.sh				# print out of internal variables
 	# shellcheck source=/dev/null
@@ -101,6 +101,8 @@
 	source "${_SHEL_COMD}"/fnTest_cmdline.sh				# test cmdline
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnTest_param.sh					# test parameter
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnTest_netman.sh					# test network manager
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnTest_dns_port.sh				# test dns port
 	# shellcheck source=/dev/null

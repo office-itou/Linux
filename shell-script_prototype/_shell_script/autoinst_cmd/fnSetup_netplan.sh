@@ -28,6 +28,7 @@ fnSetup_netplan() {
 			  version: 2
 			  renderer: NetworkManager
 _EOT_
+		chmod 600 "${__PATH}"
 		fnDbgdump "${__PATH}"				# debugout
 		fnFile_backup "${__PATH}" "init"	# backup initial file
 		# --- 99-disable-network-config.cfg -----------------------------------

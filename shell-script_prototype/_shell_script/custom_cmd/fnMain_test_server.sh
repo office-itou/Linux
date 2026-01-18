@@ -40,6 +40,8 @@ function fnMain() {
 				echo "${_TEXT_GAP2:-}"
 				fnTest_param			# test parameter
 				echo "${_TEXT_GAP2:-}"
+				fnTest_netman			# test network manager
+				echo "${_TEXT_GAP2:-}"
 				fnTest_dns_port			# test dns port
 				echo "${_TEXT_GAP2:-}"
 				fnTest_nslookup			# test nslookup

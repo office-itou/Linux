@@ -123,7 +123,7 @@ _EOT_
 			      # Apply all the desired node specific settings here.
 			      update-props = {
 			        api.alsa.period-size   = 1024
-			        api.alsa.headroom      = 8192
+			        api.alsa.headroom      = 16384
 			      }
 			    }
 			  }

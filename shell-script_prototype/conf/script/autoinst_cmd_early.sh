@@ -376,6 +376,7 @@ fnDbgparam() {
 
 	# --- network parameter ---------------------------------------------------
 	fnDbgout "network info" \
+		"info,_NMAN_NAME=[${_NMAN_NAME:-}]" \
 		"info,_NICS_NAME=[${_NICS_NAME:-}]" \
 		"debug,_NICS_MADR=[${_NICS_MADR:-}]" \
 		"info,_NICS_AUTO=[${_NICS_AUTO:-}]" \
@@ -934,7 +935,7 @@ _EOT_
 			      # Apply all the desired node specific settings here.
 			      update-props = {
 			        api.alsa.period-size   = 1024
-			        api.alsa.headroom      = 8192
+			        api.alsa.headroom      = 16384
 			      }
 			    }
 			  }

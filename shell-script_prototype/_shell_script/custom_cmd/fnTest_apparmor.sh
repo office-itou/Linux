@@ -24,10 +24,12 @@ function fnTest_apparmor() {
 			fnMsgout "\033[36m${_PROG_NAME:-}" "inactive" "${__COMD[0]}"
 		else
 			fnMsgout "\033[36m${_PROG_NAME:-}" "active" "${__COMD[0]}"
-			if aa-status --show=processes > /dev/null 2>&1; then
-				aa-status --show=processes
-			else
-				aa-status --verbose
+			if aa-status > /dev/null 2>&1; then
+				if aa-status --show=processes > /dev/null 2>&1; then
+					aa-status --show=processes
+				else
+					aa-status --verbose
+				fi
 			fi
 		fi
 	fi

@@ -44,19 +44,21 @@ fnSetup_netman() {
 			fnFile_backup "${__PATH}" "init"	# backup initial file
 		done
 	else
-		__PATH="${_DIRS_TGET:-}/etc/NetworkManager/system-connections/${_NICS_NAME}.nmconnection"
+		case "${_DIST_NAME:-}" in
+			debian | \
+			ubuntu ) __PATH="${_DIRS_TGET:-}/etc/NetworkManager/system-connections/Wired connection 1";;
+			*      ) __PATH="${_DIRS_TGET:-}/etc/NetworkManager/system-connections/${_NICS_NAME}.nmconnection";;
+		esac
 		__SRVC="NetworkManager.service"
+		__NAME=""
 		__UUID=""
 		if [ -z "${_TGET_CHRT:-}" ]; then
 			if systemctl --quiet is-active "${__SRVC}"; then
-				__UUID="$(nmcli --fields DEVICE,UUID connection show | awk '$1=="'"${_NICS_NAME}"'" {print $2;}')"
-				for __FIND in "${_DIRS_TGET:-}/etc/NetworkManager/system-connections/"* "${_DIRS_TGET:-}/run/NetworkManager/system-connections/"*
-				do
-					if grep -Hqs "uuid=${__UUID}" "${__FIND}"; then
-						__PATH="${__FIND}"
-						break
-					fi
-				done
+				__WORK="$(nmcli --terse --fields DEVICE,UUID,NAME connection show | awk -F ':' '$1=="'"${_NICS_NAME}"'"')"
+				__NAME="${__WORK##*:}"
+				__UUID="${__WORK%:"${__NAME}"}"
+				__UUID="${__UUID#"${_NICS_NAME}":}"
+				__PATH="$(find /etc/NetworkManager/system-connections/ /run/NetworkManager/system-connections/ -name "${__NAME}*")"
 			fi
 		fi
 		fnFile_backup "${__PATH}"			# backup original file
@@ -155,7 +157,7 @@ _EOT_
 			fi
 		fi
 	fi
-	unset __SRVC __CONF __PATH __UUID __CNID
+	unset __WORK __SRVC __CONF __PATH __NAME __UUID __CNID
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 

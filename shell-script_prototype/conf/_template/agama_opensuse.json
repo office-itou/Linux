@@ -26,15 +26,17 @@
     "timezone": "Asia/Tokyo"
   },
   "product": {
-    "id": "Tumbleweed"
+    "id": "Leap"
   },
   "root": {
-    "password": "r00t"
+    "password": "r00t",
+    "hashedPassword": false
   },
   "user": {
     "userName": "master",
     "fullName": "Master",
-    "password": "master"
+    "password": "master",
+    "hashedPassword": false
   },
   "scripts": {
     "pre": [
@@ -64,14 +66,18 @@
     ]
   },
   "software": {
-    "patterns": [
+    "patterns": {
+      "add": [
 // desktop
-      "gnome",
+        "gnome",
 // desktop
-      "base",
-      "enhanced_base",
-      "minimal_base"
-    ],
+        "base",
+        "basesystem",
+        "documentation",
+        "enhanced_base",
+        "minimal_base"
+      ]
+    },
     "packages": [
 // desktop
       "rhythmbox",
@@ -108,7 +114,24 @@
       "wget",
       "which",
       "zypper"
-    ]
+    ],
+    "extraRepositories": [
+      {
+        "alias": "repo-oss",
+        "name": "Main Repository",
+        "url": "https://download.opensuse.org/distribution/leap/16.0/repo/oss/",
+        "productDir": "/",
+        "priority": 99
+      },
+      {
+        "alias": "repo-update-oss",
+        "name": "Main Update Repository",
+        "url": "https://download.opensuse.org/update/leap/16.0/oss/",
+        "productDir": "/",
+        "priority": 99
+      }
+    ],
+    "onlyRequired": false
   },
   "storage": {
     "drives": [
