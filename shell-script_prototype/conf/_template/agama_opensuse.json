@@ -73,7 +73,6 @@
 // desktop
         "base",
         "basesystem",
-        "documentation",
         "enhanced_base",
         "minimal_base"
       ]
