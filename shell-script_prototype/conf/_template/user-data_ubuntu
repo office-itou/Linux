@@ -283,7 +283,7 @@ autoinstall:
             export -p;
           fi;
           /var/admin/autoinst/autoinst_cmd_run.sh;
-        } >> /var/admin/autoinst/autoinst_cmd_run.sh.log 2>&1;
+        } | tee -a /var/admin/autoinst/autoinst_cmd_run.sh.log 2>&1;
         exit 0;
       ' ]
 #   timezone: Asia/Tokyo
@@ -354,7 +354,7 @@ autoinstall:
         esac;
         chmod +x ./autoinst_cmd_early.sh;
         ./autoinst_cmd_early.sh;
-      } >> /var/admin/autoinst/autoinst_cmd_early.sh.log 2>&1;
+      } | tee -a /var/admin/autoinst/autoinst_cmd_early.sh.log 2>&1;
       exit 0;
     ' ]
 # =============================================================================
@@ -394,7 +394,7 @@ autoinstall:
         if [ -d /target/. ]; then
           umount /target/var/admin/;
         fi;
-      } >> /var/admin/autoinst/autoinst_cmd_late.sh.log 2>&1;
+      } | tee -a /var/admin/autoinst/autoinst_cmd_late.sh.log 2>&1;
       cp -pr /var/admin/* /target/var/admin/;
       exit 0;
     ' ]
