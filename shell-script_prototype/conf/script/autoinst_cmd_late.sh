@@ -3104,7 +3104,7 @@ fnSetup_grub_menu() {
 	    -e '/^#*GRUB_RECORDFAIL_TIMEOUT=.*$/    {s/^#//; h; s/^/#/; p; g; s/[0-9]\+$/10/}' \
 	    -e '/^#*GRUB_TIMEOUT=.*$/               {s/^#//; h; s/^/#/; p; g; s/[0-9]\+$/3/ }' \
 	    -e '/^#*GRUB_GFXMODE=.*$/               {s/^#//; h; s/^/#/; p; g; s/=.*$/="1920x1080,800x600,auto"/}' \
-	    -e '/^#*GRUB_INIT_TUNE=.*$/             {s/^#//; h; s/^/#/; p; g; s/=.*$/="480 440 1"/}' \
+	    -e '/^#*GRUB_INIT_TUNE=.*$/             {s/^#//; h; s/^/#/; p; g; s/=.*$/="960 440 1 0 4 440 1"/}' \
 	    -e '/^#*GRUB_CMDLINE_LINUX=.*$/         {s/^#//; h; s/^/#/; p; g; s/=.*$/="'"${__BOPT:-}"'"/}'
 	diff --suppress-common-lines --expand-tabs --side-by-side "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}" || true
 	fnDbgdump "${__PATH}"				# debugout

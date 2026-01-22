@@ -13,6 +13,7 @@
 | ubuntu-24.04         |     -     |     -     |     ･     |     ･     |     -     |                                  |
 | ubuntu-25.04         |     -     |     -     |     ･     |     ･     |     -     |                                  |
 | ubuntu-25.10         |     -     |     -     |     ･     |     ･     |     -     |                                  |
+| ubuntu-26.04         |     -     |     -     |     ･     |     ･     |     -     |                                  |
 | fedora-43            |     -     |     ･     |     ･     |     -     |     -     |                                  |
 | centos-stream-9      |     -     |     ･     |     ･     |     -     |     -     |                                  |
 | centos-stream-10     |     -     |     ･     |     ･     |     -     |     -     |                                  |
@@ -44,6 +45,7 @@
 | ubuntu-24.04         |     -     |     -     |     o     |     x     |     -     | out of memory at 8GiB            |
 | ubuntu-25.04         |     -     |     -     |     o     |     x     |     -     | out of memory at 8GiB            |
 | ubuntu-25.10         |     -     |     -     |     o     |     x     |     -     | out of memory at 8GiB            |
+| ubuntu-26.04         |     -     |     -     |     o     |     x     |     -     | out of memory at 8GiB            |
 | fedora-43            |     -     |     o     |     o     |     -     |     -     |                                  |
 | centos-stream-9      |     -     |     o     |     ･     |     -     |     -     |                                  |
 | centos-stream-10     |     -     |     o     |     ･     |     -     |     -     |                                  |
@@ -74,6 +76,7 @@
 | ubuntu-24.04         |     -     |     -     |     ･     |     ･     |     -     |                                  |
 | ubuntu-25.04         |     -     |     -     |     ･     |     ･     |     -     |                                  |
 | ubuntu-25.10         |     -     |     -     |     ･     |     ･     |     -     |                                  |
+| ubuntu-26.04         |     -     |     -     |     ･     |     ･     |     -     |                                  |
 | fedora-43            |     -     |     ･     |     ･     |     -     |     -     |                                  |
 | centos-stream-9      |     -     |     ･     |     ･     |     -     |     -     |                                  |
 | centos-stream-10     |     -     |     ･     |     ･     |     -     |     -     |                                  |
@@ -104,6 +107,7 @@
 | ubuntu-24.04         |     -     |     -     |     ･     |     ･     |     -     |                                  |
 | ubuntu-25.04         |     -     |     -     |     ･     |     ･     |     -     |                                  |
 | ubuntu-25.10         |     -     |     -     |     ･     |     ･     |     -     |                                  |
+| ubuntu-26.04         |     -     |     -     |     ･     |     ･     |     -     |                                  |
 | fedora-43            |     -     |     ･     |     ･     |     -     |     -     |                                  |
 | centos-stream-9      |     -     |     ･     |     ･     |     -     |     -     |                                  |
 | centos-stream-10     |     -     |     ･     |     ･     |     -     |     -     |                                  |
