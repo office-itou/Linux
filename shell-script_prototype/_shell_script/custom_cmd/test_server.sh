@@ -939,6 +939,165 @@ function fnTest_param() {
 }
 
 # -----------------------------------------------------------------------------
+# descript: test service
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+function fnTest_service() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	declare -r -a __COMD=("wget")
+	declare       __SRVC=""
+	declare       __RELT=""
+	declare -a    __STAT=()
+
+	# --- test service --------------------------------------------------------
+	if ! command -v "${__COMD[0]}" > /dev/null 2>&1; then
+		fnMsgout "${_PROG_NAME:-}" "skip" "${__COMD[*]}"
+	else
+		for __SRVC in \
+			apparmor.service auditd.service \
+			firewalld.service clamav-freshclam.service \
+			NetworkManager.service systemd-resolved.service dnsmasq.service \
+			systemd-timesyncd.service chronyd.service\
+			open-vm-tools.service vmtoolsd.service \
+			ssh.service sshd.service \
+			apache2.service httpd.service \
+			smb.service smbd.service \
+			nmb.service nmbd.service \
+			avahi-daemon.service
+		do
+			__RELT="$(systemctl is-active "${__SRVC}" || true)"
+			__WORK="$(systemctl list-unit-files --type=service "${__SRVC}" | grep "${__SRVC}" || true)"
+			read -r -a __STAT < <(echo "${__WORK:-"-------- -------- --------"}")
+			__WORK="$(printf "%-30s:%-8s:%s" "${__SRVC:-}" "${__STAT[1]:-}" "${__STAT[2]:-}")"
+			fnMsgout "\033[36m${_PROG_NAME:-}" "${__RELT}" "${__WORK:-}"
+		done
+	fi
+	unset __SRVC __RELT __WORK
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+	fnDbgparameters
+#	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: test apparmor
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+function fnTest_apparmor() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	declare -r -a __COMD=("apparmor")
+	declare       __PARM=""
+	declare -a    __ARRY=()
+
+	# --- test apparmor -------------------------------------------------------
+	if ! command -v aa-enabled > /dev/null 2>&1; then
+		fnMsgout "${_PROG_NAME:-}" "skip" "${__COMD[*]}"
+	else
+		if ! aa-enabled > /dev/null 2>&1; then
+			fnMsgout "\033[36m${_PROG_NAME:-}" "inactive" "${__COMD[0]}"
+		else
+			fnMsgout "\033[36m${_PROG_NAME:-}" "active" "${__COMD[0]}"
+			if aa-status > /dev/null 2>&1; then
+				if aa-status --show=processes > /dev/null 2>&1; then
+					aa-status --show=processes
+				else
+					aa-status --verbose
+				fi
+			fi
+		fi
+	fi
+	unset __PARM __ARRY
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+	fnDbgparameters
+#	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: test selinux
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+function fnTest_selinux() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	declare -r -a __COMD=("selinux")
+	declare       __PARM=""
+	declare -a    __ARRY=()
+
+	# --- test selinux --------------------------------------------------------
+	if ! command -v getenforce > /dev/null 2>&1; then
+		fnMsgout "${_PROG_NAME:-}" "skip" "${__COMD[*]}"
+	else
+		if ! selinuxenabled > /dev/null 2>&1; then
+			fnMsgout "\033[36m${_PROG_NAME:-}" "inactive" "${__COMD[0]}"
+		else
+			fnMsgout "\033[36m${_PROG_NAME:-}" "active" "${__COMD[0]}"
+			sestatus
+		fi
+	fi
+	unset __PARM __ARRY
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+	fnDbgparameters
+#	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: test vmware
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+function fnTest_vmware() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	declare -r -a __COMD=("vmware")
+	declare       __PARM=""
+	declare -a    __ARRY=()
+
+	# --- test vmware ---------------------------------------------------------
+	if ! command -v vmware-checkvm > /dev/null 2>&1; then
+		fnMsgout "${_PROG_NAME:-}" "skip" "${__COMD[*]}"
+	else
+		if ! vmware-checkvm > /dev/null 2>&1; then
+			fnMsgout "\033[36m${_PROG_NAME:-}" "inactive" "${__COMD[0]}"
+		else
+			fnMsgout "\033[36m${_PROG_NAME:-}" "active" "${__COMD[0]}"
+			df -h /srv/hgfs/
+		fi
+	fi
+	unset __PARM __ARRY
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+	fnDbgparameters
+#	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
 # descript: test network manager
 #   input :            : unused
 #   output:   stdout   : message
@@ -1454,165 +1613,6 @@ function fnTest_httpd() {
 #	unset __FUNC_NAME
 }
 
-# -----------------------------------------------------------------------------
-# descript: test service
-#   input :            : unused
-#   output:   stdout   : message
-#   return:            : unused
-function fnTest_service() {
-	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
-	_DBGS_FAIL+=("${__FUNC_NAME:-}")
-	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
-
-	declare -r -a __COMD=("wget")
-	declare       __SRVC=""
-	declare       __RELT=""
-	declare -a    __STAT=()
-
-	# --- test service --------------------------------------------------------
-	if ! command -v "${__COMD[0]}" > /dev/null 2>&1; then
-		fnMsgout "${_PROG_NAME:-}" "skip" "${__COMD[*]}"
-	else
-		for __SRVC in \
-			apparmor.service auditd.service \
-			firewalld.service clamav-freshclam.service \
-			NetworkManager.service systemd-resolved.service dnsmasq.service \
-			systemd-timesyncd.service chronyd.service\
-			open-vm-tools.service vmtoolsd.service \
-			ssh.service sshd.service \
-			apache2.service httpd.service \
-			smb.service smbd.service \
-			nmb.service nmbd.service \
-			avahi-daemon.service
-		do
-			__RELT="$(systemctl is-active "${__SRVC}" || true)"
-			__WORK="$(systemctl list-unit-files --type=service "${__SRVC}" | grep "${__SRVC}" || true)"
-			read -r -a __STAT < <(echo "${__WORK:-"-------- -------- --------"}")
-			__WORK="$(printf "%-30s:%-8s:%s" "${__SRVC:-}" "${__STAT[1]:-}" "${__STAT[2]:-}")"
-			fnMsgout "\033[36m${_PROG_NAME:-}" "${__RELT}" "${__WORK:-}"
-		done
-	fi
-	unset __SRVC __RELT __WORK
-
-	# --- complete ------------------------------------------------------------
-	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
-	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
-	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
-	fnDbgparameters
-#	unset __FUNC_NAME
-}
-
-# -----------------------------------------------------------------------------
-# descript: test apparmor
-#   input :            : unused
-#   output:   stdout   : message
-#   return:            : unused
-function fnTest_apparmor() {
-	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
-	_DBGS_FAIL+=("${__FUNC_NAME:-}")
-	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
-
-	declare -r -a __COMD=("apparmor")
-	declare       __PARM=""
-	declare -a    __ARRY=()
-
-	# --- test apparmor -------------------------------------------------------
-	if ! command -v aa-enabled > /dev/null 2>&1; then
-		fnMsgout "${_PROG_NAME:-}" "skip" "${__COMD[*]}"
-	else
-		if ! aa-enabled > /dev/null 2>&1; then
-			fnMsgout "\033[36m${_PROG_NAME:-}" "inactive" "${__COMD[0]}"
-		else
-			fnMsgout "\033[36m${_PROG_NAME:-}" "active" "${__COMD[0]}"
-			if aa-status > /dev/null 2>&1; then
-				if aa-status --show=processes > /dev/null 2>&1; then
-					aa-status --show=processes
-				else
-					aa-status --verbose
-				fi
-			fi
-		fi
-	fi
-	unset __PARM __ARRY
-
-	# --- complete ------------------------------------------------------------
-	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
-	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
-	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
-	fnDbgparameters
-#	unset __FUNC_NAME
-}
-
-# -----------------------------------------------------------------------------
-# descript: test selinux
-#   input :            : unused
-#   output:   stdout   : message
-#   return:            : unused
-function fnTest_selinux() {
-	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
-	_DBGS_FAIL+=("${__FUNC_NAME:-}")
-	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
-
-	declare -r -a __COMD=("selinux")
-	declare       __PARM=""
-	declare -a    __ARRY=()
-
-	# --- test selinux --------------------------------------------------------
-	if ! command -v getenforce > /dev/null 2>&1; then
-		fnMsgout "${_PROG_NAME:-}" "skip" "${__COMD[*]}"
-	else
-		if ! selinuxenabled > /dev/null 2>&1; then
-			fnMsgout "\033[36m${_PROG_NAME:-}" "inactive" "${__COMD[0]}"
-		else
-			fnMsgout "\033[36m${_PROG_NAME:-}" "active" "${__COMD[0]}"
-			sestatus
-		fi
-	fi
-	unset __PARM __ARRY
-
-	# --- complete ------------------------------------------------------------
-	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
-	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
-	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
-	fnDbgparameters
-#	unset __FUNC_NAME
-}
-
-# -----------------------------------------------------------------------------
-# descript: test vmware
-#   input :            : unused
-#   output:   stdout   : message
-#   return:            : unused
-function fnTest_vmware() {
-	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
-	_DBGS_FAIL+=("${__FUNC_NAME:-}")
-	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
-
-	declare -r -a __COMD=("vmware")
-	declare       __PARM=""
-	declare -a    __ARRY=()
-
-	# --- test vmware ---------------------------------------------------------
-	if ! command -v vmware-checkvm > /dev/null 2>&1; then
-		fnMsgout "${_PROG_NAME:-}" "skip" "${__COMD[*]}"
-	else
-		if ! vmware-checkvm > /dev/null 2>&1; then
-			fnMsgout "\033[36m${_PROG_NAME:-}" "inactive" "${__COMD[0]}"
-		else
-			fnMsgout "\033[36m${_PROG_NAME:-}" "active" "${__COMD[0]}"
-			df -h /srv/hgfs/
-		fi
-	fi
-	unset __PARM __ARRY
-
-	# --- complete ------------------------------------------------------------
-	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
-	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
-	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
-	fnDbgparameters
-#	unset __FUNC_NAME
-}
-
 # *** main section ************************************************************
 
 # -----------------------------------------------------------------------------
@@ -1671,6 +1671,14 @@ function fnMain() {
 				echo "${_TEXT_GAP2:-}"
 				fnTest_param			# test parameter
 				echo "${_TEXT_GAP2:-}"
+				fnTest_service			# test service
+				echo "${_TEXT_GAP2:-}"
+				fnTest_apparmor			# test apparmor
+				echo "${_TEXT_GAP2:-}"
+				fnTest_selinux			# test selinux
+				echo "${_TEXT_GAP2:-}"
+				fnTest_vmware			# test vmware
+				echo "${_TEXT_GAP2:-}"
 				fnTest_netman			# test network manager
 				echo "${_TEXT_GAP2:-}"
 				fnTest_dns_port			# test dns port
@@ -1694,14 +1702,6 @@ function fnMain() {
 				fnTest_pdbedit			# test pdbedit
 				echo "${_TEXT_GAP2:-}"
 				fnTest_httpd			# test httpd
-				echo "${_TEXT_GAP2:-}"
-				fnTest_service			# test service
-				echo "${_TEXT_GAP2:-}"
-				fnTest_apparmor			# test apparmor
-				echo "${_TEXT_GAP2:-}"
-				fnTest_selinux			# test selinux
-				echo "${_TEXT_GAP2:-}"
-				fnTest_vmware			# test vmware
 				echo "${_TEXT_GAP2:-}"
 				;;
 		esac

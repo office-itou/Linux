@@ -76,9 +76,9 @@ function fnMk_pxeboot_ipxe_linux() {
 			isset \${openmenu} && present ||
 			echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
 			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
-			set options \${autoinst} \${language} \${networks} \${otheropt}
+			set options \${autoinst} \${language} \${networks} \${otheropt} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
 			echo Loading boot files ...
-			kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"} || goto error
+			kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} || goto error
 			initrd \${knladdr}/${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} || goto error
 			boot || goto error
 			exit
@@ -98,9 +98,9 @@ _EOT_
 			set otheropt ${__BOPT[@]:3}
 			echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
 			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
-			set options \${autoinst} \${language} \${networks} \${otheropt}
+			set options \${autoinst} \${language} \${networks} \${otheropt} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
 			echo Loading boot files ...
-			kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"} || goto error
+			kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} || goto error
 			initrd \${knladdr}/${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} || goto error
 			boot || goto error
 			exit

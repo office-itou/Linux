@@ -40,6 +40,14 @@ function fnMain() {
 				echo "${_TEXT_GAP2:-}"
 				fnTest_param			# test parameter
 				echo "${_TEXT_GAP2:-}"
+				fnTest_service			# test service
+				echo "${_TEXT_GAP2:-}"
+				fnTest_apparmor			# test apparmor
+				echo "${_TEXT_GAP2:-}"
+				fnTest_selinux			# test selinux
+				echo "${_TEXT_GAP2:-}"
+				fnTest_vmware			# test vmware
+				echo "${_TEXT_GAP2:-}"
 				fnTest_netman			# test network manager
 				echo "${_TEXT_GAP2:-}"
 				fnTest_dns_port			# test dns port
@@ -63,14 +71,6 @@ function fnMain() {
 				fnTest_pdbedit			# test pdbedit
 				echo "${_TEXT_GAP2:-}"
 				fnTest_httpd			# test httpd
-				echo "${_TEXT_GAP2:-}"
-				fnTest_service			# test service
-				echo "${_TEXT_GAP2:-}"
-				fnTest_apparmor			# test apparmor
-				echo "${_TEXT_GAP2:-}"
-				fnTest_selinux			# test selinux
-				echo "${_TEXT_GAP2:-}"
-				fnTest_vmware			# test vmware
 				echo "${_TEXT_GAP2:-}"
 				;;
 		esac

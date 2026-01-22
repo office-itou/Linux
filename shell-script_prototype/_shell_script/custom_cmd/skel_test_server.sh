@@ -102,6 +102,14 @@
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnTest_param.sh					# test parameter
 	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnTest_service.sh				# test service
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnTest_apparmor.sh				# test apparmor
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnTest_selinux.sh				# test selinux
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnTest_vmware.sh					# test vmware
+	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnTest_netman.sh					# test network manager
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnTest_dns_port.sh				# test dns port
@@ -125,14 +133,6 @@
 	source "${_SHEL_COMD}"/fnTest_pdbedit.sh				# test pdbedit
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnTest_httpd.sh					# test httpd
-	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_service.sh				# test service
-	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_apparmor.sh				# test apparmor
-	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_selinux.sh				# test selinux
-	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_vmware.sh					# test vmware
 
 # *** main section ************************************************************
 

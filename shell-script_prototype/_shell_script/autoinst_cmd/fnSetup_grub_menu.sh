@@ -52,12 +52,33 @@ fnSetup_grub_menu() {
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
 	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	# --- GRUB_TIMEOUT --------------------------------------------------------
 	__WORK="$(sed -ne 's/^#*GRUB_TIMEOUT=\(.*\)$/\1/p' "${__PATH}")"
 	[ -z "${__WORK:-}" ] && echo "GRUB_TIMEOUT=\"\"" >> "${__PATH}"
+	# --- GRUB_GFXMODE --------------------------------------------------------
 	__WORK="$(sed -ne 's/^#*GRUB_GFXMODE=\(.*\)$/\1/p' "${__PATH}")"
 	[ -z "${__WORK:-}" ] && echo "GRUB_GFXMODE=\"\"" >> "${__PATH}"
+	# --- GRUB_INIT_TUNE ------------------------------------------------------
 	__WORK="$(sed -ne 's/^#*GRUB_INIT_TUNE=\(.*\)$/\1/p' "${__PATH}")"
 	[ -z "${__WORK:-}" ] && echo "GRUB_INIT_TUNE=\"\"" >> "${__PATH}"
+	# --- GRUB_CMDLINE_LINUX_DEFAULT ------------------------------------------
+	__WORK="$(sed -ne 's/^#*GRUB_CMDLINE_LINUX_DEFAULT=\(.*\)$/\1/p' "${__PATH}")"
+	[ -z "${__WORK:-}" ] && echo "GRUB_CMDLINE_LINUX_DEFAULT=\"\"" >> "${__PATH}"
+	__WORK="${__WORK#\"}"
+	__WORK="${__WORK%\"}"
+	__DEFS=""
+	for __LINE in ${__WORK:-}
+	do
+		case "${__LINE:-}" in
+			security=*) ;;
+			apparmor=*) ;;
+			selinux=*) ;;
+			quiet) ;;
+			vga=*) ;;
+			*) __DEFS="${__DEFS:+"${__DEFS} "}${__LINE:-}";;
+		esac
+	done
+	# --- GRUB_CMDLINE_LINUX --------------------------------------------------
 	__WORK="$(sed -ne 's/^#*GRUB_CMDLINE_LINUX=\(.*\)$/\1/p' "${__PATH}")"
 	[ -z "${__WORK:-}" ] && echo "GRUB_CMDLINE_LINUX=\"\"" >> "${__PATH}"
 	__WORK="${__WORK#\"}"
@@ -69,13 +90,14 @@ fnSetup_grub_menu() {
 			security=*) ;;
 			apparmor=*) ;;
 			selinux=*) ;;
-			quiet=*) ;;
+			quiet) ;;
 			vga=*) ;;
 			*) __BOPT="${__BOPT:+"${__BOPT} "}${__LINE:-}";;
 		esac
 	done
 	__BOPT="${__BOPT:+"${__BOPT} "}${__SCRT:-}"
 	__BOPT="$(echo "${__BOPT:-}" | sed -e 's%/%\\/%g')"
+	# -------------------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "info" "_DIST_NAME=[${_DIST_NAME:-}]"
 	fnMsgout "${_PROG_NAME:-}" "info" "    __BOPT=[${__BOPT:-}]"
 	fnMsgout "${_PROG_NAME:-}" "info" "    __SLNX=[${__SLNX:-}]"
@@ -85,21 +107,28 @@ fnSetup_grub_menu() {
 	    -e '/^#*GRUB_TIMEOUT=.*$/               {s/^#//; h; s/^/#/; p; g; s/[0-9]\+$/3/ }' \
 	    -e '/^#*GRUB_GFXMODE=.*$/               {s/^#//; h; s/^/#/; p; g; s/=.*$/="1920x1080,800x600,auto"/}' \
 	    -e '/^#*GRUB_INIT_TUNE=.*$/             {s/^#//; h; s/^/#/; p; g; s/=.*$/="960 440 1 0 4 440 1"/}' \
+	    -e '/^#*GRUB_CMDLINE_LINUX_DEFAULT=.*$/ {s/^#//; h; s/^/#/; p; g; s/=.*$/="'"${__DEFS:-}"'"/}' \
 	    -e '/^#*GRUB_CMDLINE_LINUX=.*$/         {s/^#//; h; s/^/#/; p; g; s/=.*$/="'"${__BOPT:-}"'"/}'
-	diff --suppress-common-lines --expand-tabs --side-by-side "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}" || true
+	diff --suppress-common-lines --expand-tabs "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}" || true
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
 	# --- grub.cfg --------------------------------------------------------
 	__PATH="$(find "${_DIRS_TGET:-}"/boot/ -ipath '/*/efi' -prune -o -name 'grub.cfg' -print)"
 	fnMsgout "${_PROG_NAME:-}" "create" "[${__PATH}]"
 	if command -v grub-mkconfig > /dev/null 2>&1; then
+		fnMsgout "${_PROG_NAME:-}" "info" "grub-mkconfig"
 		grub-mkconfig --output="${__PATH:?}"
 	elif command -v grub2-mkconfig > /dev/null 2>&1; then
-		grub2-mkconfig --output="${__PATH:?}" --update-bls-cmdline
+		fnMsgout "${_PROG_NAME:-}" "info" "grub2-mkconfig"
+		if ! grub2-mkconfig --output="${__PATH:?}" --update-bls-cmdline > /dev/null 2>&1; then
+			fnMsgout "${_PROG_NAME:-}" "info" "grubby"
+			grubby --update-kernel=ALL --remove-args="security apparmor selinux quiet vga" --args="${__BOPT:-}"
+			grub2-mkconfig --output="${__PATH:?}"
+		fi
 	fi
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
-	unset __NAME __VERS __BOPT __SLNX __APAR __LINE __ENTR __WORK
+	unset __NAME __VERS __DEFS __BOPT __SLNX __APAR __LINE __ENTR __WORK __PATH
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
