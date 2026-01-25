@@ -57,10 +57,10 @@ fnSetup_dnsmasq() {
 
 		# --- dns ---------------------------------------------------------------------
 		#port=0                                                     # listening port
-		#bogus-priv                                                 # do not perform reverse lookup of private ip address on upstream server
-		#domain-needed                                              # do not forward plain names
-		$(printf "%-60s" "#domain=${_NICS_WGRP:-}")# local domain name
-		#expand-hosts                                               # add domain name to host
+		bogus-priv                                                  # do not perform reverse lookup of private ip address on upstream server
+		domain-needed                                               # do not forward plain names
+		$(printf "%-60s" "domain=${_NICS_WGRP:-}")# local domain name
+		expand-hosts                                                # add domain name to host
 		#filterwin2k                                                # filter for windows
 		$(printf "%-60s" "#interface=${_NICS_NAME##-:-}")# listen to interface
 		$(printf "%-60s" "#listen-address=${_IPV4_LHST:-}")# listen to ip address
@@ -70,7 +70,7 @@ fnSetup_dnsmasq() {
 		$(printf "%-60s" "#server=${_NICS_DNS4:-}")# directly specify upstream server
 		#server=8.8.8.8                                             # directly specify upstream server
 		#server=8.8.4.4                                             # directly specify upstream server
-		#no-hosts                                                   # don't read the hostnames in /etc/hosts
+		no-hosts                                                    # don't read the hostnames in /etc/hosts
 		#no-poll                                                    # don't poll /etc/resolv.conf for changes
 		#no-resolv                                                  # don't read /etc/resolv.conf
 		#strict-order                                               # try in the registration order of /etc/resolv.conf

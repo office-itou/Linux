@@ -1471,6 +1471,44 @@ _EOT_
 }
 
 # -----------------------------------------------------------------------------
+# descript: tcp wrapper
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnSetup_tcp_wrapper() {
+	__FUNC_NAME="fnSetup_tcp_wrapper"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	# --- hosts.allow ---------------------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/hosts.allow"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+		All: [fe80::]/10
+		ALL: ${_NICS_IPV4%.*}.0/24
+_EOT_
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
+
+	# --- hosts.deny ----------------------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/hosts.deny"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+		All: ALL
+_EOT_
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
+	unset __PATH
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
 # descript: firewalld
 #   input :            : unused
 #   output:   stdout   : message
@@ -1624,10 +1662,10 @@ fnSetup_dnsmasq() {
 
 		# --- dns ---------------------------------------------------------------------
 		#port=0                                                     # listening port
-		#bogus-priv                                                 # do not perform reverse lookup of private ip address on upstream server
-		#domain-needed                                              # do not forward plain names
-		$(printf "%-60s" "#domain=${_NICS_WGRP:-}")# local domain name
-		#expand-hosts                                               # add domain name to host
+		bogus-priv                                                  # do not perform reverse lookup of private ip address on upstream server
+		domain-needed                                               # do not forward plain names
+		$(printf "%-60s" "domain=${_NICS_WGRP:-}")# local domain name
+		expand-hosts                                                # add domain name to host
 		#filterwin2k                                                # filter for windows
 		$(printf "%-60s" "#interface=${_NICS_NAME##-:-}")# listen to interface
 		$(printf "%-60s" "#listen-address=${_IPV4_LHST:-}")# listen to ip address
@@ -1637,7 +1675,7 @@ fnSetup_dnsmasq() {
 		$(printf "%-60s" "#server=${_NICS_DNS4:-}")# directly specify upstream server
 		#server=8.8.8.8                                             # directly specify upstream server
 		#server=8.8.4.4                                             # directly specify upstream server
-		#no-hosts                                                   # don't read the hostnames in /etc/hosts
+		no-hosts                                                    # don't read the hostnames in /etc/hosts
 		#no-poll                                                    # don't poll /etc/resolv.conf for changes
 		#no-resolv                                                  # don't read /etc/resolv.conf
 		#strict-order                                               # try in the registration order of /etc/resolv.conf
@@ -1815,9 +1853,20 @@ _EOT_
 		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
 			[Resolve]
-			MulticastDNS=yes
-			DNS=${_NICS_DNS4}
+			DNS=${_IPV4_LHST}
+			#FallbackDNS=
 			Domains=${_NICS_WGRP}
+			#DNSSEC=no
+			#DNSOverTLS=no
+			MulticastDNS=yes
+			#LLMNR=yes
+			#Cache=yes
+			#CacheFromLocalhost=no
+			#DNSStubListener=yes
+			#DNSStubListenerExtra=
+			ReadEtcHosts=no
+			#ResolveUnicastSingleLabel=no
+			#StaleRetentionSec=0
 _EOT_
 		fnDbgdump "${__PATH}"				# debugout
 		fnFile_backup "${__PATH}" "init"	# backup initial file
@@ -1973,6 +2022,8 @@ fnSetup_samba() {
 	mkdir -p "${__PATH%/*}"
 	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	__CONF="${_DIRS_TGET:-}/tmp/${__PATH##*/}.work"
+	__WORK="${_NICS_IPV4:+"${_NICS_IPV4%.*}.0\/${_NICS_BIT4:-"${_NICS_MASK:-"24"}"}"}"
+	__WORK="${__WORK:-}${__WORK:+" "}fe80::\/10"
 	# <-- global settings section -------------------------------------------->
 	# allow insecure wide links = Yes
 	testparm -s -v                                                                   | \
@@ -2011,7 +2062,22 @@ fnSetup_samba() {
 	    -e  '/^[ \t]*unix password sync[ \t]*=/           s/=.*$/= No/'                \
 	    -e  '/^[ \t]*netbios name[ \t]*=/                 s/=.*$/= '"${_NICS_HOST}"'/' \
 	    -e  '/^[ \t]*workgroup[ \t]*=/                    s/=.*$/= '"${_NICS_WGRP}"'/' \
-	    -e  '/^[ \t]*interfaces[ \t]*=/                   s/=.*$/= '"${_NICS_NAME}"'/' \
+	    -e  '/^[ \t]*bind interfaces only[ \t]*=/                                   {' \
+	    -e  '                                             s/^/#/'                      \
+	    -e  '                                             s/=.*$/= yes/'               \
+	    -e  '                                                                       }' \
+	    -e  '/^[ \t]*interfaces[ \t]*=/                                             {' \
+	    -e  '                                             s/^/#/'                      \
+	    -e  '                                             s/=.*$/= '"${_NICS_NAME}"'/' \
+	    -e  '                                                                       }' \
+	    -e  '/^[ \t]*hosts allow[ \t]*=/                                            {' \
+	    -e  '                                             s/^/#/'                      \
+	    -e  '                                             s/=.*$/= '"${__WORK}"'/'     \
+	    -e  '                                                                       }' \
+	    -e  '/^[ \t]*hosts deny[ \t]*=/                                             {' \
+	    -e  '                                             s/^/#/'                      \
+	    -e  '                                             s/=.*$/= ALL/'               \
+	    -e  '                                                                       }' \
 	    -e  'p                                                                      }' \
 	> "${__CONF}" 2> /dev/null
 	[ -z "${_NICS_HOST##-}" ] && sed -i "${__CONF}" -e '/^[ \t]*netbios name[ \t]*=/d'
@@ -2043,114 +2109,114 @@ fnSetup_samba() {
 	#	|   `-- software
 	#	`-- usr
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__CONF}"
-			[homes]
-		        browseable = No
-		        comment = Home Directories
-		        create mask = 0700
-		        directory mask = 2700
-		        valid users = %S
-		        write list = @${_SAMB_GRUP}
+		[homes]
+		    browseable = No
+		    comment = Home Directories
+		    create mask = 0700
+		    directory mask = 2700
+		    valid users = %S
+		    write list = @${_SAMB_GRUP}
 		[printers]
-		        browseable = No
-		        comment = All Printers
-		        create mask = 0700
-		        path = /var/tmp
-		        printable = Yes
+		    browseable = No
+		    comment = All Printers
+		    create mask = 0700
+		    path = /var/tmp
+		    printable = Yes
 		[print$]
-		        comment = Printer Drivers
-		        path = /var/lib/samba/printers
+		    comment = Printer Drivers
+		    path = /var/lib/samba/printers
 		[adm]
-		        browseable = No
-		        comment = Administrator directories
-		        create mask = 0660
-		        directory mask = 2770
-		        force group = ${_SAMB_GRUP}
-		        force user = ${_SAMB_USER}
-		        path = ${_DIRS_SAMB}/adm
-		        valid users = @${_SAMB_GRUP}
-		        write list = @${_SAMB_GADM}
+		    browseable = No
+		    comment = Administrator directories
+		    create mask = 0660
+		    directory mask = 2770
+		    force group = ${_SAMB_GRUP}
+		    force user = ${_SAMB_USER}
+		    path = ${_DIRS_SAMB}/adm
+		    valid users = @${_SAMB_GRUP}
+		    write list = @${_SAMB_GADM}
 		[pub]
-		        browseable = Yes
-		        comment = Public directories
-		        create mask = 0660
-		        directory mask = 2770
-		        force group = ${_SAMB_GRUP}
-		        force user = ${_SAMB_USER}
-		        path = ${_DIRS_SAMB}/pub
-		        valid users = @${_SAMB_GRUP}
-		        write list = @${_SAMB_GADM}
+		    browseable = Yes
+		    comment = Public directories
+		    create mask = 0660
+		    directory mask = 2770
+		    force group = ${_SAMB_GRUP}
+		    force user = ${_SAMB_USER}
+		    path = ${_DIRS_SAMB}/pub
+		    valid users = @${_SAMB_GRUP}
+		    write list = @${_SAMB_GADM}
 		[usr]
-		        browseable = No
-		        comment = User directories
-		        create mask = 0660
-		        directory mask = 2770
-		        force group = ${_SAMB_GRUP}
-		        force user = ${_SAMB_USER}
-		        path = ${_DIRS_SAMB}/usr
-		        valid users = @${_SAMB_GADM}
-		        write list = @${_SAMB_GADM}
+		    browseable = No
+		    comment = User directories
+		    create mask = 0660
+		    directory mask = 2770
+		    force group = ${_SAMB_GRUP}
+		    force user = ${_SAMB_USER}
+		    path = ${_DIRS_SAMB}/usr
+		    valid users = @${_SAMB_GADM}
+		    write list = @${_SAMB_GADM}
 		[share]
-		        browseable = No
-		        comment = Shared directories
-		        create mask = 0660
-		        directory mask = 2770
-		        force group = ${_SAMB_GRUP}
-		        force user = ${_SAMB_USER}
-		        path = ${_DIRS_SAMB}
-		        valid users = @${_SAMB_GADM}
-		        write list = @${_SAMB_GADM}
+		    browseable = No
+		    comment = Shared directories
+		    create mask = 0660
+		    directory mask = 2770
+		    force group = ${_SAMB_GRUP}
+		    force user = ${_SAMB_USER}
+		    path = ${_DIRS_SAMB}
+		    valid users = @${_SAMB_GADM}
+		    write list = @${_SAMB_GADM}
 		[dlna]
-		        browseable = No
-		        comment = DLNA directories
-		        create mask = 0660
-		        directory mask = 2770
-		        force group = ${_SAMB_GRUP}
-		        force user = ${_SAMB_USER}
-		        path = ${_DIRS_SAMB}/pub/contents/dlna
-		        valid users = @${_SAMB_GRUP}
-		        write list = @${_SAMB_GADM}
+		    browseable = No
+		    comment = DLNA directories
+		    create mask = 0660
+		    directory mask = 2770
+		    force group = ${_SAMB_GRUP}
+		    force user = ${_SAMB_USER}
+		    path = ${_DIRS_SAMB}/pub/contents/dlna
+		    valid users = @${_SAMB_GRUP}
+		    write list = @${_SAMB_GADM}
 		[share-html]
-		        browseable = No
-		        comment = Shared directory for HTML
-		        guest ok = Yes
-		        path = ${_DIRS_HTML}
-		        wide links = Yes
+		    browseable = No
+		    comment = Shared directory for HTML
+		    guest ok = Yes
+		    path = ${_DIRS_HTML}
+		    wide links = Yes
 		[share-tftp]
-		        browseable = No
-		        comment = Shared directory for TFTP
-		        guest ok = Yes
-		        path = ${_DIRS_TFTP}
-		        wide links = Yes
+		    browseable = No
+		    comment = Shared directory for TFTP
+		    guest ok = Yes
+		    path = ${_DIRS_TFTP}
+		    wide links = Yes
 		[share-conf]
-		        browseable = No
-		        comment = Shared directory for configuration files
-		        create mask = 0664
-		        directory mask = 2775
-		        force group = ${_SAMB_GRUP}
-		        force user = ${_SAMB_USER}
-		        path = ${_DIRS_CONF}
-		        valid users = @${_SAMB_GRUP}
-		        write list = @${_SAMB_GADM}
+		    browseable = No
+		    comment = Shared directory for configuration files
+		    create mask = 0664
+		    directory mask = 2775
+		    force group = ${_SAMB_GRUP}
+		    force user = ${_SAMB_USER}
+		    path = ${_DIRS_CONF}
+		    valid users = @${_SAMB_GRUP}
+		    write list = @${_SAMB_GADM}
 		[share-isos]
-		        browseable = No
-		        comment = Shared directory for iso image files
-		        create mask = 0664
-		        directory mask = 2775
-		        force group = ${_SAMB_GRUP}
-		        force user = ${_SAMB_USER}
-		        path = ${_DIRS_ISOS}
-		        valid users = @${_SAMB_GRUP}
-		        write list = @${_SAMB_GADM}
+		    browseable = No
+		    comment = Shared directory for iso image files
+		    create mask = 0664
+		    directory mask = 2775
+		    force group = ${_SAMB_GRUP}
+		    force user = ${_SAMB_USER}
+		    path = ${_DIRS_ISOS}
+		    valid users = @${_SAMB_GRUP}
+		    write list = @${_SAMB_GADM}
 		[share-rmak]
-		        browseable = No
-		        comment = Shared directory for remake files
-		        create mask = 0664
-		        directory mask = 2775
-		        force group = ${_SAMB_GRUP}
-		        force user = ${_SAMB_USER}
-		        path = ${_DIRS_RMAK}
-		        valid users = @${_SAMB_GRUP}
-		        write list = @${_SAMB_GADM}
+		    browseable = No
+		    comment = Shared directory for remake files
+		    create mask = 0664
+		    directory mask = 2775
+		    force group = ${_SAMB_GRUP}
+		    force user = ${_SAMB_USER}
+		    path = ${_DIRS_RMAK}
+		    valid users = @${_SAMB_GRUP}
+		    write list = @${_SAMB_GADM}
 _EOT_
 	# --- output --------------------------------------------------------------
 	testparm -s "${__CONF}" > "${__PATH}"
@@ -2179,7 +2245,7 @@ _EOT_
 			fi
 		fi
 	fi
-	unset __SMBD __NMBD __PATH __CONF __SRVC
+	unset __SMBD __NMBD __PATH __CONF __SRVC __WORK
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
@@ -3073,17 +3139,17 @@ fnSetup_grub_menu() {
 	mkdir -p "${__PATH%/*}"
 	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	# --- GRUB_TIMEOUT --------------------------------------------------------
-	__WORK="$(sed -ne 's/^#*GRUB_TIMEOUT=\(.*\)$/\1/p' "${__PATH}")"
-	[ -z "${__WORK:-}" ] && echo "GRUB_TIMEOUT=\"\"" >> "${__PATH}"
+#	__WORK="$(sed -ne 's/^#*GRUB_TIMEOUT=\(.*\)$/\1/p' "${__PATH}")"
+#	[ -z "${__WORK:-}" ] && echo "GRUB_TIMEOUT=\"\"" >> "${__PATH}"
 	# --- GRUB_GFXMODE --------------------------------------------------------
-	__WORK="$(sed -ne 's/^#*GRUB_GFXMODE=\(.*\)$/\1/p' "${__PATH}")"
-	[ -z "${__WORK:-}" ] && echo "GRUB_GFXMODE=\"\"" >> "${__PATH}"
+#	__WORK="$(sed -ne 's/^#*GRUB_GFXMODE=\(.*\)$/\1/p' "${__PATH}")"
+#	[ -z "${__WORK:-}" ] && echo "GRUB_GFXMODE=\"\"" >> "${__PATH}"
 	# --- GRUB_INIT_TUNE ------------------------------------------------------
-	__WORK="$(sed -ne 's/^#*GRUB_INIT_TUNE=\(.*\)$/\1/p' "${__PATH}")"
-	[ -z "${__WORK:-}" ] && echo "GRUB_INIT_TUNE=\"\"" >> "${__PATH}"
+#	__WORK="$(sed -ne 's/^#*GRUB_INIT_TUNE=\(.*\)$/\1/p' "${__PATH}")"
+#	[ -z "${__WORK:-}" ] && echo "GRUB_INIT_TUNE=\"\"" >> "${__PATH}"
 	# --- GRUB_CMDLINE_LINUX_DEFAULT ------------------------------------------
 	__WORK="$(sed -ne 's/^#*GRUB_CMDLINE_LINUX_DEFAULT=\(.*\)$/\1/p' "${__PATH}")"
-	[ -z "${__WORK:-}" ] && echo "GRUB_CMDLINE_LINUX_DEFAULT=\"\"" >> "${__PATH}"
+#	[ -z "${__WORK:-}" ] && echo "GRUB_CMDLINE_LINUX_DEFAULT=\"\"" >> "${__PATH}"
 	__WORK="${__WORK#\"}"
 	__WORK="${__WORK%\"}"
 	__DEFS=""
@@ -3100,7 +3166,7 @@ fnSetup_grub_menu() {
 	done
 	# --- GRUB_CMDLINE_LINUX --------------------------------------------------
 	__WORK="$(sed -ne 's/^#*GRUB_CMDLINE_LINUX=\(.*\)$/\1/p' "${__PATH}")"
-	[ -z "${__WORK:-}" ] && echo "GRUB_CMDLINE_LINUX=\"\"" >> "${__PATH}"
+#	[ -z "${__WORK:-}" ] && echo "GRUB_CMDLINE_LINUX=\"\"" >> "${__PATH}"
 	__WORK="${__WORK#\"}"
 	__WORK="${__WORK%\"}"
 	__BOPT=""
@@ -3232,7 +3298,7 @@ fnMain() {
 	# --- application setup ---------------------------------------------------
 	fnSetup_hostname					# hostname
 	fnSetup_hosts						# hosts
-#	fnSetup_hosts_access				# hosts.allow/hosts.deny
+	fnSetup_tcp_wrapper					# tcp wrapper
 	fnSetup_firewalld					# firewalld
 	fnSetup_dnsmasq						# dnsmasq
 	fnSetup_resolv						# resolv.conf

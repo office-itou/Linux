@@ -1289,7 +1289,6 @@ function fnTest_getent() {
 			"${_NICS_IPV4}"               \
 			"${_IPV6_ADDR}"               \
 			"${_LINK_ADDR}"               \
-			"${_LINK_ADDR}%${_NICS_NAME}" \
 			"www.google.com"
 		do
 			__ARRY=("${__COMD[@]}" "hosts" "${__PARM}")
@@ -1450,32 +1449,37 @@ function fnTest_nmblookup() {
 	if ! command -v "${__COMD[0]}" > /dev/null 2>&1; then
 		fnMsgout "${_PROG_NAME:-}" "skip" "${__COMD[*]}"
 	else
-		__ADDR="$("${__COMD[0]}" -M -- - | awk '{print $1;}')"
-		__NAME="$("${__COMD[0]}" -A "${__ADDR}" | awk '$2=="<00>"&&$4!="<GROUP>" {print $1;}')"
-		__WGRP="$("${__COMD[0]}" -A "${__ADDR}" | awk '$2=="<00>"&&$4=="<GROUP>" {print $1;}')"
-		if command -v getent > /dev/null 2>&1; then
-			__ARRY=("getent" "hosts" "${__NAME,,}")
-			fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__ARRY[*]}"
-			if "${__ARRY[@]:?}" > /dev/null 2>&1 | cut -c -"${_COLS_SIZE:-"80"}"; then
-				fnMsgout "\033[36m${_PROG_NAME:-}" "success" "${__ARRY[*]}"
-			else
-				fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__ARRY[*]}"
+		__ADDR="$("${__COMD[0]}" -M -- - | awk '{print $1;}' || true)"
+		__ADDR="${_NICS_IPV4:-"${__ADDR:-"${_IPV4_LHST:-"127.0.0.1"}"}"}"
+		if [[ -z "${__ADDR:-}" ]]; then
+			fnMsgout "${_PROG_NAME:-}" "skip" "no ip address"
+		else
+			__NAME="$("${__COMD[0]}" -A "${__ADDR}" | awk '$2=="<00>"&&$4!="<GROUP>" {print $1;}')"
+			__WGRP="$("${__COMD[0]}" -A "${__ADDR}" | awk '$2=="<00>"&&$4=="<GROUP>" {print $1;}')"
+			if command -v getent > /dev/null 2>&1; then
+				__ARRY=("getent" "hosts" "${__NAME,,}")
+				fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__ARRY[*]}"
+				if "${__ARRY[@]:?}" > /dev/null 2>&1 | cut -c -"${_COLS_SIZE:-"80"}"; then
+					fnMsgout "\033[36m${_PROG_NAME:-}" "success" "${__ARRY[*]}"
+				else
+					fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__ARRY[*]}"
+				fi
 			fi
-		fi
-		if command -v traceroute > /dev/null 2>&1; then
-			__ARRY=("traceroute" "-4" "-w" "1" "-m" "1" "${__NAME,,}")
-			fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__ARRY[*]}"
-			if "${__ARRY[@]:?}" > /dev/null 2>&1 | cut -c -"${_COLS_SIZE:-"80"}"; then
-				fnMsgout "\033[36m${_PROG_NAME:-}" "success" "${__ARRY[*]}"
-			else
-				fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__ARRY[*]}"
-			fi
-			__ARRY=("traceroute" "-6" "-w" "1" "-m" "1" "${__NAME,,}")
-			fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__ARRY[*]}"
-			if "${__ARRY[@]:?}" > /dev/null 2>&1 | cut -c -"${_COLS_SIZE:-"80"}"; then
-				fnMsgout "\033[36m${_PROG_NAME:-}" "success" "${__ARRY[*]}"
-			else
-				fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__ARRY[*]}"
+			if command -v traceroute > /dev/null 2>&1; then
+				__ARRY=("traceroute" "-4" "-w" "1" "-m" "1" "${__NAME,,}")
+				fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__ARRY[*]}"
+				if "${__ARRY[@]:?}" > /dev/null 2>&1 | cut -c -"${_COLS_SIZE:-"80"}"; then
+					fnMsgout "\033[36m${_PROG_NAME:-}" "success" "${__ARRY[*]}"
+				else
+					fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__ARRY[*]}"
+				fi
+				__ARRY=("traceroute" "-6" "-w" "1" "-m" "1" "${__NAME,,}")
+				fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__ARRY[*]}"
+				if "${__ARRY[@]:?}" > /dev/null 2>&1 | cut -c -"${_COLS_SIZE:-"80"}"; then
+					fnMsgout "\033[36m${_PROG_NAME:-}" "success" "${__ARRY[*]}"
+				else
+					fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__ARRY[*]}"
+				fi
 			fi
 		fi
 	fi
@@ -1510,10 +1514,7 @@ function fnTest_smbclient() {
 		for __PARM in \
 			"${_NICS_FQDN%.*}."             \
 			"${_NICS_FQDN}"                 \
-			"${_NICS_FQDN%.*}.local"        \
-			"${_NICS_IPV4}"                 \
-			"[${_IPV6_ADDR}]"               \
-			"[${_LINK_ADDR}%${_NICS_NAME}]"
+			"${_NICS_FQDN%.*}.local"
 		do
 			__ARRY=("${__COMD[@]}" "-N" "-L" "${__PARM}")
 			fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__ARRY[*]}"
@@ -1523,13 +1524,19 @@ function fnTest_smbclient() {
 				fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__ARRY[*]}"
 			fi
 		done
-		__ARRY=("${__COMD[@]}" "-N" "-L" "${_NICS_FQDN%.*}.")
-		fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__ARRY[*]}"
-		if "${__ARRY[@]:?}" | cut -c -"${_COLS_SIZE:-"80"}"; then
-			fnMsgout "\033[36m${_PROG_NAME:-}" "success" "${__ARRY[*]}"
-		else
-			fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__ARRY[*]}"
-		fi
+		for __PARM in \
+			"${_NICS_IPV4}"               \
+			"${_IPV6_ADDR}"               \
+			"${_LINK_ADDR}%${_NICS_NAME}"
+		do
+			__ARRY=("${__COMD[@]}" "-N" "-L" "${_NICS_FQDN%.*}." -I "${__PARM}")
+			fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__ARRY[*]}"
+			if "${__ARRY[@]:?}" > /dev/null 2>&1 | cut -c -"${_COLS_SIZE:-"80"}"; then
+				fnMsgout "\033[36m${_PROG_NAME:-}" "success" "${__ARRY[*]}"
+			else
+				fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__ARRY[*]}"
+			fi
+		done
 	fi
 	unset __PARM __ARRY
 

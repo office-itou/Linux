@@ -53,17 +53,17 @@ fnSetup_grub_menu() {
 	mkdir -p "${__PATH%/*}"
 	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	# --- GRUB_TIMEOUT --------------------------------------------------------
-	__WORK="$(sed -ne 's/^#*GRUB_TIMEOUT=\(.*\)$/\1/p' "${__PATH}")"
-	[ -z "${__WORK:-}" ] && echo "GRUB_TIMEOUT=\"\"" >> "${__PATH}"
+#	__WORK="$(sed -ne 's/^#*GRUB_TIMEOUT=\(.*\)$/\1/p' "${__PATH}")"
+#	[ -z "${__WORK:-}" ] && echo "GRUB_TIMEOUT=\"\"" >> "${__PATH}"
 	# --- GRUB_GFXMODE --------------------------------------------------------
-	__WORK="$(sed -ne 's/^#*GRUB_GFXMODE=\(.*\)$/\1/p' "${__PATH}")"
-	[ -z "${__WORK:-}" ] && echo "GRUB_GFXMODE=\"\"" >> "${__PATH}"
+#	__WORK="$(sed -ne 's/^#*GRUB_GFXMODE=\(.*\)$/\1/p' "${__PATH}")"
+#	[ -z "${__WORK:-}" ] && echo "GRUB_GFXMODE=\"\"" >> "${__PATH}"
 	# --- GRUB_INIT_TUNE ------------------------------------------------------
-	__WORK="$(sed -ne 's/^#*GRUB_INIT_TUNE=\(.*\)$/\1/p' "${__PATH}")"
-	[ -z "${__WORK:-}" ] && echo "GRUB_INIT_TUNE=\"\"" >> "${__PATH}"
+#	__WORK="$(sed -ne 's/^#*GRUB_INIT_TUNE=\(.*\)$/\1/p' "${__PATH}")"
+#	[ -z "${__WORK:-}" ] && echo "GRUB_INIT_TUNE=\"\"" >> "${__PATH}"
 	# --- GRUB_CMDLINE_LINUX_DEFAULT ------------------------------------------
 	__WORK="$(sed -ne 's/^#*GRUB_CMDLINE_LINUX_DEFAULT=\(.*\)$/\1/p' "${__PATH}")"
-	[ -z "${__WORK:-}" ] && echo "GRUB_CMDLINE_LINUX_DEFAULT=\"\"" >> "${__PATH}"
+#	[ -z "${__WORK:-}" ] && echo "GRUB_CMDLINE_LINUX_DEFAULT=\"\"" >> "${__PATH}"
 	__WORK="${__WORK#\"}"
 	__WORK="${__WORK%\"}"
 	__DEFS=""
@@ -80,7 +80,7 @@ fnSetup_grub_menu() {
 	done
 	# --- GRUB_CMDLINE_LINUX --------------------------------------------------
 	__WORK="$(sed -ne 's/^#*GRUB_CMDLINE_LINUX=\(.*\)$/\1/p' "${__PATH}")"
-	[ -z "${__WORK:-}" ] && echo "GRUB_CMDLINE_LINUX=\"\"" >> "${__PATH}"
+#	[ -z "${__WORK:-}" ] && echo "GRUB_CMDLINE_LINUX=\"\"" >> "${__PATH}"
 	__WORK="${__WORK#\"}"
 	__WORK="${__WORK%\"}"
 	__BOPT=""

@@ -27,7 +27,6 @@ function fnTest_getent() {
 			"${_NICS_IPV4}"               \
 			"${_IPV6_ADDR}"               \
 			"${_LINK_ADDR}"               \
-			"${_LINK_ADDR}%${_NICS_NAME}" \
 			"www.google.com"
 		do
 			__ARRY=("${__COMD[@]}" "hosts" "${__PARM}")

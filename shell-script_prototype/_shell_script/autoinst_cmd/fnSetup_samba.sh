@@ -48,6 +48,8 @@ fnSetup_samba() {
 	mkdir -p "${__PATH%/*}"
 	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	__CONF="${_DIRS_TGET:-}/tmp/${__PATH##*/}.work"
+	__WORK="${_NICS_IPV4:+"${_NICS_IPV4%.*}.0\/${_NICS_BIT4:-"${_NICS_MASK:-"24"}"}"}"
+	__WORK="${__WORK:-}${__WORK:+" "}fe80::\/10"
 	# <-- global settings section -------------------------------------------->
 	# allow insecure wide links = Yes
 	testparm -s -v                                                                   | \
@@ -86,7 +88,22 @@ fnSetup_samba() {
 	    -e  '/^[ \t]*unix password sync[ \t]*=/           s/=.*$/= No/'                \
 	    -e  '/^[ \t]*netbios name[ \t]*=/                 s/=.*$/= '"${_NICS_HOST}"'/' \
 	    -e  '/^[ \t]*workgroup[ \t]*=/                    s/=.*$/= '"${_NICS_WGRP}"'/' \
-	    -e  '/^[ \t]*interfaces[ \t]*=/                   s/=.*$/= '"${_NICS_NAME}"'/' \
+	    -e  '/^[ \t]*bind interfaces only[ \t]*=/                                   {' \
+	    -e  '                                             s/^/#/'                      \
+	    -e  '                                             s/=.*$/= yes/'               \
+	    -e  '                                                                       }' \
+	    -e  '/^[ \t]*interfaces[ \t]*=/                                             {' \
+	    -e  '                                             s/^/#/'                      \
+	    -e  '                                             s/=.*$/= '"${_NICS_NAME}"'/' \
+	    -e  '                                                                       }' \
+	    -e  '/^[ \t]*hosts allow[ \t]*=/                                            {' \
+	    -e  '                                             s/^/#/'                      \
+	    -e  '                                             s/=.*$/= '"${__WORK}"'/'     \
+	    -e  '                                                                       }' \
+	    -e  '/^[ \t]*hosts deny[ \t]*=/                                             {' \
+	    -e  '                                             s/^/#/'                      \
+	    -e  '                                             s/=.*$/= ALL/'               \
+	    -e  '                                                                       }' \
 	    -e  'p                                                                      }' \
 	> "${__CONF}" 2> /dev/null
 	[ -z "${_NICS_HOST##-}" ] && sed -i "${__CONF}" -e '/^[ \t]*netbios name[ \t]*=/d'
@@ -118,114 +135,114 @@ fnSetup_samba() {
 	#	|   `-- software
 	#	`-- usr
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__CONF}"
-			[homes]
-		        browseable = No
-		        comment = Home Directories
-		        create mask = 0700
-		        directory mask = 2700
-		        valid users = %S
-		        write list = @${_SAMB_GRUP}
+		[homes]
+		    browseable = No
+		    comment = Home Directories
+		    create mask = 0700
+		    directory mask = 2700
+		    valid users = %S
+		    write list = @${_SAMB_GRUP}
 		[printers]
-		        browseable = No
-		        comment = All Printers
-		        create mask = 0700
-		        path = /var/tmp
-		        printable = Yes
+		    browseable = No
+		    comment = All Printers
+		    create mask = 0700
+		    path = /var/tmp
+		    printable = Yes
 		[print$]
-		        comment = Printer Drivers
-		        path = /var/lib/samba/printers
+		    comment = Printer Drivers
+		    path = /var/lib/samba/printers
 		[adm]
-		        browseable = No
-		        comment = Administrator directories
-		        create mask = 0660
-		        directory mask = 2770
-		        force group = ${_SAMB_GRUP}
-		        force user = ${_SAMB_USER}
-		        path = ${_DIRS_SAMB}/adm
-		        valid users = @${_SAMB_GRUP}
-		        write list = @${_SAMB_GADM}
+		    browseable = No
+		    comment = Administrator directories
+		    create mask = 0660
+		    directory mask = 2770
+		    force group = ${_SAMB_GRUP}
+		    force user = ${_SAMB_USER}
+		    path = ${_DIRS_SAMB}/adm
+		    valid users = @${_SAMB_GRUP}
+		    write list = @${_SAMB_GADM}
 		[pub]
-		        browseable = Yes
-		        comment = Public directories
-		        create mask = 0660
-		        directory mask = 2770
-		        force group = ${_SAMB_GRUP}
-		        force user = ${_SAMB_USER}
-		        path = ${_DIRS_SAMB}/pub
-		        valid users = @${_SAMB_GRUP}
-		        write list = @${_SAMB_GADM}
+		    browseable = Yes
+		    comment = Public directories
+		    create mask = 0660
+		    directory mask = 2770
+		    force group = ${_SAMB_GRUP}
+		    force user = ${_SAMB_USER}
+		    path = ${_DIRS_SAMB}/pub
+		    valid users = @${_SAMB_GRUP}
+		    write list = @${_SAMB_GADM}
 		[usr]
-		        browseable = No
-		        comment = User directories
-		        create mask = 0660
-		        directory mask = 2770
-		        force group = ${_SAMB_GRUP}
-		        force user = ${_SAMB_USER}
-		        path = ${_DIRS_SAMB}/usr
-		        valid users = @${_SAMB_GADM}
-		        write list = @${_SAMB_GADM}
+		    browseable = No
+		    comment = User directories
+		    create mask = 0660
+		    directory mask = 2770
+		    force group = ${_SAMB_GRUP}
+		    force user = ${_SAMB_USER}
+		    path = ${_DIRS_SAMB}/usr
+		    valid users = @${_SAMB_GADM}
+		    write list = @${_SAMB_GADM}
 		[share]
-		        browseable = No
-		        comment = Shared directories
-		        create mask = 0660
-		        directory mask = 2770
-		        force group = ${_SAMB_GRUP}
-		        force user = ${_SAMB_USER}
-		        path = ${_DIRS_SAMB}
-		        valid users = @${_SAMB_GADM}
-		        write list = @${_SAMB_GADM}
+		    browseable = No
+		    comment = Shared directories
+		    create mask = 0660
+		    directory mask = 2770
+		    force group = ${_SAMB_GRUP}
+		    force user = ${_SAMB_USER}
+		    path = ${_DIRS_SAMB}
+		    valid users = @${_SAMB_GADM}
+		    write list = @${_SAMB_GADM}
 		[dlna]
-		        browseable = No
-		        comment = DLNA directories
-		        create mask = 0660
-		        directory mask = 2770
-		        force group = ${_SAMB_GRUP}
-		        force user = ${_SAMB_USER}
-		        path = ${_DIRS_SAMB}/pub/contents/dlna
-		        valid users = @${_SAMB_GRUP}
-		        write list = @${_SAMB_GADM}
+		    browseable = No
+		    comment = DLNA directories
+		    create mask = 0660
+		    directory mask = 2770
+		    force group = ${_SAMB_GRUP}
+		    force user = ${_SAMB_USER}
+		    path = ${_DIRS_SAMB}/pub/contents/dlna
+		    valid users = @${_SAMB_GRUP}
+		    write list = @${_SAMB_GADM}
 		[share-html]
-		        browseable = No
-		        comment = Shared directory for HTML
-		        guest ok = Yes
-		        path = ${_DIRS_HTML}
-		        wide links = Yes
+		    browseable = No
+		    comment = Shared directory for HTML
+		    guest ok = Yes
+		    path = ${_DIRS_HTML}
+		    wide links = Yes
 		[share-tftp]
-		        browseable = No
-		        comment = Shared directory for TFTP
-		        guest ok = Yes
-		        path = ${_DIRS_TFTP}
-		        wide links = Yes
+		    browseable = No
+		    comment = Shared directory for TFTP
+		    guest ok = Yes
+		    path = ${_DIRS_TFTP}
+		    wide links = Yes
 		[share-conf]
-		        browseable = No
-		        comment = Shared directory for configuration files
-		        create mask = 0664
-		        directory mask = 2775
-		        force group = ${_SAMB_GRUP}
-		        force user = ${_SAMB_USER}
-		        path = ${_DIRS_CONF}
-		        valid users = @${_SAMB_GRUP}
-		        write list = @${_SAMB_GADM}
+		    browseable = No
+		    comment = Shared directory for configuration files
+		    create mask = 0664
+		    directory mask = 2775
+		    force group = ${_SAMB_GRUP}
+		    force user = ${_SAMB_USER}
+		    path = ${_DIRS_CONF}
+		    valid users = @${_SAMB_GRUP}
+		    write list = @${_SAMB_GADM}
 		[share-isos]
-		        browseable = No
-		        comment = Shared directory for iso image files
-		        create mask = 0664
-		        directory mask = 2775
-		        force group = ${_SAMB_GRUP}
-		        force user = ${_SAMB_USER}
-		        path = ${_DIRS_ISOS}
-		        valid users = @${_SAMB_GRUP}
-		        write list = @${_SAMB_GADM}
+		    browseable = No
+		    comment = Shared directory for iso image files
+		    create mask = 0664
+		    directory mask = 2775
+		    force group = ${_SAMB_GRUP}
+		    force user = ${_SAMB_USER}
+		    path = ${_DIRS_ISOS}
+		    valid users = @${_SAMB_GRUP}
+		    write list = @${_SAMB_GADM}
 		[share-rmak]
-		        browseable = No
-		        comment = Shared directory for remake files
-		        create mask = 0664
-		        directory mask = 2775
-		        force group = ${_SAMB_GRUP}
-		        force user = ${_SAMB_USER}
-		        path = ${_DIRS_RMAK}
-		        valid users = @${_SAMB_GRUP}
-		        write list = @${_SAMB_GADM}
+		    browseable = No
+		    comment = Shared directory for remake files
+		    create mask = 0664
+		    directory mask = 2775
+		    force group = ${_SAMB_GRUP}
+		    force user = ${_SAMB_USER}
+		    path = ${_DIRS_RMAK}
+		    valid users = @${_SAMB_GRUP}
+		    write list = @${_SAMB_GADM}
 _EOT_
 	# --- output --------------------------------------------------------------
 	testparm -s "${__CONF}" > "${__PATH}"
@@ -254,7 +271,7 @@ _EOT_
 			fi
 		fi
 	fi
-	unset __SMBD __NMBD __PATH __CONF __SRVC
+	unset __SMBD __NMBD __PATH __CONF __SRVC __WORK
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 

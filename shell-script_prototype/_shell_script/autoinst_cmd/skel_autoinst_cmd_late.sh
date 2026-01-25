@@ -108,6 +108,8 @@
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnSetup_hosts.sh						# hosts
 	# shellcheck source=/dev/null
+	. "${_SHEL_COMD}"/fnSetup_tcp_wrapper.sh				# tcp wrapper
+	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnSetup_firewalld.sh					# firewalld
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnSetup_dnsmasq.sh					# dnsmasq
@@ -173,7 +175,7 @@ fnMain() {
 	# --- application setup ---------------------------------------------------
 	fnSetup_hostname					# hostname
 	fnSetup_hosts						# hosts
-#	fnSetup_hosts_access				# hosts.allow/hosts.deny
+	fnSetup_tcp_wrapper					# tcp wrapper
 	fnSetup_firewalld					# firewalld
 	fnSetup_dnsmasq						# dnsmasq
 	fnSetup_resolv						# resolv.conf

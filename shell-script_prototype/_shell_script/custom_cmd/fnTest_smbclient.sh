@@ -23,10 +23,7 @@ function fnTest_smbclient() {
 		for __PARM in \
 			"${_NICS_FQDN%.*}."             \
 			"${_NICS_FQDN}"                 \
-			"${_NICS_FQDN%.*}.local"        \
-			"${_NICS_IPV4}"                 \
-			"[${_IPV6_ADDR}]"               \
-			"[${_LINK_ADDR}%${_NICS_NAME}]"
+			"${_NICS_FQDN%.*}.local"
 		do
 			__ARRY=("${__COMD[@]}" "-N" "-L" "${__PARM}")
 			fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__ARRY[*]}"
@@ -36,13 +33,19 @@ function fnTest_smbclient() {
 				fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__ARRY[*]}"
 			fi
 		done
-		__ARRY=("${__COMD[@]}" "-N" "-L" "${_NICS_FQDN%.*}.")
-		fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__ARRY[*]}"
-		if "${__ARRY[@]:?}" | cut -c -"${_COLS_SIZE:-"80"}"; then
-			fnMsgout "\033[36m${_PROG_NAME:-}" "success" "${__ARRY[*]}"
-		else
-			fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__ARRY[*]}"
-		fi
+		for __PARM in \
+			"${_NICS_IPV4}"               \
+			"${_IPV6_ADDR}"               \
+			"${_LINK_ADDR}%${_NICS_NAME}"
+		do
+			__ARRY=("${__COMD[@]}" "-N" "-L" "${_NICS_FQDN%.*}." -I "${__PARM}")
+			fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__ARRY[*]}"
+			if "${__ARRY[@]:?}" > /dev/null 2>&1 | cut -c -"${_COLS_SIZE:-"80"}"; then
+				fnMsgout "\033[36m${_PROG_NAME:-}" "success" "${__ARRY[*]}"
+			else
+				fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__ARRY[*]}"
+			fi
+		done
 	fi
 	unset __PARM __ARRY
 

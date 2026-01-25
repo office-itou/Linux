@@ -50,9 +50,20 @@ _EOT_
 		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
 			[Resolve]
-			MulticastDNS=yes
-			DNS=${_NICS_DNS4}
+			DNS=${_IPV4_LHST}
+			#FallbackDNS=
 			Domains=${_NICS_WGRP}
+			#DNSSEC=no
+			#DNSOverTLS=no
+			MulticastDNS=yes
+			#LLMNR=yes
+			#Cache=yes
+			#CacheFromLocalhost=no
+			#DNSStubListener=yes
+			#DNSStubListenerExtra=
+			ReadEtcHosts=no
+			#ResolveUnicastSingleLabel=no
+			#StaleRetentionSec=0
 _EOT_
 		fnDbgdump "${__PATH}"				# debugout
 		fnFile_backup "${__PATH}" "init"	# backup initial file
