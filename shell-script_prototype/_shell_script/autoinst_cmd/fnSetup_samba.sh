@@ -48,10 +48,12 @@ fnSetup_samba() {
 	mkdir -p "${__PATH%/*}"
 	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	__CONF="${_DIRS_TGET:-}/tmp/${__PATH##*/}.work"
-	__WORK="${_NICS_IPV4:+"${_NICS_IPV4%.*}.0\/${_NICS_BIT4:-"${_NICS_MASK:-"24"}"}"}"
-	__WORK="${__WORK:-}${__WORK:+" "}fe80::\/10"
+	__WORK="${_NICS_IPV4:+"${_NICS_IPV4%.*}.0/${_NICS_BIT4:-"${_NICS_MASK:-"24"}"}"}"
+	__WORK="${__WORK:-}${__WORK:+" "}fe80::/10"
+	__WORK="$(echo -n "${__WORK:-}" | sed -e 's%/%\\/%g')"
 	# <-- global settings section -------------------------------------------->
 	# allow insecure wide links = Yes
+	fnMsgout "${_PROG_NAME:-}" "info" "global settings section"
 	testparm -s -v                                                                   | \
 	sed -ne '/^\[global\]$/,/^[ \t]*$/                                              {' \
 	    -e  '/^[ \t]*acl check permissions[ \t]*=/        s/^/#/'                      \
@@ -134,6 +136,7 @@ fnSetup_samba() {
 	#	|   |       `-- git
 	#	|   `-- software
 	#	`-- usr
+	fnMsgout "${_PROG_NAME:-}" "info" "shared settings section"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__CONF}"
 		[homes]
 		    browseable = No
@@ -245,6 +248,7 @@ fnSetup_samba() {
 		    write list = @${_SAMB_GADM}
 _EOT_
 	# --- output --------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "info" "output"
 	testparm -s "${__CONF}" > "${__PATH}"
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
