@@ -21,8 +21,8 @@ function fnTest_ping() {
 		fnMsgout "${_PROG_NAME:-}" "skip" "${__COMD[*]}"
 	else
 		for __PARM in \
-			"-4,${_NICS_FQDN}"               \
-			"-6,${_NICS_FQDN}"               \
+			"-4,${_NICS_FQDN}."              \
+			"-6,${_NICS_FQDN}."              \
 			"-4,${_NICS_HOST}."              \
 			"-6,${_NICS_HOST}."              \
 			"-4,${_NICS_IPV4}"               \

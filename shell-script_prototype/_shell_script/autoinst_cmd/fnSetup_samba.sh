@@ -50,7 +50,7 @@ fnSetup_samba() {
 	__CONF="${_DIRS_TGET:-}/tmp/${__PATH##*/}.work"
 	__WORK="${_NICS_IPV4:+"${_NICS_IPV4%.*}.0/${_NICS_BIT4:-"${_NICS_MASK:-"24"}"}"}"
 	__WORK="${__WORK:-}${__WORK:+" "}fe80::/10"
-	__WORK="$(echo -n "${__WORK:-}" | sed -e 's%/%\\/%g')"
+	__WORK="$(printf "%s" "${__WORK:-}" | sed -e 's%/%\\/%g')"
 	# <-- global settings section -------------------------------------------->
 	# allow insecure wide links = Yes
 	fnMsgout "${_PROG_NAME:-}" "info" "global settings section"

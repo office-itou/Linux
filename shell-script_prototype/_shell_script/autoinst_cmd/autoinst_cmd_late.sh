@@ -113,7 +113,7 @@
 	readonly _SAMB_GRUP="sambashare"	# force group
 	readonly _SAMB_GADM="sambaadmin"	# admin group
 										# nsswitch.conf
-	readonly _SAMB_NSSW="wins mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns mdns4 mdns6"
+	readonly _SAMB_NSSW="wins mdns_minimal mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns mdns6 mdns4"
 	_SHEL_NLIN=""						# login shell (disallow system login to samba user)
 	# --- shared directory parameter ------------------------------------------
 	_DIRS_TOPS=""						# top of shared directory
@@ -2024,7 +2024,7 @@ fnSetup_samba() {
 	__CONF="${_DIRS_TGET:-}/tmp/${__PATH##*/}.work"
 	__WORK="${_NICS_IPV4:+"${_NICS_IPV4%.*}.0/${_NICS_BIT4:-"${_NICS_MASK:-"24"}"}"}"
 	__WORK="${__WORK:-}${__WORK:+" "}fe80::/10"
-	__WORK="$(echo -n "${__WORK:-}" | sed -e 's%/%\\/%g')"
+	__WORK="$(printf "%s" "${__WORK:-}" | sed -e 's%/%\\/%g')"
 	# <-- global settings section -------------------------------------------->
 	# allow insecure wide links = Yes
 	fnMsgout "${_PROG_NAME:-}" "info" "global settings section"

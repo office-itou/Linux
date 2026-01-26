@@ -65,7 +65,7 @@
 	readonly _SAMB_GRUP="sambashare"	# force group
 	readonly _SAMB_GADM="sambaadmin"	# admin group
 										# nsswitch.conf
-	readonly _SAMB_NSSW="wins mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns mdns4 mdns6"
+	readonly _SAMB_NSSW="wins mdns_minimal mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns mdns6 mdns4"
 	_SHEL_NLIN=""						# login shell (disallow system login to samba user)
 	# --- shared directory parameter ------------------------------------------
 	_DIRS_TOPS=""						# top of shared directory
