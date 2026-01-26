@@ -54,6 +54,7 @@ function fnMk_isofile() {
 	declare       __FBIN=""
 	declare       __HBRD=""
 	declare -i    __TABS=0				# tab count
+	declare       __INFO=""
 	declare -i    I=0
 	declare -i    J=0
 	# --- get target ----------------------------------------------------------
@@ -169,6 +170,8 @@ function fnMk_isofile() {
 									;;
 								*) [[ -z "${__FRCE:-}" ]] && continue;;
 							esac
+							__INFO="$(printf "%s %s : %s" "${__MDIA[$((_OSET_MDIA+0))]}" "${__MDIA[1]}" "${__MDIA[$((_OSET_MDIA+14))]##*/}")"
+							printf "\033[m\033[44m%-8s: %s\033[m\n" "start" "${__INFO}"
 							# --- rsync ---------------------------------------
 							fnRsync "${__MDIA[$((_OSET_MDIA+14))]}" "${_DIRS_IMGS}/${__MDIA[$((_OSET_MDIA+2))]}"
 							# --- mount ---------------------------------------
@@ -255,6 +258,7 @@ function fnMk_isofile() {
 							umount "${__DMRG}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
 							umount "${__DLOW}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
 							rm -rf "${__TEMP:?}"
+							printf "\033[m\033[44m%-8s: %s\033[m\n" "complete" "${__INFO}"
 							;;
 					esac
 					;;
@@ -270,7 +274,7 @@ function fnMk_isofile() {
 		done
 	done
 	fnList_mdia_Put "work.txt"
-	unset __OPTN __PTRN __TYPE __LINE __TGET __MDIA __RETN __ARRY __TABS I J
+	unset __OPTN __PTRN __TYPE __LINE __TGET __MDIA __RETN __ARRY __INFO __TABS I J
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"

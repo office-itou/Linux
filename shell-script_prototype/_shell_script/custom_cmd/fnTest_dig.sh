@@ -41,8 +41,7 @@ function fnTest_dig() {
 		for __PARM in \
 			"${_NICS_IPV4}"               \
 			"${_IPV6_ADDR}"               \
-			"${_LINK_ADDR}"               \
-			"${_LINK_ADDR}%${_NICS_NAME}"
+			"${_LINK_ADDR}"
 		do
 			__ARRY=("${__COMD[@]}" "-x" "${__PARM}" "+nostats" "+nocomments")
 			fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__ARRY[*]}"

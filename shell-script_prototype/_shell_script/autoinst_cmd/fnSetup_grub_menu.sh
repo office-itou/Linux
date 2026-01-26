@@ -115,19 +115,24 @@ fnSetup_grub_menu() {
 	# --- grub.cfg --------------------------------------------------------
 	__PATH="$(find "${_DIRS_TGET:-}"/boot/ -ipath '/*/efi' -prune -o -name 'grub.cfg' -print)"
 	fnMsgout "${_PROG_NAME:-}" "create" "[${__PATH}]"
-	if command -v grub-mkconfig > /dev/null 2>&1; then
-		fnMsgout "${_PROG_NAME:-}" "info" "grub-mkconfig"
-		grub-mkconfig --output="${__PATH:?}"
-	elif command -v grub2-mkconfig > /dev/null 2>&1; then
-		fnMsgout "${_PROG_NAME:-}" "info" "grub2-mkconfig"
-		if ! grub2-mkconfig --output="${__PATH:?}" --update-bls-cmdline > /dev/null 2>&1; then
-			fnMsgout "${_PROG_NAME:-}" "info" "grubby"
-			grubby --update-kernel=ALL --remove-args="security apparmor selinux quiet vga" --args="${__BOPT:-}"
-			grub2-mkconfig --output="${__PATH:?}"
+	if [ -z "${__PATH:-}" ]; then
+		fnMsgout "${_PROG_NAME:-}" "skip" "grub.cfg not found"
+	else
+		fnMsgout "${_PROG_NAME:-}" "create" "[${__PATH}]"
+		if command -v grub-mkconfig > /dev/null 2>&1; then
+			fnMsgout "${_PROG_NAME:-}" "info" "grub-mkconfig"
+			grub-mkconfig --output="${__PATH:?}"
+		elif command -v grub2-mkconfig > /dev/null 2>&1; then
+			fnMsgout "${_PROG_NAME:-}" "info" "grub2-mkconfig"
+			if ! grub2-mkconfig --output="${__PATH:?}" --update-bls-cmdline > /dev/null 2>&1; then
+				fnMsgout "${_PROG_NAME:-}" "info" "grubby"
+				grubby --update-kernel=ALL --remove-args="security apparmor selinux quiet vga" --args="${__BOPT:-}"
+				grub2-mkconfig --output="${__PATH:?}"
+			fi
 		fi
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
 	fi
-	fnDbgdump "${__PATH}"				# debugout
-	fnFile_backup "${__PATH}" "init"	# backup initial file
 	unset __NAME __VERS __DEFS __BOPT __SLNX __APAR __LINE __ENTR __WORK __PATH
 
 	# --- complete ------------------------------------------------------------

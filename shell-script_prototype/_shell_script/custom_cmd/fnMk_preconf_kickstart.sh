@@ -90,7 +90,8 @@ function fnMk_preconf_kickstart() {
 		*_fedora*)
 			sed -i "${__TGET_PATH}"                 \
 			    -e "/%packages/,/%end/          { " \
-			    -e "/^epel-release/ s/^/#/      } "
+			    -e "/^epel-release/      s/^/#/   " \
+			    -e "/^systemd-timesyncd/ s/^/#/ } "
 			;;
 		*)
 			sed -i "${__TGET_PATH}"                 \

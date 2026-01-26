@@ -23,6 +23,8 @@ function fnTest_ping() {
 		for __PARM in \
 			"-4,${_NICS_FQDN}"               \
 			"-6,${_NICS_FQDN}"               \
+			"-4,${_NICS_HOST}."              \
+			"-6,${_NICS_HOST}."              \
 			"-4,${_NICS_IPV4}"               \
 			"-6,${_IPV6_ADDR}"               \
 			"-6,${_LINK_ADDR}%${_NICS_NAME}" \

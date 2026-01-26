@@ -26,6 +26,7 @@ function fnMk_pxeboot() {
 	declare       __RETN=""				# return value
 	declare -a    __ARRY=()				# data array
 	declare -i    __TABS=0				# tab count
+	declare       __INFO=""
 	declare       __WORK=""
 	declare -i    I=0
 	declare -i    J=0
@@ -97,6 +98,8 @@ function fnMk_pxeboot() {
 							;;
 						*) ;;
 					esac
+					__INFO="$(printf "%s %s : %s" "${__MDIA[$((_OSET_MDIA+0))]}" "${__MDIA[1]}" "${__MDIA[$((_OSET_MDIA+14))]##*/}")"
+					printf "\033[m\033[44m%-8s: %s\033[m\n" "start" "${__INFO}"
 					# --- rsync -----------------------------------------------
 					fnRsync "${__MDIA[$((_OSET_MDIA+14))]}" "${_DIRS_IMGS}/${__MDIA[$((_OSET_MDIA+2))]}"
 					;;
@@ -113,7 +116,9 @@ function fnMk_pxeboot() {
 					[[ "${__MDIA[$((_OSET_MDIA+3))]}" != "%20" ]] && __TABS=$((__TABS+1))
 					[[ "${__TABS}" -lt 0 ]] && __TABS=0
 					;;
-				o) ;;					# (output)
+				o)						# (output)
+					printf "\033[m\033[44m%-8s: %s\033[m\n" "complete" "${__INFO}"
+					;;
 				*) ;;					# (hidden)
 			esac
 			# --- data registration -------------------------------------------

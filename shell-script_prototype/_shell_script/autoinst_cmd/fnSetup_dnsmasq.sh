@@ -62,17 +62,17 @@ fnSetup_dnsmasq() {
 		$(printf "%-60s" "domain=${_NICS_WGRP:-}")# local domain name
 		expand-hosts                                                # add domain name to host
 		#filterwin2k                                                # filter for windows
-		$(printf "%-60s" "#interface=${_NICS_NAME##-:-}")# listen to interface
-		$(printf "%-60s" "#listen-address=${_IPV4_LHST:-}")# listen to ip address
+		$(printf "%-60s" "interface=${_NICS_NAME##-:-}")# listen to interface
+		$(printf "%-60s" "listen-address=${_IPV4_LHST:-}")# listen to ip address
 		$(printf "%-60s" "#listen-address=${_IPV6_LHST:-}")# listen to ip address
 		$(printf "%-60s" "#listen-address=${_NICS_IPV4:-}")# listen to ip address
 		$(printf "%-60s" "#listen-address=${_LINK_ADDR:-}")# listen to ip address
-		$(printf "%-60s" "#server=${_NICS_DNS4:-}")# directly specify upstream server
+		$(printf "%-60s" "server=${_NICS_DNS4:-}")# directly specify upstream server
 		#server=8.8.8.8                                             # directly specify upstream server
 		#server=8.8.4.4                                             # directly specify upstream server
 		no-hosts                                                    # don't read the hostnames in /etc/hosts
-		#no-poll                                                    # don't poll /etc/resolv.conf for changes
-		#no-resolv                                                  # don't read /etc/resolv.conf
+		no-poll                                                     # don't poll /etc/resolv.conf for changes
+		no-resolv                                                   # don't read /etc/resolv.conf
 		#strict-order                                               # try in the registration order of /etc/resolv.conf
 		#bind-dynamic                                               # enable bind-interfaces and the default hybrid network mode
 		bind-interfaces                                             # enable multiple instances of dnsmasq

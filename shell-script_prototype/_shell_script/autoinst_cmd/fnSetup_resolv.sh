@@ -56,7 +56,7 @@ _EOT_
 			#DNSSEC=no
 			#DNSOverTLS=no
 			MulticastDNS=yes
-			#LLMNR=yes
+			LLMNR=yes
 			#Cache=yes
 			#CacheFromLocalhost=no
 			#DNSStubListener=yes
