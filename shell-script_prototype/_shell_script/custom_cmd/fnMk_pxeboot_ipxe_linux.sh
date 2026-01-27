@@ -18,7 +18,7 @@ function fnMk_pxeboot_ipxe_linux() {
 	declare -a    __MDIA=("${@:-}")
 	declare -a    __BOPT=()
 	declare       __ENTR=""
-	declare       __NICS="${_NICS_NAME:-"ens160"}"
+	declare       __NICS=""
 	declare       __HOST=""
 	declare       __CIDR=""
 	declare       __WORK=""
@@ -40,7 +40,7 @@ function fnMk_pxeboot_ipxe_linux() {
 	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__HOST:-"localhost.localdomain"}"}"
 	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 		opensuse-*-15.*) __NICS="eth0";;
-		*              ) ;;
+		*              ) __NICS="${_NICS_NAME:-"ens160"}";;
 	esac
 	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 		ubuntu*) __CIDR="";;

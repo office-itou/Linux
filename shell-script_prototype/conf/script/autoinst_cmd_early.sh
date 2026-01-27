@@ -113,7 +113,7 @@
 	readonly _SAMB_GRUP="sambashare"	# force group
 	readonly _SAMB_GADM="sambaadmin"	# admin group
 										# nsswitch.conf
-	readonly _SAMB_NSSW="wins mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns mdns4 mdns6"
+	readonly _SAMB_NSSW="wins mdns_minimal mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns mdns6 mdns4"
 	_SHEL_NLIN=""						# login shell (disallow system login to samba user)
 	# --- shared directory parameter ------------------------------------------
 	_DIRS_TOPS=""						# top of shared directory
@@ -1081,26 +1081,39 @@ fnGet_conf_file() {
 				fi
 				;;
 			hd:*|dvd:*|cd:*)
-				fnMsgout "${_PROG_NAME:-}" "copy" "${__LINE}"
-				if [ -e /var/log/YaST2/y2start.log ]; then
+				if [ -e /run/initramfs/live/. ]; then
+					fnMsgout "${_PROG_NAME:-}" "info" "/run/initramfs/live/."
+					fnMsgout "${_PROG_NAME:-}" "copy" "${__LINE}"
+					__LINE="${__LINE#*:/}"
+					__LINE="${__LINE%%\?*}"
+					__LINE="/run/initramfs/live/${__LINE}"
+    				if ! cp -p "${__LINE}" "${_DIRS_TGET:-}${_DIRS_INST}/"; then
+						fnMsgout "${_PROG_NAME:-}" "failed" "${__LINE}"
+						__PATH="${_DIRS_TGET:-}${_DIRS_INST}/${__LINE##*/}"
+						rm -rf "${__PATH:?}"
+						continue
+					fi
+				elif [ -e /var/log/YaST2/y2start.log ]; then
+					fnMsgout "${_PROG_NAME:-}" "info" "/var/log/YaST2/y2start.log"
+					fnMsgout "${_PROG_NAME:-}" "copy" "${__LINE}"
 					while read -r __READ
 					do
 						case "${__READ:-}" in
-						*AutoYaST=*)
-							__SEED="${__READ%%=*}"
-							__SEED="${__READ#"${__SEED:-}="}"
-							__SEED="${__SEED#\"}"
-							__SEED="${__SEED%\"}"
-							__SEED="${__SEED#*://}"
-							;;
-						*autoyast=*)
-							__YAST="${__READ%%=*}"
-							__YAST="${__READ#"${__YAST:-}="}"
-							__YAST="${__YAST#\"}"
-							__YAST="${__YAST%\"}"
-							__YAST="${__YAST#*:/}"
-							;;
-						*) ;;
+							*AutoYaST=*)
+								__SEED="${__READ%%=*}"
+								__SEED="${__READ#"${__SEED:-}="}"
+								__SEED="${__SEED#\"}"
+								__SEED="${__SEED%\"}"
+								__SEED="${__SEED#*://}"
+								;;
+							*autoyast=*)
+								__YAST="${__READ%%=*}"
+								__YAST="${__READ#"${__YAST:-}="}"
+								__YAST="${__YAST#\"}"
+								__YAST="${__YAST%\"}"
+								__YAST="${__YAST#*:/}"
+								;;
+							*) ;;
 						esac
 					done < /var/log/YaST2/y2start.log
 					__DEVS="${__SEED%"/${__YAST:-}"}"
