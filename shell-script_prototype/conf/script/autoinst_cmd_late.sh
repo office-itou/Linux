@@ -544,6 +544,12 @@ fnNetwork_param() {
 			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | sort -V | head -n 1)"
 			_NICS_NAME="${_NICS_NAME##*/}"
 		fi
+		_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME:-}" | sort -V | head -n 1)"
+		_NICS_NAME="${_NICS_NAME##*/}"
+		if [ -z "${_NICS_NAME:-}" ]; then
+			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name 'e*' | sort -V | head -n 1)"
+			_NICS_NAME="${_NICS_NAME##*/}"
+		fi
 		if ! find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | grep -q "${_NICS_NAME}"; then
 			fnMsgout "${_PROG_NAME:-}" "failed" "not exist: [${_NICS_NAME}]"
 		else
@@ -1838,8 +1844,11 @@ _EOT_
 #		else
 #			mkdir -p "${__CONF%/*}"
 #			cp --preserve=timestamps "${_DIRS_ORIG}/${__CONF#*"${_DIRS_TGET:-}/"}" "${__CONF}"
-			if [ ! -h "${__PATH}" ]; then
-				rm -f "${__PATH}"
+			__WORK="$(realpath "${__PATH}")"
+			if [  "${__WORK}" != "${__CONF}" ]; then
+				__WORK="${__PATH}.orig"
+				[ ! -e "${__WORK}" ] && mv "${__PATH}" "${__WORK}"
+				rm -f "${__PATH:?}"
 				ln -s "../${__CONF#"${_DIRS_TGET:-}/"}" "${__PATH}"
 			fi
 			fnDbgdump "${__PATH}"				# debugout
@@ -2062,6 +2071,7 @@ fnSetup_samba() {
 	    -e  '/^[ \t]*allow insecure wide links[ \t]*=/    s/=.*$/= Yes/'               \
 	    -e  '/^[ \t]*dos charset[ \t]*=/                  s/=.*$/= CP932/'             \
 	    -e  '/^[ \t]*unix password sync[ \t]*=/           s/=.*$/= No/'                \
+	    -e  '/^[ \t]*disable netbios[ \t]*=/              s/=.*$/= Yes/'               \
 	    -e  '/^[ \t]*netbios name[ \t]*=/                 s/=.*$/= '"${_NICS_HOST}"'/' \
 	    -e  '/^[ \t]*workgroup[ \t]*=/                    s/=.*$/= '"${_NICS_WGRP}"'/' \
 	    -e  '/^[ \t]*bind interfaces only[ \t]*=/                                   {' \
