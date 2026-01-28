@@ -4,25 +4,25 @@
 
 |     distribution     |   mini    |  netinst  |    dvd    | liveinst  |   live    |               memo               |
 | :------------------- | :-------: | :-------: | :-------: | :-------: | :-------: | :------------------------------- |
-| debian-12            |     ･     |     ･     |     ･     |     ･     |     ･     |                                  |
-| debian-13            |     ･     |     ･     |     ･     |     ･     |     ･     |                                  |
-| debian-14            |     ･     |     -     |     -     |     -     |     -     |                                  |
-| debian-15            |     -     |     -     |     -     |     -     |     -     |                                  |
-| debian-testing       |     ･     |     ･     |     ･     |     ･     |     ･     |                                  |
-| debian-testing-daily |     ･     |     -     |     -     |     -     |     -     |                                  |
-| ubuntu-24.04         |     -     |     -     |     ･     |     ･     |     -     |                                  |
-| ubuntu-25.04         |     -     |     -     |     ･     |     ･     |     -     |                                  |
+| debian-12.13.0       |     o     |     o     |     ･     |     ･     |     ･     |                                  |
+| debian-13.3.0        |     o     |     o     |     ･     |     ･     |     ･     |                                  |
+| debian-14            |     x     |     -     |     -     |     -     |     -     | kernel version mismatch error    |
+| debian-15            |     -     |     -     |     -     |     -     |     -     | unreleased                       |
+| debian-testing       |     x     |     o     |     ･     |     ･     |     ･     | kernel version mismatch error    |
+| debian-testing-daily |     o     |     -     |     -     |     -     |     -     |                                  |
+| ubuntu-24.04.3       |     -     |     -     |     ･     |     ･     |     -     |                                  |
 | ubuntu-25.10         |     -     |     -     |     ･     |     ･     |     -     |                                  |
-| ubuntu-26.04         |     -     |     -     |     ･     |     ･     |     -     |                                  |
-| fedora-43            |     -     |     ･     |     ･     |     -     |     -     |                                  |
-| centos-stream-9      |     -     |     ･     |     ･     |     -     |     -     |                                  |
-| centos-stream-10     |     -     |     ･     |     ･     |     -     |     -     |                                  |
-| almalinux-9          |     -     |     ･     |     ･     |     -     |     -     |                                  |
-| almalinux-10         |     -     |     ･     |     ･     |     -     |     -     |                                  |
-| rockylinux-9         |     -     |     ･     |     ･     |     -     |     -     |                                  |
-| rockylinux-10        |     -     |     ･     |     ･     |     -     |     -     |                                  |
-| miraclelinux-9       |     -     |     ･     |     ･     |     -     |     -     |                                  |
-| opensuse-leap-16     |     -     |     ･     |     ･     |     -     |     -     |                                  |
+| ubuntu-26.04 (snap2) |     -     |     -     |     ･     |     ･     |     -     |                                  |
+| fedora-43            |     -     |     o     |     ･     |     -     |     -     | systemd-timesyncd does not exist |
+| centos-stream-9      |     -     |     o     |     ･     |     -     |     -     |                                  |
+| centos-stream-10     |     -     |     o     |     ･     |     -     |     -     |                                  |
+| almalinux-9.7        |     -     |     o     |     ･     |     -     |     -     |                                  |
+| almalinux-10.1       |     -     |     o     |     ･     |     -     |     -     |                                  |
+| rockylinux-9.7       |     -     |     o     |     ･     |     -     |     -     |                                  |
+| rockylinux-10.1      |     -     |     o     |     ･     |     -     |     -     |                                  |
+| miraclelinux-9.6     |     -     |     o     |     ･     |     -     |     -     | caution hostname length          |
+| opensuse-leap-15.6   |     -     |     ･     |     ･     |     -     |     -     |                                  |
+| opensuse-leap-16.0   |     -     |     ･     |     ･     |     -     |     -     |                                  |
 | opensuse-tumbleweed  |     -     |     ･     |     ･     |     -     |     -     |                                  |
 | windows-10-22h2      |     -     |     -     |     =     |     -     |     -     |                                  |
 | windows-11-25h2      |     -     |     -     |     =     |     -     |     -     |                                  |
@@ -36,25 +36,25 @@
 
 |     distribution     |   mini    |  netinst  |    dvd    | liveinst  |   live    |               memo               |
 | :------------------- | :-------: | :-------: | :-------: | :-------: | :-------: | :------------------------------- |
-| debian-12            |     o     |     =     |     =     |     =     |     o     |                                  |
-| debian-13            |     o     |     =     |     =     |     =     |     o     |                                  |
+| debian-12.13.0       |     o     |     =     |     =     |     =     |     o     |                                  |
+| debian-13.3.0        |     o     |     =     |     =     |     =     |     o     |                                  |
 | debian-14            |     x     |     -     |     -     |     -     |     -     | kernel version mismatch error    |
 | debian-15            |     -     |     -     |     -     |     -     |     -     | unreleased                       |
 | debian-testing       |     x     |     =     |     =     |     =     |     o     | kernel version mismatch error    |
 | debian-testing-daily |     o     |     -     |     -     |     -     |     -     |                                  |
-| ubuntu-24.04         |     -     |     -     |     o     |     x     |     -     | out of memory at 8GiB            |
-| ubuntu-25.04         |     -     |     -     |     o     |     x     |     -     | out of memory at 8GiB            |
+| ubuntu-24.04.3       |     -     |     -     |     o     |     x     |     -     | out of memory at 8GiB            |
 | ubuntu-25.10         |     -     |     -     |     o     |     x     |     -     | out of memory at 8GiB            |
-| ubuntu-26.04         |     -     |     -     |     o     |     x     |     -     | out of memory at 8GiB            |
+| ubuntu-26.04 (snap2) |     -     |     -     |     x     |     ･     |     -     | nmbd not start                   |
 | fedora-43            |     -     |     o     |     o     |     -     |     -     |                                  |
 | centos-stream-9      |     -     |     o     |     ･     |     -     |     -     |                                  |
 | centos-stream-10     |     -     |     o     |     ･     |     -     |     -     |                                  |
-| almalinux-9          |     -     |     o     |     ･     |     -     |     -     |                                  |
-| almalinux-10         |     -     |     o     |     ･     |     -     |     -     |                                  |
-| rockylinux-9         |     -     |     o     |     ･     |     -     |     -     |                                  |
-| rockylinux-10        |     -     |     o     |     ･     |     -     |     -     |                                  |
-| miraclelinux-9       |     -     |     o     |     ･     |     -     |     -     |                                  |
-| opensuse-leap-16     |     -     |     o     |     ･     |     -     |     -     |                                  |
+| almalinux-9.7        |     -     |     o     |     ･     |     -     |     -     |                                  |
+| almalinux-10.1       |     -     |     o     |     ･     |     -     |     -     |                                  |
+| rockylinux-9.7       |     -     |     o     |     ･     |     -     |     -     |                                  |
+| rockylinux-10.1      |     -     |     o     |     ･     |     -     |     -     |                                  |
+| miraclelinux-9.6     |     -     |     o     |     ･     |     -     |     -     |                                  |
+| opensuse-leap-15.6   |     -     |     ･     |     ･     |     -     |     -     |                                  |
+| opensuse-leap-16.0   |     -     |     o     |     ･     |     -     |     -     |                                  |
 | opensuse-tumbleweed  |     -     |     x     |     x     |     -     |     -     | network device not working       |
 | windows-10-22h2      |     -     |     -     |     o     |     -     |     -     |                                  |
 | windows-11-25h2      |     -     |     -     |     o     |     -     |     -     |                                  |
@@ -71,10 +71,9 @@
 | debian-12            |     ･     |     ･     |     ･     |     ･     |     ･     |                                  |
 | debian-13            |     ･     |     ･     |     ･     |     ･     |     ･     |                                  |
 | debian-14            |     ･     |     -     |     -     |     -     |     -     |                                  |
-| debian-15            |     -     |     -     |     -     |     -     |     -     |                                  |
+| debian-15            |     -     |     -     |     -     |     -     |     -     | unreleased                       |
 | debian-testing       |     ･     |     ･     |     ･     |     ･     |     ･     |                                  |
 | ubuntu-24.04         |     -     |     -     |     ･     |     ･     |     -     |                                  |
-| ubuntu-25.04         |     -     |     -     |     ･     |     ･     |     -     |                                  |
 | ubuntu-25.10         |     -     |     -     |     ･     |     ･     |     -     |                                  |
 | ubuntu-26.04         |     -     |     -     |     ･     |     ･     |     -     |                                  |
 | fedora-43            |     -     |     ･     |     ･     |     -     |     -     |                                  |
@@ -85,6 +84,7 @@
 | rockylinux-9         |     -     |     ･     |     ･     |     -     |     -     |                                  |
 | rockylinux-10        |     -     |     ･     |     ･     |     -     |     -     |                                  |
 | miraclelinux-9       |     -     |     ･     |     ･     |     -     |     -     |                                  |
+| opensuse-leap-15.6   |     -     |     ･     |     ･     |     -     |     -     |                                  |
 | opensuse-leap-16     |     -     |     ･     |     ･     |     -     |     -     |                                  |
 | opensuse-tumbleweed  |     -     |     ･     |     ･     |     -     |     -     |                                  |
 | windows-10-22h2      |     -     |     -     |     =     |     -     |     -     |                                  |
@@ -102,10 +102,9 @@
 | debian-12            |     ･     |     ･     |     ･     |     ･     |     ･     |                                  |
 | debian-13            |     ･     |     ･     |     ･     |     ･     |     ･     |                                  |
 | debian-14            |     ･     |     -     |     -     |     -     |     -     |                                  |
-| debian-15            |     -     |     -     |     -     |     -     |     -     |                                  |
+| debian-15            |     -     |     -     |     -     |     -     |     -     | unreleased                       |
 | debian-testing       |     ･     |     ･     |     ･     |     ･     |     ･     |                                  |
 | ubuntu-24.04         |     -     |     -     |     ･     |     ･     |     -     |                                  |
-| ubuntu-25.04         |     -     |     -     |     ･     |     ･     |     -     |                                  |
 | ubuntu-25.10         |     -     |     -     |     ･     |     ･     |     -     |                                  |
 | ubuntu-26.04         |     -     |     -     |     ･     |     ･     |     -     |                                  |
 | fedora-43            |     -     |     ･     |     ･     |     -     |     -     |                                  |
@@ -116,6 +115,7 @@
 | rockylinux-9         |     -     |     ･     |     ･     |     -     |     -     |                                  |
 | rockylinux-10        |     -     |     ･     |     ･     |     -     |     -     |                                  |
 | miraclelinux-9       |     -     |     ･     |     ･     |     -     |     -     |                                  |
+| opensuse-leap-15.6   |     -     |     ･     |     ･     |     -     |     -     |                                  |
 | opensuse-leap-16     |     -     |     ･     |     ･     |     -     |     -     |                                  |
 | opensuse-tumbleweed  |     -     |     ･     |     ･     |     -     |     -     |                                  |
 | windows-10-22h2      |     -     |     -     |     =     |     -     |     -     |                                  |

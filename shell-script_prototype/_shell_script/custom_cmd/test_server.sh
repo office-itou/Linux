@@ -526,6 +526,16 @@ function fnFind_command() {
 }
 
 # -----------------------------------------------------------------------------
+# descript: find service
+#   input :     $1     : service name
+#   output:   stdout   : output
+#   return:            : unused
+# --- file backup -------------------------------------------------------------
+function fnFind_serivce() {
+	find "${_DIRS_TGET:-}"/lib/systemd/ "${_DIRS_TGET:-}"/usr/lib/systemd/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \) 2> /dev/null || true
+}
+
+# -----------------------------------------------------------------------------
 # descript: get system parameter
 #   input :            : unused
 #   output:   stdout   : message
@@ -537,7 +547,7 @@ function fnSystem_param() {
 		_DIST_NAME="$(sed -ne '/^ID=/      s/^[^=]\+="*\([^ "]\+\).*"*/\1/p' "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
 		_DIST_VERS="$(sed -ne '/^VERSION=/ s/^[^=]\+="*\([^ "]\+\).*"*/\1/p' "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
 		_DIST_CODE="$(sed -ne '/^VERSION=/ s/^[^=]\+="*.*(\(.\+\)).*"*/\1/p' "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
-#		_DIST_CODE="${_DIST_CODE:-"$(sed -ne '/^VERSION_CODENAME=/ s/^[^=]\+="*\([^ ]\+\).*"*/\1/p'  "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"}"
+		_DIST_CODE="${_DIST_CODE:-"$(sed -ne '/^VERSION_CODENAME=/ s/^[^=]\+="*\([^ ]\+\).*"*/\1/p'  "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"}"
 #		_DIST_NAME="$(sed -ne 's/^ID=//p'                                       "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
 #		_DIST_VERS="$(sed -ne 's/^VERSION=\"\([[:graph:]]\+\).*\"$/\1/p'        "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
 #		_DIST_CODE="$(sed -ne 's/^VERSION_CODENAME=//p'                         "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
@@ -576,6 +586,12 @@ function fnNetwork_param() {
 	else
 		if [[ -z "${_NICS_NAME#*"*"}" ]]; then
 			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | sort -V | head -n 1)"
+			_NICS_NAME="${_NICS_NAME##*/}"
+		fi
+		_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME:-}" | sort -V | head -n 1)"
+		_NICS_NAME="${_NICS_NAME##*/}"
+		if [[ -z "${_NICS_NAME:-}" ]]; then
+			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name 'e*' | sort -V | head -n 1)"
 			_NICS_NAME="${_NICS_NAME##*/}"
 		fi
 		if ! find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | grep -q "${_NICS_NAME}"; then
@@ -1450,36 +1466,46 @@ function fnTest_nmblookup() {
 	if ! command -v "${__COMD[0]}" > /dev/null 2>&1; then
 		fnMsgout "${_PROG_NAME:-}" "skip" "${__COMD[*]}"
 	else
-		__ADDR="$("${__COMD[0]}" -M -- - | awk '{print $1;}' || true)"
-		__ADDR="${_NICS_IPV4:-"${__ADDR:-"${_IPV4_LHST:-"127.0.0.1"}"}"}"
-		if [[ -z "${__ADDR:-}" ]]; then
-			fnMsgout "${_PROG_NAME:-}" "skip" "no ip address"
+		__NMBD="$(fnFind_serivce 'nmbd.service' 'nmb.service' | sort -V | head -n 1)"
+		__SRVC="${__NMBD##*/}"
+		if ! systemctl --quiet is-active "${__SRVC}"; then
+			fnMsgout "${_PROG_NAME:-}" "warn" "${__SRVC} not active"
 		else
-			__NAME="$("${__COMD[0]}" -A "${__ADDR}" | awk '$2=="<00>"&&$4!="<GROUP>" {print $1;}')"
-			__WGRP="$("${__COMD[0]}" -A "${__ADDR}" | awk '$2=="<00>"&&$4=="<GROUP>" {print $1;}')"
-			if command -v getent > /dev/null 2>&1; then
-				__ARRY=("getent" "hosts" "${__NAME,,}")
-				fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__ARRY[*]}"
-				if "${__ARRY[@]:?}" > /dev/null 2>&1 | cut -c -"${_COLS_SIZE:-"80"}"; then
-					fnMsgout "\033[36m${_PROG_NAME:-}" "success" "${__ARRY[*]}"
+			__ADDR="$("${__COMD[0]}" -M -- - | awk '{print $1;}' || true)"
+			__ADDR="${_NICS_IPV4:-"${__ADDR:-"${_IPV4_LHST:-"127.0.0.1"}"}"}"
+			if [[ -z "${__ADDR:-}" ]]; then
+				fnMsgout "${_PROG_NAME:-}" "skip" "no ip address"
+			else
+				__NAME="$("${__COMD[0]}" -A "${__ADDR}" | awk '$2=="<00>"&&$4!="<GROUP>" {print $1;}' || true)"
+				__WGRP="$("${__COMD[0]}" -A "${__ADDR}" | awk '$2=="<00>"&&$4=="<GROUP>" {print $1;}' || true)"
+				if [[ -z "${__NAME:-}" ]]; then
+					fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__COMD[0]} -A ${__ADDR}"
 				else
-					fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__ARRY[*]}"
-				fi
-			fi
-			if command -v traceroute > /dev/null 2>&1; then
-				__ARRY=("traceroute" "-4" "-w" "1" "-m" "1" "${__NAME,,}")
-				fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__ARRY[*]}"
-				if "${__ARRY[@]:?}" > /dev/null 2>&1 | cut -c -"${_COLS_SIZE:-"80"}"; then
-					fnMsgout "\033[36m${_PROG_NAME:-}" "success" "${__ARRY[*]}"
-				else
-					fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__ARRY[*]}"
-				fi
-				__ARRY=("traceroute" "-6" "-w" "1" "-m" "1" "${__NAME,,}")
-				fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__ARRY[*]}"
-				if "${__ARRY[@]:?}" > /dev/null 2>&1 | cut -c -"${_COLS_SIZE:-"80"}"; then
-					fnMsgout "\033[36m${_PROG_NAME:-}" "success" "${__ARRY[*]}"
-				else
-					fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__ARRY[*]}"
+					if command -v getent > /dev/null 2>&1; then
+						__ARRY=("getent" "hosts" "${__NAME,,}")
+						fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__ARRY[*]}"
+						if "${__ARRY[@]:?}" > /dev/null 2>&1 | cut -c -"${_COLS_SIZE:-"80"}"; then
+							fnMsgout "\033[36m${_PROG_NAME:-}" "success" "${__ARRY[*]}"
+						else
+							fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__ARRY[*]}"
+						fi
+					fi
+					if command -v traceroute > /dev/null 2>&1; then
+						__ARRY=("traceroute" "-4" "-w" "1" "-m" "1" "${__NAME,,}")
+						fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__ARRY[*]}"
+						if "${__ARRY[@]:?}" > /dev/null 2>&1 | cut -c -"${_COLS_SIZE:-"80"}"; then
+							fnMsgout "\033[36m${_PROG_NAME:-}" "success" "${__ARRY[*]}"
+						else
+							fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__ARRY[*]}"
+						fi
+						__ARRY=("traceroute" "-6" "-w" "1" "-m" "1" "${__NAME,,}")
+						fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__ARRY[*]}"
+						if "${__ARRY[@]:?}" > /dev/null 2>&1 | cut -c -"${_COLS_SIZE:-"80"}"; then
+							fnMsgout "\033[36m${_PROG_NAME:-}" "success" "${__ARRY[*]}"
+						else
+							fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__ARRY[*]}"
+						fi
+					fi
 				fi
 			fi
 		fi

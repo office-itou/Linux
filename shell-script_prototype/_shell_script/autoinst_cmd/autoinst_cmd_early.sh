@@ -544,6 +544,12 @@ fnNetwork_param() {
 			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | sort -V | head -n 1)"
 			_NICS_NAME="${_NICS_NAME##*/}"
 		fi
+		_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME:-}" | sort -V | head -n 1)"
+		_NICS_NAME="${_NICS_NAME##*/}"
+		if [ -z "${_NICS_NAME:-}" ]; then
+			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name 'e*' | sort -V | head -n 1)"
+			_NICS_NAME="${_NICS_NAME##*/}"
+		fi
 		if ! find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | grep -q "${_NICS_NAME}"; then
 			fnMsgout "${_PROG_NAME:-}" "failed" "not exist: [${_NICS_NAME}]"
 		else
@@ -737,7 +743,7 @@ fnInitialize() {
 	for __DIRS in \
 		/target \
 		/mnt/sysimage \
-		/mnt/
+		/mnt
 	do
 		[ ! -e "${__DIRS}"/root/. ] && continue
 		_DIRS_TGET="${__DIRS}"

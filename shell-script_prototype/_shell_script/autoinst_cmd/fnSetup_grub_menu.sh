@@ -73,11 +73,16 @@ fnSetup_grub_menu() {
 			security=*) ;;
 			apparmor=*) ;;
 			selinux=*) ;;
-			quiet) ;;
+#			quiet) ;;
 			vga=*) ;;
+			language=*) ;;
+			netsetup=*) ;;
+			hostname=*) ;;
+			ifcfg=*) ;;
 			*) __DEFS="${__DEFS:+"${__DEFS} "}${__LINE:-}";;
 		esac
 	done
+	__DEFS="$(echo "${__DEFS:-}" | sed -e 's%/%\\/%g')"
 	# --- GRUB_CMDLINE_LINUX --------------------------------------------------
 	__WORK="$(sed -ne 's/^#*GRUB_CMDLINE_LINUX=\(.*\)$/\1/p' "${__PATH}")"
 #	[ -z "${__WORK:-}" ] && echo "GRUB_CMDLINE_LINUX=\"\"" >> "${__PATH}"
@@ -90,8 +95,12 @@ fnSetup_grub_menu() {
 			security=*) ;;
 			apparmor=*) ;;
 			selinux=*) ;;
-			quiet) ;;
+#			quiet) ;;
 			vga=*) ;;
+			language=*) ;;
+			netsetup=*) ;;
+			hostname=*) ;;
+			ifcfg=*) ;;
 			*) __BOPT="${__BOPT:+"${__BOPT} "}${__LINE:-}";;
 		esac
 	done
@@ -126,7 +135,9 @@ fnSetup_grub_menu() {
 			fnMsgout "${_PROG_NAME:-}" "info" "grub2-mkconfig"
 			if ! grub2-mkconfig --output="${__PATH:?}" --update-bls-cmdline > /dev/null 2>&1; then
 				fnMsgout "${_PROG_NAME:-}" "info" "grubby"
-				grubby --update-kernel=ALL --remove-args="security apparmor selinux quiet vga" --args="${__BOPT:-}"
+				if command -v grubby > /dev/null 2>&1; then
+					grubby --update-kernel=ALL --remove-args="security apparmor selinux quiet vga" --args="${__BOPT:-}"
+				fi
 				grub2-mkconfig --output="${__PATH:?}"
 			fi
 		fi

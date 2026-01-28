@@ -18,7 +18,7 @@ function fnSystem_param() {
 		_DIST_NAME="$(sed -ne '/^ID=/      s/^[^=]\+="*\([^ "]\+\).*"*/\1/p' "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
 		_DIST_VERS="$(sed -ne '/^VERSION=/ s/^[^=]\+="*\([^ "]\+\).*"*/\1/p' "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
 		_DIST_CODE="$(sed -ne '/^VERSION=/ s/^[^=]\+="*.*(\(.\+\)).*"*/\1/p' "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
-#		_DIST_CODE="${_DIST_CODE:-"$(sed -ne '/^VERSION_CODENAME=/ s/^[^=]\+="*\([^ ]\+\).*"*/\1/p'  "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"}"
+		_DIST_CODE="${_DIST_CODE:-"$(sed -ne '/^VERSION_CODENAME=/ s/^[^=]\+="*\([^ ]\+\).*"*/\1/p'  "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"}"
 #		_DIST_NAME="$(sed -ne 's/^ID=//p'                                       "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
 #		_DIST_VERS="$(sed -ne 's/^VERSION=\"\([[:graph:]]\+\).*\"$/\1/p'        "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
 #		_DIST_CODE="$(sed -ne 's/^VERSION_CODENAME=//p'                         "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"

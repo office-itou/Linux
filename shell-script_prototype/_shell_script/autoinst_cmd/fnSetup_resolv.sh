@@ -35,8 +35,11 @@ _EOT_
 #		else
 #			mkdir -p "${__CONF%/*}"
 #			cp --preserve=timestamps "${_DIRS_ORIG}/${__CONF#*"${_DIRS_TGET:-}/"}" "${__CONF}"
-			if [ ! -h "${__PATH}" ]; then
-				rm -f "${__PATH}"
+			__WORK="$(realpath "${__PATH}")"
+			if [  "${__WORK}" != "${__CONF}" ]; then
+				__WORK="${__PATH}.orig"
+				[ ! -e "${__WORK}" ] && mv "${__PATH}" "${__WORK}"
+				rm -f "${__PATH:?}"
 				ln -s "../${__CONF#"${_DIRS_TGET:-}/"}" "${__PATH}"
 			fi
 			fnDbgdump "${__PATH}"				# debugout

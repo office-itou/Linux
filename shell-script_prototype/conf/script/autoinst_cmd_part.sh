@@ -707,7 +707,7 @@ fnInitialize() {
 	for __DIRS in \
 		/target \
 		/mnt/sysimage \
-		/mnt/
+		/mnt
 	do
 		[ ! -e "${__DIRS}"/root/. ] && continue
 		_DIRS_TGET="${__DIRS}"

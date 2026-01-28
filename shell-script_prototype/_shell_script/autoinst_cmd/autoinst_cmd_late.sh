@@ -544,6 +544,12 @@ fnNetwork_param() {
 			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | sort -V | head -n 1)"
 			_NICS_NAME="${_NICS_NAME##*/}"
 		fi
+		_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME:-}" | sort -V | head -n 1)"
+		_NICS_NAME="${_NICS_NAME##*/}"
+		if [ -z "${_NICS_NAME:-}" ]; then
+			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name 'e*' | sort -V | head -n 1)"
+			_NICS_NAME="${_NICS_NAME##*/}"
+		fi
 		if ! find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | grep -q "${_NICS_NAME}"; then
 			fnMsgout "${_PROG_NAME:-}" "failed" "not exist: [${_NICS_NAME}]"
 		else
@@ -737,7 +743,7 @@ fnInitialize() {
 	for __DIRS in \
 		/target \
 		/mnt/sysimage \
-		/mnt/
+		/mnt
 	do
 		[ ! -e "${__DIRS}"/root/. ] && continue
 		_DIRS_TGET="${__DIRS}"
@@ -1838,8 +1844,11 @@ _EOT_
 #		else
 #			mkdir -p "${__CONF%/*}"
 #			cp --preserve=timestamps "${_DIRS_ORIG}/${__CONF#*"${_DIRS_TGET:-}/"}" "${__CONF}"
-			if [ ! -h "${__PATH}" ]; then
-				rm -f "${__PATH}"
+			__WORK="$(realpath "${__PATH}")"
+			if [  "${__WORK}" != "${__CONF}" ]; then
+				__WORK="${__PATH}.orig"
+				[ ! -e "${__WORK}" ] && mv "${__PATH}" "${__WORK}"
+				rm -f "${__PATH:?}"
 				ln -s "../${__CONF#"${_DIRS_TGET:-}/"}" "${__PATH}"
 			fi
 			fnDbgdump "${__PATH}"				# debugout
@@ -2062,6 +2071,7 @@ fnSetup_samba() {
 	    -e  '/^[ \t]*allow insecure wide links[ \t]*=/    s/=.*$/= Yes/'               \
 	    -e  '/^[ \t]*dos charset[ \t]*=/                  s/=.*$/= CP932/'             \
 	    -e  '/^[ \t]*unix password sync[ \t]*=/           s/=.*$/= No/'                \
+	    -e  '/^[ \t]*disable netbios[ \t]*=/              s/=.*$/= Yes/'               \
 	    -e  '/^[ \t]*netbios name[ \t]*=/                 s/=.*$/= '"${_NICS_HOST}"'/' \
 	    -e  '/^[ \t]*workgroup[ \t]*=/                    s/=.*$/= '"${_NICS_WGRP}"'/' \
 	    -e  '/^[ \t]*bind interfaces only[ \t]*=/                                   {' \
@@ -3163,11 +3173,16 @@ fnSetup_grub_menu() {
 			security=*) ;;
 			apparmor=*) ;;
 			selinux=*) ;;
-			quiet) ;;
+#			quiet) ;;
 			vga=*) ;;
+			language=*) ;;
+			netsetup=*) ;;
+			hostname=*) ;;
+			ifcfg=*) ;;
 			*) __DEFS="${__DEFS:+"${__DEFS} "}${__LINE:-}";;
 		esac
 	done
+	__DEFS="$(echo "${__DEFS:-}" | sed -e 's%/%\\/%g')"
 	# --- GRUB_CMDLINE_LINUX --------------------------------------------------
 	__WORK="$(sed -ne 's/^#*GRUB_CMDLINE_LINUX=\(.*\)$/\1/p' "${__PATH}")"
 #	[ -z "${__WORK:-}" ] && echo "GRUB_CMDLINE_LINUX=\"\"" >> "${__PATH}"
@@ -3180,8 +3195,12 @@ fnSetup_grub_menu() {
 			security=*) ;;
 			apparmor=*) ;;
 			selinux=*) ;;
-			quiet) ;;
+#			quiet) ;;
 			vga=*) ;;
+			language=*) ;;
+			netsetup=*) ;;
+			hostname=*) ;;
+			ifcfg=*) ;;
 			*) __BOPT="${__BOPT:+"${__BOPT} "}${__LINE:-}";;
 		esac
 	done
@@ -3216,7 +3235,9 @@ fnSetup_grub_menu() {
 			fnMsgout "${_PROG_NAME:-}" "info" "grub2-mkconfig"
 			if ! grub2-mkconfig --output="${__PATH:?}" --update-bls-cmdline > /dev/null 2>&1; then
 				fnMsgout "${_PROG_NAME:-}" "info" "grubby"
-				grubby --update-kernel=ALL --remove-args="security apparmor selinux quiet vga" --args="${__BOPT:-}"
+				if command -v grubby > /dev/null 2>&1; then
+					grubby --update-kernel=ALL --remove-args="security apparmor selinux quiet vga" --args="${__BOPT:-}"
+				fi
 				grub2-mkconfig --output="${__PATH:?}"
 			fi
 		fi

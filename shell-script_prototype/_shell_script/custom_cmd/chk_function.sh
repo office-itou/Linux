@@ -702,7 +702,7 @@ function fnSystem_param() {
 		_DIST_NAME="$(sed -ne '/^ID=/      s/^[^=]\+="*\([^ "]\+\).*"*/\1/p' "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
 		_DIST_VERS="$(sed -ne '/^VERSION=/ s/^[^=]\+="*\([^ "]\+\).*"*/\1/p' "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
 		_DIST_CODE="$(sed -ne '/^VERSION=/ s/^[^=]\+="*.*(\(.\+\)).*"*/\1/p' "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
-#		_DIST_CODE="${_DIST_CODE:-"$(sed -ne '/^VERSION_CODENAME=/ s/^[^=]\+="*\([^ ]\+\).*"*/\1/p'  "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"}"
+		_DIST_CODE="${_DIST_CODE:-"$(sed -ne '/^VERSION_CODENAME=/ s/^[^=]\+="*\([^ ]\+\).*"*/\1/p'  "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"}"
 #		_DIST_NAME="$(sed -ne 's/^ID=//p'                                       "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
 #		_DIST_VERS="$(sed -ne 's/^VERSION=\"\([[:graph:]]\+\).*\"$/\1/p'        "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
 #		_DIST_CODE="$(sed -ne 's/^VERSION_CODENAME=//p'                         "${___PATH:-}" | tr '[:upper:]' '[:lower:]')"
@@ -741,6 +741,12 @@ function fnNetwork_param() {
 	else
 		if [[ -z "${_NICS_NAME#*"*"}" ]]; then
 			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | sort -V | head -n 1)"
+			_NICS_NAME="${_NICS_NAME##*/}"
+		fi
+		_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME:-}" | sort -V | head -n 1)"
+		_NICS_NAME="${_NICS_NAME##*/}"
+		if [[ -z "${_NICS_NAME:-}" ]]; then
+			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name 'e*' | sort -V | head -n 1)"
 			_NICS_NAME="${_NICS_NAME##*/}"
 		fi
 		if ! find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | grep -q "${_NICS_NAME}"; then

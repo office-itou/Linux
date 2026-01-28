@@ -72,7 +72,7 @@
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnFind_command.sh				# find command
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnFind_service.sh				# find service
+	source "${_SHEL_COMD}"/fnFind_service.sh				# find service
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnSystem_param.sh				# get system parameter
 	# shellcheck source=/dev/null
