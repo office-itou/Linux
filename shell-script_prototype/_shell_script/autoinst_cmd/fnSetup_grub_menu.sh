@@ -111,16 +111,6 @@ fnSetup_grub_menu() {
 	fnMsgout "${_PROG_NAME:-}" "info" "    __BOPT=[${__BOPT:-}]"
 	fnMsgout "${_PROG_NAME:-}" "info" "    __SLNX=[${__SLNX:-}]"
 	fnMsgout "${_PROG_NAME:-}" "info" "    __APAR=[${__APAR:-}]"
-	sed -i "${__PATH}" \
-	    -e '/^#*GRUB_RECORDFAIL_TIMEOUT=.*$/    {s/^#//; h; s/^/#/; p; g; s/[0-9]\+$/10/}' \
-	    -e '/^#*GRUB_TIMEOUT=.*$/               {s/^#//; h; s/^/#/; p; g; s/[0-9]\+$/3/ }' \
-	    -e '/^#*GRUB_GFXMODE=.*$/               {s/^#//; h; s/^/#/; p; g; s/=.*$/="1920x1080,800x600,auto"/}' \
-	    -e '/^#*GRUB_INIT_TUNE=.*$/             {s/^#//; h; s/^/#/; p; g; s/=.*$/="960 440 1 0 4 440 1"/}' \
-	    -e '/^#*GRUB_CMDLINE_LINUX_DEFAULT=.*$/ {s/^#//; h; s/^/#/; p; g; s/=.*$/="'"${__DEFS:-}"'"/}' \
-	    -e '/^#*GRUB_CMDLINE_LINUX=.*$/         {s/^#//; h; s/^/#/; p; g; s/=.*$/="'"${__BOPT:-}"'"/}'
-	diff --suppress-common-lines --expand-tabs "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}" || true
-	fnDbgdump "${__PATH}"				# debugout
-	fnFile_backup "${__PATH}" "init"	# backup initial file
 	# --- grub.cfg --------------------------------------------------------
 	__PATH="$(find "${_DIRS_TGET:-}"/boot/ -ipath '/*/efi' -prune -o -name 'grub.cfg' -print)"
 	fnMsgout "${_PROG_NAME:-}" "create" "[${__PATH}]"
@@ -128,17 +118,26 @@ fnSetup_grub_menu() {
 		fnMsgout "${_PROG_NAME:-}" "skip" "grub.cfg not found"
 	else
 		fnMsgout "${_PROG_NAME:-}" "create" "[${__PATH}]"
-		if command -v grub-mkconfig > /dev/null 2>&1; then
-			fnMsgout "${_PROG_NAME:-}" "info" "grub-mkconfig"
-			grub-mkconfig --output="${__PATH:?}"
-		elif command -v grub2-mkconfig > /dev/null 2>&1; then
-			fnMsgout "${_PROG_NAME:-}" "info" "grub2-mkconfig"
-			if ! grub2-mkconfig --output="${__PATH:?}" --update-bls-cmdline > /dev/null 2>&1; then
-				fnMsgout "${_PROG_NAME:-}" "info" "grubby"
-				if command -v grubby > /dev/null 2>&1; then
-					grubby --update-kernel=ALL --remove-args="security apparmor selinux quiet vga" --args="${__BOPT:-}"
-				fi
-				grub2-mkconfig --output="${__PATH:?}"
+		if command -v grubby > /dev/null 2>&1; then
+			fnMsgout "${_PROG_NAME:-}" "info" "grubby"
+			grubby --update-kernel=ALL --remove-args="security apparmor selinux quiet vga" --args="${__BOPT:-}" || true
+		else
+			sed -i "${__PATH}" \
+			    -e '/^#*GRUB_RECORDFAIL_TIMEOUT=.*$/    {s/^#//; h; s/^/#/; p; g; s/[0-9]\+$/10/}' \
+			    -e '/^#*GRUB_TIMEOUT=.*$/               {s/^#//; h; s/^/#/; p; g; s/[0-9]\+$/3/ }' \
+			    -e '/^#*GRUB_GFXMODE=.*$/               {s/^#//; h; s/^/#/; p; g; s/=.*$/="1920x1080,800x600,auto"/}' \
+			    -e '/^#*GRUB_INIT_TUNE=.*$/             {s/^#//; h; s/^/#/; p; g; s/=.*$/="960 440 1 0 4 440 1"/}' \
+			    -e '/^#*GRUB_CMDLINE_LINUX_DEFAULT=.*$/ {s/^#//; h; s/^/#/; p; g; s/=.*$/="'"${__DEFS:-}"'"/}' \
+			    -e '/^#*GRUB_CMDLINE_LINUX=.*$/         {s/^#//; h; s/^/#/; p; g; s/=.*$/="'"${__BOPT:-}"'"/}'
+			diff --suppress-common-lines --expand-tabs "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}" || true
+			fnDbgdump "${__PATH}"				# debugout
+			fnFile_backup "${__PATH}" "init"	# backup initial file
+			if command -v grub-mkconfig > /dev/null 2>&1; then
+				fnMsgout "${_PROG_NAME:-}" "info" "grub-mkconfig"
+				grub-mkconfig --output="${__PATH:?}" || true
+			elif command -v grub2-mkconfig > /dev/null 2>&1; then
+				fnMsgout "${_PROG_NAME:-}" "info" "grub2-mkconfig"
+				grub2-mkconfig --output="${__PATH:?}" || true
 			fi
 		fi
 		fnDbgdump "${__PATH}"				# debugout

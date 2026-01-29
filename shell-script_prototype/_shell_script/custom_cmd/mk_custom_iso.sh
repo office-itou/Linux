@@ -2505,7 +2505,10 @@ function fnMk_pxeboot_ipxe_hdrftr() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		#!ipxe
 
-		cpuid --ext 29 && set arch amd64 || set arch x86
+		cpair 0 ||
+		cpair --foreground 7 --background 0 4 ||
+
+		cpuid --ext 29 && set arch x86_64 || set arch i386
 
 		dhcp
 		isset \${66} && set srvraddr ${_SRVR_PROT:?}://\${66} || set srvraddr ${_SRVR_PROT:?}://${_SRVR_ADDR:?}
