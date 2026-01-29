@@ -1140,17 +1140,17 @@ function fnTest_netman() {
 }
 
 # -----------------------------------------------------------------------------
-# descript: test dns port
+# descript: test port dns
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
-function fnTest_dns_port() {
+function fnTest_port_dns() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	declare -r -a __COMD=("ss" "-tulpn")
-	declare -r -a __COM2=("grep" "-E" ":53(|[ \t].*)$")
+	declare -r -a __COM2=("grep" "-E" ":(53)(|[ \t].*)$")
 
 	# --- test dns port -------------------------------------------------------
 	if ! command -v "${__COMD[0]}" > /dev/null 2>&1; then
@@ -1164,6 +1164,41 @@ function fnTest_dns_port() {
 		fi
 	fi
 #	unset __COMD
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+	fnDbgparameters
+#	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: test port smb
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+function fnTest_port_smb() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	declare -r -a __COMD=("ss" "-tulpn")
+	declare -r -a __COM2=("grep" "-E" ":(13[789]|445)(|[ \t].*)$")
+
+	# --- test samba port -----------------------------------------------------
+	if ! command -v "${__COMD[0]}" > /dev/null 2>&1; then
+		fnMsgout "${_PROG_NAME:-}" "skip" "${__COMD[*]}"
+	else
+		fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__COMD[*]} | ${__COM2[0]} ${__COM2[1]} '${__COM2[2]}'"
+		if "${__COMD[@]:?}" | "${__COM2[@]:?}" | cut -c -"${_COLS_SIZE:-"80"}"; then
+			fnMsgout "\033[36m${_PROG_NAME:-}" "success" "${__COMD[*]}"
+		else
+			fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__COMD[*]}"
+		fi
+	fi
+
+#	unset __COMD __COM2
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -1427,12 +1462,17 @@ function fnTest_chronyc() {
 	if ! command -v "${__COMD[0]}" > /dev/null 2>&1; then
 		fnMsgout "${_PROG_NAME:-}" "skip" "${__COMD[*]}"
 	else
-		__ARRY=("${__COMD[@]}" "sources")
-		fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__ARRY[*]}"
-		if "${__ARRY[@]:?}" | cut -c -"${_COLS_SIZE:-"80"}"; then
-			fnMsgout "\033[36m${_PROG_NAME:-}" "success" "${__ARRY[*]}"
+		__SRVC="chronyd.service"
+		if ! systemctl --quiet is-active "${__SRVC}"; then
+			fnMsgout "${_PROG_NAME:-}" "warn" "${__SRVC} not active"
 		else
-			fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__ARRY[*]}"
+			__ARRY=("${__COMD[@]}" "sources")
+			fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__ARRY[*]}"
+			if "${__ARRY[@]:?}" | cut -c -"${_COLS_SIZE:-"80"}"; then
+				fnMsgout "\033[36m${_PROG_NAME:-}" "success" "${__ARRY[*]}"
+			else
+				fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__ARRY[*]}"
+			fi
 		fi
 	fi
 	unset __PARM __ARRY
@@ -1471,11 +1511,16 @@ function fnTest_nmblookup() {
 		if ! systemctl --quiet is-active "${__SRVC}"; then
 			fnMsgout "${_PROG_NAME:-}" "warn" "${__SRVC} not active"
 		else
-			__ADDR="$("${__COMD[0]}" -M -- - | awk '{print $1;}' || true)"
-			__ADDR="${_NICS_IPV4:-"${__ADDR:-"${_IPV4_LHST:-"127.0.0.1"}"}"}"
+			if ! __ADDR="$("${__COMD[0]}" -M -- - | awk '{print $1;}')"; then
+				fnMsgout "${_PROG_NAME:-}" "warn" "no __MSBROWSE__"
+				__ADDR="${_NICS_IPV4:-"${__ADDR:-"${_IPV4_LHST:-"127.0.0.1"}"}"}"
+			else
+				fnMsgout "${_PROG_NAME:-}" "info" "__MSBROWSE__: ${__ADDR}"
+			fi
 			if [[ -z "${__ADDR:-}" ]]; then
 				fnMsgout "${_PROG_NAME:-}" "skip" "no ip address"
 			else
+				fnMsgout "${_PROG_NAME:-}" "info" "search: ${__ADDR}"
 				__NAME="$("${__COMD[0]}" -A "${__ADDR}" | awk '$2=="<00>"&&$4!="<GROUP>" {print $1;}' || true)"
 				__WGRP="$("${__COMD[0]}" -A "${__ADDR}" | awk '$2=="<00>"&&$4=="<GROUP>" {print $1;}' || true)"
 				if [[ -z "${__NAME:-}" ]]; then
@@ -1715,7 +1760,9 @@ function fnMain() {
 				echo "${_TEXT_GAP2:-}"
 				fnTest_netman			# test network manager
 				echo "${_TEXT_GAP2:-}"
-				fnTest_dns_port			# test dns port
+				fnTest_port_dns			# test port dns
+				echo "${_TEXT_GAP2:-}"
+				fnTest_port_smb			# test port smb
 				echo "${_TEXT_GAP2:-}"
 				fnTest_nslookup			# test nslookup
 				echo "${_TEXT_GAP2:-}"

@@ -8,7 +8,7 @@
 #   g-var :            : unused
 # shellcheck disable=SC2148,SC2317,SC2329
 fnSetup_service() {
-	__FUNC_NAME="fnSetup_skel"
+	__FUNC_NAME="fnSetup_service"
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- mask ----------------------------------------------------------------
@@ -16,7 +16,9 @@ fnSetup_service() {
 	set --
 	for __LIST in \
 		chronyd.service\
-		avahi-daemon.service
+		avahi-daemon.service \
+		nmb.service \
+		nmbd.service
 	do
 		if [ ! -e "${_DIRS_TGET:-}/lib/systemd/system/${__LIST}"     ] \
 		&& [ ! -e "${_DIRS_TGET:-}/usr/lib/systemd/system/${__LIST}" ]; then
@@ -47,9 +49,7 @@ fnSetup_service() {
 		apache2.service \
 		httpd.service \
 		smb.service \
-		smbd.service \
-		nmb.service \
-		nmbd.service
+		smbd.service
 	do
 		if [ ! -e "${_DIRS_TGET:-}/lib/systemd/system/${__LIST}"     ] \
 		&& [ ! -e "${_DIRS_TGET:-}/usr/lib/systemd/system/${__LIST}" ]; then

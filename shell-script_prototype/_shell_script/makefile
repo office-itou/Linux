@@ -208,7 +208,8 @@ OBJS=\
 	./custom_cmd/fnTest_selinux.sh \
 	./custom_cmd/fnTest_vmware.sh \
 	./custom_cmd/fnTest_netman.sh \
-	./custom_cmd/fnTest_dns_port.sh \
+	./custom_cmd/fnTest_port_dns.sh \
+	./custom_cmd/fnTest_port_smb.sh \
 	./custom_cmd/fnTest_nslookup.sh \
 	./custom_cmd/fnTest_dig.sh \
 	./custom_cmd/fnTest_getent.sh \

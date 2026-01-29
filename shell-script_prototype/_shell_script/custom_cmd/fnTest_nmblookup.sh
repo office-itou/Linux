@@ -28,11 +28,16 @@ function fnTest_nmblookup() {
 		if ! systemctl --quiet is-active "${__SRVC}"; then
 			fnMsgout "${_PROG_NAME:-}" "warn" "${__SRVC} not active"
 		else
-			__ADDR="$("${__COMD[0]}" -M -- - | awk '{print $1;}' || true)"
-			__ADDR="${_NICS_IPV4:-"${__ADDR:-"${_IPV4_LHST:-"127.0.0.1"}"}"}"
+			if ! __ADDR="$("${__COMD[0]}" -M -- - | awk '{print $1;}')"; then
+				fnMsgout "${_PROG_NAME:-}" "warn" "no __MSBROWSE__"
+				__ADDR="${_NICS_IPV4:-"${__ADDR:-"${_IPV4_LHST:-"127.0.0.1"}"}"}"
+			else
+				fnMsgout "${_PROG_NAME:-}" "info" "__MSBROWSE__: ${__ADDR}"
+			fi
 			if [[ -z "${__ADDR:-}" ]]; then
 				fnMsgout "${_PROG_NAME:-}" "skip" "no ip address"
 			else
+				fnMsgout "${_PROG_NAME:-}" "info" "search: ${__ADDR}"
 				__NAME="$("${__COMD[0]}" -A "${__ADDR}" | awk '$2=="<00>"&&$4!="<GROUP>" {print $1;}' || true)"
 				__WGRP="$("${__COMD[0]}" -A "${__ADDR}" | awk '$2=="<00>"&&$4=="<GROUP>" {print $1;}' || true)"
 				if [[ -z "${__NAME:-}" ]]; then

@@ -76,8 +76,8 @@ _EOT_
 			__SVEX="avahi-daemon.service"
 			if systemctl --quiet is-enabled "${__SVEX}"; then
 				fnMsgout "${_PROG_NAME:-}" "mask" "${__SVEX}"
-				systemctl --quiet mask "${__SVEX}"
-				systemctl --quiet mask "${__SVEX%.*}.socket"
+				systemctl --quiet --now mask "${__SVEX}" || true
+				systemctl --quiet --now mask "${__SVEX%.*}.socket" || true
 			fi
 		fi
 		if [ -z "${_TGET_CHRT:-}" ]; then

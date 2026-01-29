@@ -1,39 +1,33 @@
 # shellcheck disable=SC2148
 
 # -----------------------------------------------------------------------------
-# descript: test chronyc
+# descript: test port smb
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
 #   g-var :  FUNCNAME  : read
 #   g-var : _PROG_NAME : read
-function fnTest_chronyc() {
+function fnTest_port_smb() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
-	declare -r -a __COMD=("chronyc")
-	declare       __PARM=""
-	declare -a    __ARRY=()
+	declare -r -a __COMD=("ss" "-tulpn")
+	declare -r -a __COM2=("grep" "-E" ":(13[789]|445)(|[ \t].*)$")
 
-	# --- test chronyc --------------------------------------------------------
+	# --- test samba port -----------------------------------------------------
 	if ! command -v "${__COMD[0]}" > /dev/null 2>&1; then
 		fnMsgout "${_PROG_NAME:-}" "skip" "${__COMD[*]}"
 	else
-		__SRVC="chronyd.service"
-		if ! systemctl --quiet is-active "${__SRVC}"; then
-			fnMsgout "${_PROG_NAME:-}" "warn" "${__SRVC} not active"
+		fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__COMD[*]} | ${__COM2[0]} ${__COM2[1]} '${__COM2[2]}'"
+		if "${__COMD[@]:?}" | "${__COM2[@]:?}" | cut -c -"${_COLS_SIZE:-"80"}"; then
+			fnMsgout "\033[36m${_PROG_NAME:-}" "success" "${__COMD[*]}"
 		else
-			__ARRY=("${__COMD[@]}" "sources")
-			fnMsgout "\033[36m${_PROG_NAME:-}" "start" "${__ARRY[*]}"
-			if "${__ARRY[@]:?}" | cut -c -"${_COLS_SIZE:-"80"}"; then
-				fnMsgout "\033[36m${_PROG_NAME:-}" "success" "${__ARRY[*]}"
-			else
-				fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__ARRY[*]}"
-			fi
+			fnMsgout "\033[36m${_PROG_NAME:-}" "failed" "${__COMD[*]}"
 		fi
 	fi
-	unset __PARM __ARRY
+
+#	unset __COMD __COM2
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"

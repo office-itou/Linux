@@ -100,7 +100,7 @@
 fnDbgparam() {
 	[ -z "${_DBGS_PARM:-}" ] && return
 
-	__FUNC_NAME="fnDbgout"
+	__FUNC_NAME="fnDbgparam"
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- system parameter ----------------------------------------------------

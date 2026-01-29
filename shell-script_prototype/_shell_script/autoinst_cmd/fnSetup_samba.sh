@@ -89,6 +89,8 @@ fnSetup_samba() {
 	    -e  '/^[ \t]*dos charset[ \t]*=/                  s/=.*$/= CP932/'             \
 	    -e  '/^[ \t]*unix password sync[ \t]*=/           s/=.*$/= No/'                \
 	    -e  '/^[ \t]*disable netbios[ \t]*=/              s/=.*$/= Yes/'               \
+	    -e  '/^[ \t]*smb ports[ \t]*=/                    s/=.*$/= 445/'               \
+	    -e  '/^[ \t]*server smb transports[ \t]*=/        s/=.*$/= 445/'               \
 	    -e  '/^[ \t]*netbios name[ \t]*=/                 s/=.*$/= '"${_NICS_HOST}"'/' \
 	    -e  '/^[ \t]*workgroup[ \t]*=/                    s/=.*$/= '"${_NICS_WGRP}"'/' \
 	    -e  '/^[ \t]*bind interfaces only[ \t]*=/                                   {' \

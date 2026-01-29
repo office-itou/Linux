@@ -112,7 +112,9 @@
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnTest_netman.sh					# test network manager
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_dns_port.sh				# test dns port
+	source "${_SHEL_COMD}"/fnTest_port_dns.sh				# test port dns
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD}"/fnTest_port_smb.sh				# test port smb
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnTest_nslookup.sh				# test nslookup
 	# shellcheck source=/dev/null

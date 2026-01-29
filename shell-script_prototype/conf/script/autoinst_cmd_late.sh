@@ -362,7 +362,7 @@ fnDbgdump() {
 fnDbgparam() {
 	[ -z "${_DBGS_PARM:-}" ] && return
 
-	__FUNC_NAME="fnDbgout"
+	__FUNC_NAME="fnDbgparam"
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- system parameter ----------------------------------------------------
@@ -1885,8 +1885,8 @@ _EOT_
 			__SVEX="avahi-daemon.service"
 			if systemctl --quiet is-enabled "${__SVEX}"; then
 				fnMsgout "${_PROG_NAME:-}" "mask" "${__SVEX}"
-				systemctl --quiet mask "${__SVEX}"
-				systemctl --quiet mask "${__SVEX%.*}.socket"
+				systemctl --quiet --now mask "${__SVEX}" || true
+				systemctl --quiet --now mask "${__SVEX%.*}.socket" || true
 			fi
 		fi
 		if [ -z "${_TGET_CHRT:-}" ]; then
@@ -2072,6 +2072,8 @@ fnSetup_samba() {
 	    -e  '/^[ \t]*dos charset[ \t]*=/                  s/=.*$/= CP932/'             \
 	    -e  '/^[ \t]*unix password sync[ \t]*=/           s/=.*$/= No/'                \
 	    -e  '/^[ \t]*disable netbios[ \t]*=/              s/=.*$/= Yes/'               \
+	    -e  '/^[ \t]*smb ports[ \t]*=/                    s/=.*$/= 445/'               \
+	    -e  '/^[ \t]*server smb transports[ \t]*=/        s/=.*$/= 445/'               \
 	    -e  '/^[ \t]*netbios name[ \t]*=/                 s/=.*$/= '"${_NICS_HOST}"'/' \
 	    -e  '/^[ \t]*workgroup[ \t]*=/                    s/=.*$/= '"${_NICS_WGRP}"'/' \
 	    -e  '/^[ \t]*bind interfaces only[ \t]*=/                                   {' \
@@ -3029,7 +3031,7 @@ fnSetup_ipfilter() {
 #   output:   stdout   : message
 #   return:            : unused
 fnSetup_service() {
-	__FUNC_NAME="fnSetup_skel"
+	__FUNC_NAME="fnSetup_service"
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- mask ----------------------------------------------------------------
@@ -3037,7 +3039,9 @@ fnSetup_service() {
 	set --
 	for __LIST in \
 		chronyd.service\
-		avahi-daemon.service
+		avahi-daemon.service \
+		nmb.service \
+		nmbd.service
 	do
 		if [ ! -e "${_DIRS_TGET:-}/lib/systemd/system/${__LIST}"     ] \
 		&& [ ! -e "${_DIRS_TGET:-}/usr/lib/systemd/system/${__LIST}" ]; then
@@ -3068,9 +3072,7 @@ fnSetup_service() {
 		apache2.service \
 		httpd.service \
 		smb.service \
-		smbd.service \
-		nmb.service \
-		nmbd.service
+		smbd.service
 	do
 		if [ ! -e "${_DIRS_TGET:-}/lib/systemd/system/${__LIST}"     ] \
 		&& [ ! -e "${_DIRS_TGET:-}/usr/lib/systemd/system/${__LIST}" ]; then

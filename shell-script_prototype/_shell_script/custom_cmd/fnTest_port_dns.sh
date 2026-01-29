@@ -1,19 +1,19 @@
 # shellcheck disable=SC2148
 
 # -----------------------------------------------------------------------------
-# descript: test dns port
+# descript: test port dns
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
 #   g-var :  FUNCNAME  : read
 #   g-var : _PROG_NAME : read
-function fnTest_dns_port() {
+function fnTest_port_dns() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	declare -r -a __COMD=("ss" "-tulpn")
-	declare -r -a __COM2=("grep" "-E" ":53(|[ \t].*)$")
+	declare -r -a __COM2=("grep" "-E" ":(53)(|[ \t].*)$")
 
 	# --- test dns port -------------------------------------------------------
 	if ! command -v "${__COMD[0]}" > /dev/null 2>&1; then
