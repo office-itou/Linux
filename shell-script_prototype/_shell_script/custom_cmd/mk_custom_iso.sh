@@ -1480,6 +1480,16 @@ function fnMk_preconf_kickstart() {
 	    -e "s%:_DISTRO_:%${__NAME}-${__NUMS}%g"
 	# --- cdrom, repository ---------------------------------------------------
 	case "${__TGET_PATH}" in
+		*_fedora*_dvd*) # --- cdrom install -----------------------------------
+			sed -i "${__TGET_PATH}"                 \
+			    -e "/^cdrom$/ s/^/#/              " \
+			    -e "/^#.*(${__SECT}).*$/,/^$/   { " \
+			    -e "/^#url[ \t]\+/  s/^#//g       " \
+			    -e "/^#repo[ \t]\+/ s/^#//g       " \
+			    -e "s/\$releasever/${__NUMS}/g    " \
+			    -e "s/\$basearch/${__ARCH}/g      " \
+			    -e "s/\$stream/${__NUMS}/g      } "
+			;;
 		*_dvd*)		# --- cdrom install ---------------------------------------
 			sed -i "${__TGET_PATH}"                 \
 			    -e "/^#cdrom$/ s/^#//             " \
