@@ -14,7 +14,7 @@ fnSetup_grub_menu() {
 	# --- /etc/default/grub ---------------------------------------------------
 	__ENTR='
 '
-	__DEFS="${_DIRS_TGET:-}/etc/default/grub"
+	__CONF="${_DIRS_TGET:-}/etc/default/grub"
 	__SLNX="$(fnFind_command "semanage")"	# selinux
 	__APAR="$(fnFind_command "aa-enabled")"	# apparmor
 	__SCRT=""
@@ -49,21 +49,21 @@ fnSetup_grub_menu() {
 	esac
 	# --- create /etc/default/grub.d/grub.cfg ---------------------------------
 	# https://www.gnu.org/software/grub/manual/grub/html_node/Simple-configuration.html
-	fnFile_backup "${__DEFS}"			# backup original file
-	mkdir -p "${__DEFS%/*}"
-	cp --preserve=timestamps "${_DIRS_ORIG}/${__DEFS#*"${_DIRS_TGET:-}/"}" "${__DEFS}"
+	fnFile_backup "${__CONF}"			# backup original file
+	mkdir -p "${__CONF%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__CONF#*"${_DIRS_TGET:-}/"}" "${__CONF}"
 	# --- GRUB_TIMEOUT --------------------------------------------------------
-#	__WORK="$(sed -ne 's/^#*GRUB_TIMEOUT=\(.*\)$/\1/p' "${__DEFS}")"
-#	[ -z "${__WORK:-}" ] && echo "GRUB_TIMEOUT=\"\"" >> "${__DEFS}"
+#	__WORK="$(sed -ne 's/^#*GRUB_TIMEOUT=\(.*\)$/\1/p' "${__CONF}")"
+#	[ -z "${__WORK:-}" ] && echo "GRUB_TIMEOUT=\"\"" >> "${__CONF}"
 	# --- GRUB_GFXMODE --------------------------------------------------------
-#	__WORK="$(sed -ne 's/^#*GRUB_GFXMODE=\(.*\)$/\1/p' "${__DEFS}")"
-#	[ -z "${__WORK:-}" ] && echo "GRUB_GFXMODE=\"\"" >> "${__DEFS}"
+#	__WORK="$(sed -ne 's/^#*GRUB_GFXMODE=\(.*\)$/\1/p' "${__CONF}")"
+#	[ -z "${__WORK:-}" ] && echo "GRUB_GFXMODE=\"\"" >> "${__CONF}"
 	# --- GRUB_INIT_TUNE ------------------------------------------------------
-#	__WORK="$(sed -ne 's/^#*GRUB_INIT_TUNE=\(.*\)$/\1/p' "${__DEFS}")"
-#	[ -z "${__WORK:-}" ] && echo "GRUB_INIT_TUNE=\"\"" >> "${__DEFS}"
+#	__WORK="$(sed -ne 's/^#*GRUB_INIT_TUNE=\(.*\)$/\1/p' "${__CONF}")"
+#	[ -z "${__WORK:-}" ] && echo "GRUB_INIT_TUNE=\"\"" >> "${__CONF}"
 	# --- GRUB_CMDLINE_LINUX_DEFAULT ------------------------------------------
-	__WORK="$(sed -ne 's/^#*GRUB_CMDLINE_LINUX_DEFAULT=\(.*\)$/\1/p' "${__DEFS}")"
-#	[ -z "${__WORK:-}" ] && echo "GRUB_CMDLINE_LINUX_DEFAULT=\"\"" >> "${__DEFS}"
+	__WORK="$(sed -ne 's/^#*GRUB_CMDLINE_LINUX_DEFAULT=\(.*\)$/\1/p' "${__CONF}")"
+#	[ -z "${__WORK:-}" ] && echo "GRUB_CMDLINE_LINUX_DEFAULT=\"\"" >> "${__CONF}"
 	__WORK="${__WORK#\"}"
 	__WORK="${__WORK%\"}"
 	__DEFS=""
@@ -84,8 +84,8 @@ fnSetup_grub_menu() {
 	done
 	__DEFS="$(echo "${__DEFS:-}" | sed -e 's%/%\\/%g')"
 	# --- GRUB_CMDLINE_LINUX --------------------------------------------------
-	__WORK="$(sed -ne 's/^#*GRUB_CMDLINE_LINUX=\(.*\)$/\1/p' "${__DEFS}")"
-#	[ -z "${__WORK:-}" ] && echo "GRUB_CMDLINE_LINUX=\"\"" >> "${__DEFS}"
+	__WORK="$(sed -ne 's/^#*GRUB_CMDLINE_LINUX=\(.*\)$/\1/p' "${__CONF}")"
+#	[ -z "${__WORK:-}" ] && echo "GRUB_CMDLINE_LINUX=\"\"" >> "${__CONF}"
 	__WORK="${__WORK#\"}"
 	__WORK="${__WORK%\"}"
 	__BOPT=""
@@ -122,16 +122,16 @@ fnSetup_grub_menu() {
 			fnMsgout "${_PROG_NAME:-}" "info" "grubby"
 			grubby --update-kernel=ALL --remove-args="security apparmor selinux quiet vga" --args="${__BOPT:-}" || true
 		else
-			sed -i "${__DEFS}" \
+			sed -i "${__CONF}" \
 			    -e '/^#*GRUB_RECORDFAIL_TIMEOUT=.*$/    {s/^#//; h; s/^/#/; p; g; s/[0-9]\+$/10/}' \
 			    -e '/^#*GRUB_TIMEOUT=.*$/               {s/^#//; h; s/^/#/; p; g; s/[0-9]\+$/3/ }' \
 			    -e '/^#*GRUB_GFXMODE=.*$/               {s/^#//; h; s/^/#/; p; g; s/=.*$/="1920x1080,800x600,auto"/}' \
 			    -e '/^#*GRUB_INIT_TUNE=.*$/             {s/^#//; h; s/^/#/; p; g; s/=.*$/="960 440 1 0 4 440 1"/}' \
 			    -e '/^#*GRUB_CMDLINE_LINUX_DEFAULT=.*$/ {s/^#//; h; s/^/#/; p; g; s/=.*$/="'"${__DEFS:-}"'"/}' \
 			    -e '/^#*GRUB_CMDLINE_LINUX=.*$/         {s/^#//; h; s/^/#/; p; g; s/=.*$/="'"${__BOPT:-}"'"/}'
-			diff --suppress-common-lines --expand-tabs "${_DIRS_ORIG}/${__DEFS#*"${_DIRS_TGET:-}/"}" "${__DEFS}" || true
-			fnDbgdump "${__DEFS}"				# debugout
-			fnFile_backup "${__DEFS}" "init"	# backup initial file
+			diff --suppress-common-lines --expand-tabs "${_DIRS_ORIG}/${__CONF#*"${_DIRS_TGET:-}/"}" "${__CONF}" || true
+			fnDbgdump "${__CONF}"				# debugout
+			fnFile_backup "${__CONF}" "init"	# backup initial file
 			if command -v grub-mkconfig > /dev/null 2>&1; then
 				fnMsgout "${_PROG_NAME:-}" "info" "grub-mkconfig"
 				grub-mkconfig --output="${__PATH:?}" || true
@@ -143,7 +143,7 @@ fnSetup_grub_menu() {
 		fnDbgdump "${__PATH}"				# debugout
 		fnFile_backup "${__PATH}" "init"	# backup initial file
 	fi
-	unset __NAME __VERS __DEFS __BOPT __SLNX __APAR __LINE __ENTR __WORK __PATH __DEFS
+	unset __NAME __VERS __DEFS __BOPT __SLNX __APAR __LINE __ENTR __WORK __PATH __CONF
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
