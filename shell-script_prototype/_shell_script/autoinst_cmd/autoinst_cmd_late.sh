@@ -3207,7 +3207,6 @@ fnSetup_grub_menu() {
 		esac
 	done
 	__BOPT="${__BOPT:+"${__BOPT} "}${__SCRT:-}"
-	__BOPT="$(echo "${__BOPT:-}" | sed -e 's%/%\\/%g')"
 	# -------------------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "info" "_DIST_NAME=[${_DIST_NAME:-}]"
 	fnMsgout "${_PROG_NAME:-}" "info" "    __BOPT=[${__BOPT:-}]"
@@ -3222,8 +3221,10 @@ fnSetup_grub_menu() {
 		fnMsgout "${_PROG_NAME:-}" "create" "[${__PATH}]"
 		if command -v grubby > /dev/null 2>&1; then
 			fnMsgout "${_PROG_NAME:-}" "info" "grubby"
-			grubby --update-kernel=ALL --remove-args="security apparmor selinux quiet vga" --args="${__BOPT:-}" || true
+			grubby --update-kernel=ALL --remove-args="security apparmor selinux quiet vga" --args="${__BOPT:-}"  2>&1 || true
+			grubby --info=ALL 2>&1 || true
 		else
+			__BOPT="$(echo "${__BOPT:-}" | sed -e 's%/%\\/%g')"
 			sed -i "${__CONF}" \
 			    -e '/^#*GRUB_RECORDFAIL_TIMEOUT=.*$/    {s/^#//; h; s/^/#/; p; g; s/[0-9]\+$/10/}' \
 			    -e '/^#*GRUB_TIMEOUT=.*$/               {s/^#//; h; s/^/#/; p; g; s/[0-9]\+$/3/ }' \
@@ -3236,10 +3237,10 @@ fnSetup_grub_menu() {
 			fnFile_backup "${__CONF}" "init"	# backup initial file
 			if command -v grub-mkconfig > /dev/null 2>&1; then
 				fnMsgout "${_PROG_NAME:-}" "info" "grub-mkconfig"
-				grub-mkconfig --output="${__PATH:?}" || true
+				grub-mkconfig --output="${__PATH:?}" 2>&1 || true
 			elif command -v grub2-mkconfig > /dev/null 2>&1; then
 				fnMsgout "${_PROG_NAME:-}" "info" "grub2-mkconfig"
-				grub2-mkconfig --output="${__PATH:?}" || true
+				grub2-mkconfig --output="${__PATH:?}" 2>&1 || true
 			fi
 		fi
 		fnDbgdump "${__PATH}"				# debugout

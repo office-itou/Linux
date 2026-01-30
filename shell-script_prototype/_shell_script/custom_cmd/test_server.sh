@@ -70,6 +70,7 @@
 	# --- working directory ---------------------------------------------------
 	declare -r    _DIRS_WTOP="${_SUDO_HOME:-"${TMPDIR:-"/tmp"}"}/.workdirs"
 	mkdir -p   "${_DIRS_WTOP}"
+	chown "${_SUDO_USER:?}": "${_DIRS_WTOP}"
 
 	# --- temporary directory -------------------------------------------------
 	declare       _DIRS_TEMP="${_DIRS_WTOP}"
