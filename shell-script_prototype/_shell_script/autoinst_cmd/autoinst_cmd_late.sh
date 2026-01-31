@@ -3184,7 +3184,7 @@ fnSetup_grub_menu() {
 			*) __DEFS="${__DEFS:+"${__DEFS} "}${__LINE:-}";;
 		esac
 	done
-	__DEFS="$(echo "${__DEFS:-}" | sed -e 's%/%\\/%g')"
+	__DEFS="${__DEFS:+"${__DEFS} "}${__SCRT:-}"
 	# --- GRUB_CMDLINE_LINUX --------------------------------------------------
 	__WORK="$(sed -ne 's/^#*GRUB_CMDLINE_LINUX=\(.*\)$/\1/p' "${__CONF}")"
 #	[ -z "${__WORK:-}" ] && echo "GRUB_CMDLINE_LINUX=\"\"" >> "${__CONF}"
@@ -3206,7 +3206,7 @@ fnSetup_grub_menu() {
 			*) __BOPT="${__BOPT:+"${__BOPT} "}${__LINE:-}";;
 		esac
 	done
-	__BOPT="${__BOPT:+"${__BOPT} "}${__SCRT:-}"
+#	__BOPT="${__BOPT:+"${__BOPT} "}${__SCRT:-}"
 	# -------------------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "info" "_DIST_NAME=[${_DIST_NAME:-}]"
 	fnMsgout "${_PROG_NAME:-}" "info" "    __BOPT=[${__BOPT:-}]"
@@ -3221,9 +3221,10 @@ fnSetup_grub_menu() {
 		fnMsgout "${_PROG_NAME:-}" "create" "[${__PATH}]"
 		if command -v grubby > /dev/null 2>&1; then
 			fnMsgout "${_PROG_NAME:-}" "info" "grubby"
-			grubby --update-kernel=ALL --remove-args="security apparmor selinux quiet vga" --args="${__BOPT:-}"  2>&1 || true
+			grubby --update-kernel=ALL --remove-args="security apparmor selinux quiet vga" --args="${__SCRT:-}"  2>&1 || true
 			grubby --info=ALL 2>&1 || true
 		else
+			__DEFS="$(echo "${__DEFS:-}" | sed -e 's%/%\\/%g')"
 			__BOPT="$(echo "${__BOPT:-}" | sed -e 's%/%\\/%g')"
 			sed -i "${__CONF}" \
 			    -e '/^#*GRUB_RECORDFAIL_TIMEOUT=.*$/    {s/^#//; h; s/^/#/; p; g; s/[0-9]\+$/10/}' \

@@ -15,12 +15,12 @@
 | ubuntu-26.04 (snap2) |     -     |     -     |     x     |     ･     |     -     | system-install error                                                       |
 | fedora-43            |     -     |     o     |     o     |     -     |     -     | systemd-timesyncd not install                                              |
 | centos-stream-9      |     -     |     o     |     o     |     -     |     -     |                                                                            |
-| centos-stream-10     |     -     |     o     |     ･     |     -     |     -     |                                                                            |
-| almalinux-9.7        |     -     |     o     |     ･     |     -     |     -     |                                                                            |
-| almalinux-10.1       |     -     |     o     |     ･     |     -     |     -     |                                                                            |
-| rockylinux-9.7       |     -     |     o     |     ･     |     -     |     -     |                                                                            |
-| rockylinux-10.1      |     -     |     o     |     ･     |     -     |     -     |                                                                            |
-| miraclelinux-9.6     |     -     |     o     |     ･     |     -     |     -     | caution hostname length                                                    |
+| centos-stream-10     |     -     |     o     |     o     |     -     |     -     |                                                                            |
+| almalinux-9.7        |     -     |     o     |     o     |     -     |     -     |                                                                            |
+| almalinux-10.1       |     -     |     o     |     o     |     -     |     -     |                                                                            |
+| rockylinux-9.7       |     -     |     o     |     o     |     -     |     -     |                                                                            |
+| rockylinux-10.1      |     -     |     o     |     o     |     -     |     -     |                                                                            |
+| miraclelinux-9.6     |     -     |     o     |     x     |     -     |     -     | caution hostname length / clamav version mismatch error                    |
 | opensuse-leap-15.6   |     -     |     o     |     ･     |     -     |     -     |                                                                            |
 | opensuse-leap-16.0   |     -     |     x     |     ･     |     -     |     -     | selinux bug (systemd-resolved)                                             |
 | opensuse-tumbleweed  |     -     |     x     |     ･     |     -     |     -     | selinux bug (systemd-resolved)                                             |

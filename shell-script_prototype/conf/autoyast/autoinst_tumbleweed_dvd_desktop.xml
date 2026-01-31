@@ -37,6 +37,7 @@ leap -->
 <!-- tumbleweed -->
     </add_on_products>
   </add-on>
+<!--
   <bootloader t="map">
     <global t="map">
       <append>-B console=force-text</append>
@@ -44,6 +45,7 @@ leap -->
     </global>
     <loader_type>default</loader_type>
   </bootloader>
+-->
   <deploy_image t="map">
     <image_installation t="boolean">true</image_installation>
   </deploy_image>
@@ -345,6 +347,7 @@ fixed address -->
     <default_target>graphical</default_target>
     <services t="map">
       <enable t="list">
+<!--
         <service>firewalld</service>
         <service>systemd-resolved</service>
         <service>systemd-timesyncd</service>
@@ -355,6 +358,7 @@ fixed address -->
         <service>smb</service>
         <service>nmb</service>
         <service>winbind</service>
+-->
       </enable>
       <disable t="list">
 <!--
