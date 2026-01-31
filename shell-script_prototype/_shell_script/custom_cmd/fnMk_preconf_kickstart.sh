@@ -42,12 +42,13 @@ function fnMk_preconf_kickstart() {
 	    -e "s%:_DISTRO_:%${__NAME}-${__NUMS}%g"
 	# --- cdrom, repository ---------------------------------------------------
 	case "${__TGET_PATH}" in
-		*_fedora*_dvd*) # --- cdrom install -----------------------------------
+		*_fedora*)	# --- cdrom install ---------------------------------------
 			sed -i "${__TGET_PATH}"                 \
-			    -e "/^cdrom$/ s/^/#/              " \
+			    -e "/^#cdrom$/ s/^#//             " \
 			    -e "/^#.*(${__SECT}).*$/,/^$/   { " \
 			    -e "/^#url[ \t]\+/  s/^#//g       " \
-			    -e "/^#repo[ \t]\+/ s/^#//g       " \
+			    -e "/^#repo[ \t]\+/             { " \
+			    -e "/Everything/    s/^#//g     } " \
 			    -e "s/\$releasever/${__NUMS}/g    " \
 			    -e "s/\$basearch/${__ARCH}/g      " \
 			    -e "s/\$stream/${__NUMS}/g      } "
@@ -56,8 +57,9 @@ function fnMk_preconf_kickstart() {
 			sed -i "${__TGET_PATH}"                 \
 			    -e "/^#cdrom$/ s/^#//             " \
 			    -e "/^#.*(${__SECT}).*$/,/^$/   { " \
-			    -e "/^url[ \t]\+/  s/^/#/g        " \
-			    -e "/^repo[ \t]\+/ s/^/#/g        " \
+			    -e "/^url[ \t]\+/   s/^/#/g       " \
+			    -e "/^repo[ \t]\+/              { " \
+			    -e "/MyAppStream/   s/^/#/g     } " \
 			    -e "s/\$releasever/${__NUMS}/g    " \
 			    -e "s/\$basearch/${__ARCH}/g      " \
 			    -e "s/\$stream/${__NUMS}/g      } "
@@ -67,33 +69,30 @@ function fnMk_preconf_kickstart() {
 			    -e "/^cdrom$/ s/^/#/              " \
 			    -e "/^#.*(${__SECT}).*$/,/^$/   { " \
 			    -e "/^#url[ \t]\+/  s/^#//g       " \
-			    -e "/^#repo[ \t]\+/ s/^#//g       " \
+			    -e "/^#repo[ \t]\+/             { " \
+			    -e "/MyAppStream/   s/^#//g     } " \
 			    -e "s/\$releasever/${__NUMS}/g    " \
 			    -e "s/\$basearch/${__ARCH}/g      " \
 			    -e "s/\$stream/${__NUMS}/g      } "
-			;;
-		*_fedora*_web*) # --- network install [ for pxeboot ] fedora ----------
-			sed -i "${__TGET_PATH}"                 \
-			    -e "/^cdrom$/ s/^/#/              " \
-			    -e "/^#.*(web address).*$/,/^$/ { " \
-			    -e "/^#url[ \t]\+/  s/^#//g       " \
-			    -e "s/\$releasever/${__NUMS}/g    " \
-			    -e "s/\$basearch/${__ARCH}/g      " \
-			    -e "s/\$stream/${__NUMS}/g      } " \
-			    -e "/^#.*(${__SECT}).*$/,/^$/   { " \
-			    -e "/^#repo[ \t]\+/ s/^#//g       " \
-			    -e "s/\$releasever/${__NUMS}/g    " \
-			    -e "s/\$basearch/${__ARCH}/g    } "
 			;;
 		*_web*)		# --- network install [ for pxeboot ] ---------------------
 			sed -i "${__TGET_PATH}"                 \
 			    -e "/^cdrom$/ s/^/#/              " \
 			    -e "/^#.*(web address).*$/,/^$/ { " \
 			    -e "/^#url[ \t]\+/  s/^#//g       " \
-			    -e "/^#repo[ \t]\+/ s/^#//g       " \
+			    -e "/^#repo[ \t]\+/             { " \
+			    -e "/MyAppStream/   s/^#//g     } " \
 			    -e "s/\$releasever/${__NUMS}/g    " \
 			    -e "s/\$basearch/${__ARCH}/g      " \
 			    -e "s/\$stream/${__NUMS}/g      } "
+			;;
+		*)	;;
+	esac
+	case "${__TGET_PATH}" in
+		*_fedora*_dvd*) ;; # --- cdrom install --------------------------------
+		*_fedora*     )    # --- network install ------------------------------
+			sed -i "${__TGET_PATH}"                 \
+			    -e "/^cdrom$/ s/^/#/              "
 			;;
 		*)	;;
 	esac

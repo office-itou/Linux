@@ -13,8 +13,8 @@
 | ubuntu-24.04.3       |     -     |     -     |     o     |     ･     |     -     |                                                                            |
 | ubuntu-25.10         |     -     |     -     |     o     |     ･     |     -     |                                                                            |
 | ubuntu-26.04 (snap2) |     -     |     -     |     x     |     ･     |     -     | system-install error                                                       |
-| fedora-43            |     -     |     o     |     x     |     -     |     -     | systemd-timesyncd not install / selinux bug (systemd-resolved)             |
-| centos-stream-9      |     -     |     o     |     ･     |     -     |     -     |                                                                            |
+| fedora-43            |     -     |     o     |     o     |     -     |     -     | systemd-timesyncd not install                                              |
+| centos-stream-9      |     -     |     o     |     o     |     -     |     -     |                                                                            |
 | centos-stream-10     |     -     |     o     |     ･     |     -     |     -     |                                                                            |
 | almalinux-9.7        |     -     |     o     |     ･     |     -     |     -     |                                                                            |
 | almalinux-10.1       |     -     |     o     |     ･     |     -     |     -     |                                                                            |
