@@ -42,10 +42,12 @@ function fnMk_isofile_grub_autoinst() {
 		set default="0"
 		set timeout="${_MENU_TOUT:-5}"
 
-		if [ "x\${feature_default_font_path}" = "xy" ] ; then
-		  font="unicode"
-		else
-		  font="\${prefix}/fonts/font.pf2"
+		if [ "x\${font}" = "x" ] ; then
+		  if [ "x\${feature_default_font_path}" = "xy" ] ; then
+		    font="unicode"
+		  else
+		    font="\${prefix}/fonts/font.pf2"
+		  fi
 		fi
 		export font
 

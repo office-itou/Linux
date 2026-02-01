@@ -17,7 +17,7 @@ fnSetup_tcp_wrapper() {
 	mkdir -p "${__PATH%/*}"
 	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
-		All: [fe80::]/10
+		ALL: [fe80::]/10
 		ALL: ${_NICS_IPV4%.*}.0/24
 _EOT_
 	fnDbgdump "${__PATH}"				# debugout
@@ -29,7 +29,7 @@ _EOT_
 	mkdir -p "${__PATH%/*}"
 	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
-		All: ALL
+		ALL: ALL
 _EOT_
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file

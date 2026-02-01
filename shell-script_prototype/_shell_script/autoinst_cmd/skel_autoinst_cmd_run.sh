@@ -70,6 +70,10 @@
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnIPv6RevAddr.sh						# IPv6 reverse address
 	# shellcheck source=/dev/null
+	. "${_SHEL_COMN}"/fnIPv4Netmask_gawk.sh					# IPv4 netmask conversion
+	# shellcheck source=/dev/null
+	. "${_SHEL_COMN}"/fnIPv4Netmask_mawk.sh					# IPv4 netmask conversion
+	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnIPv4Netmask.sh						# IPv4 netmask conversion
 
 	# shellcheck source=/dev/null

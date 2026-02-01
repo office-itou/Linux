@@ -3569,10 +3569,12 @@ function fnMk_isofile_grub_autoinst() {
 		set default="0"
 		set timeout="${_MENU_TOUT:-5}"
 
-		if [ "x\${feature_default_font_path}" = "xy" ] ; then
-		  font="unicode"
-		else
-		  font="\${prefix}/fonts/font.pf2"
+		if [ "x\${font}" = "x" ] ; then
+		  if [ "x\${feature_default_font_path}" = "xy" ] ; then
+		    font="unicode"
+		  else
+		    font="\${prefix}/fonts/font.pf2"
+		  fi
 		fi
 		export font
 
@@ -4035,7 +4037,7 @@ function fnMk_isofile_ilnx() {
 	[[ -z "${__PATH:-}" ]] && __PATH="$(find "${__TGET_DIRS}" -depth -type f -ipath '*/*'          -iname "${_MENU_SPLS:-}")"
 	if [[ -n "${__PATH:-}" ]]; then
 		__WORK="$(file "${__PATH:-}" | awk '{sub("[^0-9]+","",$8); print $8;}')"
-		[[ "${__WORK:-"0"}" -ge 8 ]] && __SPLS="${__PATH}"
+		[[ "${__WORK:-"0"}" -ge 1 ]] && __SPLS="${__PATH}"
 	fi
 	if [[ -n "${__SPLS:-}" ]]; then
 		__SPLS="${__SPLS#"${__TGET_DIRS}"}"

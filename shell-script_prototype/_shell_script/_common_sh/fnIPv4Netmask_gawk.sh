@@ -12,10 +12,26 @@
 #   b   | 172.16.0.0  - 172.31.255.255  | 255.255.0.0   - 255.255.255.255 (up to     65,534 devices can be connected)
 #   c   | 192.168.0.0 - 192.168.255.255 | 255.255.255.0 - 255.255.255.255 (up to        254 devices can be connected)
 # shellcheck disable=SC2148,SC2317,SC2329
-fnIPv4Netmask() {
-	if command -v gawk > /dev/null 2>&1; then
-		fnIPv4Netmask_gawk "${@:-}"
-	elif command -v mawk > /dev/null 2>&1; then
-		fnIPv4Netmask_mawk "${@:-}"
-	fi
+fnIPv4Netmask_gawk() {
+	echo "${1:?}" |
+		gawk -F '.' '{
+			if (NF==1) {
+				n=lshift(0xFFFFFFFF,32-$1)
+				printf "%d.%d.%d.%d",
+					and(rshift(n,24),0xFF),
+					and(rshift(n,16),0xFF),
+					and(rshift(n,8),0xFF),
+					and(n,0xFF)
+			} else {
+				n=xor(0xFFFFFFFF,lshift($1,24)+lshift($2,16)+lshift($3,8)+$4)
+				c=0
+				while (n>0) {
+					if (n%2==1) {
+						c++
+					}
+					n=int(n/2)
+				}
+				printf "%d",(32-c)
+			}
+		}'
 }

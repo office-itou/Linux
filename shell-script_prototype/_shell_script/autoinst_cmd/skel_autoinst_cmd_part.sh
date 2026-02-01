@@ -70,6 +70,10 @@
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnIPv6RevAddr.sh						# IPv6 reverse address
 	# shellcheck source=/dev/null
+	. "${_SHEL_COMN}"/fnIPv4Netmask_gawk.sh					# IPv4 netmask conversion
+	# shellcheck source=/dev/null
+	. "${_SHEL_COMN}"/fnIPv4Netmask_mawk.sh					# IPv4 netmask conversion
+	# shellcheck source=/dev/null
 	. "${_SHEL_COMN}"/fnIPv4Netmask.sh						# IPv4 netmask conversion
 
 	# shellcheck source=/dev/null
@@ -113,9 +117,11 @@ fnMain() {
 
 	# --- main processing -----------------------------------------------------
 	if [ ! -e /run/systemd/resolve/stub-resolv.conf ]; then
-		fnMsgout "${_PROG_NAME:-}" "info" "copy /run/systemd/resolve/stub-resolv.conf"
-		mkdir -p /run/systemd/resolve
-		cp -v /etc/resolv.conf /run/systemd/resolve/stub-resolv.conf
+		if [ ! -L /etc/resolv.conf ]; then
+			fnMsgout "${_PROG_NAME:-}" "info" "copy /run/systemd/resolve/stub-resolv.conf"
+			mkdir -p /run/systemd/resolve
+			cp -v /etc/resolv.conf /run/systemd/resolve/stub-resolv.conf
+		fi
 	fi
 
 	# --- debug output --------------------------------------------------------
