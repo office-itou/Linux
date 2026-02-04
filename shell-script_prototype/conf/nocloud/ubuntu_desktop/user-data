@@ -191,6 +191,7 @@ autoinstall:
   - vim                                 # Vi IMproved - enhanced vi editor
   - bc                                  # GNU bc arbitrary precision calculator language
   - rsync                               # fast, versatile, remote (and local) file-copying tool
+  - eject                               # ejects CDs and operates CD-Changers under Linux
   - tree                                # displays an indented directory tree, in color
   - shellcheck                          # lint tool for shell scripts
   - tasksel                             # tool for selecting tasks for installation on Debian systems
@@ -199,6 +200,7 @@ autoinstall:
   - clamav                              # anti-virus utility for Unix - command-line interface
   - openssh-server                      # secure shell (SSH) server, for secure access from remote machines
   - systemd-resolved                    # systemd DNS resolver
+  - systemd-timesyncd                   # minimalistic service to synchronize local time with NTP servers
   - dnsmasq                             # Small caching DNS proxy and DHCP/TFTP server - system daemon
   - bind9-dnsutils                      # Clients provided with BIND 9
   - apache2                             # Apache HTTP Server

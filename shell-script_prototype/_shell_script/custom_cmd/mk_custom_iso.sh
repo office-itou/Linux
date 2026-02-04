@@ -2159,9 +2159,13 @@ function fnMk_boot_option_preseed() {
 	__WORK=""
 	case "${__MDIA[$((_OSET_MDIA+2))]}" in
 		live-debian-*   |live-ubuntu-*  ) __WORK="${__WORK:+"${__WORK} "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp,us keyboard-model=pc105 keyboard-variants=,";;
-		debian-live-*                   ) __WORK="${__WORK:+"${__WORK} "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A";;
+#		debian-live-*                   ) __WORK="${__WORK:+"${__WORK} "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A";;
 		ubuntu-desktop-*|ubuntu-legacy-*) __WORK="${__WORK:+"${__WORK} "}debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
 		*                               ) __WORK="${__WORK:+"${__WORK} "}language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese";;
+	esac
+	case "${__MDIA[$((_OSET_MDIA+0))]}" in
+		live) __WORK="${__WORK:+"${__WORK} "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A";;
+		*) ;;
 	esac
 	__BOPT+=("${__WORK:-}")
 	# --- 3: network ----------------------------------------------------------
@@ -4223,6 +4227,7 @@ function fnMk_isofile() {
 	declare -a    __TGET=()				# target data line
 	declare -a    __MDIA=()				# media info data
 	declare       __RETN=""				# return value
+	declare       __PATH=""
 	declare       __WORK=""
 	declare -a    __ARRY=()				# data array
 	declare       __TEMP=""				# temporary file
@@ -4377,6 +4382,17 @@ function fnMk_isofile() {
 #							mount -r "${__MDIA[$((_OSET_MDIA+14))]}" "${__DLOW}" && _LIST_RMOV+=("${__DLOW:?}")
 							mount -r --bind "${_DIRS_IMGS}/${__MDIA[$((_OSET_MDIA+2))]}" "${__DLOW}" && _LIST_RMOV+=("${__DLOW:?}")
 							mount -t overlay overlay -o lowerdir="${__DLOW}",upperdir="${__DUPR}",workdir="${__DWKD}" "${__DMRG}" && _LIST_RMOV+=("${__DMRG:?}")
+							# --- create filesystem.packages-remove -----------
+							case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
+								debian-live-*)
+									__PATH="${__DMRG}/live/filesystem.packages-remove"
+									if [[ ! -e "${__PATH:?}" ]]; then
+										printf "\033[m\033[33m%-8s: %s\033[m\n" "caution" "${__PATH#"${__DMRG}"/}"
+										touch "${__PATH:?}"
+									fi
+									;;
+								*            ) ;;
+							esac
 							# --- create auto install configuration file ------
 							__WORK="$(fnMk_boot_options "remake" "${__MDIA[@]:-}")"
 							IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
@@ -4471,7 +4487,7 @@ function fnMk_isofile() {
 		done
 	done
 	fnList_mdia_Put "work.txt"
-	unset __OPTN __PTRN __TYPE __LINE __TGET __MDIA __RETN __ARRY __INFO __TABS I J
+	unset __OPTN __PTRN __TYPE __LINE __TGET __MDIA __RETN __PATH __ARRY __INFO __TABS I J
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"

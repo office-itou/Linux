@@ -13,6 +13,14 @@ fnPackage_update() {
 
 	# --- check command -------------------------------------------------------
 	  if command -v apt-get > /dev/null 2>&1; then
+		__PATH="${_DIRS_TGET:-}/etc/apt/sources.list"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		sed -i "${__PATH}"                         \
+			-e '/^[ \t]*deb[ \t]\+cdrom:/ s/^/#/g'
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
 		if ! apt-get --quiet              update      ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get update";       return; fi
 		if ! apt-get --quiet --assume-yes upgrade     ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get upgrade";      return; fi
 		if ! apt-get --quiet --assume-yes dist-upgrade; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get dist-upgrade"; return; fi
@@ -34,6 +42,7 @@ fnPackage_update() {
 		fnMsgout "${_PROG_NAME:-}" "failed" "package update failure (command not found)"
 		return
 	fi
+	unset __PATH
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"

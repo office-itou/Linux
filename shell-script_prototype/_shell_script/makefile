@@ -79,6 +79,7 @@ OBJS=\
 	./autoinst_cmd/fnFile_backup.sh\
 	./autoinst_cmd/fnInitialize.sh\
 	./autoinst_cmd/fnPackage_update.sh\
+	./autoinst_cmd/fnPackage_install.sh \
 	./autoinst_cmd/fnMkdir_share.sh\
 	./autoinst_cmd/fnSetup_connman.sh\
 	./autoinst_cmd/fnSetup_netplan.sh\
@@ -99,7 +100,7 @@ OBJS=\
 	./autoinst_cmd/fnSetup_skel.sh\
 	./autoinst_cmd/fnSetup_sudo.sh\
 	./autoinst_cmd/fnSetup_blacklist.sh\
-	./autoinst_cmd/fnSetupModule_ipxe.sh\
+	./autoinst_cmd/fnSetup_module_ipxe.sh\
 	./autoinst_cmd/fnSetup_apparmor.sh\
 	./autoinst_cmd/fnSetup_selinux.sh\
 	./autoinst_cmd/fnSetup_ipfilter.sh\

@@ -7,6 +7,6 @@
 #   return:            : unused
 #   g-var :            : unused
 # shellcheck disable=SC2148,SC2317,SC2329
-fnSetupModule_ipxe() {
+fnSetup_module_ipxe() {
 	:
 }

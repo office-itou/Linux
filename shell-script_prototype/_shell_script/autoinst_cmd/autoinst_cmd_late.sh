@@ -140,6 +140,7 @@
 	_DIRS_CHRT=""						# container file (chroot)
 	# --- working directory parameter -----------------------------------------
 	readonly _DIRS_VADM="/var/admin"	# top of admin working directory
+	_DIRS_ACMD=""						# auto-command working directory
 	_DIRS_INST=""						# auto-install working directory
 	_DIRS_BACK=""						# top of backup directory
 	_DIRS_ORIG=""						# original file directory
@@ -887,8 +888,10 @@ fnInitialize() {
 	readonly _DIRS_CTNR="${_DIRS_SHAR}/containers"		# container file
 	readonly _DIRS_CHRT="${_DIRS_SHAR}/chroot"			# container file (chroot)
 	# --- working directory parameter -----------------------------------------
-										# top of working directory
-	_DIRS_INST="${_DIRS_VADM:?}/${_PROG_NAME%%_*}.$(date ${__time_start:+-d "@${__time_start}"} +"%Y%m%d%H%M%S")"
+												# top of working directory
+	_DIRS_ACMD="${_DIRS_VADM:?}/${_PROG_NAME%%_*}"
+	_DIRS_INST="${_DIRS_ACMD:?}.$(date ${__time_start:+-d "@${__time_start}"} +"%Y%m%d%H%M%S")"
+	readonly _DIRS_ACMD							# auto-command working directory
 	readonly _DIRS_INST							# auto-install working directory
 	readonly _DIRS_BACK="${_DIRS_INST}"			# top of backup directory
 	readonly _DIRS_ORIG="${_DIRS_BACK}/orig"	# original file directory
@@ -939,6 +942,14 @@ fnPackage_update() {
 
 	# --- check command -------------------------------------------------------
 	  if command -v apt-get > /dev/null 2>&1; then
+		__PATH="${_DIRS_TGET:-}/etc/apt/sources.list"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		sed -i "${__PATH}"                         \
+			-e '/^[ \t]*deb[ \t]\+cdrom:/ s/^/#/g'
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
 		if ! apt-get --quiet              update      ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get update";       return; fi
 		if ! apt-get --quiet --assume-yes upgrade     ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get upgrade";      return; fi
 		if ! apt-get --quiet --assume-yes dist-upgrade; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get dist-upgrade"; return; fi
@@ -960,6 +971,113 @@ fnPackage_update() {
 		fnMsgout "${_PROG_NAME:-}" "failed" "package update failure (command not found)"
 		return
 	fi
+	unset __PATH
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: package install
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnPackage_install() {
+	__FUNC_NAME="fnPackage_install"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	__PATH="${_DIRS_ACMD:?}/${_FILE_SEED##*/}"
+	if [ ! -e "${__PATH}" ]; then
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
+		return
+	fi
+	# --- get package list ----------------------------------------------------
+	__LIST=""
+	case "${__PATH##*/}" in
+		yast*.xml|auto*.xml)	;;	#  autoyast
+		agama*.json|auto*.json)	;;	#  agama
+		kickstart*.cfg|ks*.cfg) ;;	#  kickstart
+		user-data*)					# (nocloud)
+			__LIST="$( \
+				sed -ne '/^[^#]\+packages:/,/^[^#]\+[[:graph:]]\+:/ {' \
+				    -e  '/^[^#]\+[ \t]*-[ \t]/                      {' \
+				    -e  's/^[ \t]*-[ \t]*//g                         ' \
+				    -e  's/[ \t]*#.*$//g                             ' \
+				    -e  'p                                         }}' \
+				    "${__PATH}"                                      | \
+				sed -e ':l; N; s/[\r\n]\+/ /; b l                    ' \
+			)"
+			;;
+		preseed*.cfg|ps*.cfg)		# (preseed)
+			__LIST="$( \
+				sed -ne '\%^[^#]\+d-i[ \t]\+pkgsel/include%,\%[^\\]$% {' \
+				    -e  '\%pkgsel/include%!                           {' \
+				    -e  's/[\\]\+$//g                                  ' \
+				    -e  's/^[ \t]\+//g                                 ' \
+				    -e  's/[ \t]\+$//g                                 ' \
+				    -e  's/[ \t]\+/ /g                                 ' \
+				    -e 'p                                            }}' \
+				    "${__PATH}"                                        | \
+				sed -e ':l; N; s/[\r\n]\+/ /; b l                      ' \
+			)"
+			;;
+		*)	;;
+	esac
+	if [ -z "${__LIST:-}" ]; then
+		fnMsgout "${_PROG_NAME:-}" "skip" "no package list"
+	else
+		if command -v apt-get > /dev/null 2>&1; then
+			# --- sources.list ------------------------------------------------
+#			__PATH="${_DIRS_TGET:-}/etc/apt/sources.list"
+#			fnFile_backup "${__PATH}"			# backup original file
+#			mkdir -p "${__PATH%/*}"
+#			cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+#			sed -i "${__PATH}"                         \
+#			    -e '/^[ \t]*deb[ \t]\+cdrom:/ s/^/#/g'
+#			fnDbgdump "${__PATH}"				# debugout
+#			fnFile_backup "${__PATH}" "init"	# backup initial file
+			# --- get missing packages ----------------------------------------
+			set -f
+			set -- ${__LIST:+${__LIST}}
+			set +f
+			__FIND="$( \
+				LANG=C dpkg-query --no-pager --show --showformat='${Status}\t${Architecture}\t${binary:Package}\n' "$@" 2>&1 || true \
+			)"
+			__INST="$( \
+				printf "%s\n" "${__FIND:-}" | \
+					awk '/^install[ \t]+ok[ \t]+installed[ \t]+/ {gsub(/^.+[ \t]/,""); print}'
+			)"
+			__FIND="$( \
+				printf "%s\n" "${__FIND:-}" | \
+					awk '!/^install[ \t]+ok[ \t]+installed[ \t]+/ {gsub(/^.+[ \t]/,""); print}'
+			)"
+			# --- install missing packages ------------------------------------
+			set -f
+			set -- ${__INST:+${__INST}}
+			set +f
+			fnMsgout "${_PROG_NAME:-}" "info" "installed packages list"
+			fnMsgout "${_PROG_NAME:-}" "info" "${*:-}"
+			set -f
+			set -- ${__FIND:+${__FIND}}
+			set +f
+			fnMsgout "${_PROG_NAME:-}" "info" "missing packages list"
+			fnMsgout "${_PROG_NAME:-}" "info" "${*:-}"
+			if [ -z "${*:-}" ]; then
+				fnMsgout "${_PROG_NAME:-}" "skip" "no missing packages"
+			else
+				fnMsgout "${_PROG_NAME:-}" "info" "missing packages install"
+				if ! apt-get --quiet              update      ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get update";       return; fi
+#				if ! apt-get --quiet --assume-yes upgrade     ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get upgrade";      return; fi
+#				if ! apt-get --quiet --assume-yes dist-upgrade; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get dist-upgrade"; return; fi
+				if ! apt-get --quiet --assume-yes install "$@"; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get install $*";   return; fi
+				if ! apt-get --quiet --assume-yes autoremove  ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get autoremove";   return; fi
+				if ! apt-get --quiet --assume-yes autoclean   ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get autoclean";    return; fi
+				if ! apt-get --quiet --assume-yes clean       ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get clean";        return; fi
+			fi
+		fi
+	fi
+	unset __PATH __LIST __FIND __INST
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -3003,7 +3121,7 @@ fnSetup_blacklist() {
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
-fnSetupModule_ipxe() {
+fnSetup_module_ipxe() {
 	:
 }
 
@@ -3429,6 +3547,7 @@ fnMain() {
 	fnInitialize						# initialize
 	fnDbgparam							# parameter debug output
 	fnPackage_update					# package updates
+	fnPackage_install					# package install
 	fnMkdir_share						# creating a shared directory
 
 	# --- network manager -----------------------------------------------------
@@ -3453,7 +3572,7 @@ fnMain() {
 	fnSetup_skel						# skeleton
 	fnSetup_sudo						# sudoers
 	fnSetup_blacklist					# blacklist
-	fnSetupModule_ipxe					# ipxe module
+	fnSetup_module_ipxe					# ipxe module
 	fnSetup_apparmor					# apparmor
 	fnSetup_selinux						# selinux
 	fnSetup_ipfilter					# ipfilter

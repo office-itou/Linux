@@ -100,6 +100,8 @@
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnPackage_update.sh					# package updates
 	# shellcheck source=/dev/null
+	. "${_SHEL_COMD}"/fnPackage_install.sh					# package install
+	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnMkdir_share.sh						# creating a shared directory
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnSetup_connman.sh					# connman
@@ -140,7 +142,7 @@
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnSetup_blacklist.sh					# blacklist
 	# shellcheck source=/dev/null
-	. "${_SHEL_COMD}"/fnSetupModule_ipxe.sh					# ipxe module
+	. "${_SHEL_COMD}"/fnSetup_module_ipxe.sh				# ipxe module
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnSetup_apparmor.sh					# apparmor
 	# shellcheck source=/dev/null
@@ -169,6 +171,7 @@ fnMain() {
 	fnInitialize						# initialize
 	fnDbgparam							# parameter debug output
 	fnPackage_update					# package updates
+	fnPackage_install					# package install
 	fnMkdir_share						# creating a shared directory
 
 	# --- network manager -----------------------------------------------------
@@ -193,7 +196,7 @@ fnMain() {
 	fnSetup_skel						# skeleton
 	fnSetup_sudo						# sudoers
 	fnSetup_blacklist					# blacklist
-	fnSetupModule_ipxe					# ipxe module
+	fnSetup_module_ipxe					# ipxe module
 	fnSetup_apparmor					# apparmor
 	fnSetup_selinux						# selinux
 	fnSetup_ipfilter					# ipfilter

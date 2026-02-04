@@ -140,6 +140,7 @@
 	_DIRS_CHRT=""						# container file (chroot)
 	# --- working directory parameter -----------------------------------------
 	readonly _DIRS_VADM="/var/admin"	# top of admin working directory
+	_DIRS_ACMD=""						# auto-command working directory
 	_DIRS_INST=""						# auto-install working directory
 	_DIRS_BACK=""						# top of backup directory
 	_DIRS_ORIG=""						# original file directory
@@ -887,8 +888,10 @@ fnInitialize() {
 	readonly _DIRS_CTNR="${_DIRS_SHAR}/containers"		# container file
 	readonly _DIRS_CHRT="${_DIRS_SHAR}/chroot"			# container file (chroot)
 	# --- working directory parameter -----------------------------------------
-										# top of working directory
-	_DIRS_INST="${_DIRS_VADM:?}/${_PROG_NAME%%_*}.$(date ${__time_start:+-d "@${__time_start}"} +"%Y%m%d%H%M%S")"
+												# top of working directory
+	_DIRS_ACMD="${_DIRS_VADM:?}/${_PROG_NAME%%_*}"
+	_DIRS_INST="${_DIRS_ACMD:?}.$(date ${__time_start:+-d "@${__time_start}"} +"%Y%m%d%H%M%S")"
+	readonly _DIRS_ACMD							# auto-command working directory
 	readonly _DIRS_INST							# auto-install working directory
 	readonly _DIRS_BACK="${_DIRS_INST}"			# top of backup directory
 	readonly _DIRS_ORIG="${_DIRS_BACK}/orig"	# original file directory
