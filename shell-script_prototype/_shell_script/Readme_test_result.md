@@ -4,15 +4,15 @@
 
 |     distribution     |   mini    |  netinst  |    dvd    | liveinst  |   live    |                                    memo                                    |
 | :------------------- | :-------: | :-------: | :-------: | :-------: | :-------: | :------------------------------------------------------------------------- |
-| debian-12.13.0       |     o     |     o     |     o     |     ･     |     ･     |                                                                            |
-| debian-13.3.0        |     o     |     o     |     ･     |     ･     |     ･     |                                                                            |
+| debian-12.13.0       |     o     |     o     |     o     |     o     |     ･     |                                                                            |
+| debian-13.3.0        |     o     |     o     |     o     |     o     |     ･     |                                                                            |
 | debian-14            |     x     |     -     |     -     |     -     |     -     | kernel version mismatch error                                              |
 | debian-15            |     -     |     -     |     -     |     -     |     -     | unreleased                                                                 |
-| debian-testing       |     x     |     o     |     o     |     ･     |     ･     | kernel version mismatch error                                              |
+| debian-testing       |     x     |     o     |     o     |     o     |     ･     | kernel version mismatch error                                              |
 | debian-testing-daily |     o     |     -     |     -     |     -     |     -     |                                                                            |
-| ubuntu-24.04.3       |     -     |     -     |     o     |     ･     |     -     |                                                                            |
-| ubuntu-25.10         |     -     |     -     |     o     |     ･     |     -     |                                                                            |
-| ubuntu-26.04 (snap2) |     -     |     -     |     x     |     ･     |     -     | system-install error                                                       |
+| ubuntu-24.04.3       |     -     |     -     |     o     |     o     |     -     |                                                                            |
+| ubuntu-25.10         |     -     |     -     |     o     |     o     |     -     |                                                                            |
+| ubuntu-26.04 (snap3) |     -     |     -     |     x     |     x     |     -     | system-install error                                                       |
 | fedora-43            |     -     |     o     |     o     |     -     |     -     | systemd-timesyncd not install                                              |
 | centos-stream-9      |     -     |     o     |     o     |     -     |     -     |                                                                            |
 | centos-stream-10     |     -     |     o     |     o     |     -     |     -     |                                                                            |
@@ -21,9 +21,9 @@
 | rockylinux-9.7       |     -     |     o     |     o     |     -     |     -     |                                                                            |
 | rockylinux-10.1      |     -     |     o     |     o     |     -     |     -     |                                                                            |
 | miraclelinux-9.6     |     -     |     o     |     x     |     -     |     -     | caution hostname length / clamav version mismatch error                    |
-| opensuse-leap-15.6   |     -     |     o     |     ･     |     -     |     -     |                                                                            |
-| opensuse-leap-16.0   |     -     |     x     |     ･     |     -     |     -     | selinux bug (systemd-resolved)                                             |
-| opensuse-tumbleweed  |     -     |     x     |     ･     |     -     |     -     | selinux bug (systemd-resolved)                                             |
+| opensuse-leap-15.6   |     -     |     o     |     o     |     -     |     -     |                                                                            |
+| opensuse-leap-16.0   |     -     |     x     |     x     |     -     |     -     | selinux bug (systemd-resolved)                                             |
+| opensuse-tumbleweed  |     -     |     x     |     x     |     -     |     -     | selinux bug (systemd-resolved)                                             |
 | windows-10-22h2      |     -     |     -     |     =     |     -     |     -     |                                                                            |
 | windows-11-25h2      |     -     |     -     |     =     |     -     |     -     |                                                                            |
 | memtest86plus        |     -     |     -     |     =     |     -     |     -     |                                                                            |
