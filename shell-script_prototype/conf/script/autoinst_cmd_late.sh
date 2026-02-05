@@ -1911,8 +1911,8 @@ fnSetup_dnsmasq() {
 		no-poll                                                     # don't poll /etc/resolv.conf for changes
 		no-resolv                                                   # don't read /etc/resolv.conf
 		#strict-order                                               # try in the registration order of /etc/resolv.conf
-		#bind-dynamic                                               # enable bind-interfaces and the default hybrid network mode
-		bind-interfaces                                             # enable multiple instances of dnsmasq
+		bind-dynamic                                                # enable bind-interfaces and the default hybrid network mode
+		#bind-interfaces                                            # enable multiple instances of dnsmasq
 		$(printf "%-60s" "#conf-file=${_CONF:-}")# enable dnssec validation and caching
 		#dnssec                                                     # "
 
@@ -2001,6 +2001,28 @@ _EOT_
 _EOT_
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
+	# --- dnsmasq.conf --------------------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/dnsmasq.conf"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	__FIND="$( \
+		cat "${_DIRS_TGET:-}"/etc/dnsmasq.d/* | \
+		sed -ne '/^[^#]/                   {'   \
+		    -e  's/#.*$//g                  '   \
+		    -e  's/^\([^=]\+=\).*$/\1/g     '   \
+		    -e  's/ \+$//g                  '   \
+		    -e  'p                         }' | \
+		sed -e ':l; N; s/[\r\n]\+/\\|/; b l' || true \
+	)"
+	__FIND="${__FIND:+"${__FIND:-}\\|"}bind-dynamic\|bind-interfaces"
+	sed -i "${__PATH}"                    \
+	    -e '/^\('"${__FIND}"'\)/ s/^/#/g'
+	fnMsgout "${_PROG_NAME:-}" "info" "comment out list"
+	fnMsgout "${_PROG_NAME:-}" "info" "${__FIND:-}"
+	diff --suppress-common-lines --expand-tabs "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}" || true
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
 	# --- create sample file --------------------------------------------------
 	for __WORK in "syslinux block" "grub block" "ipxe block"
 	do
@@ -2030,7 +2052,7 @@ _EOT_
 			fi
 		fi
 	fi
-	unset __SRVC __PATH __CONF __WORK
+	unset __SRVC __PATH __CONF __WORK __FIND
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
