@@ -796,6 +796,8 @@ function fnRsync() {
 	declare       __TEMP=""				# temporary file
 	              __TEMP="$(mktemp -q "${_DIRS_TEMP:-/tmp}/${__FUNC_NAME}.XXXXXX")"
 	readonly      __TEMP
+	declare       __SRCS=""
+	declare       __DEST=""
 
 	case "${__TGET_ISOS}" in
 		*.iso) ;;
@@ -808,7 +810,11 @@ function fnRsync() {
 	rm -rf "${__TEMP:?}"
 	mkdir -p "${__TEMP}" "${__TGET_DEST}"
 	mount -o ro,loop "${__TGET_ISOS}" "${__TEMP}"
-	nice -n "${_NICE_VALU:-19}" rsync "${_OPTN_RSYC[@]}" "${__TEMP}/." "${__TGET_DEST}/" 2>/dev/null || true
+	__SRCS="$(LANG=C find "${__TEMP}"      -type d -prune -printf "%TY-%Tm-%Td%%20%TH:%TM:%TS%Tz")"
+	__DEST="$(LANG=C find "${__TGET_DEST}" -type d -prune -printf "%TY-%Tm-%Td%%20%TH:%TM:%TS%Tz")"
+	if [[ "${__SRCS:-}" != "${__DEST}" ]]; then
+		nice -n "${_NICE_VALU:-19}" rsync "${_OPTN_RSYC[@]}" "${__TEMP}/." "${__TGET_DEST}/" 2>/dev/null || true
+	fi
 	umount "${__TEMP}"
 	chmod -R +r,u+w "${__TGET_DEST}/" 2>/dev/null || true
 	rm -rf "${__TEMP:?}"
