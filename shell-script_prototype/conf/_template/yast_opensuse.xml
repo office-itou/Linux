@@ -336,6 +336,8 @@ fixed address -->
       export -p
     fi
     eject --verbose --cdrom || true
+    zypper --quiet --non-interactive refresh || true
+    zypper --quiet --non-interactive update  || true
   } | tee -a /var/admin/autoinst/zzz_init-scripts.sh.log 2>&1
 ]]>
         </source>

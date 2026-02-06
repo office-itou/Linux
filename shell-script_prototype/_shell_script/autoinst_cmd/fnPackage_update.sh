@@ -21,23 +21,25 @@ fnPackage_update() {
 			-e '/^[ \t]*deb[ \t]\+cdrom:/ s/^/#/g'
 		fnDbgdump "${__PATH}"				# debugout
 		fnFile_backup "${__PATH}" "init"	# backup initial file
-		if ! apt-get --quiet              update      ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get update";       return; fi
-		if ! apt-get --quiet --assume-yes upgrade     ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get upgrade";      return; fi
-		if ! apt-get --quiet --assume-yes dist-upgrade; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get dist-upgrade"; return; fi
-		if ! apt-get --quiet --assume-yes autoremove  ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get autoremove";   return; fi
-		if ! apt-get --quiet --assume-yes autoclean   ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get autoclean";    return; fi
-		if ! apt-get --quiet --assume-yes clean       ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get clean";        return; fi
+		  if ! apt-get --quiet              update      ; then fnMsgout "${_PROG_NAME:-}" "failed"   "apt-get update";       \
+		elif ! apt-get --quiet --assume-yes upgrade     ; then fnMsgout "${_PROG_NAME:-}" "failed"   "apt-get upgrade";      \
+		elif ! apt-get --quiet --assume-yes dist-upgrade; then fnMsgout "${_PROG_NAME:-}" "failed"   "apt-get dist-upgrade"; \
+		elif ! apt-get --quiet --assume-yes autoremove  ; then fnMsgout "${_PROG_NAME:-}" "failed"   "apt-get autoremove";   \
+		elif ! apt-get --quiet --assume-yes autoclean   ; then fnMsgout "${_PROG_NAME:-}" "failed"   "apt-get autoclean";    \
+		elif ! apt-get --quiet --assume-yes clean       ; then fnMsgout "${_PROG_NAME:-}" "failed"   "apt-get clean";        \
+		else                                                   fnMsgout "${_PROG_NAME:-}" "complete" "apt-get";              fi
 	elif command -v dnf     > /dev/null 2>&1; then
-		if ! dnf --quiet --assumeyes update; then fnMsgout "${_PROG_NAME:-}" "failed" "dnf update"; return; fi
+		if ! dnf --quiet --assumeyes update; then fnMsgout "${_PROG_NAME:-}" "failed" "dnf update"; fi
 	elif command -v yum     > /dev/null 2>&1; then
-		if ! yum --quiet --assumeyes update; then fnMsgout "${_PROG_NAME:-}" "failed" "yum update"; return; fi
+		if ! yum --quiet --assumeyes update; then fnMsgout "${_PROG_NAME:-}" "failed" "yum update"; fi
 	elif command -v zypper  > /dev/null 2>&1; then
-		_WORK_TEXT="$(LANG=C zypper lr | awk -F '|' '$1==1&&$2~/http/ {gsub(/^[ \t]+/,"",$2); gsub(/[ \t]+$/,"",$2); print $2;}')"
+		_WORK_TEXT="$(LANG=C zypper repos | awk -F '|' '$1==1&&$2~/http/ {gsub(/^[ \t]+/,"",$2); gsub(/[ \t]+$/,"",$2); print $2;}' || true)"
 		if [ -n "${_WORK_TEXT:-}" ]; then
-			if ! zypper modifyrepo --disable "${_WORK_TEXT}"; then fnMsgout "${_PROG_NAME:-}" "failed" "zypper repository disable"; return; fi
+			if ! zypper modifyrepo --disable "${_WORK_TEXT}"; then fnMsgout "${_PROG_NAME:-}" "failed" "zypper repository disable"; fi
 		fi
-		if ! zypper                           refresh; then fnMsgout "${_PROG_NAME:-}" "failed" "zypper refresh"; return; fi
-		if ! zypper --quiet --non-interactive update ; then fnMsgout "${_PROG_NAME:-}" "failed" "zypper update";  return; fi
+		  if ! zypper --quiet --non-interactive refresh; then fnMsgout "${_PROG_NAME:-}" "failed"   "zypper refresh"; \
+		elif ! zypper --quiet --non-interactive update ; then fnMsgout "${_PROG_NAME:-}" "failed"   "zypper update";  \
+		else                                                  fnMsgout "${_PROG_NAME:-}" "complete" "zypper";         fi
 	else
 		fnMsgout "${_PROG_NAME:-}" "failed" "package update failure (command not found)"
 		return

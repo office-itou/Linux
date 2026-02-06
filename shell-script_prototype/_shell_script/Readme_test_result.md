@@ -46,8 +46,8 @@
 | ubuntu-25.10         |     -     |     -     |     o     |     x     |     -     | out of memory at 8GiB                                                      |
 | ubuntu-26.04 (snap2) |     -     |     -     |     x     |     ･     |     -     | nmbd not start                                                             |
 | fedora-43            |     -     |     o     |     o     |     -     |     -     |                                                                            |
-| centos-stream-9      |     -     |     o     |     ･     |     -     |     -     |                                                                            |
-| centos-stream-10     |     -     |     o     |     ･     |     -     |     -     |                                                                            |
+| centos-stream-9      |     -     |     o     |     o     |     -     |     -     |                                                                            |
+| centos-stream-10     |     -     |     o     |     o     |     -     |     -     |                                                                            |
 | almalinux-9.7        |     -     |     o     |     ･     |     -     |     -     |                                                                            |
 | almalinux-10.1       |     -     |     o     |     ･     |     -     |     -     |                                                                            |
 | rockylinux-9.7       |     -     |     o     |     ･     |     -     |     -     |                                                                            |

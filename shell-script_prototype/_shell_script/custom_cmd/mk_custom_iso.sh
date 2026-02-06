@@ -1774,6 +1774,10 @@ function fnMk_preconf() {
 						sub("_leap-[0-9]+.[0-9]+", "_tumbleweed", $25)
 						print $25
 						break
+					case /.*\/autoyast\/.*/:
+						sub("_dvd", "_web", $25)
+						print $25
+						break
 					case /.*\/kickstart\/.*/:
 						sub("_dvd", "_web", $25)
 						print $25
