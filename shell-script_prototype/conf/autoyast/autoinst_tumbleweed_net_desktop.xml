@@ -349,24 +349,32 @@ fixed address -->
     <default_target>graphical</default_target>
     <services t="map">
       <enable t="list">
-<!--
+<!--    <service>apparmor</service>             -->
+<!--    <service>auditd</service>               -->
         <service>firewalld</service>
-        <service>systemd-resolved</service>
-        <service>systemd-timesyncd</service>
+<!--    <service>clamav-freshclam</service>     -->
         <service>NetworkManager</service>
+        <service>systemd-resolved</service>
         <service>dnsmasq</service>
+        <service>systemd-timesyncd</service>
+<!--    <service>open-vm-tools</service>        -->
+<!--    <service>vmtoolsd</service>             -->
+<!--    <service>ssh</service>                  -->
         <service>sshd</service>
         <service>apache2</service>
+<!--    <service>httpd</service>                -->
         <service>smb</service>
-        <service>nmb</service>
-        <service>winbind</service>
--->
+<!--    <service>smbd</service>                 -->
+<!--    <service>nmb</service>                  -->
+<!--    <service>nmbd.service                   -->
+<!--    <service>winbind</service>              -->
       </enable>
       <disable t="list">
-<!--
-        <service>avahi-daemon</service>
+<!--    <service>chronyd.service                -->
+        <service>avahi-daemon.service
+        <service>nmb.service
+<!--    <service>nmbd.service                   -->
         <service>wicked</service>
--->
       </disable>
       <on_demand t="list">
 <!--
