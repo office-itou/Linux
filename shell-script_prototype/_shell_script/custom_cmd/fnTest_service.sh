@@ -23,14 +23,17 @@ function fnTest_service() {
 	else
 		for __SRVC in \
 			apparmor.service auditd.service \
-			firewalld.service clamav-freshclam.service \
-			NetworkManager.service systemd-resolved.service dnsmasq.service \
-			systemd-timesyncd.service chronyd.service\
+			firewalld.service \
+			clamav-freshclam.service \
+			NetworkManager.service connman.service io.netplan.Netplan.service wicked.service \
+			systemd-resolved.service dnsmasq.service \
+			systemd-timesyncd.service chronyd.service \
 			open-vm-tools.service vmtoolsd.service \
 			ssh.service sshd.service \
 			apache2.service httpd.service \
 			smb.service smbd.service \
 			nmb.service nmbd.service \
+			winbind.service \
 			avahi-daemon.service
 		do
 			__RELT="$(systemctl is-active "${__SRVC}" || true)"

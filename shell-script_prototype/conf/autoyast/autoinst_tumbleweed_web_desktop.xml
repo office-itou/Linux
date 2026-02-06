@@ -12,13 +12,29 @@
         <product_dir>/</product_dir>
       </listentry>
       <listentry t="map">
+        <alias>repo-backports-update</alias>
+        <media_url>http://download.opensuse.org/update/leap/15.6/backports/</media_url>
+        <name>Update repository of openSUSE Backports</name>
+        <priority t="integer">99</priority>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
+        <alias>repo-sle-update</alias>
+        <media_url>http://download.opensuse.org/update/leap/15.6/sle/</media_url>
+        <name>Update repository with updates from SUSE Linux Enterprise 15</name>
+        <priority t="integer">99</priority>
+        <product_dir>/</product_dir>
+      </listentry>
+leap -->
+<!--
+      <listentry t="map">
         <alias>repo-update-oss</alias>
         <media_url>https://download.opensuse.org/update/leap/15.6/oss/</media_url>
         <name>Main Update Repository</name>
         <priority t="integer">99</priority>
         <product_dir>/</product_dir>
       </listentry>
-leap -->
+-->
 <!-- tumbleweed -->
       <listentry t="map">
         <alias>repo-oss</alias>
@@ -336,8 +352,6 @@ fixed address -->
       export -p
     fi
     eject --verbose --cdrom || true
-    zypper --quiet --non-interactive refresh || true
-    zypper --quiet --non-interactive update  || true
   } | tee -a /var/admin/autoinst/zzz_init-scripts.sh.log 2>&1
 ]]>
         </source>
@@ -366,14 +380,14 @@ fixed address -->
         <service>smb</service>
 <!--    <service>smbd</service>                 -->
 <!--    <service>nmb</service>                  -->
-<!--    <service>nmbd.service                   -->
+<!--    <service>nmbd</service>                 -->
 <!--    <service>winbind</service>              -->
       </enable>
       <disable t="list">
-<!--    <service>chronyd.service                -->
-        <service>avahi-daemon.service
-        <service>nmb.service
-<!--    <service>nmbd.service                   -->
+<!--    <service>chronyd</service>              -->
+        <service>avahi-daemon</service>
+        <service>nmb</service>
+<!--    <service>nmbd</service>                 -->
         <service>wicked</service>
       </disable>
       <on_demand t="list">
@@ -384,6 +398,7 @@ fixed address -->
     </services>
   </services-manager>
   <software t="map">
+    <do_online_update t="boolean">true</do_online_update>
     <install_recommended t="boolean">true</install_recommended>
     <instsource/>
     <packages t="list">
