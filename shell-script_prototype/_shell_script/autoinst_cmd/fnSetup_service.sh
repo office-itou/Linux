@@ -15,7 +15,7 @@ fnSetup_service() {
 	set -f
 	set --
 	for __LIST in \
-		chronyd.service\
+		chronyd.service \
 		avahi-daemon.service \
 		nmb.service \
 		nmbd.service
