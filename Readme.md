@@ -1,9 +1,29 @@
 # **Linux**  
 
-## **[config files](./conf)**
+## **Development environment**
 
-## **[script files](./script)**
+* [Machine spec](./script/Readme_develop_spec_virtual-pc.md)
 
-## **[source files](./source)**
+* [Tree diagram](./script/Readme_develop_tree_diagram.md)
 
-## **[laboratory](./laboratory)**
+* [nfs](./script/Readme_develop_app_nfs.md)
+
+* [samba](./script/Readme_develop_app_samba.md)
+
+## **Specification**
+
+* [Database layout](./script/Readme_db_layout.md)
+
+* [Global variables](./script/Readme_global_variables.md)
+
+* [Variable expansions](./script/Readme_variable_expansions.md)
+
+## **Files**
+
+* [Config files](./conf)
+
+* [Script files](./script)
+
+* [Source files](./source)
+
+* [Laboratory](./laboratory)
