@@ -1,9 +1,0 @@
-[Unit]
-Description=Create Loop Device
-
-[Service]
-ExecStart=/usr/local/bin/loop.sh
-Type=oneshot
-
-[Install]
-WantedBy=default.target

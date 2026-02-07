@@ -1,5 +1,0 @@
-[fedora-chroot-BaseOS]
-name=Fedora $releasever - $basearch - BaseOS
-metalink=https://mirrors.fedoraproject.org/metalink?repo=fedora-$releasever&arch=$basearch
-gpgcheck=0
-
