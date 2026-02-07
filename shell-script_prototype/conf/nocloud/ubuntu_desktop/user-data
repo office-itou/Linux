@@ -359,7 +359,7 @@ autoinstall:
         cd /var/admin/autoinst/ || exit 1;
         echo "download/copy: [${__DIRS:-}]";
         case "${__DIRS:-}" in
-          http:*|https:*|ftp:*|tftp:*) curl -L -# -O -R -S "${__DIRS:-}/script/autoinst_cmd_early.sh";;
+          http:*|https:*|ftp:*|tftp:*) wget "${__DIRS:-}/script/autoinst_cmd_early.sh";;
           file:*|/*                  ) cp -p "${__DIRS#*:*//}/script/autoinst_cmd_early.sh" ./;;
           *) ;;
         esac;
