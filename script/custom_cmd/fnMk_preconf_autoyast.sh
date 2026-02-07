@@ -1,0 +1,82 @@
+# shellcheck disable=SC2148
+
+# -----------------------------------------------------------------------------
+# descript: make autoyast.xml
+#   input :     $1     : input value
+#   output:   stdout   : message
+#   return:            : unused
+#   g-var : _PROG_NAME : read
+#   g-var : _PATH_YAST : read
+# shellcheck disable=SC2317,SC2329
+function fnMk_preconf_autoyast() {
+	declare -r    __TGET_PATH="${1:?}"	# file name
+	declare       __VERS=""				# distribution version
+	declare       __NUMS=""				# "            number
+	declare       __WORK=""				# work
+	declare       __REAL=""
+	declare       __DIRS=""
+	declare       __OWNR=""
+
+	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
+	mkdir -p "${__TGET_PATH%/*}"
+	cp --backup "${_PATH_YAST}" "${__TGET_PATH}"
+	# -------------------------------------------------------------------------
+	__WORK="${__TGET_PATH##*/}"			# file name
+	__VERS="${__WORK#*_}"				# autoinst_(name)-(nums)_ ...: (ex: autoinst_tumbleweed_net_desktop.xml)
+	__VERS="${__VERS%%_*}"				# vers="(name)-(nums)"
+	__NUMS="${__VERS##*-}"
+	# --- by media ------------------------------------------------------------
+	case "${__TGET_PATH}" in
+		*_web*|\
+		*_dvd*)
+			sed -i "${__TGET_PATH}"                                   \
+			    -e '/<image_installation t="boolean">/ s/false/true/'
+			;;
+		*)
+			sed -i "${__TGET_PATH}"                                   \
+			    -e '/<image_installation t="boolean">/ s/true/false/'
+			;;
+	esac
+	# --- by version ----------------------------------------------------------
+	case "${__TGET_PATH}" in
+		*tumbleweed*)
+			sed -i "${__TGET_PATH}"                                    \
+			    -e '\%<add_on_products .*>%,\%</add_on_products>%  { ' \
+			    -e '/<!-- tumbleweed/,/tumbleweed -->/             { ' \
+			    -e '/<!-- tumbleweed$/ s/$/ -->/g                  } ' \
+			    -e '/^tumbleweed -->/  s/^/<!-- /g                 } ' \
+			    -e '\%<packages .*>%,\%</packages>%                { ' \
+			    -e '/<!-- tumbleweed/,/tumbleweed -->/             { ' \
+			    -e '/<!-- tumbleweed$/ s/$/ -->/g                  } ' \
+			    -e '/^tumbleweed -->/  s/^/<!-- /g                 } ' \
+			    -e 's%\(<product>\).*\(</product>\)%\1openSUSE\2%    '
+			;;
+		*           )
+			sed -i "${__TGET_PATH}"                                          \
+			    -e '\%<add_on_products .*>%,\%</add_on_products>%        { ' \
+			    -e '/<!-- leap/,/leap -->/                               { ' \
+			    -e "/<media_url>/ s%/\(leap\)/[0-9.]\+/%/\1/${__NUMS}/%g   " \
+			    -e '/<!-- leap$/ s/$/ -->/g                              } ' \
+			    -e '/^leap -->/  s/^/<!-- /g                             } ' \
+			    -e '\%<packages .*>%,\%</packages>%                      { ' \
+			    -e '/<!-- leap/,/leap -->/                               { ' \
+			    -e '/<!-- leap$/ s/$/ -->/g                              } ' \
+			    -e '/^leap -->/  s/^/<!-- /g                             } ' \
+			    -e 's%\(<product>\).*\(</product>\)%\1Leap\2%              '
+			;;
+	esac
+	# --- desktop -------------------------------------------------------------
+	sed -e '/<!-- desktop$/       s/$/ -->/g '         \
+	    -e '/^desktop -->/        s/^/<!-- /g'         \
+	    -e '/<!-- desktop gnome$/ s/$/ -->/g '         \
+	    -e '/^desktop gnome -->/  s/^/<!-- /g'         \
+	    "${__TGET_PATH}"                               \
+	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
+	# -------------------------------------------------------------------------
+	__REAL="$(realpath "${__TGET_PATH}")"
+	__DIRS="$(fnDirname "${__TGET_PATH}")"
+	__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
+	chown "${__OWNR:-"${_SAMB_USER}"}" "${__TGET_PATH}"
+	chmod ugo+r-x,ug+w "${__TGET_PATH}"
+	unset __VERS __NUMS __WORK __REAL __DIRS __OWNR
+}

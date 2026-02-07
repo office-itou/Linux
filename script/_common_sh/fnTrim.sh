@@ -1,0 +1,34 @@
+# shellcheck disable=SC2148
+
+# -----------------------------------------------------------------------------
+# descript: ltrim
+#   input :     $1     : input
+#   output:   stdout   : output
+#   return:            : unused
+#   g-var :            : unused
+# shellcheck disable=SC2148,SC2317,SC2329
+fnLtrim() {
+	printf "%s" "${1#"${1%%[^"${IFS}"]*}"}"	# ltrim
+}
+
+# -----------------------------------------------------------------------------
+# descript: rtrim
+#   input :     $1     : input
+#   output:   stdout   : output
+#   return:            : unused
+#   g-var :            : unused
+# shellcheck disable=SC2148,SC2317,SC2329
+fnRtrim() {
+	printf "%s" "${1%"${1##*[^"${IFS}"]}"}"	# rtrim
+}
+
+# -----------------------------------------------------------------------------
+# descript: trim
+#   input :     $1     : input
+#   output:   stdout   : output
+#   return:            : unused
+#   g-var :            : unused
+# shellcheck disable=SC2148,SC2317,SC2329
+fnTrim() {
+	fnRtrim "$(fnLtrim "$1")"
+}

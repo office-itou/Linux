@@ -1,0 +1,489 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <add-on t="map">
+    <add_on_products t="list">
+<!-- leap -->
+      <listentry t="map">
+        <alias>repo-oss</alias>
+        <media_url>https://download.opensuse.org/distribution/leap/15.6/repo/oss/</media_url>
+        <name>Main Repository</name>
+        <priority t="integer">99</priority>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
+        <alias>repo-update-oss</alias>
+        <media_url>https://download.opensuse.org/update/leap/15.6/oss/</media_url>
+        <name>Main Update Repository</name>
+        <priority t="integer">99</priority>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
+        <alias>repo-backports-update</alias>
+        <media_url>http://download.opensuse.org/update/leap/15.6/backports/</media_url>
+        <name>Update repository of openSUSE Backports</name>
+        <priority t="integer">99</priority>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
+        <alias>repo-sle-update</alias>
+        <media_url>http://download.opensuse.org/update/leap/15.6/sle/</media_url>
+        <name>Update repository with updates from SUSE Linux Enterprise 15</name>
+        <priority t="integer">99</priority>
+        <product_dir>/</product_dir>
+      </listentry>
+<!-- leap -->
+<!-- tumbleweed
+      <listentry t="map">
+        <alias>repo-oss</alias>
+        <media_url>https://download.opensuse.org/tumbleweed/repo/oss/</media_url>
+        <name>Main Repository</name>
+        <priority t="integer">99</priority>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
+        <alias>repo-update</alias>
+        <media_url>https://download.opensuse.org/update/tumbleweed/</media_url>
+        <name>Main Update Repository</name>
+        <priority t="integer">99</priority>
+        <product_dir>/</product_dir>
+      </listentry>
+tumbleweed -->
+    </add_on_products>
+  </add-on>
+<!--
+  <bootloader t="map">
+    <global t="map">
+      <append>-B console=force-text</append>
+      <cpu_mitigations>auto</cpu_mitigations>
+    </global>
+    <loader_type>default</loader_type>
+  </bootloader>
+-->
+  <deploy_image t="map">
+    <image_installation t="boolean">false</image_installation>
+  </deploy_image>
+  <general t="map">
+    <self_update t="boolean">true</self_update>
+<!--
+    <semi-automatic t="list">
+      <semi-automatic_entry>networking</semi-automatic_entry>
+    </semi-automatic>
+-->
+    <mode t="map">
+      <confirm t="boolean">false</confirm>
+      <second_stage t="boolean">false</second_stage>
+    </mode>
+  </general>
+<!-- fixed address
+  <host t="map">
+    <hosts t="list">
+      <hosts_entry t="map">
+        <host_address>192.168.1.1</host_address>
+        <names t="list">
+          <name>sv-opensuse.workgroup sv-opensuse</name>
+        </names>
+      </hosts_entry>
+    </hosts>
+  </host>
+fixed address -->
+  <language t="map">
+    <language>ja_JP</language>
+    <languages>ja_JP</languages>
+  </language>
+  <timezone t="map">
+    <hwclock>UTC</hwclock>
+    <timezone>Asia/Tokyo</timezone>
+  </timezone>
+  <networking t="map">
+    <backend>network_manager</backend>
+<!-- fixed address
+    <dns t="map">
+      <dhcp_hostname t="boolean">false</dhcp_hostname>
+      <hostname>sv-opensuse.workgroup</hostname>
+      <nameservers t="list">
+        <nameserver>192.168.1.254</nameserver>
+      </nameservers>
+      <resolv_conf_policy>auto</resolv_conf_policy>
+      <searchlist t="list">
+        <search>workgroup</search>
+      </searchlist>
+    </dns>
+    <interfaces t="list">
+      <interface t="map">
+        <bootproto>static</bootproto>
+        <ipaddr>192.168.1.1</ipaddr>
+        <name>eth0</name>
+        <prefixlen>24</prefixlen>
+        <startmode>auto</startmode>
+      </interface>
+    </interfaces>
+    <ipv6 t="boolean">true</ipv6>
+    <keep_install_network t="boolean">true</keep_install_network>
+    <managed t="boolean">true</managed>
+    <routing t="map">
+      <routes t="list">
+        <route t="map">
+          <destination>default</destination>
+          <device>eth0</device>
+          <gateway>192.168.1.254</gateway>
+          <netmask>-</netmask>
+        </route>
+      </routes>
+    </routing>
+fixed address -->
+  </networking>
+  <ntp-client t="map">
+    <ntp_policy>auto</ntp_policy>
+    <ntp_servers t="list">
+      <ntp_server t="map">
+        <address>ntp.nict.jp</address>
+        <iburst t="boolean">true</iburst>
+        <offline t="boolean">false</offline>
+      </ntp_server>
+    </ntp_servers>
+    <ntp_sync>systemd</ntp_sync>
+  </ntp-client>
+  <partitioning t="list">
+    <drive t="map">
+      <device>/dev/nvme0n1</device>
+      <initialize t="boolean">true</initialize>
+      <partitions t="list"/>
+      <type t="symbol">CT_DISK</type>
+      <use>all</use>
+    </drive>
+  </partitioning>
+  <proxy t="map">
+    <enabled t="boolean">false</enabled>
+  </proxy>
+<!--
+* pre-scripts (very early, before anything else really happens)
+* postpartitioning-scripts (after partitioning and mounting to /mnt but before RPM installation)
+* chroot-scripts (after the package installation, before the first boot)
+* post-scripts (during the first boot of the installed system, no services running)
+* init-scripts (during the first boot of the installed system, all services up and running)
+-->
+<!-- log's directory: /var/admin/autoinstall/logs/ -->
+  <scripts t="map">
+    <!-- *** pre-scripts *************************************************** -->
+    <pre-scripts t="list">
+      <script t="map">
+        <debug t="boolean">false</debug>
+        <feedback t="boolean">false</feedback>
+        <feedback_type/>
+        <filename>zzz_pre-scripts.sh</filename>
+        <interpreter>shell</interpreter>
+        <location/>
+        <notification/>
+        <param-list t="list"/>
+        <rerun t="boolean">false</rerun>
+        <source><![CDATA[
+  set -eu
+  echo "zzz_pre-scripts.sh"
+  mkdir -p /var/admin/autoinst/
+  {
+    if [ -n "${debug:-}" ] || [ -n "${debugout:-}" ]; then
+      set -x
+      export -p
+    fi
+    _FILE_SEED=""
+    _COMD_LINE="$(cat /proc/cmdline)"
+    for __LINE in ${_COMD_LINE:-}
+    do
+      case "${__LINE}" in
+        preseed/url=*  | url=*  ) _FILE_SEED="${__LINE#*url=}";;
+        preseed/file=* | file=* ) _FILE_SEED="${__LINE#*file=}";;
+        ds=nocloud*             ) _FILE_SEED="${__LINE#*ds=nocloud*=}";_FILE_SEED="${_FILE_SEED%%/}/user-data";;
+        inst.ks=*               ) _FILE_SEED="${__LINE#*inst.ks=}";;
+        autoyast=*              ) _FILE_SEED="${__LINE#*autoyast=}";;
+        inst.auto=*             ) _FILE_SEED="${__LINE#*inst.auto=}";;
+        *) echo "${__LINE:-}";;
+      esac
+    done
+    __DIRS="${_FILE_SEED%/user-data}"
+    __DIRS="${__DIRS%/*/*}"
+    __DIRS="${__DIRS%%/}"
+    cd /var/admin/autoinst/
+    echo "download/copy: [${__DIRS:-}]"
+    case "${__DIRS:-}" in
+      http:*|https:*|ftp:*|tftp:*) curl -L -# -O -R -S "${__DIRS:-}/script/autoinst_cmd_early.sh";;
+      hd:sr0:*|cdrom|cdrom:*     ) cp -p "/mnt/install/repo/${__DIRS#*:/}/script/autoinst_cmd_early.sh" ./;;
+      hd:*|dvd:*|cd:*            )
+        if [[ -e /var/log/YaST2/y2start.log ]]; then
+          while read -r __LINE
+          do
+            case "${__LINE:-}" in
+              *AutoYaST=*)
+                __SEED="${__LINE%%=*}"
+                __SEED="${__LINE#"${__SEED:-}="}"
+                __SEED="${__SEED#\"}"
+                __SEED="${__SEED%\"}"
+                __SEED="${__SEED#*://}"
+                ;;
+              *autoyast=*)
+                __YAST="${__LINE%%=*}"
+                __YAST="${__LINE#"${__YAST:-}="}"
+                __YAST="${__YAST#\"}"
+                __YAST="${__YAST%\"}"
+                __YAST="${__YAST#*:/}"
+                ;;
+              *) ;;
+            esac
+          done < /var/log/YaST2/y2start.log
+          __DEVS="${__SEED%"/${__YAST:-}"}"
+          if [[ -n "${__DEVS:-}" ]] && [[ -e "/dev/${__DEVS}" ]]; then
+            mkdir -p /media
+            mount -r "/dev/${__DEVS}" /media
+            cp -p "/media/${__DIRS#*:/}/script/autoinst_cmd_early.sh" ./
+            umount /media
+          fi
+        fi
+        ;;
+      device:*                   ) echo "${__DIRS}";;
+      label:*                    ) echo "${__DIRS}";;
+      usb:*                      ) echo "${__DIRS}";;
+      smb:*                      ) echo "${__DIRS}";;
+      nfs:*                      ) echo "${__DIRS}";;
+      hmc                        ) echo "${__DIRS}";;
+      file:*|/*                  ) cp -p "${__DIRS#*:*//}/script/autoinst_cmd_early.sh" ./;;
+      *) echo "${__DIRS:-}";;
+    esac
+    if [[ -e ./autoinst_cmd_early.sh ]]; then
+      chmod +x ./autoinst_cmd_early.sh
+      ./autoinst_cmd_early.sh
+    fi
+  } | tee -a /var/admin/autoinst/zzz_pre-scripts.sh.log 2>&1
+]]>
+        </source>
+      </script>
+    </pre-scripts>
+    <!-- *** postpartitioning-scripts ************************************** -->
+    <postpartitioning-scripts t="list">
+      <script t="map">
+        <debug t="boolean">false</debug>
+        <feedback t="boolean">false</feedback>
+        <feedback_type/>
+        <filename>zzz_postpartitioning-scripts.sh</filename>
+        <interpreter>shell</interpreter>
+        <location/>
+        <notification/>
+        <param-list t="list"/>
+        <rerun t="boolean">false</rerun>
+        <source><![CDATA[
+  set -eu
+  echo "zzz_postpartitioning-scripts.sh"
+  mkdir -p /mnt/var/admin/autoinst/
+  {
+    if [ -n "${debug:-}" ] || [ -n "${debugout:-}" ]; then
+      set -x
+      export -p
+    fi
+    cp -pv /var/admin/autoinst/* /mnt/var/admin/autoinst/
+  } | tee -a /mnt/var/admin/autoinst/zzz_postpartitioning-scripts.sh.log 2>&1
+]]>
+        </source>
+      </script>
+    </postpartitioning-scripts>
+    <!-- *** chroot-scripts ************************************************ -->
+    <chroot-scripts t="list">
+      <script t="map">
+        <chrooted t="boolean">true</chrooted>
+        <debug t="boolean">false</debug>
+        <feedback t="boolean">false</feedback>
+        <feedback_type/>
+        <filename>zzz_chroot-scripts.sh</filename>
+        <interpreter>shell</interpreter>
+        <location/>
+        <notification/>
+        <param-list t="list"/>
+        <rerun t="boolean">false</rerun>
+        <source><![CDATA[
+  set -eu
+  echo "zzz_chroot-scripts.sh"
+  {
+    /var/admin/autoinst/autoinst_cmd_late.sh
+  } | tee -a /var/admin/autoinst/zzz_chroot-scripts.sh.log 2>&1
+]]>
+        </source>
+      </script>
+    </chroot-scripts>
+    <!-- *** post-scripts ************************************************** -->
+    <post-scripts t="list">
+      <script t="map">
+        <debug t="boolean">false</debug>
+        <feedback t="boolean">false</feedback>
+        <feedback_type/>
+        <filename>zzz_post-scripts.sh</filename>
+        <interpreter>shell</interpreter>
+        <location/>
+        <notification/>
+        <param-list t="list"/>
+        <rerun t="boolean">false</rerun>
+        <source><![CDATA[
+  set -eu
+  echo "zzz_post-scripts.sh"
+  __DIRS="/mnt/var/admin/autoinst"
+  [[ ! -e "${__DIRS:-}"/. ]] && __DIRS="${__DIRS#/mnt}"
+  {
+    if [ -n "${debug:-}" ] || [ -n "${debugout:-}" ]; then
+      set -x
+      export -p
+    fi
+    echo "no processing"
+  } | tee -a "${__DIRS:-}"/zzz_post-scripts.sh.log 2>&1
+]]>
+        </source>
+      </script>
+    </post-scripts>
+    <!-- *** init-scripts ************************************************** -->
+    <init-scripts t="list">
+      <script t="map">
+        <debug t="boolean">false</debug>
+        <filename>zzz_init-scripts.sh</filename>
+        <location/>
+        <source><![CDATA[
+  set -eu
+  echo "zzz_init-scripts.sh"
+  {
+    if [ -n "${debug:-}" ] || [ -n "${debugout:-}" ]; then
+      set -x
+      export -p
+    fi
+    eject --verbose --cdrom || true
+  } | tee -a /var/admin/autoinst/zzz_init-scripts.sh.log 2>&1
+]]>
+        </source>
+      </script>
+    </init-scripts>
+    <!-- *** scripts end *************************************************** -->
+  </scripts>
+  <services-manager t="map">
+    <default_target>graphical</default_target>
+    <services t="map">
+      <enable t="list">
+<!--    <service>apparmor</service>             -->
+<!--    <service>auditd</service>               -->
+        <service>firewalld</service>
+<!--    <service>clamav-freshclam</service>     -->
+        <service>NetworkManager</service>
+        <service>systemd-resolved</service>
+        <service>dnsmasq</service>
+        <service>systemd-timesyncd</service>
+<!--    <service>open-vm-tools</service>        -->
+<!--    <service>vmtoolsd</service>             -->
+<!--    <service>ssh</service>                  -->
+        <service>sshd</service>
+        <service>apache2</service>
+<!--    <service>httpd</service>                -->
+        <service>smb</service>
+<!--    <service>smbd</service>                 -->
+<!--    <service>nmb</service>                  -->
+<!--    <service>nmbd</service>                 -->
+<!--    <service>winbind</service>              -->
+      </enable>
+      <disable t="list">
+<!--    <service>chronyd</service>              -->
+        <service>avahi-daemon</service>
+        <service>nmb</service>
+<!--    <service>nmbd</service>                 -->
+        <service>wicked</service>
+      </disable>
+      <on_demand t="list">
+<!--
+        <listentry>pcscd</listentry>
+-->
+      </on_demand>
+    </services>
+  </services-manager>
+  <software t="map">
+    <do_online_update t="boolean">true</do_online_update>
+    <install_recommended t="boolean">true</install_recommended>
+    <instsource/>
+    <packages t="list">
+<!--  <package>selinux-utils</package> -->
+      <package>sudo</package>
+      <package>firewalld</package>
+      <package>traceroute</package>
+      <package>NetworkManager</package>
+      <package>ShellCheck</package>
+      <package>bash-completion</package>
+      <package>curl</package>
+      <package>vim</package>
+      <package>bc</package>
+      <package>rsync</package>
+      <package>tree</package>
+      <package>openssh-server</package>
+<!-- leap -->
+      <package>systemd-network</package>
+<!-- leap -->
+<!-- tumbleweed
+      <package>systemd-resolved</package>
+tumbleweed -->
+      <package>dnsmasq</package>
+      <package>tftp</package>
+      <package>bind-utils</package>
+      <package>apache2</package>
+      <package>samba</package>
+      <package>samba-client</package>
+      <package>cifs-utils</package>
+      <package>samba-winbind</package>
+      <package>open-vm-tools</package>
+      <package>open-vm-tools-desktop</package>
+      <package>fuse</package>
+      <package>glibc-i18ndata</package>
+      <package>glibc-locale</package>
+      <package>less</package>
+      <package>wget</package>
+      <package>which</package>
+      <package>zypper</package>
+<!-- desktop
+      <package>gnome-desktop2</package>
+      <package>gnome-desktop2-lang</package>
+      <package>gnome-terminal</package>
+      <package>gnome-shell</package>
+      <package>gstreamer-plugins-libav</package>
+      <package>wireplumber-audio</package>
+      <package>audacious</package>
+      <package>rhythmbox</package>
+desktop -->
+    </packages>
+    <patterns t="list">
+      <pattern>base</pattern>
+      <pattern>basesystem</pattern>
+      <pattern>documentation</pattern>
+      <pattern>enhanced_base</pattern>
+      <pattern>minimal_base</pattern>
+<!-- desktop gnome
+      <pattern>gnome</pattern>
+desktop gnome -->
+<!-- desktop lxde
+      <pattern>lxde</pattern>
+desktop lxde -->
+    </patterns>
+    <products t="list">
+      <product>Leap</product>
+    </products>
+  </software>
+  <users t="list">
+    <user t="map">
+      <encrypted t="boolean">false</encrypted>
+      <fullname>root</fullname>
+      <user_password>r00t</user_password>
+      <username>root</username>
+    </user>
+    <user t="map">
+      <encrypted t="boolean">false</encrypted>
+      <fullname>Master</fullname>
+      <user_password>master</user_password>
+      <username>master</username>
+    </user>
+  </users>
+  <groups t="list">
+    <group t="map">
+      <groupname>wheel</groupname>
+      <userlist>master</userlist>
+    </group>
+  </groups>
+</profile>
+<!-- https://doc.opensuse.org/projects/autoyast/ -->
+<!-- https://doc.opensuse.org/documentation/leap/startup/html/book-startup/cha-boot-parameters.html -->

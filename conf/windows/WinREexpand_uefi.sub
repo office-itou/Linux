@@ -1,0 +1,12 @@
+list disk
+select disk 0
+list partition
+select partition 3
+shrink desired=250 minimum=250
+select partition 4
+delete partition override
+create partition primary id=de94bba4-06d1-4d40-a16a-bfd50179d6ac
+gpt attributes =0x8000000000000001
+format quick fs=ntfs label="Windows RE tools"
+list vol
+exit

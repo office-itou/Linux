@@ -1,0 +1,52 @@
+# shellcheck disable=SC2148
+
+	# --- color code ----------------------------------------------------------
+	# https://qiita.com/ko1nksm/items/095bdb8f0eca6d327233
+	         _CODE_ESCP="$(printf '\x1b')"
+	readonly _CODE_ESCP
+	readonly _TEXT_RESET="${_CODE_ESCP}[0m"					# reset all attributes
+	readonly _TEXT_BOLD="${_CODE_ESCP}[1m"					#
+	readonly _TEXT_FAINT="${_CODE_ESCP}[2m"					#
+	readonly _TEXT_ITALIC="${_CODE_ESCP}[3m"				#
+	readonly _TEXT_UNDERLINE="${_CODE_ESCP}[4m"				# set underline
+	readonly _TEXT_BLINK="${_CODE_ESCP}[5m"					#
+	readonly _TEXT_FAST_BLINK="${_CODE_ESCP}[6m"			#
+	readonly _TEXT_REVERSE="${_CODE_ESCP}[7m"				# set reverse display
+	readonly _TEXT_CONCEAL="${_CODE_ESCP}[8m"				#
+	readonly _TEXT_STRIKE="${_CODE_ESCP}[9m"				#
+	readonly _TEXT_GOTHIC="${_CODE_ESCP}[20m"				#
+	readonly _TEXT_DOUBLE_UNDERLINE="${_CODE_ESCP}[21m"		#
+	readonly _TEXT_NORMAL="${_CODE_ESCP}[22m"				#
+	readonly _TEXT_NO_ITALIC="${_CODE_ESCP}[23m"			#
+	readonly _TEXT_NO_UNDERLINE="${_CODE_ESCP}[24m"			# reset underline
+	readonly _TEXT_NO_BLINK="${_CODE_ESCP}[25m"				#
+	readonly _TEXT_NO_REVERSE="${_CODE_ESCP}[27m"			# reset reverse display
+	readonly _TEXT_NO_CONCEAL="${_CODE_ESCP}[28m"			#
+	readonly _TEXT_NO_STRIKE="${_CODE_ESCP}[29m"			#
+	readonly _TEXT_BLACK="${_CODE_ESCP}[30m"				# text dark black
+	readonly _TEXT_RED="${_CODE_ESCP}[31m"					# text dark red
+	readonly _TEXT_GREEN="${_CODE_ESCP}[32m"				# text dark green
+	readonly _TEXT_YELLOW="${_CODE_ESCP}[33m"				# text dark yellow
+	readonly _TEXT_BLUE="${_CODE_ESCP}[34m"					# text dark blue
+	readonly _TEXT_MAGENTA="${_CODE_ESCP}[35m"				# text dark purple
+	readonly _TEXT_CYAN="${_CODE_ESCP}[36m"					# text dark light blue
+	readonly _TEXT_WHITE="${_CODE_ESCP}[37m"				# text dark white
+	readonly _TEXT_DEFAULT="${_CODE_ESCP}[39m"				#
+	readonly _TEXT_BG_BLACK="${_CODE_ESCP}[40m"				# text reverse black
+	readonly _TEXT_BG_RED="${_CODE_ESCP}[41m"				# text reverse red
+	readonly _TEXT_BG_GREEN="${_CODE_ESCP}[42m"				# text reverse green
+	readonly _TEXT_BG_YELLOW="${_CODE_ESCP}[43m"			# text reverse yellow
+	readonly _TEXT_BG_BLUE="${_CODE_ESCP}[44m"				# text reverse blue
+	readonly _TEXT_BG_MAGENTA="${_CODE_ESCP}[45m"			# text reverse purple
+	readonly _TEXT_BG_CYAN="${_CODE_ESCP}[46m"				# text reverse light blue
+	readonly _TEXT_BG_WHITE="${_CODE_ESCP}[47m"				# text reverse white
+	readonly _TEXT_BG_DEFAULT="${_CODE_ESCP}[49m"			#
+	readonly _TEXT_BR_BLACK="${_CODE_ESCP}[90m"				# text black
+	readonly _TEXT_BR_RED="${_CODE_ESCP}[91m"				# text red
+	readonly _TEXT_BR_GREEN="${_CODE_ESCP}[92m"				# text green
+	readonly _TEXT_BR_YELLOW="${_CODE_ESCP}[93m"			# text yellow
+	readonly _TEXT_BR_BLUE="${_CODE_ESCP}[94m"				# text blue
+	readonly _TEXT_BR_MAGENTA="${_CODE_ESCP}[95m"			# text purple
+	readonly _TEXT_BR_CYAN="${_CODE_ESCP}[96m"				# text light blue
+	readonly _TEXT_BR_WHITE="${_CODE_ESCP}[97m"				# text white
+	readonly _TEXT_BR_DEFAULT="${_CODE_ESCP}[99m"			#
