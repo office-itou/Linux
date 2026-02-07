@@ -12,6 +12,13 @@
         <product_dir>/</product_dir>
       </listentry>
       <listentry t="map">
+        <alias>repo-update-oss</alias>
+        <media_url>https://download.opensuse.org/update/leap/15.6/oss/</media_url>
+        <name>Main Update Repository</name>
+        <priority t="integer">99</priority>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
         <alias>repo-backports-update</alias>
         <media_url>http://download.opensuse.org/update/leap/15.6/backports/</media_url>
         <name>Update repository of openSUSE Backports</name>
@@ -26,15 +33,6 @@
         <product_dir>/</product_dir>
       </listentry>
 <!-- leap -->
-<!--
-      <listentry t="map">
-        <alias>repo-update-oss</alias>
-        <media_url>https://download.opensuse.org/update/leap/15.6/oss/</media_url>
-        <name>Main Update Repository</name>
-        <priority t="integer">99</priority>
-        <product_dir>/</product_dir>
-      </listentry>
--->
 <!-- tumbleweed
       <listentry t="map">
         <alias>repo-oss</alias>
