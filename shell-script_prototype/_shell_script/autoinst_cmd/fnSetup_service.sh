@@ -18,7 +18,9 @@ fnSetup_service() {
 		chronyd.service \
 		avahi-daemon.service \
 		nmb.service \
-		nmbd.service
+		nmbd.service \
+		winbind.service \
+		wicked.service
 	do
 		if [ ! -e "${_DIRS_TGET:-}/lib/systemd/system/${__LIST}"     ] \
 		&& [ ! -e "${_DIRS_TGET:-}/usr/lib/systemd/system/${__LIST}" ]; then
