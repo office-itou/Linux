@@ -30,7 +30,7 @@ sudo bash -c '
 sfdisk --wipe always /dev/nvme0n1 << __EOT__
 ,,,,
 __EOT__
-mkfs.ext4 /dev/nvme0n1p1
+mkfs.ext4 -F /dev/nvme0n1p1
 '
 # --- mount filesystem --------------------------------------------------------
 sudo bash -c '
@@ -55,16 +55,19 @@ wget https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/conf/
 wget https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/conf/script/autoinst_cmd_late.sh
 wget https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/conf/script/autoinst_cmd_part.sh
 wget https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/conf/script/autoinst_cmd_run.sh
-cd
+cd /home/"${SUDO_USER:?}"
 wget https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/script/custom_cmd/mk_custom_iso.sh
 chmod +x mk_custom_iso.sh
+cd
 '
 # --- create directory --------------------------------------------------------
 sudo bash -c '
-./mk_custom_iso.sh -l create
-./mk_custom_iso.sh -T
-mkdir -p .workdirs/
-mount --bind /srv/user/private/ .workdirs/
+/home/"${SUDO_USER:?}"/mk_custom_iso.sh -l create
+/home/"${SUDO_USER:?}"/mk_custom_iso.sh -T
+'
+sudo bash -c '
+mkdir -p /home/"${SUDO_USER:?}"/.workdirs/
+mount --bind /srv/user/private/ /home/"${SUDO_USER:?}"/.workdirs/
 '
 # --- create iso file ---------------------------------------------------------
 sudo ./mk_custom_iso.sh -c a
