@@ -30,7 +30,8 @@
 	# --- user data -----------------------------------------------------------
 	declare -r    _USER_NAME="${USER:-"${LOGNAME:-"$(whoami || true)"}"}"		# execution user name
 	declare -r    _SUDO_USER="${SUDO_USER:-"${_USER_NAME}"}"					# real user name
-	declare -r    _SUDO_HOME="${SUDO_HOME:-"${HOME:-}"}"						# "         home directory
+																				# "         home directory
+	declare -r    _SUDO_HOME="${SUDO_HOME:-"$(eval echo "~${SUDO_USER:-"${USER:?}"}")"}"
 
 	# --- check the execution user --------------------------------------------
 	if [[ "${_USER_NAME:-}" != "root" ]]; then
