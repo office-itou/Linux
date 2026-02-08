@@ -644,8 +644,8 @@ fnSystem_param() {
 #   output:   stdout   : message
 #   return:            : unused
 fnNetwork_param() {
-	___DIRS="${_DIRS_TGET:-}/sys/devices"
 	_NICS_NAME="${_NICS_NAME:-"ens160"}"
+	___DIRS="${_DIRS_TGET:-}/sys/devices"
 	if [ ! -e "${___DIRS}"/. ]; then
 		fnMsgout "${_PROG_NAME:-}" "caution" "not exist: [${___DIRS}]"
 	else
@@ -670,11 +670,13 @@ fnNetwork_param() {
 			if [ -z "${_NICS_DNS4:-}" ] || [ -z "${_NICS_WGRP:-}" ]; then
 				__PATH="$(fnFind_command 'resolvectl' | sort -V | head -n 1)"
 				if [ -n "${__PATH:-}" ]; then
-					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/^Global:/             s/^.*:[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
-					_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*:[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
-					_NICS_WGRP="${_NICS_WGRP:-"$(resolvectl domain 2> /dev/null | sed -ne '/^Global:/             s/^.*:[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
-					_NICS_WGRP="${_NICS_WGRP:-"$(resolvectl domain 2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*:[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
-					_NICS_WGRP="${_NICS_WGRP%.}"
+					if resolvectl status > /dev/null 2>&1; then
+						_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/^Global:/             s/^.*:[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
+						_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*:[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
+						_NICS_WGRP="${_NICS_WGRP:-"$(resolvectl domain 2> /dev/null | sed -ne '/^Global:/             s/^.*:[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
+						_NICS_WGRP="${_NICS_WGRP:-"$(resolvectl domain 2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*:[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
+						_NICS_WGRP="${_NICS_WGRP%.}"
+					fi
 				fi
 				___PATH="${_DIRS_TGET:-}/etc/resolv.conf"
 				if [ -e "${___PATH}" ]; then
@@ -698,6 +700,14 @@ fnNetwork_param() {
 	_NICS_GATE="${_NICS_GATE:-"$(ip -4 -brief route list match default | awk '{print $3;}' | uniq)"}"
 	if [ -e "${_DIRS_TGET:-}/etc/hostname" ]; then
 		_NICS_FQDN="${_NICS_FQDN:-"$(cat "${_DIRS_TGET:-}/etc/hostname" || true)"}"
+	fi
+	__PATH="$(fnFind_command 'hostnamectl' | sort -V | head -n 1)"
+	if [ -n "${__PATH:-}" ]; then
+		_NICS_FQDN="${_NICS_FQDN:-"$(hostnamectl hostname || true)"}"
+	fi
+	if [ "${_NICS_FQDN:-}" = "localhost" ]; then
+		_NICS_HOST="$(echo "${_NICS_FQDN}." | cut -d '.' -f 1)"
+		_NICS_WGRP="$(echo "${_NICS_FQDN}." | cut -d '.' -f 2)"
 	fi
 	_NICS_FQDN="${_NICS_FQDN:-"${_DIST_NAME:+"sv-${_DIST_NAME}.workgroup"}"}"
 	_NICS_FQDN="${_NICS_FQDN:-"localhost.local"}"
