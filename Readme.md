@@ -1,16 +1,14 @@
 # **Linux**  
 
-## **Development environment**
+## Development environment
 
 * [Machine spec](./script/Readme_develop_spec_virtual-pc.md)
 
 * [Tree diagram](./script/Readme_develop_tree_diagram.md)
 
-* [nfs](./script/Readme_develop_app_nfs.md)
+* [Application settings](./script/Readme_develop_application_settings.md)
 
-* [samba](./script/Readme_develop_app_samba.md)
-
-## **Specification**
+## Specification
 
 * [Database layout](./script/Readme_db_layout.md)
 
@@ -18,7 +16,7 @@
 
 * [Variable expansions](./script/Readme_variable_expansions.md)
 
-## **Files**
+## Files
 
 * [Config files](./conf)
 
