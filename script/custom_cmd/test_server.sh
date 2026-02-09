@@ -406,8 +406,8 @@ function fnIPv6RevAddr() {
 	    awk 'gsub(":","") {
 	        for(i=length();i>1;i--)
 	            printf("%c.", substr($0,i,1))
-	            printf("%c" , substr($0,1,1))
-			}'
+	        printf("%c" , substr($0,1,1))
+		}'
 }
 
 # -----------------------------------------------------------------------------
