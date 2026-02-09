@@ -1,5 +1,7 @@
 # **tree diagram**
 
+<details><summary>sudo tree --charset C --filesfirst -n /srv/</summary>
+
 ``` bash:
 $ sudo tree --charset C --filesfirst -n /srv/
 /srv/
@@ -242,3 +244,5 @@ $ sudo tree --charset C --filesfirst -n /srv/
         |-- load
         `-- rmak
 ```
+
+</details>

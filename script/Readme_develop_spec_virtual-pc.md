@@ -1,6 +1,8 @@
 # **machine spec**
 
-## **distribution**
+## distribution
+
+<details><summary>cat /etc/os-release</summary>
 
 ``` bash
 $ cat /etc/os-release
@@ -16,23 +18,35 @@ SUPPORT_URL="https://www.debian.org/support"
 BUG_REPORT_URL="https://bugs.debian.org/"
 ```
 
-## **vmware**
+</details>
+
+## vmware
+
+<details><summary>LANG=C vmware-checkvm</summary>
 
 ``` bash:
 $ LANG=C vmware-checkvm
 VMware software version 6 (good)
 ```
 
-## **cpu**
+</details>
+
+## cpu
+
+<details><summary>lscpu -e=SOCKET,CPU,CORE,MODELNAME</summary>
 
 ``` bash:
 $ lscpu -e=SOCKET,CPU,CORE,MODELNAME
 SOCKET CPU CORE MODELNAME
      0   0    0 Intel(R) Core(TM) i7-6700 CPU @ 3.40GHz
      0   1    1 Intel(R) Core(TM) i7-6700 CPU @ 3.40GHz
-  ```
+```
 
-## **memory**
+</details>
+
+## memory
+
+<details><summary>LANG=C lsmem</summary>
 
 ``` bash:
 $ LANG=C lsmem
@@ -45,9 +59,13 @@ Total online memory:                8G
 Total offline memory:               0B
 ```
 
-## **storage**
+</details>
 
-* **sv-server**
+## storage
+
+* sv-server
+
+  <details><summary>LANG=C lsblk -o NAME,SIZE,TYPE,MOUNTPOINTS,FSSIZE,FSUSED,FSUSE%</summary>
 
   ``` bash:
   $ LANG=C lsblk -o NAME,SIZE,TYPE,MOUNTPOINTS,FSSIZE,FSUSED,FSUSE%
@@ -67,7 +85,11 @@ Total offline memory:               0B
                                        /srv
   ```
 
-* **sv-developer**
+  </details>
+
+* sv-developer
+
+  <details><summary>LANG=C lsblk -o NAME,SIZE,TYPE,MOUNTPOINTS,FSSIZE,FSUSED,FSUSE%</summary>
 
   ``` bash:
   $ LANG=C lsblk -o NAME,SIZE,TYPE,MOUNTPOINTS,FSSIZE,FSUSED,FSUSE%
@@ -81,6 +103,10 @@ Total offline memory:               0B
     `-sv--developer--vg-swap_1  3.2G lvm  [SWAP]
   ```
 
+  </details>
+
+  <details><summary>LANG=C df -h -t nfs -t fuse.vmhgfs-fuse</summary>
+
   ``` bash:
   $ LANG=C df -h -t nfs -t fuse.vmhgfs-fuse
   Filesystem            Size  Used Avail Use% Mounted on
@@ -90,3 +116,5 @@ Total offline memory:               0B
   sv-server:/srv/samba  787G  554G  193G  75% /srv/samba
   sv-server:/srv/http   787G  554G  193G  75% /srv/http
   ```
+
+  </details>

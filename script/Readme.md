@@ -1,10 +1,10 @@
 # **Script files**
 
-## **Makefile**
+## Makefile
 
 * [makefile](./makefile)
 
-## **Shell for posix**
+## Shell for posix
 
 ### Common shell for sh
 
@@ -21,7 +21,7 @@
   | [autoinst_cmd_part.sh](./autoinst_cmd/autoinst_cmd_part.sh)    | autoinstall (part) shell script                                                                           |
   | [autoinst_cmd_run.sh](./autoinst_cmd/autoinst_cmd_run.sh)      | autoinstall (run) shell script                                                                            |
 
-## **Shell for bash**
+## Shell for bash
 
 ### Common shell for bash
 

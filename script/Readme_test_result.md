@@ -1,6 +1,6 @@
 # **test result**
 
-## **media**
+<details><summary>media</summary>
 
 |     distribution     |   mini    |  netinst  |    dvd    | liveinst  |   live    |                                    memo                                    |
 | :------------------- | :-------: | :-------: | :-------: | :-------: | :-------: | :------------------------------------------------------------------------- |
@@ -32,7 +32,9 @@
 | ati2020x86           |     -     |     -     |     =     |     -     |     -     |                                                                            |
 | ati2020x64           |     -     |     -     |     =     |     -     |     -     |                                                                            |
 
-## **pxeboot (ipxe)**
+</details>
+
+<details><summary>pxeboot (ipxe)</summary>
 
 |     distribution     |   mini    |  netinst  |    dvd    | liveinst  |   live    |                                    memo                                    |
 | :------------------- | :-------: | :-------: | :-------: | :-------: | :-------: | :------------------------------------------------------------------------- |
@@ -64,7 +66,9 @@
 | ati2020x86           |     -     |     -     |     o     |     -     |     -     |                                                                            |
 | ati2020x64           |     -     |     -     |     o     |     -     |     -     |                                                                            |
 
-## **pxeboot (syslinux)**
+</details>
+
+<details><summary>pxeboot (syslinux)</summary>
 
 |     distribution     |   mini    |  netinst  |    dvd    | liveinst  |   live    |                                    memo                                    |
 | :------------------- | :-------: | :-------: | :-------: | :-------: | :-------: | :------------------------------------------------------------------------- |
@@ -95,7 +99,9 @@
 | ati2020x86           |     -     |     -     |     =     |     -     |     -     |                                                                            |
 | ati2020x64           |     -     |     -     |     =     |     -     |     -     |                                                                            |
 
-## **pxeboot (grub)**
+</details>
+
+<details><summary>pxeboot (grub)</summary>
 
 |     distribution     |   mini    |  netinst  |    dvd    | liveinst  |   live    |                                    memo                                    |
 | :------------------- | :-------: | :-------: | :-------: | :-------: | :-------: | :------------------------------------------------------------------------- |
@@ -125,3 +131,5 @@
 | winpe-x64            |     -     |     -     |     =     |     -     |     -     |                                                                            |
 | ati2020x86           |     -     |     -     |     =     |     -     |     -     |                                                                            |
 | ati2020x64           |     -     |     -     |     =     |     -     |     -     |                                                                            |
+
+</details>

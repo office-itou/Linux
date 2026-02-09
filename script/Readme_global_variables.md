@@ -1,10 +1,10 @@
 # **global variables**
 
-* ## **shell common**
+* ## shell common
 
-  * ### **for system sharing**
+  * ### for system sharing
 
-    * #### **debug parameter**
+    * #### debug parameter
 
       |    name    |                             descript                             |                        example                        |
       | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
@@ -12,7 +12,7 @@
       | _DBGS_FAIL | for detecting errors                                             | []                                                    |
       | _DBGS_PARM |                                                                  | []                                                    |
 
-    * #### **working directory (executable file information)**
+    * #### working directory (executable file information)
 
       |    name    |                             descript                             |                        example                        |
       | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
@@ -23,7 +23,7 @@
       | _DIRS_TEMP | temporary directory                                              | []                                                    |
       | _LIST_RMOV | list remove directory / file                                     | []                                                    |
 
-    * #### **list data**
+    * #### list data
 
       |    name    |                             descript                             |                        example                        |
       | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
@@ -32,7 +32,7 @@
       | _LIST_MDIA | media information                                                | []                                                    |
       | _LIST_DSTP | debstrap information                                             | []                                                    |
 
-    * #### **command line parameter**
+    * #### command line parameter
 
       |    name    |                             descript                             |                        example                        |
       | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
@@ -53,14 +53,14 @@
       | _FILE_ISOS | iso file name                                                    | []                                                    |
       | _FILE_SEED | preseed file name                                                | []                                                    |
 
-    * #### **target**
+    * #### target
 
       |    name    |                             descript                             |                        example                        |
       | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
       | _TGET_VIRT | virtualization                                                   | [vmware]                                              |
       | _TGET_CNTR | is container (empty: none, else: container)                      | [],[true]                                             |
 
-    * #### **set system parameter**
+    * #### set system parameter
 
       |    name    |                             descript                             |                        example                        |
       | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
@@ -74,7 +74,7 @@
       | _COMD_BBOX | busybox (empty: inactive, else: active )                         | [],[true]                                             |
       | _OPTN_COPY | copy option                                                      | [--preserve=timestamps]                               |
 
-    * #### **network parameter**
+    * #### network parameter
 
       |    name    |                             descript                             |                        example                        |
       | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
@@ -99,7 +99,7 @@
       | _LINK_LADR | LINK address low                                                 | [0000:0000:0000:0001]                                 |
       | _LINK_RADR | LINK reverse addr                                                | [1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.e.f] |
 
-    * #### **firewalld**
+    * #### firewalld
 
       |    name    |                             descript                             |                        example                        |
       | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
@@ -107,7 +107,7 @@
       | _FWAL_NAME | firewalld service name                                           | [dhcp dhcpv6 dhcpv6-client dns http https mdns nfs proxy-dhcp samba samba-client ssh tftp] |
       | _FWAL_PORT | firewalld port                                                   | [0-65535/tcp 0-65535/udp]                             |
 
-    * #### **samba parameter**
+    * #### samba parameter
 
       |    name    |                             descript                             |                        example                        |
       | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
@@ -117,9 +117,9 @@
       | _SAMB_NSSW | nsswitch.conf                                                    | [wins mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns mdns4 mdns6] |
       | _SHEL_NLIN | login shell (disallow system login to samba user)                | [/usr/sbin/nologin]                                   |
 
-  * ### **for server environments (common.cfg)**
+  * ### for server environments (common.cfg)
 
-    * #### **shared directory parameter**
+    * #### shared directory parameter
 
       |    name    |                             descript                             |                        example                        |
       | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
@@ -130,7 +130,7 @@
       | _DIRS_TFTP | tftp contents                                                    | [/srv/tftp]                                           |
       | _DIRS_USER | user file                                                        | [/srv/user]                                           |
 
-    * #### **shared of user file**
+    * #### shared of user file
 
       |    name    |                             descript                             |                        example                        |
       | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
@@ -150,7 +150,7 @@
       | _DIRS_CTNR | container file                                                   | [/srv/user/share/containers]                          |
       | _DIRS_CHRT | container file (chroot)                                          | [/srv/user/share/chroot]                              |
 
-    * #### **shell script**
+    * #### shell script
 
       |    name    |                             descript                             |                        example                        |
       | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
@@ -163,7 +163,7 @@
       | _PATH_PART | to run after partition                                           | [/srv/user/share/conf/script/autoinst_cmd_part.sh]    |
       | _PATH_RUNS | to run preseed/run                                               | [/srv/user/share/conf/script/autoinst_cmd_run.sh]     |
 
-    * #### **common data file (prefer non-empty current file)**
+    * #### common data file (prefer non-empty current file)
 
       |    name    |                             descript                             |                        example                        |
       | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
@@ -176,7 +176,7 @@
       | _PATH_MDIA | media data file                                                  | [/srv/user/share/conf/_data/media.dat]                |
       | _PATH_DSTP | debstrap data file                                               | [/srv/user/share/conf/_data/debstrap.dat]             |
 
-    * #### **pre-configuration file templates**
+    * #### pre-configuration file templates
 
       |    name    |                             descript                             |                        example                        |
       | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
@@ -193,7 +193,7 @@
       | _PATH_YAST | for opensuse                                                     | [/srv/user/share/conf/_template/yast_opensuse.xml]    |
       | _PATH_AGMA | for opensuse                                                     | [/srv/user/share/conf/_template/agama_opensuse.json]  |
 
-    * #### **tftp / web server network parameter**
+    * #### tftp / web server network parameter
 
       |    name    |                             descript                             |                        example                        |
       | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
@@ -208,9 +208,9 @@
       | _SRVR_NSVR | IPv4 nameserver                                                  | [192.168.1.254]                                       |
       | _SRVR_UADR | IPv4 address up                                                  | [192.168.1]                                           |
 
-  * ### **for creations (common.cfg)**
+  * ### for creations (common.cfg)
 
-    * #### **menu parameter**
+    * #### menu parameter
 
       |    name    |                             descript                             |                        example                        |
       | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
@@ -220,24 +220,24 @@
       | _MENU_MODE | screen mode (vga=nnn)                                            | [864]                                                 |
       | _MENU_SPLS | splash file                                                      | [splash.png]                                          |
 
-  * ### **for mkosi (common.cfg)**
+  * ### for mkosi (common.cfg)
 
-    * #### **mkosi output image format type**
+    * #### mkosi output image format type
 
       |    name    |                             descript                             |                        example                        |
       | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
       | _MKOS_TGET | format type (directory, tar, cpio, disk, uki, esp, oci, sysext, confext, portable, addon, none) | [directory]            |
 
-    * #### **live media parameter**
+    * #### live media parameter
 
       |    name    |                             descript                             |                        example                        |
       | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
       | _LIVE_DIRS | live / LiveOS                                                    | [LiveOS]                                              |
       | _LIVE_SQFS | filesystem.squashfs / squashfs.img                               | [squashfs.img]                                        |
 
-  * ### **other variables**
+  * ### other variables
 
-    * #### **working directory (shared use)**
+    * #### working directory (shared use)
 
       |    name    |                             descript                             |                        example                        |
       | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
@@ -249,9 +249,9 @@
       | _DIRS_SAMP | sample file directory                                            | []                                                    |
       | _DIRS_LOGS | log file directory                                               | []                                                    |
 
-* ## **for installation setup**
+* ## for installation setup
 
-  * ### **network parameter (shared use)**
+  * ### network parameter (shared use)
 
     |    name    |                             descript                             |                        example                        |
     | :--------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
@@ -269,9 +269,9 @@
     | _NTPS_ADDR | ntp server address   (dual use)                                  | [ntp.nict.jp]                                         |
     | _NTPS_IPV4 | ntp server ipv4 addr (dual use)                                  | [61.205.120.130]                                      |
 
-* ## **constant definitions**
+* ## constant definitions
 
-  * ### **color code**
+  * ### color code
 
     |           name           |                             descript                             |                        example                        |
     | :----------------------- | :--------------------------------------------------------------- | :---------------------------------------------------- |

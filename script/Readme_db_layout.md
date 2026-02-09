@@ -1,6 +1,6 @@
 # **data base layout**
 
-* ## **distribution information (distribution.dat)**
+<details><summary>distribution information (distribution.dat)</summary>
 
   ``` bash:
   #    0: version     ( 23)   TEXT            NOT NULL    
@@ -18,7 +18,9 @@
   #   12: create_flag ( 11)   TEXT                        
   ```
 
-* ## **media information (media.dat)**
+</details>
+
+<details><summary>media information (media.dat)</summary>
 
   ``` bash:
   #    0: type        ( 11)   TEXT            NOT NULL    media type
@@ -50,3 +52,5 @@
   #   26: lnk_path    ( 87)   TEXT                        symlink   directory or file path
   #   27: create_flag ( 11)   TEXT                        create flag
   ```
+
+</details>

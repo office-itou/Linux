@@ -1,6 +1,6 @@
 # **[mk_custom_iso.sh](./custom_cmd/mk_custom_iso.sh)**
 
-## **help**
+<details><summary>help</summary>
 
 ``` bash:
 $ sudo ./mk_custom_iso.sh
@@ -18,14 +18,18 @@ usage: [sudo] ./mk_custom_iso.sh (options) [command]
     -O|--debugout|--dbgout  : debug output without code
 ```
 
-## **making directories and symbolic links**
+</details>
+
+<details><summary>making directories and symbolic links</summary>
 
 ``` bash:
 # Recreate all directories
 $ sudo ./mk_custom_iso.sh -l create
 ```
 
-## **making preconfiguration files**
+</details>
+
+<details><summary>making preconfiguration files</summary>
 
 ``` bash:
 # Recreate all files: [a|all]
@@ -34,7 +38,9 @@ $ sudo ./mk_custom_iso.sh -c a
 $ sudo ./mk_custom_iso.sh -c preseed kickstart
 ```
 
-## **making pxeboot menu**
+</details>
+
+<details><summary>making pxeboot menu</summary>
 
 ``` bash:
 # Recreate all files: [a|all]
@@ -43,7 +49,9 @@ $ sudo ./mk_custom_iso.sh -p a
 $ sudo ./mk_custom_iso.sh -p mini:a netinst:{2..4} dvd:2
 ```
 
-## **making iso files**
+</details>
+
+<details><summary>making iso files</summary>
 
 ``` bash:
 # Recreate all files: [a|all]
@@ -53,3 +61,5 @@ $ sudo ./mk_custom_iso.sh -m mini:a netinst:{2..4} dvd:2
 # Waiting for number entry (If you do not specify anything after the colon)
 $ sudo ./mk_custom_iso.sh -m netinst:
 ```
+
+</details>
