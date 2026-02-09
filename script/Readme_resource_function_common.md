@@ -2,7 +2,7 @@
 
 <details><summary>for GNU Bourne Again SHell</summary>
 
-## [fnBasename.sh](https://github.com/office-itou/Linux/blob/master/script/_common_bash/fnBasename.sh)
+## [fnBasename.sh](./_common_bash/fnBasename.sh)
 
 <details><summary>dirname</summary>
 
@@ -90,7 +90,7 @@ function fnFilename() {
 
 </details>
 
-## [fnColorcode.sh](https://github.com/office-itou/Linux/blob/master/script/_common_bash/fnColorcode.sh)
+## [fnColorcode.sh](./_common_bash/fnColorcode.sh)
 
 <details><summary>color code</summary>
 
@@ -150,7 +150,7 @@ function fnFilename() {
 
 </details>
 
-## [fnGetFileinfo.sh](https://github.com/office-itou/Linux/blob/master/script/_common_bash/fnGetFileinfo.sh)
+## [fnGetFileinfo.sh](./_common_bash/fnGetFileinfo.sh)
 
 <details><summary>get file information data</summary>
 
@@ -180,7 +180,7 @@ function fnGetFileinfo() {
 
 </details>
 
-## [fnGetWebinfo.sh](https://github.com/office-itou/Linux/blob/master/script/_common_bash/fnGetWebinfo.sh)
+## [fnGetWebinfo.sh](./_common_bash/fnGetWebinfo.sh)
 
 <details><summary>get web information data</summary>
 
@@ -377,7 +377,7 @@ function fnGetWebinfo() {
 
 </details>
 
-## [fnIPv4Netmask.sh](https://github.com/office-itou/Linux/blob/master/script/_common_bash/fnIPv4Netmask.sh)
+## [fnIPv4Netmask.sh](./_common_bash/fnIPv4Netmask.sh)
 
 <details><summary>IPv4 netmask conversion</summary>
 
@@ -421,7 +421,7 @@ function fnIPv4Netmask() {
 
 </details>
 
-## [fnIPv6FullAddr.sh](https://github.com/office-itou/Linux/blob/master/script/_common_bash/fnIPv6FullAddr.sh)
+## [fnIPv6FullAddr.sh](./_common_bash/fnIPv6FullAddr.sh)
 
 <details><summary>IPv6 full address</summary>
 
@@ -471,7 +471,7 @@ function fnIPv6FullAddr() {
 
 </details>
 
-## [fnIPv6RevAddr.sh](https://github.com/office-itou/Linux/blob/master/script/_common_bash/fnIPv6RevAddr.sh)
+## [fnIPv6RevAddr.sh](./_common_bash/fnIPv6RevAddr.sh)
 
 <details><summary>IPv6 reverse address</summary>
 
@@ -495,7 +495,7 @@ function fnIPv6RevAddr() {
 
 </details>
 
-## [fnMsgout.sh](https://github.com/office-itou/Linux/blob/master/script/_common_bash/fnMsgout.sh)
+## [fnMsgout.sh](./_common_bash/fnMsgout.sh)
 
 <details><summary>message output</summary>
 
@@ -536,7 +536,7 @@ function fnMsgout() {
 
 </details>
 
-## [fnString.sh](https://github.com/office-itou/Linux/blob/master/script/_common_bash/fnString.sh)
+## [fnString.sh](./_common_bash/fnString.sh)
 
 <details><summary>string output</summary>
 
@@ -556,7 +556,7 @@ function fnString() {
 
 </details>
 
-## [fnStrmsg.sh](https://github.com/office-itou/Linux/blob/master/script/_common_bash/fnStrmsg.sh)
+## [fnStrmsg.sh](./_common_bash/fnStrmsg.sh)
 
 <details><summary>string output with message</summary>
 
@@ -584,7 +584,7 @@ function fnStrmsg() {
 
 </details>
 
-## [fnTargetsys.sh](https://github.com/office-itou/Linux/blob/master/script/_common_bash/fnTargetsys.sh)
+## [fnTargetsys.sh](./_common_bash/fnTargetsys.sh)
 
 <details><summary>target system state</summary>
 
@@ -615,7 +615,7 @@ function fnTargetsys() {
 
 </details>
 
-## [fnTrim.sh](https://github.com/office-itou/Linux/blob/master/script/_common_bash/fnTrim.sh)
+## [fnTrim.sh](./_common_bash/fnTrim.sh)
 
 <details><summary>ltrim</summary>
 
@@ -676,7 +676,7 @@ function fnTrim() {
 
 <details><summary>for POSIPOSIX-compliant shell</summary>
 
-## [fnColorcode.sh](https://github.com/office-itou/Linux/blob/master/script/_common_sh/fnColorcode.sh)
+## [fnColorcode.sh](./_common_sh/fnColorcode.sh)
 
 <details><summary>color code</summary>
 
@@ -735,7 +735,7 @@ function fnTrim() {
 
 </details>
 
-## [fnIPv4Netmask_gawk.sh](https://github.com/office-itou/Linux/blob/master/script/_common_sh/fnIPv4Netmask_gawk.sh)
+## [fnIPv4Netmask_gawk.sh](./_common_sh/fnIPv4Netmask_gawk.sh)
 
 <details><summary>IPv4 netmask conversion</summary>
 
@@ -779,7 +779,7 @@ fnIPv4Netmask_gawk() {
 
 </details>
 
-## [fnIPv4Netmask_mawk.sh](https://github.com/office-itou/Linux/blob/master/script/_common_sh/fnIPv4Netmask_mawk.sh)
+## [fnIPv4Netmask_mawk.sh](./_common_sh/fnIPv4Netmask_mawk.sh)
 
 <details><summary>IPv4 netmask conversion</summary>
 
@@ -879,7 +879,7 @@ fnIPv4Netmask_mawk() {
 
 </details>
 
-## [fnIPv4Netmask.sh](https://github.com/office-itou/Linux/blob/master/script/_common_sh/fnIPv4Netmask.sh)
+## [fnIPv4Netmask.sh](./_common_sh/fnIPv4Netmask.sh)
 
 <details><summary>IPv4 netmask conversion</summary>
 
@@ -907,7 +907,7 @@ fnIPv4Netmask() {
 
 </details>
 
-## [fnIPv6FullAddr.sh](https://github.com/office-itou/Linux/blob/master/script/_common_sh/fnIPv6FullAddr.sh)
+## [fnIPv6FullAddr.sh](./_common_sh/fnIPv6FullAddr.sh)
 
 <details><summary>IPv6 full address</summary>
 
@@ -957,7 +957,7 @@ fnIPv6FullAddr() {
 
 </details>
 
-## [fnIPv6RevAddr.sh](https://github.com/office-itou/Linux/blob/master/script/_common_sh/fnIPv6RevAddr.sh)
+## [fnIPv6RevAddr.sh](./_common_sh/fnIPv6RevAddr.sh)
 
 <details><summary>IPv6 reverse address</summary>
 
@@ -981,7 +981,7 @@ fnIPv6RevAddr() {
 
 </details>
 
-## [fnMsgout.sh](https://github.com/office-itou/Linux/blob/master/script/_common_sh/fnMsgout.sh)
+## [fnMsgout.sh](./_common_sh/fnMsgout.sh)
 
 <details><summary>message output</summary>
 
@@ -1022,7 +1022,7 @@ fnMsgout() {
 
 </details>
 
-## [fnString.sh](https://github.com/office-itou/Linux/blob/master/script/_common_sh/fnString.sh)
+## [fnString.sh](./_common_sh/fnString.sh)
 
 <details><summary>string output</summary>
 
@@ -1042,7 +1042,7 @@ fnString() {
 
 </details>
 
-## [fnStrmsg.sh](https://github.com/office-itou/Linux/blob/master/script/_common_sh/fnStrmsg.sh)
+## [fnStrmsg.sh](./_common_sh/fnStrmsg.sh)
 
 <details><summary>string output with message</summary>
 
@@ -1068,7 +1068,7 @@ fnStrmsg() {
 
 </details>
 
-## [fnTargetsys.sh](https://github.com/office-itou/Linux/blob/master/script/_common_sh/fnTargetsys.sh)
+## [fnTargetsys.sh](./_common_sh/fnTargetsys.sh)
 
 <details><summary>target system state</summary>
 
@@ -1099,7 +1099,7 @@ fnTargetsys() {
 
 </details>
 
-## [fnTrim.sh](https://github.com/office-itou/Linux/blob/master/script/_common_sh/fnTrim.sh)
+## [fnTrim.sh](./_common_sh/fnTrim.sh)
 
 <details><summary>ltrim</summary>
 
