@@ -10,11 +10,11 @@
 
 ## Specification
 
-* [Database layout](./script/Readme_db_layout.md)
+* [Database layout](./script/Readme_resource_db_layout.md)
 
-* [Global variables](./script/Readme_global_variables.md)
+* [Global variables](./script/Readme_resource_global_variables.md)
 
-* [Variable expansions](./script/Readme_variable_expansions.md)
+* [Variable expansions](./script/Readme_resource_variable_expansions.md)
 
 ## Files
 
