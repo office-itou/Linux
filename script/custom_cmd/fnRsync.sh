@@ -35,8 +35,8 @@ function fnRsync() {
 	else
 		printf "\033[m%-8s: %s\033[m\n" "rsync" "${__TGET_ISOS##*/}"
 		nice -n "${_NICE_VALU:-19}" rsync "${_OPTN_RSYC[@]}" "${__TEMP}/." "${__TGET_DEST}/" 2>/dev/null || true
+		chmod -R +r,u+w "${__TGET_DEST}/" 2>/dev/null || true
 	fi
 	umount "${__TEMP}"
-	chmod -R +r,u+w "${__TGET_DEST}/" 2>/dev/null || true
 	rm -rf "${__TEMP:?}"
 }
