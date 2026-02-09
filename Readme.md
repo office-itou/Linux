@@ -12,9 +12,11 @@
 
 * [Database layout](./script/Readme_resource_db_layout.md)
 
-* [Global variables](./script/Readme_resource_global_variables.md)
+* [Global variables](./script/Readme_resource_variable_global.md)
 
 * [Variable expansions](./script/Readme_resource_variable_expansions.md)
+
+* [Common functions](./script/Readme_resource_function_common.md)
 
 ## Files
 
