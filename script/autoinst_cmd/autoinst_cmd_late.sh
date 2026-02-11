@@ -3489,6 +3489,7 @@ fnSetup_grub_menu() {
 			__DEFS="$(echo "${__DEFS:-}" | sed -e 's%/%\\/%g')"
 			__BOPT="$(echo "${__BOPT:-}" | sed -e 's%/%\\/%g')"
 			sed -i "${__CONF}" \
+			    -e '/^#*GRUB_TIMEOUT_STYLE.*$/          {s/^#//; h; s/^/#/; p; g; s/=.*$/="menu"/}' \
 			    -e '/^#*GRUB_RECORDFAIL_TIMEOUT=.*$/    {s/^#//; h; s/^/#/; p; g; s/[0-9]\+$/10/}' \
 			    -e '/^#*GRUB_TIMEOUT=.*$/               {s/^#//; h; s/^/#/; p; g; s/[0-9]\+$/3/ }' \
 			    -e '/^#*GRUB_GFXMODE=.*$/               {s/^#//; h; s/^/#/; p; g; s/=.*$/="1920x1080,800x600,auto"/}' \
