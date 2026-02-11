@@ -208,30 +208,30 @@ autoinstall:
   - libnss-winbind                      # Samba nameservice integration plugins
   - open-vm-tools                       # Open VMware Tools for virtual machines hosted on VMware (CLI)
   - open-vm-tools-desktop               # Open VMware Tools for virtual machines hosted on VMware (GUI)
-# - ubuntu-desktop                      # Ubuntu desktop system
-# - ubuntu-desktop-minimal              # Ubuntu desktop minimal system
-# - ubuntu-gnome-desktop                # The Ubuntu desktop system (transitional package)
-# - language-pack-ja                    # translation updates for language Japanese
-# - language-pack-gnome-ja              # GNOME translation updates for language Japanese
-# - fonts-noto                          # metapackage to pull in all Noto fonts
-# - im-config                           # Input method configuration framework
-# - zenity                              # Display graphical dialog boxes from shell scripts
-# - ibus-mozc                           # Mozc engine for IBus - Client of the Mozc input method
-# - fcitx5-mozc                         # Mozc engine for fcitx5 - Client of the Mozc input method
-# - mozc-utils-gui                      # GUI utilities of the Mozc input method
-# - ibus-anthy                          # anthy engine for IBus
-# - fcitx5-anthy                        # Fcitx5 wrapper for Anthy IM engine
-# - kasumi                              # Simple dictionary utility for Anthy
-# - gnome-shell-extensions              # Extensions to extend functionality of GNOME Shell
-# - libreoffice-l10n-ja                 # office productivity suite -- Japanese language package
-# - libreoffice-help-ja                 # office productivity suite -- Japanese help
-# - rhythmbox                           # music player and organizer for GNOME
-# - libavcodec-extra                    # FFmpeg library with extra codecs (metapackage)
-# - gstreamer1.0-libav                  # ffmpeg plugin for GStreamer
-# - pipewire-audio-client-libraries     # transitional package for pipewire-alsa and pipewire-jack
-# - bluetooth                           # Bluetooth support (metapackage)
-# - bluez                               # Bluetooth tools and daemons
-# - bluez-firmware                      # Firmware for Bluetooth devices
+  - ubuntu-desktop                      # Ubuntu desktop system
+  - ubuntu-desktop-minimal              # Ubuntu desktop minimal system
+  - ubuntu-gnome-desktop                # The Ubuntu desktop system (transitional package)
+  - language-pack-ja                    # translation updates for language Japanese
+  - language-pack-gnome-ja              # GNOME translation updates for language Japanese
+  - fonts-noto                          # metapackage to pull in all Noto fonts
+  - im-config                           # Input method configuration framework
+  - zenity                              # Display graphical dialog boxes from shell scripts
+  - ibus-mozc                           # Mozc engine for IBus - Client of the Mozc input method
+  - fcitx5-mozc                         # Mozc engine for fcitx5 - Client of the Mozc input method
+  - mozc-utils-gui                      # GUI utilities of the Mozc input method
+  - ibus-anthy                          # anthy engine for IBus
+  - fcitx5-anthy                        # Fcitx5 wrapper for Anthy IM engine
+  - kasumi                              # Simple dictionary utility for Anthy
+  - gnome-shell-extensions              # Extensions to extend functionality of GNOME Shell
+  - libreoffice-l10n-ja                 # office productivity suite -- Japanese language package
+  - libreoffice-help-ja                 # office productivity suite -- Japanese help
+  - rhythmbox                           # music player and organizer for GNOME
+  - libavcodec-extra                    # FFmpeg library with extra codecs (metapackage)
+  - gstreamer1.0-libav                  # ffmpeg plugin for GStreamer
+  - pipewire-audio-client-libraries     # transitional package for pipewire-alsa and pipewire-jack
+  - bluetooth                           # Bluetooth support (metapackage)
+  - bluez                               # Bluetooth tools and daemons
+  - bluez-firmware                      # Firmware for Bluetooth devices
 # -----------------------------------------------------------------------------
 # - firefox                             # Installs Firefox snap and provides some system integration
 # - firefox-locale-ja                   # Transitional package - firefox-locale-ja -> firefox snap

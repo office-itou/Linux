@@ -195,8 +195,6 @@ autoinstall:
   - tree                                # displays an indented directory tree, in color
   - shellcheck                          # lint tool for shell scripts
   - tasksel                             # tool for selecting tasks for installation on Debian systems
-  - snapd                               # Daemon and tooling that enable snap packages
-  - snap-confine                        # Transitional package for snapd
   - clamav                              # anti-virus utility for Unix - command-line interface
   - openssh-server                      # secure shell (SSH) server, for secure access from remote machines
   - systemd-resolved                    # systemd DNS resolver
@@ -221,6 +219,9 @@ autoinstall:
 # - ibus-mozc                           # Mozc engine for IBus - Client of the Mozc input method
 # - fcitx5-mozc                         # Mozc engine for fcitx5 - Client of the Mozc input method
 # - mozc-utils-gui                      # GUI utilities of the Mozc input method
+# - ibus-anthy                          # anthy engine for IBus
+# - fcitx5-anthy                        # Fcitx5 wrapper for Anthy IM engine
+# - kasumi                              # Simple dictionary utility for Anthy
 # - gnome-shell-extensions              # Extensions to extend functionality of GNOME Shell
 # - libreoffice-l10n-ja                 # office productivity suite -- Japanese language package
 # - libreoffice-help-ja                 # office productivity suite -- Japanese help
@@ -238,6 +239,10 @@ autoinstall:
 # - thunderbird-locale-ja               # Transitional package - thunderbird-locale-ja -> thunderbird snap
 # - chromium-browser                    # Transitional package - chromium-browser -> chromium snap
 # - chromium-browser-l10n               # Transitional package - chromium-browser-l10n -> chromium snap
+# -----------------------------------------------------------------------------
+# - canna                               # input system for Japanese - server and dictionary
+# - canna-shion                         # supporting dictionaries for Canna
+# - canna-utils                         # input system for Japanese - utilities
 # -----------------------------------------------------------------------------
 # - usrmerge
 # - tftpd-hpa
