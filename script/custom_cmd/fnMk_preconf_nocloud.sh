@@ -33,10 +33,8 @@ function fnMk_preconf_nocloud() {
 		*_desktop/*)			# 26.04 -
 			sed -i "${__TGET_PATH}"                                            \
 			    -e '/^[ \t]*packages:$/,/\([[:graph:]]\+:$\|^#[ \t]*--\+\)/ {' \
-			    -e '/^#[ \t]*--\+/!                s/^#/ /g                  ' \
-			    -e '/^[ \t]*-[ \t]*ibus-mozc/      s/^ /#/                   ' \
-			    -e '/^[ \t]*-[ \t]*fcitx5-mozc/    s/^ /#/                   ' \
-			    -e '/^[ \t]*-[ \t]*mozc-utils-gui/ s/^ /#/                  }' 
+			    -e '/^#[ \t]*--\+/!        s/^#/ /g                          ' \
+			    -e '/^[ \t]*-[ \t]*.*mozc/ s/^ /#/                          }' 
 			;;
 		*)	;;
 	esac
