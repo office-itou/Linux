@@ -1,7 +1,7 @@
 # shellcheck disable=SC2148
 
 # -----------------------------------------------------------------------------
-# descript: 
+# descript: apparmor
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
