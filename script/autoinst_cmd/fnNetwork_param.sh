@@ -35,8 +35,7 @@ fnNetwork_param() {
 				_NICS_AUTO="dhcp"
 			fi
 			if [ -z "${_NICS_DNS4:-}" ] || [ -z "${_NICS_WGRP:-}" ]; then
-				__PATH="$(fnFind_command 'resolvectl' | sort -V | head -n 1)"
-				if [ -n "${__PATH:-}" ]; then
+				if command -v resolvectl > /dev/null 2>&1; then
 					if resolvectl status > /dev/null 2>&1; then
 						_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/^Global:/             s/^.*:[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
 						_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*:[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
@@ -68,8 +67,7 @@ fnNetwork_param() {
 	if [ -e "${_DIRS_TGET:-}/etc/hostname" ]; then
 		_NICS_FQDN="${_NICS_FQDN:-"$(cat "${_DIRS_TGET:-}/etc/hostname" || true)"}"
 	fi
-	__PATH="$(fnFind_command 'hostnamectl' | sort -V | head -n 1)"
-	if [ -n "${__PATH:-}" ]; then
+	if command -v hostnamectl > /dev/null 2>&1; then
 		_NICS_FQDN="${_NICS_FQDN:-"$(hostnamectl hostname || true)"}"
 	fi
 	if [ "${_NICS_FQDN:-}" = "localhost" ]; then
