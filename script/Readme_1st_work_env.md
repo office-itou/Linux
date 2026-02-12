@@ -10,7 +10,7 @@
 sudo bash -c '
 apt-get update 
 apt-get install openssh-server
-apt-get install gawk tree gzip zstd bzip2 lzop xorriso
+apt-get install gawk tree gzip zstd bzip2 lzop xorriso xxd
 '
 # for rhel
 #sudo dnf install gawk tree gzip zstd bzip2 lzop xorriso    
