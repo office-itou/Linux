@@ -214,24 +214,42 @@ autoinstall:
 # - language-pack-ja                    # translation updates for language Japanese
 # - language-pack-gnome-ja              # GNOME translation updates for language Japanese
 # - fonts-noto                          # metapackage to pull in all Noto fonts
+# - fonts-noto-cjk                      # "No Tofu" font families with large Unicode coverage (CJK regular and bold)
+# - fonts-noto-cjk-extra                # "No Tofu" font families with large Unicode coverage (CJK all weight)
+# - fonts-noto-extra                    # "No Tofu" font families with large Unicode coverage (extra)
+# - fonts-noto-color-emoji              # color emoji font from Google
+# - fonts-noto-mono                     # "No Tofu" monospaced font family with large Unicode coverage
+# - fonts-noto-ui-core                  # "No Tofu" font families with large Unicode coverage (UI core)
+# - fonts-noto-ui-extra                 # "No Tofu" font families with large Unicode coverage (UI extra)
+# - fonts-noto-unhinted                 # "No Tofu" font families with large Unicode coverage (unhinted)
+# - gnome-initial-setup                 # Initial GNOME system setup helper
+# - gnome-packagekit                    # Graphical distribution neutral package manager for GNOME
+# - gnome-tweaks                        # tool to adjust advanced configuration settings for GNOME
+# - gnome-shell-extensions              # Extensions to extend functionality of GNOME Shell
+# - gnome-shell-extension-manager       # Utility for managing GNOME Shell Extensions
 # - im-config                           # Input method configuration framework
+# - x11-common                          # X Window System (X.Org) infrastructure
 # - zenity                              # Display graphical dialog boxes from shell scripts
-# - ibus-mozc                           # Mozc engine for IBus - Client of the Mozc input method
+# - fcitx5                              # Next generation of Fcitx Input Method Framework
+# - fcitx5-anthy                        # Fcitx5 wrapper for Anthy IM engine
 # - fcitx5-mozc                         # Mozc engine for fcitx5 - Client of the Mozc input method
 # - mozc-utils-gui                      # GUI utilities of the Mozc input method
-# - ibus-anthy                          # anthy engine for IBus
-# - fcitx5-anthy                        # Fcitx5 wrapper for Anthy IM engine
-# - kasumi                              # Simple dictionary utility for Anthy
-# - gnome-shell-extensions              # Extensions to extend functionality of GNOME Shell
 # - libreoffice-l10n-ja                 # office productivity suite -- Japanese language package
 # - libreoffice-help-ja                 # office productivity suite -- Japanese help
 # - rhythmbox                           # music player and organizer for GNOME
 # - libavcodec-extra                    # FFmpeg library with extra codecs (metapackage)
-# - gstreamer1.0-libav                  # ffmpeg plugin for GStreamer
 # - pipewire-audio-client-libraries     # transitional package for pipewire-alsa and pipewire-jack
 # - bluetooth                           # Bluetooth support (metapackage)
 # - bluez                               # Bluetooth tools and daemons
 # - bluez-firmware                      # Firmware for Bluetooth devices
+# - blueman                             # Graphical bluetooth manager
+# - printer-driver-escpr                # printer driver for Epson Inkjet that use ESC/P-R
+# -----------------------------------------------------------------------------
+# - ibus-mozc                           # Mozc engine for IBus - Client of the Mozc input method
+# - ibus-anthy                          # anthy engine for IBus
+# - uim-mozc                            # Mozc engine for uim - Client of the Mozc input method
+# - uim-anthy                           # Universal Input Method - Anthy support metapackage
+# - kasumi                              # Simple dictionary utility for Anthy
 # -----------------------------------------------------------------------------
 # - firefox                             # Installs Firefox snap and provides some system integration
 # - firefox-locale-ja                   # Transitional package - firefox-locale-ja -> firefox snap
@@ -246,11 +264,6 @@ autoinstall:
 # -----------------------------------------------------------------------------
 # - usrmerge
 # - tftpd-hpa
-# -----------------------------------------------------------------------------
-# - kasumi
-# - ibus-anthy
-# - ibus-mozc
-# - mozc-utils-gui
 # -----------------------------------------------------------------------------
 # - openvswitch-switch
 # -----------------------------------------------------------------------------
