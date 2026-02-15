@@ -1,14 +1,14 @@
 # shellcheck disable=SC2148
 
 # -----------------------------------------------------------------------------
-# descript: skeleton
+# descript: skeleton for user environment
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
 #   g-var :            : unused
 # shellcheck disable=SC2148,SC2317,SC2329
-fnSetup_skel() {
-	__FUNC_NAME="fnSetup_skel"
+fnSetup_skel_user() {
+	__FUNC_NAME="fnSetup_skel_user"
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- .bashrc -------------------------------------------------------------
@@ -84,29 +84,6 @@ _EOT_
 		fnDbgdump "${__PATH}"				# debugout
 		fnFile_backup "${__PATH}" "init"	# backup initial file
 	fi
-	# --- distribute to existing users ----------------------------------------
-	for __DIRS in "${_DIRS_TGET:-}"/root \
-	              "${_DIRS_TGET:-}"/home/*
-	do
-		if [ ! -e "${__DIRS}/." ]; then
-			continue
-		fi
-		for __FILE in "${_DIRS_TGET:-}/etc/skel/.bashrc"       \
-		              "${_DIRS_TGET:-}/etc/skel/.bash_history" \
-		              "${_DIRS_TGET:-}/etc/skel/.vimrc"        \
-		              "${_DIRS_TGET:-}/etc/skel/.curlrc"
-		do
-			if [ ! -e "${__FILE}" ]; then
-				continue
-			fi
-			__PATH="${__DIRS}/${__FILE#*/etc/skel/}"
-			mkdir -p "${__PATH%/*}"
-			cp --preserve=timestamps "${__FILE}" "${__PATH}"
-			chown "${__DIRS##*/}": "${__PATH}"
-			fnDbgdump "${__PATH}"				# debugout
-			fnFile_backup "${__PATH}" "init"	# backup initial file
-		done
-	done
 	unset __PATH __CONF __DIRS
 
 	# --- complete ------------------------------------------------------------

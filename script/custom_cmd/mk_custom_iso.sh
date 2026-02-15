@@ -1442,10 +1442,8 @@ function fnMk_preconf_nocloud() {
 		*_desktop/*)			# 26.04 -
 			sed -i "${__TGET_PATH}"                                            \
 			    -e '/^[ \t]*packages:$/,/\([[:graph:]]\+:$\|^#[ \t]*--\+\)/ {' \
-			    -e '/^#[ \t]*--\+/!                s/^#/ /g                  ' \
-			    -e '/^[ \t]*-[ \t]*ibus-mozc/      s/^ /#/                   ' \
-			    -e '/^[ \t]*-[ \t]*fcitx5-mozc/    s/^ /#/                   ' \
-			    -e '/^[ \t]*-[ \t]*mozc-utils-gui/ s/^ /#/                  }' 
+			    -e '/^#[ \t]*--\+/!        s/^#/ /g                          ' \
+			    -e '/^[ \t]*-[ \t]*.*mozc/ s/^ /#/                          }' 
 			;;
 		*)	;;
 	esac
@@ -3854,6 +3852,16 @@ function fnMk_isofile_grub() {
 		if [[ -n "${__PATH:-}" ]]; then
 			__WORK="$(file "${__PATH:-}" | awk '{sub("[^0-9]+","",$8); print $8;}')"
 			[[ "${__WORK:-"0"}" -ge 8 ]] && __SPLS="${__PATH}"
+		else
+			fnMsgout "${_PROG_NAME:-}" "info" "create file: ${_MENU_SPLS:?}"
+			__SPLS="${__TGET_DIRS}/isolinux/${_MENU_SPLS}"
+			mkdir -p "${__SPLS%/*}"
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | xxd -p -r | gzip -d -k > "${__SPLS:?}"
+				1f8b0808462b8d69000373706c6173682e706e6700eb0cf073e7e592e262
+				6060e0f5f47009626060566060608ae060028a888a88aa3330b0767bba38
+				8654dc7a7b909117287868c177ff5c3ef3050ca360148c8251300ae8051a
+				c299ff4c6660bcb6edd00b10d7d3d5cf659d53421300e6198186c4050000
+_EOT_
 		fi
 		if [[ -n "${__SPLS:-}" ]]; then
 			__SPLS="${__SPLS#"${__TGET_DIRS}"}"

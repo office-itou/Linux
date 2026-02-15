@@ -668,8 +668,7 @@ fnNetwork_param() {
 				_NICS_AUTO="dhcp"
 			fi
 			if [ -z "${_NICS_DNS4:-}" ] || [ -z "${_NICS_WGRP:-}" ]; then
-				__PATH="$(fnFind_command 'resolvectl' | sort -V | head -n 1)"
-				if [ -n "${__PATH:-}" ]; then
+				if command -v resolvectl > /dev/null 2>&1; then
 					if resolvectl status > /dev/null 2>&1; then
 						_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/^Global:/             s/^.*:[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
 						_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*:[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
@@ -701,8 +700,7 @@ fnNetwork_param() {
 	if [ -e "${_DIRS_TGET:-}/etc/hostname" ]; then
 		_NICS_FQDN="${_NICS_FQDN:-"$(cat "${_DIRS_TGET:-}/etc/hostname" || true)"}"
 	fi
-	__PATH="$(fnFind_command 'hostnamectl' | sort -V | head -n 1)"
-	if [ -n "${__PATH:-}" ]; then
+	if command -v hostnamectl > /dev/null 2>&1; then
 		_NICS_FQDN="${_NICS_FQDN:-"$(hostnamectl hostname || true)"}"
 	fi
 	if [ "${_NICS_FQDN:-}" = "localhost" ]; then
@@ -2948,12 +2946,96 @@ _EOT_
 }
 
 # -----------------------------------------------------------------------------
-# descript: skeleton
+# descript: input method
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
-fnSetup_skel() {
-	__FUNC_NAME="fnSetup_skel"
+fnSetup_input_method() {
+	__FUNC_NAME="fnSetup_input_method"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	# --- fcitx5 --------------------------------------------------------------
+	if command -v fcitx5 > /dev/null 2>&1; then
+		# https://extensions.gnome.org/extension/261/kimpanel/
+		fnMsgout "${_PROG_NAME:-}" "start" "fcitx5"
+		# --- im-config -------------------------------------------------------
+#		if command -v im-config > /dev/null 2>&1; then
+#			im-config -n fcitx5
+#		fi
+		# --- fcitx.desktop ---------------------------------------------------
+		__PATH="${_DIRS_TGET:-}/etc/xdg/autostart/org.fcitx.Fcitx5.desktop"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
+			[Desktop Entry]
+			Name=Fcitx 5
+			GenericName=Input Method
+			Comment=Start Input Method
+			Exec=/usr/bin/fcitx5 -d 2> /dev/null
+			Icon=fcitx
+			Terminal=false
+			Type=Application
+			Categories=System;Utility;
+			StartupNotify=false
+			X-GNOME-AutoRestart=false
+			X-GNOME-Autostart-Notify=false
+			X-KDE-autostart-after=panel
+			X-KDE-StartupNotify=false
+			X-KDE-Wayland-VirtualKeyboard=true
+			X-KDE-Wayland-Interfaces=org_kde_plasma_window_management
+_EOT_
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+		# --- complete --------------------------------------------------------
+		fnMsgout "${_PROG_NAME:-}" "complete" "fcitx5"
+	fi
+	unset __PATH
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: desktop
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnSetup_desktop() {
+	__FUNC_NAME="fnSetup_desktop"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	# --- check directory -----------------------------------------------------
+	for __FILE in \
+		blueman-manager.desktop \
+		vim.desktop
+	do
+		__PATH="${_DIRS_TGET:-}/usr/share/gnome/applications/${__FILE:?}"
+		if [ ! -e "${__PATH}" ]; then
+			continue
+		fi
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		sed -i "${__PATH}"              \
+		    -e '/^NoDisplay=.*/ s/^/#/'
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+	done
+	unset __FILE __PATH
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: skeleton for user environment
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnSetup_skel_user() {
+	__FUNC_NAME="fnSetup_skel_user"
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- .bashrc -------------------------------------------------------------
@@ -2983,8 +3065,7 @@ _EOT_
 		fnFile_backup "${__PATH}" "init"	# backup initial file
 	fi
 	# --- .bash_history -------------------------------------------------------
-	__PATH="$(fnFind_command 'apt-get' | sort -V | head -n 1)"
-	if [ -n "${__PATH:-}" ]; then
+	if command -v apt-get > /dev/null 2>&1; then
 		__PATH="${_DIRS_TGET:-}/etc/skel/.bash_history"
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
@@ -2996,8 +3077,7 @@ _EOT_
 		fnFile_backup "${__PATH}" "init"	# backup initial file
 	fi
 	# --- .vimrc --------------------------------------------------------------
-	__PATH="$(fnFind_command 'vim' | sort -V | head -n 1)"
-	if [ -n "${__PATH:-}" ]; then
+	if command -v vim > /dev/null 2>&1; then
 		__PATH="${_DIRS_TGET:-}/etc/skel/.vimrc"
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
@@ -3017,8 +3097,7 @@ _EOT_
 		fnFile_backup "${__PATH}" "init"	# backup initial file
 	fi
 	# --- .curlrc -------------------------------------------------------------
-	__PATH="$(fnFind_command 'curl' | sort -V | head -n 1)"
-	if [ -n "${__PATH:-}" ]; then
+	if command -v curl > /dev/null 2>&1; then
 		__PATH="${_DIRS_TGET:-}/etc/skel/.curlrc"
 		fnFile_backup "${__PATH}"			# backup original file
 		mkdir -p "${__PATH%/*}"
@@ -3032,6 +3111,202 @@ _EOT_
 		fnDbgdump "${__PATH}"				# debugout
 		fnFile_backup "${__PATH}" "init"	# backup initial file
 	fi
+	unset __PATH __CONF __DIRS
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: input method skeleton
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnSetup_skel_im() {
+	__FUNC_NAME="fnSetup_skel_im"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	# --- fcitx5 --------------------------------------------------------------
+	if command -v fcitx5 > /dev/null 2>&1; then
+		# --- .xinputrc -------------------------------------------------------
+		__PATH="${_DIRS_TGET:-}/etc/skel/.xinputrc"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
+			# im-config(8) generated on Sat, 14 Feb 2026 09:14:00 +0900
+			run_im fcitx5
+			# im-config signature: d9b9928f862c39723ce984af60025ad5  -
+_EOT_
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+		# --- .xprofile -------------------------------------------------------
+		__PATH="${_DIRS_TGET:-}/etc/skel/.config/environment.d/99fcitx.conf"
+#		__PATH="${_DIRS_TGET:-}/etc/environment.d/99fcitx.conf"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
+			XMODIFIERS=@im=fcitx
+			QT_IM_MODULE=fcitx
+			#GTK_IM_MODULE=fcitx
+			#SDL_IM_MODULE=fcitx
+			#QT_IM_MODULES="wayland;fcitx"
+			#CLUTTER_IM_MODULE=xim
+			#IM_CONFIG_PHASE=
+_EOT_
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+		# --- profile ---------------------------------------------------------
+		__PATH="${_DIRS_TGET:-}/etc/skel/.config/fcitx5/profile"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
+			[Groups/0]
+			# Group Name
+			Name=デフォルト
+			# Layout
+			Default Layout=jp
+			# Default Input Method
+			DefaultIM=mozc
+
+			[Groups/0/Items/0]
+			# Name
+			Name=keyboard-jp
+			# Layout
+			Layout=
+
+			[Groups/0/Items/1]
+			# Name
+			Name=mozc
+			# Layout
+			Layout=
+
+			[Groups/0/Items/2]
+			# Name
+			Name=anthy
+			# Layout
+			Layout=
+
+			[GroupOrder]
+			0=デフォルト
+
+_EOT_
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+		# --- config ----------------------------------------------------------
+		__PATH="${_DIRS_TGET:-}/etc/skel/.config/fcitx5/config"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
+			[Hotkey]
+			# トリガーキーを押すたびに切り替える
+			EnumerateWithTriggerKeys=True
+			# 次の入力メソッドに切り替える
+			EnumerateForwardKeys=
+			# 前の入力メソッドに切り替える
+			EnumerateBackwardKeys=
+			# 切り替え時は第1入力メソッドをスキップする
+			EnumerateSkipFirst=False
+
+			[Hotkey/TriggerKeys]
+			0=Control+space
+			1=Zenkaku_Hankaku
+			2=Hangul
+
+			[Hotkey/AltTriggerKeys]
+			0=Shift_L
+
+			[Hotkey/EnumerateGroupForwardKeys]
+			0=Super+space
+
+			[Hotkey/EnumerateGroupBackwardKeys]
+			0=Shift+Super+space
+
+			[Hotkey/ActivateKeys]
+			0=Hangul_Hanja
+
+			[Hotkey/DeactivateKeys]
+			0=Hangul_Romaja
+
+			[Hotkey/PrevPage]
+			0=Up
+
+			[Hotkey/NextPage]
+			0=Down
+
+			[Hotkey/PrevCandidate]
+			0=Shift+Tab
+
+			[Hotkey/NextCandidate]
+			0=Tab
+
+			[Hotkey/TogglePreedit]
+			0=Control+Alt+P
+
+			[Behavior]
+			# デフォルトで有効にする
+			ActiveByDefault=False
+			# 入力状態を共有する
+			ShareInputState=No
+			# アプリケーションにプリエディットを表示する
+			PreeditEnabledByDefault=True
+			# 入力メソッドを切り替える際に入力メソッドの情報を表示する
+			ShowInputMethodInformation=True
+			# フォーカスを変更する際に入力メソッドの情報を表示する
+			showInputMethodInformationWhenFocusIn=False
+			# 入力メソッドの情報をコンパクトに表示する
+			CompactInputMethodInformation=True
+			# 第1入力メソッドの情報を表示する
+			ShowFirstInputMethodInformation=True
+			# デフォルトのページサイズ
+			DefaultPageSize=5
+			# XKB オプションより優先する
+			OverrideXkbOption=False
+			# カスタム XKB オプション
+			CustomXkbOption=
+			# Force Enabled Addons
+			EnabledAddons=
+			# Force Disabled Addons
+			DisabledAddons=
+			# Preload input method to be used by default
+			PreloadInputMethod=True
+			# パスワード欄に入力メソッドを許可する
+			AllowInputMethodForPassword=False
+			# パスワード入力時にプリエディットテキストを表示する
+			ShowPreeditForPassword=False
+			# ユーザーデータを保存する間隔（分）
+			AutoSavePeriod=30
+
+_EOT_
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+	fi
+	unset __PATH __CONF __DIRS
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: copy skeleton to user
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnSetup_skel_copy() {
+	__FUNC_NAME="fnSetup_skel_copy"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	# --- check directory -----------------------------------------------------
+	__SKEL="${_DIRS_TGET:-}/etc/skel"
+	if [ ! -e "${__SKEL:?}"/. ]; then
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
+		return
+	fi
 	# --- distribute to existing users ----------------------------------------
 	for __DIRS in "${_DIRS_TGET:-}"/root \
 	              "${_DIRS_TGET:-}"/home/*
@@ -3039,21 +3314,23 @@ _EOT_
 		if [ ! -e "${__DIRS}/." ]; then
 			continue
 		fi
-		for __FILE in "${_DIRS_TGET:-}/etc/skel/.bashrc"       \
-		              "${_DIRS_TGET:-}/etc/skel/.bash_history" \
-		              "${_DIRS_TGET:-}/etc/skel/.vimrc"        \
-		              "${_DIRS_TGET:-}/etc/skel/.curlrc"
-		do
-			if [ ! -e "${__FILE}" ]; then
-				continue
-			fi
-			__PATH="${__DIRS}/${__FILE#*/etc/skel/}"
-			mkdir -p "${__PATH%/*}"
-			cp --preserve=timestamps "${__FILE}" "${__PATH}"
-			chown "${__DIRS##*/}": "${__PATH}"
-			fnDbgdump "${__PATH}"				# debugout
-			fnFile_backup "${__PATH}" "init"	# backup initial file
-		done
+		sudo -u "${__DIRS##*/}" cp --preserve=timestamps --recursive --verbose "${__SKEL:?}"/. "${__DIRS:?}"/
+		fnFile_backup "${__DIRS:?}"/. "init"	# backup initial file
+#		for __FILE in "${_DIRS_TGET:-}/etc/skel/.bashrc"       \
+#		              "${_DIRS_TGET:-}/etc/skel/.bash_history" \
+#		              "${_DIRS_TGET:-}/etc/skel/.vimrc"        \
+#		              "${_DIRS_TGET:-}/etc/skel/.curlrc"
+#		do
+#			if [ ! -e "${__FILE}" ]; then
+#				continue
+#			fi
+#			__PATH="${__DIRS}/${__FILE#*/etc/skel/}"
+#			mkdir -p "${__PATH%/*}"
+#			cp --preserve=timestamps "${__FILE}" "${__PATH}"
+#			chown "${__DIRS##*/}": "${__PATH}"
+#			fnDbgdump "${__PATH}"				# debugout
+#			fnFile_backup "${__PATH}" "init"	# backup initial file
+#		done
 	done
 	unset __PATH __CONF __DIRS
 
@@ -3072,8 +3349,7 @@ fnSetup_sudo() {
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check command -------------------------------------------------------
-	__PATH="$(fnFind_command 'sudo' | sort -V | head -n 1)"
-	if [ -z "${__PATH:-}" ]; then
+	if ! command -v sudo > /dev/null 2>&1; then
 		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
@@ -3160,7 +3436,7 @@ fnSetup_module_ipxe() {
 }
 
 # -----------------------------------------------------------------------------
-# descript: 
+# descript: apparmor
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
@@ -3606,7 +3882,11 @@ fnMain() {
 	fnSetup_ssh							# openssh-server
 	fnSetup_vmware						# vmware shared directory
 	fnSetup_wireplumber					# wireplumber
-	fnSetup_skel						# skeleton
+	fnSetup_input_method				# input method
+	fnSetup_desktop						# desktop
+	fnSetup_skel_user					# skeleton for user environment
+	fnSetup_skel_im						# input method skeleton
+	fnSetup_skel_copy					# copy skeleton to user
 	fnSetup_sudo						# sudoers
 	fnSetup_blacklist					# blacklist
 	fnSetup_module_ipxe					# ipxe module

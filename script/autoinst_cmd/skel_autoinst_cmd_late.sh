@@ -136,7 +136,15 @@
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnSetup_wireplumber.sh				# wireplumber
 	# shellcheck source=/dev/null
-	. "${_SHEL_COMD}"/fnSetup_skel.sh						# skeleton
+	. "${_SHEL_COMD}"/fnSetup_input_method.sh				# input method
+	# shellcheck source=/dev/null
+	. "${_SHEL_COMD}"/fnSetup_desktop.sh					# desktop
+	# shellcheck source=/dev/null
+	. "${_SHEL_COMD}"/fnSetup_skel_user.sh					# skeleton for user environment
+	# shellcheck source=/dev/null
+	. "${_SHEL_COMD}"/fnSetup_skel_im.sh					# input method skeleton
+	# shellcheck source=/dev/null
+	. "${_SHEL_COMD}"/fnSetup_skel_copy.sh					# copy skeleton to user
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnSetup_sudo.sh						# sudoers
 	# shellcheck source=/dev/null
@@ -193,7 +201,11 @@ fnMain() {
 	fnSetup_ssh							# openssh-server
 	fnSetup_vmware						# vmware shared directory
 	fnSetup_wireplumber					# wireplumber
-	fnSetup_skel						# skeleton
+	fnSetup_input_method				# input method
+	fnSetup_desktop						# desktop
+	fnSetup_skel_user					# skeleton for user environment
+	fnSetup_skel_im						# input method skeleton
+	fnSetup_skel_copy					# copy skeleton to user
 	fnSetup_sudo						# sudoers
 	fnSetup_blacklist					# blacklist
 	fnSetup_module_ipxe					# ipxe module

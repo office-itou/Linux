@@ -12,7 +12,7 @@ fnSetup_sudo() {
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	# --- check command -------------------------------------------------------
-	if command -v sudo > /dev/null 2>&1; then
+	if ! command -v sudo > /dev/null 2>&1; then
 		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi

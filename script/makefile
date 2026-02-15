@@ -97,7 +97,11 @@ OBJS=\
 	./autoinst_cmd/fnSetup_ssh.sh\
 	./autoinst_cmd/fnSetup_vmware.sh\
 	./autoinst_cmd/fnSetup_wireplumber.sh\
-	./autoinst_cmd/fnSetup_skel.sh\
+	./autoinst_cmd/fnSetup_input_method.sh\
+	./autoinst_cmd/fnSetup_desktop.sh\
+	./autoinst_cmd/fnSetup_skel_user.sh\
+	./autoinst_cmd/fnSetup_skel_im.sh\
+	./autoinst_cmd/fnSetup_skel_copy.sh\
 	./autoinst_cmd/fnSetup_sudo.sh\
 	./autoinst_cmd/fnSetup_blacklist.sh\
 	./autoinst_cmd/fnSetup_module_ipxe.sh\
