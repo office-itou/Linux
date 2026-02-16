@@ -23,6 +23,24 @@ clean:
 	 unset _INPT
 	@echo "complete: $@"
 
+# --- clean backup ------------------------------------------------------------
+.PHONY: clbak
+clbak:
+	@echo "start   : $@"
+	@if [ -e ./. ]; then \
+	   find ./ \( -iname '*.bak' -o -iname '*~' \) -print; \
+	   read -r -p "Are you sure ? [Y or else] " _INPT; \
+	   if [ "$${_INPT}" =  "Y" ]; then find ./ \( -iname '*.bak' -o -iname '*~' \) -exec rm {} \;; echo "deleted"; else echo "cancel"; fi; \
+	   unset _INPT; \
+	 fi
+	@if [ -e /srv/user/share/conf/. ]; then \
+	   find /srv/user/share/conf/ \( -iname '*.bak' -o -iname '*~' \) -print; \
+	   read -r -p "Are you sure ? [Y or else] " _INPT; \
+	   if [ "$${_INPT}" =  "Y" ]; then sudo bash -c 'find /srv/user/share/conf/ \( -iname '\''*.bak'\'' -o -iname '\''*~'\'' \) -exec rm {} \;'; echo "deleted"; else echo "cancel"; fi; \
+	   unset _INPT; \
+	 fi
+	@echo "complete: $@"
+
 # --- autoinst_cmd_early.sh ---------------------------------------------------
 TGET=./autoinst_cmd/autoinst_cmd_early.sh
 SRCS=./autoinst_cmd/skel_autoinst_cmd_early.sh
