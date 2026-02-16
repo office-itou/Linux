@@ -287,7 +287,7 @@ fixed address -->
     <!-- *** chroot-scripts ************************************************ -->
     <chroot-scripts t="list">
       <script t="map">
-        <chrooted t="boolean">true</chrooted>
+        <chrooted t="boolean">false</chrooted>
         <debug t="boolean">false</debug>
         <feedback t="boolean">false</feedback>
         <feedback_type/>
@@ -300,9 +300,25 @@ fixed address -->
         <source><![CDATA[
   set -eu
   echo "zzz_chroot-scripts.sh"
+  __DIRS="/mnt/var/admin/autoinst"
+  [[ ! -e "${__DIRS:-}"/. ]] && __DIRS="${__DIRS#/mnt}"
   {
-    /var/admin/autoinst/autoinst_cmd_late.sh
-  } | tee -a /var/admin/autoinst/zzz_chroot-scripts.sh.log 2>&1
+    if [ -n "${debug:-}" ] || [ -n "${debugout:-}" ]; then
+      set -x
+      export -p
+    fi
+    mkdir -p /mnt/var/admin/
+    mount --bind /var/admin/ /mnt/var/admin/
+    mount --bind /run/       /mnt/run/
+    mount --bind /proc/      /mnt/proc/
+    mount --bind /sys/       /mnt/sys/
+    mount --bind /dev/       /mnt/dev/
+    mount --bind /dev/pts/   /mnt/dev/pts/
+    chroot /mnt/ /var/admin/autoinst/autoinst_cmd_late.sh
+#   umount /mnt/dev/pts/ /mnt/dev/ /mnt/sys/ /mnt/proc/ /mnt/run/ /mnt/var/admin/
+    umount /mnt/var/admin/
+  } | tee -a "${__DIRS:-}"/zzz_chroot-scripts.sh.log 2>&1
+  cp -pr /var/admin/* "${__DIRS:?}"/
 ]]>
         </source>
       </script>
@@ -405,20 +421,20 @@ fixed address -->
       <package>firewalld</package>
       <package>traceroute</package>
       <package>NetworkManager</package>
-      <package>ShellCheck</package>
       <package>bash-completion</package>
+      <package>wget</package>
       <package>curl</package>
       <package>vim</package>
       <package>bc</package>
       <package>rsync</package>
       <package>tree</package>
+      <package>ShellCheck</package>
+      <package>clamav</package>
       <package>openssh-server</package>
 <!-- leap -->
       <package>systemd-network</package>
 <!-- leap -->
-<!-- tumbleweed
       <package>systemd-resolved</package>
-tumbleweed -->
       <package>dnsmasq</package>
       <package>tftp</package>
       <package>bind-utils</package>
@@ -433,7 +449,6 @@ tumbleweed -->
       <package>glibc-i18ndata</package>
       <package>glibc-locale</package>
       <package>less</package>
-      <package>wget</package>
       <package>which</package>
       <package>zypper</package>
 <!-- desktop
@@ -443,8 +458,19 @@ tumbleweed -->
       <package>gnome-shell</package>
       <package>gstreamer-plugins-libav</package>
       <package>wireplumber-audio</package>
+      <package>adwaita-icon-theme</package>
+      <package>google-noto-sans-jp-fonts</package>
+      <package>google-noto-serif-jp-fonts</package>
+      <package>noto-coloremoji-fonts</package>
+      <package>noto-fonts</package>
+      <package>gnome-initial-setup</package>
+      <package>gnome-initial-setup-lang</package>
+      <package>MozillaFirefox</package>
+      <package>MozillaThunderbird</package>
       <package>audacious</package>
       <package>rhythmbox</package>
+      <package>bluez</package>
+      <package>epson-inkjet-printer-escpr</package>
 desktop -->
     </packages>
     <patterns t="list">
