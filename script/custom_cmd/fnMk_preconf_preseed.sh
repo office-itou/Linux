@@ -19,7 +19,19 @@ function fnMk_preconf_preseed() {
 	cp --backup "${_PATH_SEDD}" "${__TGET_PATH}"
 	# --- server or desktop ---------------------------------------------------
 	case "${__TGET_PATH}" in
-		*_desktop*)
+		*_desktop_old*)		# 12
+			sed -i "${__TGET_PATH}"                                             \
+			    -e '\%^[ \t]*d-i[ \t]\+pkgsel/include[ \t]\+%,\%^#.*[^\\]$% { ' \
+			    -e '/^[^#].*[^\\]$/ s/$/ \\/g'                                  \
+			    -e 's/^#/ /g'                                                   \
+			    -e 's/[ \t]adwaita-icon-theme-legacy[ \t]//'                    \
+			    -e 's/[ \t]gnome-classic[ \t]//'                                \
+			    -e 's/[ \t]gnome-classic-xsession[ \t]//'                       \
+			    -e 's/connman/network-manager/'                                 \
+			    -e 's/^[ \t]*\\$//g'                                            \
+			    -e '/^$/d                                                   } '
+			;;
+		*_desktop*)			# 13
 			sed -i "${__TGET_PATH}"                                             \
 			    -e '\%^[ \t]*d-i[ \t]\+pkgsel/include[ \t]\+%,\%^#.*[^\\]$% { ' \
 			    -e '/^[^#].*[^\\]$/ s/$/ \\/g'                                  \

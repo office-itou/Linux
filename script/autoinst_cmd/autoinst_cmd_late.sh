@@ -3314,23 +3314,9 @@ fnSetup_skel_copy() {
 		if [ ! -e "${__DIRS}/." ]; then
 			continue
 		fi
-		sudo -u "${__DIRS##*/}" cp --preserve=timestamps --recursive --verbose "${__SKEL:?}"/. "${__DIRS:?}"/
-		fnFile_backup "${__DIRS:?}"/. "init"	# backup initial file
-#		for __FILE in "${_DIRS_TGET:-}/etc/skel/.bashrc"       \
-#		              "${_DIRS_TGET:-}/etc/skel/.bash_history" \
-#		              "${_DIRS_TGET:-}/etc/skel/.vimrc"        \
-#		              "${_DIRS_TGET:-}/etc/skel/.curlrc"
-#		do
-#			if [ ! -e "${__FILE}" ]; then
-#				continue
-#			fi
-#			__PATH="${__DIRS}/${__FILE#*/etc/skel/}"
-#			mkdir -p "${__PATH%/*}"
-#			cp --preserve=timestamps "${__FILE}" "${__PATH}"
-#			chown "${__DIRS##*/}": "${__PATH}"
-#			fnDbgdump "${__PATH}"				# debugout
-#			fnFile_backup "${__PATH}" "init"	# backup initial file
-#		done
+		cp --preserve=timestamps --recursive "${__SKEL:?}"/. "${__DIRS:?}"/
+		chown --recursive "${__DIRS##*/}": "${__DIRS:?}"/
+		fnFile_backup "${__DIRS:?}" "init"	# backup initial file
 	done
 	unset __PATH __CONF __DIRS
 

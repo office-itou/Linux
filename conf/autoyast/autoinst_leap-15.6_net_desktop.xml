@@ -287,7 +287,7 @@ fixed address -->
     <!-- *** chroot-scripts ************************************************ -->
     <chroot-scripts t="list">
       <script t="map">
-        <chrooted t="boolean">false</chrooted>
+        <chrooted t="boolean">true</chrooted>
         <debug t="boolean">false</debug>
         <feedback t="boolean">false</feedback>
         <feedback_type/>
@@ -307,18 +307,9 @@ fixed address -->
       set -x
       export -p
     fi
-    mkdir -p /mnt/var/admin/
-    mount --bind /var/admin/ /mnt/var/admin/
-    mount --bind /run/       /mnt/run/
-    mount --bind /proc/      /mnt/proc/
-    mount --bind /sys/       /mnt/sys/
-    mount --bind /dev/       /mnt/dev/
-    mount --bind /dev/pts/   /mnt/dev/pts/
-    chroot /mnt/ /var/admin/autoinst/autoinst_cmd_late.sh
-#   umount /mnt/dev/pts/ /mnt/dev/ /mnt/sys/ /mnt/proc/ /mnt/run/ /mnt/var/admin/
-    umount /mnt/var/admin/
+    mount none -t devpts /dev/pts || true
+    /var/admin/autoinst/autoinst_cmd_late.sh
   } | tee -a "${__DIRS:-}"/zzz_chroot-scripts.sh.log 2>&1
-  cp -pr /var/admin/* "${__DIRS:?}"/
 ]]>
         </source>
       </script>
@@ -347,6 +338,7 @@ fixed address -->
     fi
     echo "no processing"
   } | tee -a "${__DIRS:-}"/zzz_post-scripts.sh.log 2>&1
+  cp -pr /var/admin/* "${__DIRS:?}"/
 ]]>
         </source>
       </script>

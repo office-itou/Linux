@@ -1393,7 +1393,19 @@ function fnMk_preconf_preseed() {
 	cp --backup "${_PATH_SEDD}" "${__TGET_PATH}"
 	# --- server or desktop ---------------------------------------------------
 	case "${__TGET_PATH}" in
-		*_desktop*)
+		*_desktop_old*)		# 12
+			sed -i "${__TGET_PATH}"                                             \
+			    -e '\%^[ \t]*d-i[ \t]\+pkgsel/include[ \t]\+%,\%^#.*[^\\]$% { ' \
+			    -e '/^[^#].*[^\\]$/ s/$/ \\/g'                                  \
+			    -e 's/^#/ /g'                                                   \
+			    -e 's/[ \t]adwaita-icon-theme-legacy[ \t]//'                    \
+			    -e 's/[ \t]gnome-classic[ \t]//'                                \
+			    -e 's/[ \t]gnome-classic-xsession[ \t]//'                       \
+			    -e 's/connman/network-manager/'                                 \
+			    -e 's/^[ \t]*\\$//g'                                            \
+			    -e '/^$/d                                                   } '
+			;;
+		*_desktop*)			# 13
 			sed -i "${__TGET_PATH}"                                             \
 			    -e '\%^[ \t]*d-i[ \t]\+pkgsel/include[ \t]\+%,\%^#.*[^\\]$% { ' \
 			    -e '/^[^#].*[^\\]$/ s/$/ \\/g'                                  \
@@ -1435,15 +1447,19 @@ function fnMk_preconf_nocloud() {
 		*_server_old/*)    ;;	# 24.04 - 25.10
 		*_server/*)        ;;	# 26.04 -
 		*_desktop_old/*)		# 24.04 - 25.10
-			sed -i "${__TGET_PATH}"                                            \
-			    -e '/^[ \t]*packages:$/,/\([[:graph:]]\+:$\|^#[ \t]*--\+\)/ {' \
-			    -e '/^#[ \t]*--\+/! s/^#/ /g                                }'
+			sed -i "${__TGET_PATH}"                       \
+			    -e '/^[ \t]*packages:$/,/^#[ \]\+-\+$/ {' \
+			    -e '/^#[ \t]*-\+$/! s/^#/ /g           }' \
+			    -e '/^#[ \t]*snaps:$/,/^#[ \]\+-\+$/   {' \
+			    -e '/^#[ \t]*-\+$/! s/^#/ /g           }'
 			;;
 		*_desktop/*)			# 26.04 -
-			sed -i "${__TGET_PATH}"                                            \
-			    -e '/^[ \t]*packages:$/,/\([[:graph:]]\+:$\|^#[ \t]*--\+\)/ {' \
-			    -e '/^#[ \t]*--\+/!        s/^#/ /g                          ' \
-			    -e '/^[ \t]*-[ \t]*.*mozc/ s/^ /#/                          }' 
+			sed -i "${__TGET_PATH}"                       \
+			    -e '/^[ \t]*packages:$/,/^#[ \]\+-\+$/ {' \
+			    -e '/^#[ \t]*-\+$/! s/^#/ /g            ' \
+			    -e '/^[ \t]*-[ \t]*.*mozc/ s/^ /#/     }' \
+			    -e '/^#[ \t]*snaps:$/,/^#[ \]\+-\+$/   {' \
+			    -e '/^#[ \t]*-\+$/! s/^#/ /g           }'
 			;;
 		*)	;;
 	esac

@@ -14,10 +14,14 @@ autoinstall:
 #   channel: latest/beta
 # stable candidate edge beta
 # =============================================================================
-# apt:
+  apt:
 #   disable_components: []
 #   fallback: abort
-#   geoip: true
+    geoip: true
+#   conf: | # APT config
+#     APT {
+#       Install-Recommends "false";
+#     };
 #   mirror-selection:
 #     primary:
 #     - country-mirror
@@ -172,7 +176,7 @@ autoinstall:
   updates: security
 # updates: all
 # package_update: true
-# package_upgrade: true
+  package_upgrade: true
   packages:
   - apparmor                            # user-space parser utility for AppArmor
   - apparmor-utils                      # utilities for controlling AppArmor
@@ -208,6 +212,8 @@ autoinstall:
   - libnss-winbind                      # Samba nameservice integration plugins
   - open-vm-tools                       # Open VMware Tools for virtual machines hosted on VMware (CLI)
   - open-vm-tools-desktop               # Open VMware Tools for virtual machines hosted on VMware (GUI)
+  - ubuntu-server                       # Ubuntu Server system
+  - ubuntu-server-minimal               # Ubuntu Server minimal system
 # - ubuntu-desktop                      # Ubuntu desktop system
 # - ubuntu-desktop-minimal              # Ubuntu desktop minimal system
 # - ubuntu-gnome-desktop                # The Ubuntu desktop system (transitional package)
@@ -238,12 +244,18 @@ autoinstall:
 # - libreoffice-help-ja                 # office productivity suite -- Japanese help
 # - rhythmbox                           # music player and organizer for GNOME
 # - libavcodec-extra                    # FFmpeg library with extra codecs (metapackage)
+# - gstreamer1.0-libav                  # ffmpeg plugin for GStreamer
 # - pipewire-audio-client-libraries     # transitional package for pipewire-alsa and pipewire-jack
 # - bluetooth                           # Bluetooth support (metapackage)
 # - bluez                               # Bluetooth tools and daemons
 # - bluez-firmware                      # Firmware for Bluetooth devices
 # - blueman                             # Graphical bluetooth manager
 # - printer-driver-escpr                # printer driver for Epson Inkjet that use ESC/P-R
+# -----------------------------------------------------------------------------
+# snaps:
+# - name: firefox
+# - name: thunderbird
+# - name: chromium
 # -----------------------------------------------------------------------------
 # - ibus-mozc                           # Mozc engine for IBus - Client of the Mozc input method
 # - ibus-anthy                          # anthy engine for IBus
@@ -407,6 +419,7 @@ autoinstall:
           mkdir -p /target/var/admin/;
           mount --bind /var/admin/ /target/var/admin/;
         fi;
+        rm -f /etc/apt/apt.conf.d/94curtin-config /target/etc/apt/apt.conf.d/94curtin-config;
         if command -v curtin > /dev/null 2>&1; then
           curtin in-target --target=/target -- sh -c /var/admin/autoinst/autoinst_cmd_late.sh;
         elif command -v in-target > /dev/null 2>&1; then
