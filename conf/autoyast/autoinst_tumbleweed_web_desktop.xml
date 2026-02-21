@@ -459,6 +459,7 @@ leap -->
       <package>gnome-initial-setup-lang</package>
       <package>MozillaFirefox</package>
       <package>MozillaThunderbird</package>
+      <package>chromium</package>
       <package>audacious</package>
       <package>rhythmbox</package>
       <package>bluez</package>

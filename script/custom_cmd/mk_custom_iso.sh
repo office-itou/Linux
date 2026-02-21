@@ -1509,57 +1509,55 @@ function fnMk_preconf_kickstart() {
 	__ADDR="${_SRVR_PROT:+"${_SRVR_PROT}:/"}/${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}"
 	# --- initializing the settings -------------------------------------------
 	sed -i "${__TGET_PATH}"                     \
-	    -e "/^cdrom$/      s/^/#/             " \
-	    -e "/^url[ \t]\+/  s/^/#/g            " \
-	    -e "/^repo[ \t]\+/ s/^/#/g            " \
+	    -e '/^cdrom$/      s/^/#/             ' \
+	    -e '/^url[ \t]\+/  s/^/#/g            ' \
+	    -e '/^repo[ \t]\+/ s/^/#/g            ' \
 	    -e "s/:_HOST_NAME_:/${__NAME}/        " \
 	    -e "s%:_WEBS_ADDR_:%${__ADDR}%g       " \
 	    -e "s%:_DISTRO_:%${__NAME}-${__NUMS}%g"
 	# --- cdrom, repository ---------------------------------------------------
+	__WORK="${__NUMS}"
+	case "${__TGET_PATH}" in
+		*_centos-stream*) __WORK+="-stream";;
+		*) ;;
+	esac
+	sed -i "${__TGET_PATH}"                 \
+		-e "/^#.*(${__SECT}).*$/,/^$/   { " \
+		-e "s/\$releasever/${__WORK}/g    " \
+		-e "s/\$basearch/${__ARCH}/g      " \
+		-e "s/\$stream/${__WORK}/g      } "
 	case "${__TGET_PATH}" in
 		*_fedora*)	# --- cdrom install ---------------------------------------
 			sed -i "${__TGET_PATH}"                 \
-			    -e "/^#cdrom$/ s/^#//             " \
+			    -e '/^#cdrom$/ s/^#//             ' \
 			    -e "/^#.*(${__SECT}).*$/,/^$/   { " \
-			    -e "/^#url[ \t]\+/  s/^#//g       " \
-			    -e "/^#repo[ \t]\+/             { " \
-			    -e "/Everything/    s/^#//g     } " \
-			    -e "s/\$releasever/${__NUMS}/g    " \
-			    -e "s/\$basearch/${__ARCH}/g      " \
-			    -e "s/\$stream/${__NUMS}/g      } "
+			    -e '/^#url[ \t]\+/  s/^#//g       ' \
+			    -e '/^#repo[ \t]\+/             { ' \
+			    -e '/Everything/    s/^#//g     }}'
 			;;
 		*_dvd*)		# --- cdrom install ---------------------------------------
 			sed -i "${__TGET_PATH}"                 \
-			    -e "/^#cdrom$/ s/^#//             " \
+			    -e '/^#cdrom$/ s/^#//             ' \
 			    -e "/^#.*(${__SECT}).*$/,/^$/   { " \
-			    -e "/^url[ \t]\+/   s/^/#/g       " \
-			    -e "/^repo[ \t]\+/              { " \
-			    -e "/MyAppStream/   s/^/#/g     } " \
-			    -e "s/\$releasever/${__NUMS}/g    " \
-			    -e "s/\$basearch/${__ARCH}/g      " \
-			    -e "s/\$stream/${__NUMS}/g      } "
+			    -e '/^url[ \t]\+/   s/^/#/g       ' \
+			    -e '/^repo[ \t]\+/              { ' \
+			    -e '/MyAppStream/   s/^/#/g     }}'
 			;;
 		*_net*)		# --- network install -------------------------------------
 			sed -i "${__TGET_PATH}"                 \
-			    -e "/^cdrom$/ s/^/#/              " \
+			    -e '/^cdrom$/ s/^/#/              ' \
 			    -e "/^#.*(${__SECT}).*$/,/^$/   { " \
-			    -e "/^#url[ \t]\+/  s/^#//g       " \
-			    -e "/^#repo[ \t]\+/             { " \
-			    -e "/MyAppStream/   s/^#//g     } " \
-			    -e "s/\$releasever/${__NUMS}/g    " \
-			    -e "s/\$basearch/${__ARCH}/g      " \
-			    -e "s/\$stream/${__NUMS}/g      } "
+			    -e '/^#url[ \t]\+/  s/^#//g       ' \
+			    -e '/^#repo[ \t]\+/             { ' \
+			    -e '/MyAppStream/   s/^#//g     }}'
 			;;
 		*_web*)		# --- network install [ for pxeboot ] ---------------------
 			sed -i "${__TGET_PATH}"                 \
-			    -e "/^cdrom$/ s/^/#/              " \
-			    -e "/^#.*(web address).*$/,/^$/ { " \
-			    -e "/^#url[ \t]\+/  s/^#//g       " \
-			    -e "/^#repo[ \t]\+/             { " \
-			    -e "/MyAppStream/   s/^#//g     } " \
-			    -e "s/\$releasever/${__NUMS}/g    " \
-			    -e "s/\$basearch/${__ARCH}/g      " \
-			    -e "s/\$stream/${__NUMS}/g      } "
+			    -e '/^cdrom$/ s/^/#/              ' \
+			    -e '/^#.*(web address).*$/,/^$/ { ' \
+			    -e '/^#url[ \t]\+/  s/^#//g       ' \
+			    -e '/^#repo[ \t]\+/             { ' \
+			    -e '/MyAppStream/   s/^#//g     }}'
 			;;
 		*)	;;
 	esac
@@ -1567,7 +1565,7 @@ function fnMk_preconf_kickstart() {
 		*_fedora*_dvd*) ;; # --- cdrom install --------------------------------
 		*_fedora*     )    # --- network install ------------------------------
 			sed -i "${__TGET_PATH}"                 \
-			    -e "/^cdrom$/ s/^/#/              "
+			    -e '/^cdrom$/ s/^/#/              '
 			;;
 		*)	;;
 	esac
@@ -1575,15 +1573,15 @@ function fnMk_preconf_kickstart() {
 	case "${__TGET_PATH}" in
 		*_fedora*)
 			sed -i "${__TGET_PATH}"                 \
-			    -e "/%packages/,/%end/          { " \
-			    -e "/^epel-release/      s/^/#/   " \
-			    -e "/^systemd-timesyncd/ s/^/#/ } "
+			    -e '/%packages/,/%end/          { ' \
+			    -e '/^epel-release/      s/^/#/   ' \
+			    -e '/^systemd-timesyncd/ s/^/#/ } '
 			;;
 		*)
 			sed -i "${__TGET_PATH}"                 \
-			    -e "/^#.*(EPEL).*$/,/^$/        { " \
-			    -e "/^#url[ \t]\+/  s/^#//g       " \
-			    -e "/^#repo[ \t]\+/ s/^#//g       " \
+			    -e '/^#.*(EPEL).*$/,/^$/        { ' \
+			    -e '/^#url[ \t]\+/  s/^#//g       ' \
+			    -e '/^#repo[ \t]\+/ s/^#//g       ' \
 			    -e "s/\$releasever/${__NUMS}/g    " \
 			    -e "s/\$basearch/${__ARCH}/g      " \
 			    -e "s/\$stream/${__NUMS}/g      } "
@@ -1592,14 +1590,22 @@ function fnMk_preconf_kickstart() {
 	# --- desktop -------------------------------------------------------------
 	cp --backup "${__TGET_PATH}" "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
 	sed -i "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}" \
-	    -e "/%packages/,/%end/                         {" \
-	    -e "/#@.*-desktop/,/^[^#]/ s/^#//g             }"
+	    -e '/%packages/,/%end/                         {' \
+	    -e '/#@.*-desktop/,/^[^#]/ s/^#//g             }'
 	case "${__NUMS}" in
-		[1-9]) ;;
+		[1-9])
+			sed -i "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"    \
+			    -e '/%packages/,/%end/                            {' \
+			    -e '/^google-noto-sans-cjk-vf-fonts$/      s/^/#/g ' \
+			    -e '/^google-noto-sans-mono-cjk-vf-fonts$/ s/^/#/g ' \
+			    -e '/^google-noto-sans-vf-fonts$/          s/^/#/g ' \
+			    -e '/^google-noto-serif-cjk-vf-fonts$/     s/^/#/g ' \
+			    -e '/^realtek-firmware$/                   s/^/#/g}'
+			;;
 		*    )
 			sed -i "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}" \
-			    -e "/%packages/,/%end/                         {" \
-			    -e "/^kpipewire$/ s/^/#/g                      }"
+			    -e '/%packages/,/%end/                         {' \
+			    -e '/^kpipewire$/ s/^/#/g                      }'
 			;;
 	esac
 	# -------------------------------------------------------------------------

@@ -242,6 +242,13 @@ autoinstall:
   - mozc-utils-gui                      # GUI utilities of the Mozc input method
   - libreoffice-l10n-ja                 # office productivity suite -- Japanese language package
   - libreoffice-help-ja                 # office productivity suite -- Japanese help
+  - firefox                             # Installs Firefox snap and provides some system integration
+  - firefox-locale-ja                   # Transitional package - firefox-locale-ja -> firefox snap
+  - thunderbird                         # Transitional package - thunderbird -> thunderbird snap
+  - thunderbird-locale-ja               # Transitional package - thunderbird-locale-ja -> thunderbird snap
+  - chromium-browser                    # Transitional package - chromium-browser -> chromium snap
+  - chromium-browser-l10n               # Transitional package - chromium-browser-l10n -> chromium snap
+  - chromium-chromedriver               # Transitional package - chromium-chromedriver -> chromium snap
   - rhythmbox                           # music player and organizer for GNOME
   - libavcodec-extra                    # FFmpeg library with extra codecs (metapackage)
   - gstreamer1.0-libav                  # ffmpeg plugin for GStreamer
