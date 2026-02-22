@@ -118,8 +118,11 @@ OBJS=\
 	./autoinst_cmd/fnSetup_input_method.sh\
 	./autoinst_cmd/fnSetup_desktop.sh\
 	./autoinst_cmd/fnSetup_skel_user.sh\
+	./autoinst_cmd/fnSetup_skel_im_fcitx5.sh\
+	./autoinst_cmd/fnSetup_skel_im_ibus.sh\
 	./autoinst_cmd/fnSetup_skel_im.sh\
 	./autoinst_cmd/fnSetup_skel_copy.sh\
+	./autoinst_cmd/fnSetup_dconf.sh\
 	./autoinst_cmd/fnSetup_sudo.sh\
 	./autoinst_cmd/fnSetup_blacklist.sh\
 	./autoinst_cmd/fnSetup_module_ipxe.sh\

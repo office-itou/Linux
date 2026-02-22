@@ -3119,13 +3119,13 @@ _EOT_
 }
 
 # -----------------------------------------------------------------------------
-# descript: input method skeleton
+# descript: input method skeleton for fcitx5
 #   input :            : unused
 #   output:   stdout   : message
 #   return:            : unused
-fnSetup_skel_im() {
-	__FUNC_NAME="fnSetup_skel_im"
-	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+fnSetup_skel_im_fcitx5() {
+	___FUNC_NAME="fnSetup_skel_im_fcitx5"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${___FUNC_NAME}]"
 
 	# --- fcitx5 --------------------------------------------------------------
 	if command -v fcitx5 > /dev/null 2>&1; then
@@ -3288,6 +3288,69 @@ _EOT_
 	unset __PATH __CONF __DIRS
 
 	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${___FUNC_NAME}]" 
+	unset ___FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: input method skeleton for ibus
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnSetup_skel_im_ibus() {
+	___FUNC_NAME="fnSetup_skel_im_ibus"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${___FUNC_NAME}]"
+
+	# --- ibus ----------------------------------------------------------------
+	if command -v ibus > /dev/null 2>&1; then
+		__SRCS="('xkb', 'jp')"
+		if [ -d "${_DIRS_TGET:-}"/usr/share/ibus-mozc/. ]; then
+			fnMsgout "${_PROG_NAME:-}" "info" "ibus-mozc"
+			__SRCS="${__SRCS:+"${__SRCS}, "}('ibus', 'mozc-jp')"
+		fi
+		if [ -d "${_DIRS_TGET:-}"/usr/share/ibus-anthy/. ]; then
+			fnMsgout "${_PROG_NAME:-}" "info" "ibus-anthy"
+			__SRCS="${__SRCS:+"${__SRCS}, "}('ibus', 'anthy')"
+		fi
+		if [ -n "${__SRCS:-}" ]; then
+			fnMsgout "${_PROG_NAME:-}" "info" "${__SRCS}"
+#			dconf write /org/gnome/desktop/input-sources/sources "[${__SRCS}]"
+#			gsettings set org.gnome.desktop.input-sources sources "[${__SRCS}]"
+			__OUTP="${_DIRS_TGET:-}/etc/dconf/db/local"
+			__PATH="${__OUTP}.d/00-user-desktop-input-sources"
+			fnFile_backup "${__PATH}"			# backup original file
+			mkdir -p "${__PATH%/*}"
+			cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+				[org/gnome/desktop/input-sources]
+				sources=[${__SRCS}]
+_EOT_
+			dconf compile "${__OUTP}" "${__PATH%/*}" || true
+		fi
+	fi
+	unset __SRCS __OUTP
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${___FUNC_NAME}]" 
+	unset ___FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: input method skeleton
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnSetup_skel_im() {
+	__FUNC_NAME="fnSetup_skel_im"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	if command -v fcitx5 > /dev/null 2>&1; then
+		fnSetup_skel_im_fcitx5
+	elif command -v ibus > /dev/null 2>&1; then
+		fnSetup_skel_im_ibus
+	fi
+
+	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 	unset __FUNC_NAME
 }
@@ -3319,6 +3382,63 @@ fnSetup_skel_copy() {
 		fnFile_backup "${__DIRS:?}" "init"	# backup initial file
 	done
 	unset __PATH __CONF __DIRS
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: dconf
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnSetup_dconf() {
+	__FUNC_NAME="fnSetup_dconf"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	if command -v dconf > /dev/null 2>&1; then
+		__PATH="${_DIRS_TGET:-}/etc/dconf/profile/user"
+		if [ ! -f "${__PATH}" ]; then
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+				user-db:user
+_EOT_
+		fi
+		if ! grep -qE '^system-db:local$' /etc/dconf/profile/user; then
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+				system-db:local
+_EOT_
+		fi
+		__OUTP="${_DIRS_TGET:-}/etc/dconf/db/local"
+		# --- desktop/session -------------------------------------------------
+		__PATH="${__OUTP}.d/00-user-desktop-session"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+			[org/gnome/desktop/session]
+			idle-delay=uint32 0
+_EOT_
+		# --- terminal --------------------------------------------------------
+		__UUID="$(gsettings get org.gnome.Terminal.ProfilesList default | sed -e 's/'\''//g')"
+		if [ -n "${__UUID}" ]; then
+			__PATH="${__OUTP}.d/00-user-terminal"
+			fnFile_backup "${__PATH}"			# backup original file
+			mkdir -p "${__PATH%/*}"
+			cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+				[org/gnome/terminal/legacy/profiles:/:${__UUID}]
+				default-size-columns=120
+				default-size-rows=30
+				font='Monospace 9'
+				palette=['rgb(46,52,54)', 'rgb(204,0,0)', 'rgb(78,154,6)', 'rgb(196,160,0)', 'rgb(52,101,164)', 'rgb(117,80,123)', 'rgb(6,152,154)', 'rgb(211,215,207)', 'rgb(85,87,83)', 'rgb(239,41,41)', 'rgb(138,226,52)', 'rgb(252,233,79)', 'rgb(114,159,207)', 'rgb(173,127,168)', 'rgb(52,226,226)', 'rgb(238,238,236)']
+				use-system-font=false
+_EOT_
+		fi
+		# --- compile ---------------------------------------------------------
+		dconf compile "${__OUTP}" "${__PATH%/*}" || true
+	fi
+	unset __SRCS __OUTP __UUID
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
@@ -3873,6 +3993,7 @@ fnMain() {
 	fnSetup_skel_user					# skeleton for user environment
 	fnSetup_skel_im						# input method skeleton
 	fnSetup_skel_copy					# copy skeleton to user
+	fnSetup_dconf						# dconf
 	fnSetup_sudo						# sudoers
 	fnSetup_blacklist					# blacklist
 	fnSetup_module_ipxe					# ipxe module

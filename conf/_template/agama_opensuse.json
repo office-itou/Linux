@@ -81,7 +81,6 @@
 // desktop
       "gnome-desktop-lang",
       "gnome-terminal",
-      "gnome-shell",
       "gstreamer-plugins-libav",
       "wireplumber",
       "adwaita-icon-theme",

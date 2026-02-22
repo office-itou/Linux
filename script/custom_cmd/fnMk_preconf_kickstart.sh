@@ -14,6 +14,7 @@ function fnMk_preconf_kickstart() {
 	declare       __NUMS=""				# "            number
 	declare       __NAME=""				# "            name
 	declare       __SECT=""				# "            section
+	declare       __STRM=""				# "            stream
 	declare       __ADDR=""				# repository
 	declare -r    __ARCH="x86_64"		# base architecture
 	declare       __WORK=""				# work
@@ -31,6 +32,9 @@ function fnMk_preconf_kickstart() {
 	__NUMS="${__VERS##*-}"
 	__NAME="${__VERS%-*}"
 	__SECT="${__NAME/-/ }"
+	__STRM="${__NAME%%-*}"
+	__STRM="${__NAME#"${__STRM}"}"
+	__STRM="${__STRM#"${__STRM%%[^-]*}"}"
 	__ADDR="${_SRVR_PROT:+"${_SRVR_PROT}:/"}/${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}"
 	# --- initializing the settings -------------------------------------------
 	sed -i "${__TGET_PATH}"                     \
@@ -41,11 +45,7 @@ function fnMk_preconf_kickstart() {
 	    -e "s%:_WEBS_ADDR_:%${__ADDR}%g       " \
 	    -e "s%:_DISTRO_:%${__NAME}-${__NUMS}%g"
 	# --- cdrom, repository ---------------------------------------------------
-	__WORK="${__NUMS}"
-	case "${__TGET_PATH}" in
-		*_centos-stream*) __WORK+="-stream";;
-		*) ;;
-	esac
+	__WORK="${__NUMS}${__STRM:+"-${__STRM}"}"
 	sed -i "${__TGET_PATH}"                 \
 		-e "/^#.*(${__SECT}).*$/,/^$/   { " \
 		-e "s/\$releasever/${__WORK}/g    " \

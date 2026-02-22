@@ -142,9 +142,15 @@
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnSetup_skel_user.sh					# skeleton for user environment
 	# shellcheck source=/dev/null
+	. "${_SHEL_COMD}"/fnSetup_skel_im_fcitx5.sh				# input method skeleton for fcitx5
+	# shellcheck source=/dev/null
+	. "${_SHEL_COMD}"/fnSetup_skel_im_ibus.sh				# input method skeleton for ibus
+	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnSetup_skel_im.sh					# input method skeleton
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnSetup_skel_copy.sh					# copy skeleton to user
+	# shellcheck source=/dev/null
+	. "${_SHEL_COMD}"/fnSetup_dconf.sh						# dconf
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnSetup_sudo.sh						# sudoers
 	# shellcheck source=/dev/null
@@ -206,6 +212,7 @@ fnMain() {
 	fnSetup_skel_user					# skeleton for user environment
 	fnSetup_skel_im						# input method skeleton
 	fnSetup_skel_copy					# copy skeleton to user
+	fnSetup_dconf						# dconf
 	fnSetup_sudo						# sudoers
 	fnSetup_blacklist					# blacklist
 	fnSetup_module_ipxe					# ipxe module
