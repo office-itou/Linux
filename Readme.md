@@ -1,5 +1,7 @@
 # **Linux**  
 
+* Use the following files at your own risk.
+
 ## Development environment
 
 * [Machine spec](./script/Readme_develop_spec_virtual-pc.md)
