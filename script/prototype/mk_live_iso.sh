@@ -303,9 +303,15 @@ function fnMk_uefi() {
 
 # --- cdfs --------------------------------------------------------------------
 function fnMk_cdfs() {
+#	__KRNL="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'linux'    -print -quit)"
+	__VLNZ="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'vmlinuz'  -print -quit)"
+	__IRAM="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd-*' -print -quit)"
+	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd.img' -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd'     -print -quit)"}"
 	mkdir -p "${__CDFS:?}"/{.disk,EFI/BOOT,boot/grub/{live-theme,x86_64-efi,i386-pc},isolinux,LiveOS}
 	cp --preserve=timestamps "${__OUTD}/${__SQFS}"                                             "${__CDFS}/LiveOS"
-	cp --preserve=timestamps "${__OUTD}/${__OUTP}"/{initrd.img,vmlinuz}                        "${__CDFS}/LiveOS"
+	cp --preserve=timestamps "${__IRAM}"                                                       "${__CDFS}/LiveOS"
+	cp --preserve=timestamps "${__VLNZ}"                                                       "${__CDFS}/LiveOS"
 	cp --preserve=timestamps "${__UEFI}"                                                       "${__CDFS}"/boot/grub
 	cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP}"/usr/lib/grub/x86_64-efi/.       "${__CDFS}"/boot/grub/x86_64-efi
 	cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP}"/usr/lib/grub/i386-pc/.          "${__CDFS}"/boot/grub/i386-pc
@@ -351,8 +357,8 @@ function fnMk_cdfs() {
 		play 960 440 1 0 4 440 1
 
 		menuentry "Live system (amd64)" --hotkey=l {
-		  linux   /LiveOS/vmlinuz root=live:CDLABEL=${__VLID} rd.live.image
-		  initrd  /LiveOS/initrd.img
+		  linux  /LiveOS/${__VLNZ##*/} root=live:CDLABEL=${__VLID} rd.live.image
+		  initrd /LiveOS/${__IRAM##*/}
 		}
 _EOT_
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__CDFS}"/boot/grub/theme.cfg || true
@@ -395,8 +401,8 @@ _EOT_
 		label live-amd64
 		  menu label ^Live system (amd64)
 		  menu default
-		  linux /LiveOS/vmlinuz
-		  initrd /LiveOS/initrd.img
+		  linux  /LiveOS/${__VLNZ##*/}
+		  initrd /LiveOS/${__IRAM##*/}
 		  append root=live:CDLABEL=${__VLID} rd.live.image
 
 		menu clear
