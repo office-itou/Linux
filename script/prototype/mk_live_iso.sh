@@ -152,7 +152,10 @@ readonly      __DIST
 declare       __VERS="${2:-}"			# version
               __VERS="${__VERS,,}"
 readonly      __VERS
-declare       __OPRT="${3:-}"			# operation
+declare       __PROF="${3:-}"			# profile
+              __PROF="${__PROF,,}"
+readonly      __PROF
+declare       __OPRT="${4:-}"			# operation
               __OPRT="${__OPRT,,}"
 readonly      __OPRT
 # ---
@@ -184,19 +187,15 @@ declare -r    __WTOP="${__HOME:-"${TMPDIR:-"/tmp"}"}/.workdirs"
 mkdir -p   "${__WTOP}"
 [[ -n "${UDO_USE:-}" ]] && chown "${SUDO_USER:?}": "${__WTOP}"
 declare       __TEMP=""
-if [[ -n "${4:-}" ]]; then
-              __TEMP="$4"
-else
               __TEMP="$(mktemp -qd "${__WTOP}/mkosi.XXXXXX")"
-fi
 readonly      __TEMP
 declare -r    __MKOS="${_DIRS_MKOS:?}"
 declare -r    __CACH="${_DIRS_CACH:?}/${__DIST}-${__VERS}"
-declare -r    __OUTD="${__TEMP:?}/${__DIST}-${__VERS}"
+declare -r    __OUTD="${__TEMP:?}/${__DIST}-${__VERS}${__PROF+-"${__PROF}"}"
 #declare -r    __OUTD="${_DIRS_IMGS:?}/mkosi/${__DIST}-${__VERS}"
 #declare -r    __VLID="Live ${__DIST} ${__VERS}${__CODE:+" (${__CODE})"}"
 declare -r    __VLID="${__DIST^}-Live-Media"
-declare -r    __ISOS="${_DIRS_RMAK:?}/live-${__DIST}-${__VERS}.iso"
+declare -r    __ISOS="${_DIRS_RMAK:?}/live-${__DIST}-${__VERS}${__PROF+-"${__PROF}"}.iso"
 declare -r    __SQFS="squashfs.img"
 declare -r    __BOOT="no"
 declare -r    __OUTP="rootfs"
@@ -234,6 +233,7 @@ function fnMk_mkosi() {
 		${__MKOS:+--directory="${__MKOS}"}
 		${__CACH:+--package-cache-dir="${__CACH}"}
 		${__OUTD:+--output-directory="${__OUTD}"}
+		${__PROF:+--profile="${__PROF}"}
 	)
 
 	case "${__OPRT:-}" in
@@ -357,7 +357,7 @@ function fnMk_cdfs() {
 		play 960 440 1 0 4 440 1
 
 		menuentry "Live system (amd64)" --hotkey=l {
-		  linux  /LiveOS/${__VLNZ##*/} root=live:CDLABEL=${__VLID} rd.live.image
+		  linux  /LiveOS/${__VLNZ##*/} root=live:CDLABEL=${__VLID} rd.live.image security=apparmor apparmor=1
 		  initrd /LiveOS/${__IRAM##*/}
 		}
 _EOT_
@@ -403,7 +403,7 @@ _EOT_
 		  menu default
 		  linux  /LiveOS/${__VLNZ##*/}
 		  initrd /LiveOS/${__IRAM##*/}
-		  append root=live:CDLABEL=${__VLID} rd.live.image
+		  append root=live:CDLABEL=${__VLID} rd.live.image security=apparmor apparmor=1
 
 		menu clear
 _EOT_
