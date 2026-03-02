@@ -24,8 +24,9 @@ function fnTest_service() {
 		for __SRVC in \
 			apparmor.service auditd.service \
 			firewalld.service \
-			clamav-freshclam.service \
+			clamav-freshclam.service clamav-daemon.service \
 			NetworkManager.service connman.service io.netplan.Netplan.service wicked.service \
+			systemd-networkd.service \
 			systemd-resolved.service dnsmasq.service \
 			systemd-timesyncd.service chronyd.service \
 			open-vm-tools.service vmtoolsd.service \

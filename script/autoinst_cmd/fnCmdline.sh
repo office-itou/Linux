@@ -30,12 +30,12 @@
 			nameserver=*                  ) _NICS_DNS4="${__LINE#*nameserver=}";;
 			ip=dhcp | ip4=dhcp | ipv4=dhcp) _IPV4_DHCP="true";;
 			ip=* | ip4=* | ipv4=*         ) _IPV4_DHCP="false"
-			                                _NICS_IPV4="$(echo "${__LINE#*ip*=}" | cut -d ':' -f 1)"
-			                                _NICS_GATE="$(echo "${__LINE#*ip*=}" | cut -d ':' -f 3)"
-			                                _NICS_MASK="$(echo "${__LINE#*ip*=}" | cut -d ':' -f 4)"
-			                                _NICS_FQDN="$(echo "${__LINE#*ip*=}" | cut -d ':' -f 5)"
-			                                _NICS_NAME="$(echo "${__LINE#*ip*=}" | cut -d ':' -f 6)"
-			                                _NICS_DNS4="$(echo "${__LINE#*ip*=}" | cut -d ':' -f 8)"
+			                                _NICS_IPV4="$(echo "${__LINE#*ip*=}:" | cut -d ':' -f 1)"
+			                                _NICS_GATE="$(echo "${__LINE#*ip*=}:" | cut -d ':' -f 3)"
+			                                _NICS_MASK="$(echo "${__LINE#*ip*=}:" | cut -d ':' -f 4)"
+			                                _NICS_FQDN="$(echo "${__LINE#*ip*=}:" | cut -d ':' -f 5)"
+			                                _NICS_NAME="$(echo "${__LINE#*ip*=}:" | cut -d ':' -f 6)"
+			                                _NICS_DNS4="$(echo "${__LINE#*ip*=}:" | cut -d ':' -f 8)"
 			                                ;;
 			ifcfg=*                       ) _NICS_NAME="$(echo "${__LINE#*ifcfg*=}" | cut -d '=' -f 1)"
 			                                _NICS_IPV4="$(echo "${__LINE#*=*=}" | cut -d ',' -f 1)"

@@ -1,7 +1,7 @@
 # shellcheck disable=SC2148
 
 	# --- command line parameter ----------------------------------------------
-	declare       _COMD_LINE=""	  	# command line parameter
+	declare       _COMD_LINE=""			# command line parameter
 	              _COMD_LINE="$(cat /proc/cmdline || true)"
 	readonly      _COMD_LINE
 	declare       _NICS_NAME=""			# nic if name   (ex. ens160)

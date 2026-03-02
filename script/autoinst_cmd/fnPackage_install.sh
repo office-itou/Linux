@@ -92,13 +92,19 @@ fnPackage_install() {
 				fnMsgout "${_PROG_NAME:-}" "skip" "no missing packages"
 			else
 				fnMsgout "${_PROG_NAME:-}" "info" "missing packages install"
-				if ! apt-get --quiet              update      ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get update";       return; fi
-#				if ! apt-get --quiet --assume-yes upgrade     ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get upgrade";      return; fi
-#				if ! apt-get --quiet --assume-yes dist-upgrade; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get dist-upgrade"; return; fi
-				if ! apt-get --quiet --assume-yes install "$@"; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get install $*";   return; fi
-				if ! apt-get --quiet --assume-yes autoremove  ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get autoremove";   return; fi
-				if ! apt-get --quiet --assume-yes autoclean   ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get autoclean";    return; fi
-				if ! apt-get --quiet --assume-yes clean       ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get clean";        return; fi
+				# --- check network -------------------------------------------
+				if [ -z "${_NICS_STAT:-}" ]; then
+					fnMsgout "${_PROG_NAME:-}" "caution" "network is down"
+					fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
+				else
+					if ! apt-get --quiet              update      ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get update";       return; fi
+#					if ! apt-get --quiet --assume-yes upgrade     ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get upgrade";      return; fi
+#					if ! apt-get --quiet --assume-yes dist-upgrade; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get dist-upgrade"; return; fi
+					if ! apt-get --quiet --assume-yes install "$@"; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get install $*";   return; fi
+					if ! apt-get --quiet --assume-yes autoremove  ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get autoremove";   return; fi
+					if ! apt-get --quiet --assume-yes autoclean   ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get autoclean";    return; fi
+					if ! apt-get --quiet --assume-yes clean       ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get clean";        return; fi
+				fi
 			fi
 		fi
 	fi

@@ -49,9 +49,10 @@
 #	readonly _PROG_PROC="${_PROG_NAME}.$$"
 
 	# --- command line parameter ----------------------------------------------
-									  	# command line parameter
+										# command line parameter
 	_COMD_LINE="$(cat /proc/cmdline || true)"
 	readonly _COMD_LINE
+	_NICS_STAT=""						# nic if status (empty: stop, else: active)
 	_NICS_NAME=""						# nic if name   (ex. ens160)
 	_NICS_MADR=""						# nic if mac    (ex. 00:00:00:00:00:00)
 	_NICS_AUTO=""						# ipv4 dhcp     (ex. empty or dhcp)
@@ -644,6 +645,7 @@ fnSystem_param() {
 #   output:   stdout   : message
 #   return:            : unused
 fnNetwork_param() {
+	_NICS_STAT=""
 	_NICS_NAME="${_NICS_NAME:-"ens160"}"
 	___DIRS="${_DIRS_TGET:-}/sys/devices"
 	if [ ! -e "${___DIRS}"/. ]; then
@@ -662,6 +664,9 @@ fnNetwork_param() {
 		if ! find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | grep -q "${_NICS_NAME}"; then
 			fnMsgout "${_PROG_NAME:-}" "failed" "not exist: [${_NICS_NAME}]"
 		else
+			if ip address show dev "${_NICS_NAME}" > /dev/null 2>&1; then
+				_NICS_STAT="true"
+			fi
 			_NICS_MADR="${_NICS_MADR:-"$(ip -0 -brief address show dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}' || true)"}"
 			_NICS_IPV4="${_NICS_IPV4:-"$(ip -4 -brief address show dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}' || true)"}"
 			if ip -4 -oneline address show dev "${_NICS_NAME}" 2> /dev/null | grep -qE '[ \t]dynamic[ \t]'; then
@@ -688,34 +693,24 @@ fnNetwork_param() {
 			_LINK_ADDR="$(ip -6 -brief address show primary dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $4;}')"
 		fi
 	fi
-	___WORK="$(echo "${_NICS_IPV4:-}" | sed 's/[^0-9./]\+//g')"
-	_NICS_IPV4="$(echo "${___WORK}/" | cut -d '/' -f 1)"
-	_NICS_BIT4="$(echo "${___WORK}/" | cut -d '/' -f 2)"
-	if [ -z "${_NICS_BIT4}" ]; then
-		_NICS_BIT4="$(fnIPv4Netmask "${_NICS_MASK:-"255.255.255.0"}")"
+	# --- ipv4 ----------------------------------------------------------------
+	if [ -z "${_NICS_IPV4:-}" ]; then
+		_NICS_AUTO="dhcp"
 	else
-		_NICS_MASK="$(fnIPv4Netmask "${_NICS_BIT4:-"24"}")"
+		___WORK="$(echo "${_NICS_IPV4:-}" | sed 's/[^0-9./]\+//g')"
+		_NICS_IPV4="$(echo "${___WORK}/" | cut -d '/' -f 1)"
+		_NICS_BIT4="$(echo "${___WORK}/" | cut -d '/' -f 2)"
+		if [ -z "${_NICS_BIT4}" ]; then
+			_NICS_BIT4="$(fnIPv4Netmask "${_NICS_MASK:-"255.255.255.0"}")"
+		else
+			_NICS_MASK="$(fnIPv4Netmask "${_NICS_BIT4:-"24"}")"
+		fi
+		[ -n "${_NICS_STAT:-}" ] && _NICS_GATE="${_NICS_GATE:-"$(ip -4 -brief route list match default | awk '{print $3;}' | uniq)"}"
 	fi
-	_NICS_GATE="${_NICS_GATE:-"$(ip -4 -brief route list match default | awk '{print $3;}' | uniq)"}"
-	if [ -e "${_DIRS_TGET:-}/etc/hostname" ]; then
-		_NICS_FQDN="${_NICS_FQDN:-"$(cat "${_DIRS_TGET:-}/etc/hostname" || true)"}"
+	if [ "${_NICS_IPV4##*.}" = "0" ] || [ "${_NICS_IPV4##*.}" = "255" ]; then
+		_NICS_AUTO="dhcp"
 	fi
-	if command -v hostnamectl > /dev/null 2>&1; then
-		_NICS_FQDN="${_NICS_FQDN:-"$(hostnamectl hostname || true)"}"
-	fi
-	if [ "${_NICS_FQDN:-}" = "localhost" ]; then
-		_NICS_HOST="$(echo "${_NICS_FQDN}." | cut -d '.' -f 1)"
-		_NICS_WGRP="$(echo "${_NICS_FQDN}." | cut -d '.' -f 2)"
-	fi
-	_NICS_FQDN="${_NICS_FQDN:-"${_DIST_NAME:+"sv-${_DIST_NAME}.workgroup"}"}"
-	_NICS_FQDN="${_NICS_FQDN:-"localhost.local"}"
-	_NICS_HOST="${_NICS_HOST:-"$(echo "${_NICS_FQDN}." | cut -d '.' -f 1)"}"
-	_NICS_WGRP="${_NICS_WGRP:-"$(echo "${_NICS_FQDN}." | cut -d '.' -f 2)"}"
-	_NICS_HOST="$(echo "${_NICS_HOST}" | tr '[:upper:]' '[:lower:]')"
-	_NICS_WGRP="$(echo "${_NICS_WGRP}" | tr '[:upper:]' '[:lower:]')"
-	if [ "${_NICS_FQDN}" = "${_NICS_HOST}" ] && [ -n "${_NICS_HOST}" ] && [ -n "${_NICS_WGRP}" ]; then
-		_NICS_FQDN="${_NICS_HOST}.${_NICS_WGRP}"
-	fi
+	# --- ipv6 ----------------------------------------------------------------
 	_IPV6_ADDR="${_IPV6_ADDR:-"2000::0/3"}"
 	_LINK_ADDR="${_LINK_ADDR:-"fe80::0/10"}"
 	_IPV4_UADR="${_NICS_IPV4%.*}"
@@ -732,6 +727,26 @@ fnNetwork_param() {
 	_LINK_UADR="$(echo "${_LINK_FADR:-}" | cut -d ':' -f 1-4 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
 	_LINK_LADR="$(echo "${_LINK_FADR:-}" | cut -d ':' -f 5-8 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
 	_LINK_RADR="$(fnIPv6RevAddr "${_LINK_FADR:-}")"
+	# --- fqdn ----------------------------------------------------------------
+	if [ -e "${_DIRS_TGET:-}/etc/hostname" ]; then
+		_NICS_FQDN="${_NICS_FQDN:-"$(cat "${_DIRS_TGET:-}/etc/hostname" || true)"}"
+	fi
+	if command -v hostnamectl > /dev/null 2>&1 && [ -n "${_NICS_STAT:-}" ]; then
+		_NICS_FQDN="${_NICS_FQDN:-"$(hostnamectl hostname || true)"}"
+	fi
+	if [ "${_NICS_FQDN:-}" = "localhost" ]; then
+		_NICS_HOST="$(echo "${_NICS_FQDN}." | cut -d '.' -f 1)"
+		_NICS_WGRP="$(echo "${_NICS_FQDN}." | cut -d '.' -f 2)"
+	fi
+	_NICS_FQDN="${_NICS_FQDN:-"${_DIST_NAME:+"sv-${_DIST_NAME}.workgroup"}"}"
+	_NICS_FQDN="${_NICS_FQDN:-"localhost.local"}"
+	_NICS_HOST="${_NICS_HOST:-"$(echo "${_NICS_FQDN}." | cut -d '.' -f 1)"}"
+	_NICS_WGRP="${_NICS_WGRP:-"$(echo "${_NICS_FQDN}." | cut -d '.' -f 2)"}"
+	_NICS_HOST="$(echo "${_NICS_HOST}" | tr '[:upper:]' '[:lower:]')"
+	_NICS_WGRP="$(echo "${_NICS_WGRP}" | tr '[:upper:]' '[:lower:]')"
+	if [ "${_NICS_FQDN}" = "${_NICS_HOST}" ] && [ -n "${_NICS_HOST}" ] && [ -n "${_NICS_WGRP}" ]; then
+		_NICS_FQDN="${_NICS_HOST}.${_NICS_WGRP}"
+	fi
 	readonly _NICS_NAME
 	readonly _NICS_MADR
 	readonly _NICS_IPV4
@@ -948,6 +963,12 @@ fnPackage_update() {
 	__FUNC_NAME="fnPackage_update"
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
+	# --- check network -------------------------------------------------------
+	if [ -z "${_NICS_STAT:-}" ]; then
+		fnMsgout "${_PROG_NAME:-}" "caution" "network is down"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
+		return
+	fi
 	# --- check command -------------------------------------------------------
 	  if command -v apt-get > /dev/null 2>&1; then
 		__PATH="${_DIRS_TGET:-}/etc/apt/sources.list"
@@ -1077,13 +1098,19 @@ fnPackage_install() {
 				fnMsgout "${_PROG_NAME:-}" "skip" "no missing packages"
 			else
 				fnMsgout "${_PROG_NAME:-}" "info" "missing packages install"
-				if ! apt-get --quiet              update      ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get update";       return; fi
-#				if ! apt-get --quiet --assume-yes upgrade     ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get upgrade";      return; fi
-#				if ! apt-get --quiet --assume-yes dist-upgrade; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get dist-upgrade"; return; fi
-				if ! apt-get --quiet --assume-yes install "$@"; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get install $*";   return; fi
-				if ! apt-get --quiet --assume-yes autoremove  ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get autoremove";   return; fi
-				if ! apt-get --quiet --assume-yes autoclean   ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get autoclean";    return; fi
-				if ! apt-get --quiet --assume-yes clean       ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get clean";        return; fi
+				# --- check network -------------------------------------------
+				if [ -z "${_NICS_STAT:-}" ]; then
+					fnMsgout "${_PROG_NAME:-}" "caution" "network is down"
+					fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
+				else
+					if ! apt-get --quiet              update      ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get update";       return; fi
+#					if ! apt-get --quiet --assume-yes upgrade     ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get upgrade";      return; fi
+#					if ! apt-get --quiet --assume-yes dist-upgrade; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get dist-upgrade"; return; fi
+					if ! apt-get --quiet --assume-yes install "$@"; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get install $*";   return; fi
+					if ! apt-get --quiet --assume-yes autoremove  ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get autoremove";   return; fi
+					if ! apt-get --quiet --assume-yes autoclean   ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get autoclean";    return; fi
+					if ! apt-get --quiet --assume-yes clean       ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get clean";        return; fi
+				fi
 			fi
 		fi
 	fi
@@ -2167,6 +2194,57 @@ _EOT_
 }
 
 # -----------------------------------------------------------------------------
+# descript: clamav
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnSetup_clamav() {
+	__FUNC_NAME="fnSetup_clamav"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	if command -v freshclam > /dev/null 2>&1; then
+		__SRVC="oneshot-freshclam.service"
+		__PATH="/etc/systemd/system/${__SRVC}"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
+			[Unit]
+			After=network-online.target
+			Before=clamav-freshclam.service clamav-daemon.service
+
+			[Service]
+			Type=oneshot
+			RemainAfterExit=yes
+			ExecStart=/usr/bin/freshclam
+
+			[Install]
+			WantedBy=multi-user.target
+_EOT_
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+		# --- service restart -------------------------------------------------
+		if [ -z "${_TGET_CHRT:-}" ]; then
+			__SRVC="${__SRVC##*/}"
+			if systemctl --quiet is-active "${__SRVC}"; then
+				fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
+				systemctl --quiet daemon-reload
+				if systemctl --quiet restart "${__SRVC}"; then
+					fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
+				else
+					fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
+				fi
+			fi
+		fi
+		unset __SRVC __PATH
+	fi
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
 # descript: apache
 #   input :            : unused
 #   output:   stdout   : message
@@ -3000,6 +3078,34 @@ _EOT_
 }
 
 # -----------------------------------------------------------------------------
+# descript: locale
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnSetup_locale() {
+	__FUNC_NAME="fnSetup_locale"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	# --- /etc/default/keyboard -----------------------------------------------
+	__CONF="${_DIRS_TGET:-}/etc/default/keyboard"
+	fnFile_backup "${__CONF}"			# backup original file
+	mkdir -p "${__CONF%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__CONF#*"${_DIRS_TGET:-}/"}" "${__CONF}"
+	sed -i "${__CONF}" \
+	    -e '/XKBMODEL/   s/=.*$/="pc105"/' \
+	    -e '/XKBLAYOUT/  s/=.*$/="jp"/' \
+	    -e '/XKBVARIANT/ s/=.*$/=""/' \
+	    -e '/XKBOPTIONS/ s/=.*$/=""/' \
+	    -e '/BACKSPACE/  s/=.*$/="guess"/'
+	fnDbgdump "${__CONF}"				# debugout
+	fnFile_backup "${__CONF}" "init"	# backup initial file
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
 # descript: desktop
 #   input :            : unused
 #   output:   stdout   : message
@@ -3687,8 +3793,11 @@ fnSetup_service() {
 		nmb.service \
 		nmbd.service \
 		winbind.service \
-		wicked.service
+		wicked.service \
+		systemd-networkd.service
 	do
+		__STAT="$(systemctl is-enabled "${__LIST}" || true)"
+		[ "${__STAT:-}" = "alias" ] && continue
 		if [ ! -e "${_DIRS_TGET:-}/lib/systemd/system/${__LIST}"     ] \
 		&& [ ! -e "${_DIRS_TGET:-}/usr/lib/systemd/system/${__LIST}" ]; then
 			continue
@@ -3707,6 +3816,7 @@ fnSetup_service() {
 		auditd.service \
 		firewalld.service \
 		clamav-freshclam.service \
+		clamav-daemon.service \
 		NetworkManager.service \
 		systemd-resolved.service \
 		dnsmasq.service \
@@ -3720,6 +3830,8 @@ fnSetup_service() {
 		smb.service \
 		smbd.service
 	do
+		__STAT="$(systemctl is-enabled "${__LIST}" || true)"
+		[ "${__STAT:-}" = "alias" ] && continue
 		if [ ! -e "${_DIRS_TGET:-}/lib/systemd/system/${__LIST}"     ] \
 		&& [ ! -e "${_DIRS_TGET:-}/usr/lib/systemd/system/${__LIST}" ]; then
 			continue
@@ -3743,14 +3855,13 @@ fnSetup_service() {
 			fi
 		done
 	fi
-	unset __LIST __SRVC
+	unset __LIST __STAT __SRVC
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 	unset __FUNC_NAME
 }
 
-#!/bin/sh
 # -----------------------------------------------------------------------------
 # descript: 
 #   input :            : unused
@@ -3983,6 +4094,7 @@ fnMain() {
 	fnSetup_firewalld					# firewalld
 	fnSetup_dnsmasq						# dnsmasq
 	fnSetup_resolv						# resolv.conf
+	fnSetup_clamav						# clamav
 	fnSetup_apache						# apache
 	fnSetup_samba						# samba
 	fnSetup_timesyncd					# timesyncd
@@ -3991,6 +4103,7 @@ fnMain() {
 	fnSetup_vmware						# vmware shared directory
 	fnSetup_wireplumber					# wireplumber
 	fnSetup_input_method				# input method
+	fnSetup_locale						# locale
 	fnSetup_desktop						# desktop
 	fnSetup_skel_user					# skeleton for user environment
 	fnSetup_skel_im						# input method skeleton
@@ -4051,12 +4164,12 @@ fnMain() {
 			nameserver=*                  ) _NICS_DNS4="${__LINE#*nameserver=}";;
 			ip=dhcp | ip4=dhcp | ipv4=dhcp) _IPV4_DHCP="true";;
 			ip=* | ip4=* | ipv4=*         ) _IPV4_DHCP="false"
-			                                _NICS_IPV4="$(echo "${__LINE#*ip*=}" | cut -d ':' -f 1)"
-			                                _NICS_GATE="$(echo "${__LINE#*ip*=}" | cut -d ':' -f 3)"
-			                                _NICS_MASK="$(echo "${__LINE#*ip*=}" | cut -d ':' -f 4)"
-			                                _NICS_FQDN="$(echo "${__LINE#*ip*=}" | cut -d ':' -f 5)"
-			                                _NICS_NAME="$(echo "${__LINE#*ip*=}" | cut -d ':' -f 6)"
-			                                _NICS_DNS4="$(echo "${__LINE#*ip*=}" | cut -d ':' -f 8)"
+			                                _NICS_IPV4="$(echo "${__LINE#*ip*=}:" | cut -d ':' -f 1)"
+			                                _NICS_GATE="$(echo "${__LINE#*ip*=}:" | cut -d ':' -f 3)"
+			                                _NICS_MASK="$(echo "${__LINE#*ip*=}:" | cut -d ':' -f 4)"
+			                                _NICS_FQDN="$(echo "${__LINE#*ip*=}:" | cut -d ':' -f 5)"
+			                                _NICS_NAME="$(echo "${__LINE#*ip*=}:" | cut -d ':' -f 6)"
+			                                _NICS_DNS4="$(echo "${__LINE#*ip*=}:" | cut -d ':' -f 8)"
 			                                ;;
 			ifcfg=*                       ) _NICS_NAME="$(echo "${__LINE#*ifcfg*=}" | cut -d '=' -f 1)"
 			                                _NICS_IPV4="$(echo "${__LINE#*=*=}" | cut -d ',' -f 1)"

@@ -11,6 +11,12 @@ fnPackage_update() {
 	__FUNC_NAME="fnPackage_update"
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
+	# --- check network -------------------------------------------------------
+	if [ -z "${_NICS_STAT:-}" ]; then
+		fnMsgout "${_PROG_NAME:-}" "caution" "network is down"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
+		return
+	fi
 	# --- check command -------------------------------------------------------
 	  if command -v apt-get > /dev/null 2>&1; then
 		__PATH="${_DIRS_TGET:-}/etc/apt/sources.list"

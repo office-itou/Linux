@@ -85,7 +85,7 @@
 	              _LIST_RMOV+=("${_DIRS_TEMP:?}")			# temporary
 
 	# --- command line parameter ----------------------------------------------
-	declare       _COMD_LINE=""	  	# command line parameter
+	declare       _COMD_LINE=""			# command line parameter
 	              _COMD_LINE="$(cat /proc/cmdline || true)"
 	readonly      _COMD_LINE
 	declare       _NICS_NAME=""			# nic if name   (ex. ens160)
@@ -990,8 +990,9 @@ function fnTest_service() {
 		for __SRVC in \
 			apparmor.service auditd.service \
 			firewalld.service \
-			clamav-freshclam.service \
+			clamav-freshclam.service clamav-daemon.service \
 			NetworkManager.service connman.service io.netplan.Netplan.service wicked.service \
+			systemd-networkd.service \
 			systemd-resolved.service dnsmasq.service \
 			systemd-timesyncd.service chronyd.service \
 			open-vm-tools.service vmtoolsd.service \

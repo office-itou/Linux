@@ -42,15 +42,15 @@ function fnMk_pxeboot() {
 		__TYPE="${__TYPE,,}"
 		__TGID="${__TGID,,}"
 		case "${__TYPE:-}" in
-			a|all    ) __PTRN=(["mini"]=".*" ["netinst"]=".*" ["dvd"]=".*" ["liveinst"]=".*" ["live"]=".*" ["tool"]=".*"); shift; break;;
+			a|all    ) __PTRN=(["mini"]=".*" ["netinst"]=".*" ["dvd"]=".*" ["liveinst"]=".*" ["live"]=".*" ["tool"]=".*" ["clive"]=".*" ["cnetinst"]=".*"); shift; break;;
 			mini     ) ;;
 			netinst  ) ;;
 			dvd      ) ;;
 			liveinst ) ;;
 			live     ) ;;
 			tool     ) ;;
-			clive    ) shift; continue;;
-			cnetinst ) shift; continue;;
+			clive    ) ;;
+			cnetinst ) ;;
 			system   ) shift; continue;;
 			*) break;;
 		esac

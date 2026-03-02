@@ -20,8 +20,11 @@ fnSetup_service() {
 		nmb.service \
 		nmbd.service \
 		winbind.service \
-		wicked.service
+		wicked.service \
+		systemd-networkd.service
 	do
+		__STAT="$(systemctl is-enabled "${__LIST}" || true)"
+		[ "${__STAT:-}" = "alias" ] && continue
 		if [ ! -e "${_DIRS_TGET:-}/lib/systemd/system/${__LIST}"     ] \
 		&& [ ! -e "${_DIRS_TGET:-}/usr/lib/systemd/system/${__LIST}" ]; then
 			continue
@@ -40,6 +43,7 @@ fnSetup_service() {
 		auditd.service \
 		firewalld.service \
 		clamav-freshclam.service \
+		clamav-daemon.service \
 		NetworkManager.service \
 		systemd-resolved.service \
 		dnsmasq.service \
@@ -53,6 +57,8 @@ fnSetup_service() {
 		smb.service \
 		smbd.service
 	do
+		__STAT="$(systemctl is-enabled "${__LIST}" || true)"
+		[ "${__STAT:-}" = "alias" ] && continue
 		if [ ! -e "${_DIRS_TGET:-}/lib/systemd/system/${__LIST}"     ] \
 		&& [ ! -e "${_DIRS_TGET:-}/usr/lib/systemd/system/${__LIST}" ]; then
 			continue
@@ -76,7 +82,7 @@ fnSetup_service() {
 			fi
 		done
 	fi
-	unset __LIST __SRVC
+	unset __LIST __STAT __SRVC
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 

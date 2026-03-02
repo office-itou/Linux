@@ -85,7 +85,7 @@
 	              _LIST_RMOV+=("${_DIRS_TEMP:?}")			# temporary
 
 	# --- command line parameter ----------------------------------------------
-	declare       _COMD_LINE=""	  	# command line parameter
+	declare       _COMD_LINE=""			# command line parameter
 	              _COMD_LINE="$(cat /proc/cmdline || true)"
 	readonly      _COMD_LINE
 	declare       _NICS_NAME=""			# nic if name   (ex. ens160)
@@ -2372,7 +2372,8 @@ function fnMk_boot_option_kickstart() {
 			__WORK="${__WORK:+"${__WORK} "}inst.stage2=hd:LABEL=${__MDIA[$((_OSET_MDIA+17))]}"
 		fi
 	else
-		case "${2}" in
+#		case "${2}" in
+		case "${__MDIA[$((_OSET_MDIA+0))]}" in
 			clive) __WORK="${__WORK:+"${__WORK} "}root=live:\${srvraddr}/${_DIRS_RMAK##*/}/${__MDIA[$((_OSET_MDIA+14))]##*/}";;
 			*    ) __WORK="${__WORK:+"${__WORK} "}root=live:\${srvraddr}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
 		esac
@@ -2515,34 +2516,42 @@ function fnMk_boot_options() {
 	declare -r    __TGET_TYPE="${1:?}"
 	shift
 	declare -a    __MDIA=("${@:-}")
-	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
-		debian-*|live-debian-*| \
-		ubuntu-*|live-ubuntu-*)
-			case "${__MDIA[$((_OSET_MDIA+24))]:-}" in
-				*/preseed/*) fnMk_boot_option_preseed "${__TGET_TYPE}" "${@}";;
-				*/nocloud/*) fnMk_boot_option_nocloud "${__TGET_TYPE}" "${@}";;
-				*          ) ;;
-			esac
-			;;
-		fedora-*      |live-fedora-*      | \
-		centos-*      |live-centos-*      | \
-		almalinux-*   |live-almalinux-*   | \
-		rockylinux-*  |live-rockylinux-*  | \
-		miraclelinux-*|live-miraclelinux-*)
-			case "${__MDIA[$((_OSET_MDIA+24))]:-}" in
-				*/kickstart/*) fnMk_boot_option_kickstart "${__TGET_TYPE}" "${@}";;
-				*            ) ;;
-			esac
-			;;
-		opensuse-*|live-opensuse-*)
-			case "${__MDIA[$((_OSET_MDIA+24))]:-}" in
-				*/autoyast/*) fnMk_boot_option_autoyast "${__TGET_TYPE}" "${@}";;
-				*/agama/*   ) fnMk_boot_option_agama    "${__TGET_TYPE}" "${@}";;
-				*           ) ;;
-			esac
-			;;
-		* ) ;;
+	case "${__MDIA[$((_OSET_MDIA+24))]:-}" in
+		*/preseed/*  ) fnMk_boot_option_preseed   "${__TGET_TYPE}" "${@}";;
+		*/nocloud/*  ) fnMk_boot_option_nocloud   "${__TGET_TYPE}" "${@}";;
+		*/kickstart/*) fnMk_boot_option_kickstart "${__TGET_TYPE}" "${@}";;
+		*/autoyast/* ) fnMk_boot_option_autoyast  "${__TGET_TYPE}" "${@}";;
+		*/agama/*    ) fnMk_boot_option_agama     "${__TGET_TYPE}" "${@}";;
+		*            ) ;;
 	esac
+#	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
+#		debian-*|live-debian-*| \
+#		ubuntu-*|live-ubuntu-*)
+#			case "${__MDIA[$((_OSET_MDIA+24))]:-}" in
+#				*/preseed/*) fnMk_boot_option_preseed "${__TGET_TYPE}" "${@}";;
+#				*/nocloud/*) fnMk_boot_option_nocloud "${__TGET_TYPE}" "${@}";;
+#				*          ) ;;
+#			esac
+#			;;
+#		fedora-*      |live-fedora-*      | \
+#		centos-*      |live-centos-*      | \
+#		almalinux-*   |live-almalinux-*   | \
+#		rockylinux-*  |live-rockylinux-*  | \
+#		miraclelinux-*|live-miraclelinux-*)
+#			case "${__MDIA[$((_OSET_MDIA+24))]:-}" in
+#				*/kickstart/*) fnMk_boot_option_kickstart "${__TGET_TYPE}" "${@}";;
+#				*            ) ;;
+#			esac
+#			;;
+#		opensuse-*|live-opensuse-*)
+#			case "${__MDIA[$((_OSET_MDIA+24))]:-}" in
+#				*/autoyast/*) fnMk_boot_option_autoyast "${__TGET_TYPE}" "${@}";;
+#				*/agama/*   ) fnMk_boot_option_agama    "${__TGET_TYPE}" "${@}";;
+#				*           ) ;;
+#			esac
+#			;;
+#		* ) ;;
+#	esac
 }
 
 # -----------------------------------------------------------------------------
@@ -3417,15 +3426,15 @@ function fnMk_pxeboot() {
 		__TYPE="${__TYPE,,}"
 		__TGID="${__TGID,,}"
 		case "${__TYPE:-}" in
-			a|all    ) __PTRN=(["mini"]=".*" ["netinst"]=".*" ["dvd"]=".*" ["liveinst"]=".*" ["live"]=".*" ["tool"]=".*"); shift; break;;
+			a|all    ) __PTRN=(["mini"]=".*" ["netinst"]=".*" ["dvd"]=".*" ["liveinst"]=".*" ["live"]=".*" ["tool"]=".*" ["clive"]=".*" ["cnetinst"]=".*"); shift; break;;
 			mini     ) ;;
 			netinst  ) ;;
 			dvd      ) ;;
 			liveinst ) ;;
 			live     ) ;;
 			tool     ) ;;
-			clive    ) shift; continue;;
-			cnetinst ) shift; continue;;
+			clive    ) ;;
+			cnetinst ) ;;
 			system   ) shift; continue;;
 			*) break;;
 		esac

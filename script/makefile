@@ -74,6 +74,7 @@ $(TGET): $(SRCS) $(OBJS)
 	@shellcheck -o all $@
 	@echo "copy    : $@"
 	@sudo cp --preserve=timestamps $@ /srv/user/share/conf/script/
+	@sudo chmod +x /srv/user/share/conf/script/$(notdir $@)
 	@echo "complete: $@"
 
 # --- autoinst_cmd_late.sh ----------------------------------------------------
@@ -108,6 +109,7 @@ OBJS=\
 	./autoinst_cmd/fnSetup_firewalld.sh\
 	./autoinst_cmd/fnSetup_dnsmasq.sh\
 	./autoinst_cmd/fnSetup_resolv.sh\
+	./autoinst_cmd/fnSetup_clamav.sh\
 	./autoinst_cmd/fnSetup_apache.sh\
 	./autoinst_cmd/fnSetup_samba.sh\
 	./autoinst_cmd/fnSetup_timesyncd.sh\
@@ -116,6 +118,7 @@ OBJS=\
 	./autoinst_cmd/fnSetup_vmware.sh\
 	./autoinst_cmd/fnSetup_wireplumber.sh\
 	./autoinst_cmd/fnSetup_input_method.sh\
+	./autoinst_cmd/fnSetup_locale.sh\
 	./autoinst_cmd/fnSetup_desktop.sh\
 	./autoinst_cmd/fnSetup_skel_user.sh\
 	./autoinst_cmd/fnSetup_skel_im_fcitx5.sh\
@@ -142,6 +145,7 @@ $(TGET): $(SRCS) $(OBJS)
 	@shellcheck -o all $@
 	@echo "copy    : $@"
 	@sudo cp --preserve=timestamps $@ /srv/user/share/conf/script/
+	@sudo chmod +x /srv/user/share/conf/script/$(notdir $@)
 	@echo "complete: $@"
 
 # --- autoinst_cmd_part.sh ----------------------------------------------------
@@ -173,6 +177,7 @@ $(TGET): $(SRCS) $(OBJS)
 	@shellcheck -o all $@
 	@echo "copy    : $@"
 	@sudo cp --preserve=timestamps $@ /srv/user/share/conf/script/
+	@sudo chmod +x /srv/user/share/conf/script/$(notdir $@)
 	@echo "complete: $@"
 
 # --- autoinst_cmd_run.sh -----------------------------------------------------
@@ -204,6 +209,7 @@ $(TGET): $(SRCS) $(OBJS)
 	@shellcheck -o all $@
 	@echo "copy    : $@"
 	@sudo cp --preserve=timestamps $@ /srv/user/share/conf/script/
+	@sudo chmod +x /srv/user/share/conf/script/$(notdir $@)
 	@echo "complete: $@"
 
 # --- test_server.sh ----------------------------------------------------------
@@ -256,6 +262,7 @@ $(TGET): $(SRCS) $(OBJS)
 	@./mk_shell.sh --create $<
 	@echo "check   : $@"
 	@shellcheck -o all $@
+	@sudo chmod +x $@
 	@echo "complete: $@"
 
 # ---- mk_custom_iso.sh -------------------------------------------------------
@@ -341,4 +348,5 @@ $(TGET): $(SRCS) $(OBJS)
 	@./mk_shell.sh --create $<
 	@echo "check   : $@"
 	@shellcheck -o all $@
+	@sudo chmod +x $@
 	@echo "complete: $@"

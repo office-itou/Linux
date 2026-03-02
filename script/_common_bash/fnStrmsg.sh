@@ -6,7 +6,7 @@
 #   input :     $2     : message
 #   output:   stdout   : output
 #   return:            : unused
-#   g-var :            : unused
+#   g-var : _PROG_NAME : read
 # shellcheck disable=SC2148,SC2317,SC2329
 function fnStrmsg() {
 	declare      ___TEXT="${1:-}"

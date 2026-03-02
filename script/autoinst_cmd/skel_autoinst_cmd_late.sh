@@ -122,6 +122,8 @@
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnSetup_resolv.sh						# resolv.conf
 	# shellcheck source=/dev/null
+	. "${_SHEL_COMD}"/fnSetup_clamav.sh						# clamav
+	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnSetup_apache.sh						# apache
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnSetup_samba.sh						# samba
@@ -137,6 +139,8 @@
 	. "${_SHEL_COMD}"/fnSetup_wireplumber.sh				# wireplumber
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnSetup_input_method.sh				# input method
+	# shellcheck source=/dev/null
+	. "${_SHEL_COMD}"/fnSetup_locale.sh						# locale
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnSetup_desktop.sh					# desktop
 	# shellcheck source=/dev/null
@@ -200,6 +204,7 @@ fnMain() {
 	fnSetup_firewalld					# firewalld
 	fnSetup_dnsmasq						# dnsmasq
 	fnSetup_resolv						# resolv.conf
+	fnSetup_clamav						# clamav
 	fnSetup_apache						# apache
 	fnSetup_samba						# samba
 	fnSetup_timesyncd					# timesyncd
@@ -208,6 +213,7 @@ fnMain() {
 	fnSetup_vmware						# vmware shared directory
 	fnSetup_wireplumber					# wireplumber
 	fnSetup_input_method				# input method
+	fnSetup_locale						# locale
 	fnSetup_desktop						# desktop
 	fnSetup_skel_user					# skeleton for user environment
 	fnSetup_skel_im						# input method skeleton

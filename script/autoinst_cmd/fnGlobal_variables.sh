@@ -1,9 +1,10 @@
 # shellcheck disable=SC2148
 
 	# --- command line parameter ----------------------------------------------
-									  	# command line parameter
+										# command line parameter
 	_COMD_LINE="$(cat /proc/cmdline || true)"
 	readonly _COMD_LINE
+	_NICS_STAT=""						# nic if status (empty: stop, else: active)
 	_NICS_NAME=""						# nic if name   (ex. ens160)
 	_NICS_MADR=""						# nic if mac    (ex. 00:00:00:00:00:00)
 	_NICS_AUTO=""						# ipv4 dhcp     (ex. empty or dhcp)
