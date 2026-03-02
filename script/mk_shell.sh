@@ -201,8 +201,10 @@ function funcCreate() {
 		: > "${__TEMP:?}"
 		__BLNK=""
 		__TOPS=""
+		__MAIN=""
 		__COMN=""
 		__COMD=""
+		__OTHR=""
 		while IFS= read -r __LINE
 		do
 			__WORK="${__LINE#"${__LINE%%[!"${IFS}"]*}"}"	# ltrim
@@ -215,8 +217,10 @@ function funcCreate() {
 				"#"[${IFS}]*"source"[${IFS}]*) continue;;
 				*"_SHEL_PATH="*| \
 				*"_SHEL_TOPS="*| \
+				*"_SHEL_MAIN="*| \
 				*"_SHEL_COMN="*| \
-				*"_SHEL_COMD="*)
+				*"_SHEL_COMD="*| \
+				*"_SHEL_OTHR="*)
 					__INCL="${__WORK#*_SHEL_*=}"
 					__INCL="${__INCL%%\#*}"
 					__INCL="${__INCL//\"/}"
@@ -225,8 +229,10 @@ function funcCreate() {
 					case "${__WORK:-}" in
 						*"_SHEL_PATH="*) ;;
 						*"_SHEL_TOPS="*) __TOPS="$(realpath "${__INCL//\$\{*\}/${__PARM%/*}}")";;
+						*"_SHEL_MAIN="*) __MAIN="$(realpath "${__INCL//\$\{_SHEL_TOPS*\}/${__TOPS:?}}")";;
 						*"_SHEL_COMN="*) __COMN="$(realpath "${__INCL//\$\{_SHEL_TOPS*\}/${__TOPS:?}}")";;
 						*"_SHEL_COMD="*) __COMD="$(realpath "${__INCL//\$\{_SHEL_TOPS*\}/${__TOPS:?}}")";;
+						*"_SHEL_OTHR="*) __OTHR="$(realpath "${__INCL//\$\{_SHEL_TOPS*\}/${__TOPS:?}}")";;
 						*) ;;
 					esac
 					continue
@@ -239,8 +245,10 @@ function funcCreate() {
 					__INCL="${__INCL#"${__INCL%%[!"${IFS}"]*}"}"	# ltrim
 					__INCL="${__INCL%"${__INCL##*[!"${IFS}"]}"}"	# rtrim
 					__PATH="${__INCL//\$\{_SHEL_TOPS*\}/${__TOPS}}"
+					__PATH="${__PATH//\$\{_SHEL_MAIN*\}/${__MAIN}}"
 					__PATH="${__PATH//\$\{_SHEL_COMN*\}/${__COMN}}"
 					__PATH="${__PATH//\$\{_SHEL_COMD*\}/${__COMD}}"
+					__PATH="${__PATH//\$\{_SHEL_OTHR*\}/${__OTHR}}"
 					__PATH="$(realpath "${__PATH}")"
 					__FLAG=""
 					while IFS= read -r __TEXT
