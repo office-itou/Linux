@@ -147,13 +147,13 @@ declare -r -a __LIST=(
 
 # ---
 declare       __DIST="${1:?}"			# distribution
-              __DIST="${__DIST,,}"
+              __DIST="${__DIST,,}"		# --distribution=
 readonly      __DIST
 declare       __VERS="${2:-}"			# version
-              __VERS="${__VERS,,}"
+              __VERS="${__VERS,,}"		# --release=
 readonly      __VERS
 declare       __PROF="${3:-}"			# profile
-              __PROF="${__PROF,,}"
+              __PROF="${__PROF,,}"		# --image-id=
 readonly      __PROF
 declare       __OPRT="${4:-}"			# operation
               __OPRT="${__OPRT,,}"
@@ -177,6 +177,10 @@ case "${__DIST,,}" in
 esac
 readonly      __CODE
 # ---
+# debian: https://packages.debian.org/
+# ubuntu: https://packages.ubuntu.com/
+# mkosi : https://github.com/systemd/mkosi/blob/main/mkosi/resources/man/mkosi.1.md
+# dracut: https://github.com/zfsonlinux/dracut
 declare -r    _DIRS_MKOS="/srv/user/share/conf/_mkosi"
 declare -r    _DIRS_CACH="/srv/user/share/cache"
 declare -r    _DIRS_IMGS="/srv/user/share/imgs"
@@ -189,28 +193,32 @@ mkdir -p   "${__WTOP}"
 declare       __TEMP=""
               __TEMP="$(mktemp -qd "${__WTOP}/mkosi.XXXXXX")"
 readonly      __TEMP
-declare -r    __MKOS="${_DIRS_MKOS:?}"
-declare -r    __CACH="${_DIRS_CACH:?}/${__DIST}-${__VERS}"
-declare -r    __OUTD="${__TEMP:?}/${__DIST}-${__VERS}${__PROF+-"${__PROF}"}"
+declare -r    __ARCH="x86_64"
+declare -r    __MKOS="${_DIRS_MKOS:?}"	# --directory=
+#declare -r    __CACH="${_DIRS_CACH:?}/${__DIST}-${__VERS}" # --package-cache-dir
+declare -r    __WRKD="${__TEMP:?}/${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${__ARCH//_/-}"}${__PROF+-"${__PROF}"}/workdir" # --workspace-directory=
+declare -r    __OUTD="${__TEMP:?}/${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${__ARCH//_/-}"}${__PROF+-"${__PROF}"}/outputs" # --output-directory=
+#declare -r    __OUTD="${__TEMP:?}/${__DIST}-${__VERS}${__PROF+-"${__PROF}"}" # --output-directory=
 #declare -r    __OUTD="${_DIRS_IMGS:?}/mkosi/${__DIST}-${__VERS}"
 #declare -r    __VLID="Live ${__DIST} ${__VERS}${__CODE:+" (${__CODE})"}"
 declare -r    __VLID="${__DIST^}-Live-Media"
-declare -r    __ISOS="${_DIRS_RMAK:?}/live-${__DIST}-${__VERS}${__PROF+-"${__PROF}"}.iso"
+declare -r    __ISOS="${_DIRS_RMAK:?}/live-${__DIST}-${__VERS}${__ARCH:+-"${__ARCH//_/-}"}${__PROF+-"${__PROF}"}.iso"
 declare -r    __SQFS="squashfs.img"
-declare -r    __BOOT="no"
-declare -r    __OUTP="rootfs"
-declare -r    __FMAT="directory"
-#declare -r    __FMAT="tar"
-#declare -r    __FMAT="cpio"
-#declare -r    __FMAT="disk"
-#declare -r    __FMAT="uki"
-#declare -r    __FMAT="esp"
-#declare -r    __FMAT="oci"
-#declare -r    __FMAT="sysext"
-#declare -r    __FMAT="confext"
-#declare -r    __FMAT="portable"
-#declare -r    __FMAT="addon"
-#declare -r    __FMAT="none"
+declare -r    __BOOT="no"				# --bootable=
+declare -r    __OUTP="rootfs"			# --output=
+declare -r    __FMAT="directory"		# --format=
+#declare -r    __FMAT="tar"				# "
+#declare -r    __FMAT="cpio"			# "
+#declare -r    __FMAT="disk"			# "
+#declare -r    __FMAT="uki"				# "
+#declare -r    __FMAT="esp"				# "
+#declare -r    __FMAT="oci"				# "
+#declare -r    __FMAT="sysext"			# "
+#declare -r    __FMAT="confext"			# "
+#declare -r    __FMAT="portable"		# "
+#declare -r    __FMAT="addon"			# "
+#declare -r    __FMAT="none"			# "
+#declare -r    __NWRK="yes"				# --with-network=
 #declare -r    __HBRD="/usr/lib/ISOLINUX/isohdpfx.bin"
 declare -r    __ETRI="/usr/lib/ISOLINUX/isolinux.bin"
 #declare -r    __BIOS="/usr/lib/syslinux/mbr/gptmbr.bin"
@@ -220,27 +228,23 @@ declare -r    __MNTP="${__OUTD:?}/mnt"
 declare -r    __CDFS="${__OUTD:?}/img"
 declare -r    __BCAT="boot.cat"
 
-declare -a    __COMD=()
-
 # --- mkosi -------------------------------------------------------------------
+declare -a    __COMD=(
+	${__BOOT:+--bootable="${__BOOT}"}
+	${__OUTP:+--output="${__OUTP}"}
+	${__FMAT:+--format="${__FMAT}"}
+	${__NWRK:+--with-network="${__NWRK}"}
+	${__DIST:+--distribution="${__DIST}"}
+	${__VERS:+--release="${__CODE:-"${__VERS}"}"}
+	${__MKOS:+--directory="${__MKOS}"}
+	${__WRKD:+--workspace-directory="${__WRKD}"}
+	${__CACH:+--package-cache-dir="${__CACH}"}
+	${__OUTD:+--output-directory="${__OUTD}"}
+	${__PROF:+--image-id="${__PROF}"}
+)
+
 function fnMk_mkosi() {
-	__COMD=(
-		${__BOOT:+--bootable="${__BOOT}"}
-		${__OUTP:+--output="${__OUTP}"}
-		${__FMAT:+--format="${__FMAT}"}
-		${__DIST:+--distribution="${__DIST}"}
-		${__VERS:+--release="${__CODE:-"${__VERS}"}"}
-		${__MKOS:+--directory="${__MKOS}"}
-		${__CACH:+--package-cache-dir="${__CACH}"}
-		${__OUTD:+--output-directory="${__OUTD}"}
-		${__PROF:+--profile="${__PROF}"}
-	)
-
-	case "${__OPRT:-}" in
-		build) __COMD=("${__COMD[@]}" --wipe-build-dir --force build);;
-		*    ) __COMD=("${__COMD[@]}" --no-pager summary);;
-	esac
-
+	declare -r -a __COMD=("${@:-}")
 	if ! mkosi "${__COMD[@]}"; then
 		__RTCD="$?"
 		printf "%s\n" "mkosi ${__COMD[*]}"
@@ -248,9 +252,35 @@ function fnMk_mkosi() {
 	fi
 }
 
+function fnMk_mkosi_summary() {
+	__COMD+=(
+		--no-pager
+		summary
+	)
+	fnMk_mkosi "${__COMD[@]:-}"
+}
+
+function fnMk_mkosi_build() {
+	__COMD+=(
+		--force
+		--wipe-build-dir
+		build
+	)
+	fnMk_mkosi "${__COMD[@]:-}"
+}
+
+function fnMk_mkosi_boot() {
+	__COMD+=(
+		--force
+		--wipe-build-dir
+		boot
+	)
+	fnMk_mkosi "${__COMD[@]:-}"
+}
+
 # --- mksquashfs --------------------------------------------------------------
 function fnMk_mksquashfs() {
-	__COMD=(
+	declare -r -a __COMD=(
 		"${__OUTD}/${__OUTP}"
 		"${__OUTD}/${__SQFS}"
 		-quiet
@@ -411,7 +441,7 @@ _EOT_
 
 # --- xorrisofs ---------------------------------------------------------------
 function fnMk_xorrisofs() {
-	__COMD=(
+	declare -r -a __COMD=(
 		-rational-rock
 		${__VLID:+-volid "${__VLID// /-}"}
 		-joliet -joliet-long
@@ -441,12 +471,24 @@ function fnMk_xorrisofs() {
 	popd > /dev/null 2>&1
 }
 
-fnMk_mkosi
-fnMk_mksquashfs
-fnMk_uefi
-fnMk_cdfs
-fnMk_xorrisofs
 
-rm -rf "${__TEMP:?}"
+case "${__OPRT:-}" in
+	build)	fnMk_mkosi_build
+			fnMk_mksquashfs
+			fnMk_uefi
+			fnMk_cdfs
+			fnMk_xorrisofs
+			;;
+	boot )	fnMk_mkosi_boot
+			fnMk_mksquashfs
+			fnMk_uefi
+			fnMk_cdfs
+			fnMk_xorrisofs
+			;;
+	*)		fnMk_mkosi_summary
+			;;
+esac
+
+# rm -rf "${__TEMP:?}"
 
 exit 0

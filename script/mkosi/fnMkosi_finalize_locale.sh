@@ -15,7 +15,7 @@ function fnMkosi_finalize_locale() {
 
 	# --- user environment ----------------------------------------------------
 	declare -r    __SHEL="/bin/bash"	# login shell
-	declare -r    __LANG="ja_JP.UTF-8"
+#	declare -r    __LANG="ja_JP.UTF-8"
 	declare -r    __TIME="Asia/Tokyo"
 	declare       __PATH=""
 	if [[ -n "${__LANG:-}" ]]; then
