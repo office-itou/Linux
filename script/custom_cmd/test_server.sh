@@ -851,6 +851,7 @@ function fnTest_param() {
 	fnDbgout "system parameter" \
 		"info,_TGET_VIRT=[${_TGET_VIRT:-}]" \
 		"info,_TGET_CHRT=[${_TGET_CHRT:-}]" \
+		"info,_TGET_CNTR=[${_TGET_CNTR:-}]" \
 		"info,_DIRS_TGET=[${_DIRS_TGET:-}]" \
 		"info,_DIST_NAME=[${_DIST_NAME:-}]" \
 		"info,_DIST_VERS=[${_DIST_VERS:-}]" \
