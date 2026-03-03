@@ -2129,12 +2129,17 @@ _EOT_
 #		else
 #			mkdir -p "${__CONF%/*}"
 #			cp --preserve=timestamps "${_DIRS_ORIG}/${__CONF#*"${_DIRS_TGET:-}/"}" "${__CONF}"
-			__WORK="$(realpath "${__PATH}")"
-			if [  "${__WORK}" != "${__CONF}" ]; then
-				__WORK="${__PATH}.orig"
-				[ ! -e "${__WORK}" ] && mv "${__PATH}" "${__WORK}"
-				rm -f "${__PATH:?}"
-				ln -s "../${__CONF#"${_DIRS_TGET:-}/"}" "${__PATH}"
+			if mountpoint -q "${__PATH}"; then
+				fnMsgout "${_PROG_NAME:-}" "caution" "[${__FUNC_NAME}] is mount point"
+			else
+				__WORK="$(realpath "${__PATH}")"
+				if [  "${__WORK}" != "${__CONF}" ]; then
+					fnMsgout "${_PROG_NAME:-}" "caution" "[${__FUNC_NAME}] is created"
+					__WORK="${__PATH}.orig"
+					[ ! -e "${__WORK}" ] && mv "${__PATH}" "${__WORK}"
+					rm -f "${__PATH:?}"
+					ln -s "../${__CONF#"${_DIRS_TGET:-}/"}" "${__PATH}"
+				fi
 			fi
 			fnDbgdump "${__PATH}"				# debugout
 			fnFile_backup "${__PATH}" "init"	# backup initial file
