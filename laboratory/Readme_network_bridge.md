@@ -73,7 +73,7 @@ sudo qemu-system-x86_64 \
 
 </details>
 
-## Configuration files
+## configuration files
 
 <details><summary>cat /etc/NetworkManager/system-connections/br0.nmconnection</summary>
 
