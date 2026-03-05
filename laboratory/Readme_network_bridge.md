@@ -62,7 +62,7 @@ sudo qemu-system-x86_64 \
   -boot menu=on \
   -m 4G \
   -device nvme,drive=nvme0,serial=deadbeef \
-  -drive file=debian13.img,if=none,id=nvme0,format=raw \
+  -drive file=qemu-nvme.img,if=none,id=nvme0,format=raw \
   -nic bridge,id=br0 \
   -nographic \
   -vga virtio \
