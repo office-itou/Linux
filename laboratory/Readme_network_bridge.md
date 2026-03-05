@@ -56,13 +56,13 @@ sudo bash -c '
 ``` bash:
 mkdir -p ~/qemu
 cd ~/qemu
-qemu-img create -f raw debian13.img 20G
+qemu-img create -f raw qemu-nvme.raw 20G
 sudo qemu-system-x86_64 \
   -enable-kvm \
   -boot menu=on \
   -m 4G \
   -device nvme,drive=nvme0,serial=deadbeef \
-  -drive file=qemu-nvme.img,if=none,id=nvme0,format=raw \
+  -drive file=qemu-nvme.raw,if=none,id=nvme0,format=raw \
   -nic bridge,id=br0 \
   -nographic \
   -vga virtio \
