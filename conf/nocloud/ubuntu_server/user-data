@@ -198,6 +198,8 @@ autoinstall:
   - eject                               # ejects CDs and operates CD-Changers under Linux
   - tree                                # displays an indented directory tree, in color
   - shellcheck                          # lint tool for shell scripts
+  - xxd                                 # tool to make (or reverse) a hex dump
+  - xorriso                             # command line ISO-9660 and Rock Ridge manipulation tool
   - tasksel                             # tool for selecting tasks for installation on Debian systems
   - clamav                              # anti-virus utility for Unix - command-line interface
   - openssh-server                      # secure shell (SSH) server, for secure access from remote machines

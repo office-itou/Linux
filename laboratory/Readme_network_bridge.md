@@ -45,6 +45,9 @@ sudo bash -c '
     connection.zone home_use
   nmcli connection add type bridge-slave autoconnect yes con-name ens160 master br0
   brctl stp br0 off
+  brctl show
+  nmcli connection show
+  sleep 1
   reboot
 '
 ```

@@ -68,6 +68,8 @@
       "rsync",
       "tree",
       "ShellCheck",
+      "xxd",
+      "xorriso",
       "clamav",
       "openssh-server",
       "systemd-network",

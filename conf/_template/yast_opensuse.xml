@@ -421,6 +421,8 @@ fixed address -->
       <package>rsync</package>
       <package>tree</package>
       <package>ShellCheck</package>
+<!--  <package>xxd</package> -->
+      <package>xorriso</package>
       <package>clamav</package>
       <package>openssh-server</package>
 <!-- leap
