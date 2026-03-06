@@ -7,20 +7,26 @@ PATH="/home/master/git/mkosi/bin:${PATH}"
 # --- packages ----------------------------------------------------------------
 #if ! command -v mkosi > /dev/null 2>&1; then
 if ! mkosi --version > /dev/null 2>&1; then
+	__HOME="${SUDO_HOME:-"${HOME:?}"}"
 	echo "The distribution's packages are out of date."
 	echo "Check git and get it from there."
 	echo "https://github.com/systemd/mkosi"
 	echo ""
+	echo "mkdir -p ${__HOME}/git"
+	echo "cd ${__HOME}/git"
 	echo "git clone https://github.com/systemd/mkosi"
-	echo "mkdir -p ~/.local/bin/"
-	echo "ln -s ${PATH}/mkosi/bin/mkosi ~/.local/bin/mkosi"
+	echo "mkdir -p ${__HOME}/.local/bin/"
+	echo "ln -s ${__HOME}/git/mkosi/bin/mkosi ~/.local/bin/mkosi"
 	echo "mkosi --version"
 	echo ""
-	echo "ln -s ${PATH}/mkosi/bin/mkosi-addon ~/.local/bin/mkosi-addon"
-	echo "ln -s ${PATH}/mkosi/bin/mkosi-initrd ~/.local/bin/mkosi-initrd"
-	echo "ln -s ${PATH}/mkosi/bin/mkosi-sandbox ~/.local/bin/mkosi-sandbox"
+	echo "ln -s ${__HOME}/git/mkosi/bin/mkosi-addon ${__HOME}/.local/bin/mkosi-addon"
+	echo "ln -s ${__HOME}/git/mkosi/bin/mkosi-initrd ${__HOME}/.local/bin/mkosi-initrd"
+	echo "ln -s ${__HOME}/git/mkosi/bin/mkosi-sandbox ${__HOME}/.local/bin/mkosi-sandbox"
 	echo ""
+    echo "sudo apt-get debian-archive-keyring ubuntu-keyring"
     echo "sudo apt-get install systemd-ukify systemd-boot systemd-boot-tools systemd-boot-efi-amd64-signed squashfs-tools parted grub-pc-bin"
+	echo "sudo apt-get install systemd-repart"
+	echo "sudo apt-get install isolinux syslinux-common"
 	exit 0
 #	declare -r -a __PACK=(
 #		mkosi                           # build Bespoke OS Images
@@ -195,7 +201,7 @@ declare       __TEMP=""
 readonly      __TEMP
 declare -r    __ARCH="x86_64"
 declare -r    __MKOS="${_DIRS_MKOS:?}"	# --directory=
-#declare -r    __CACH="${_DIRS_CACH:?}/${__DIST}-${__VERS}" # --package-cache-dir
+#declare -r    __CACH="${_DIRS_CACH:?}/${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${__ARCH//_/-}"}" # --package-cache-dir
 declare -r    __WRKD="${__TEMP:?}/${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${__ARCH//_/-}"}${__PROF+-"${__PROF}"}/workdir" # --workspace-directory=
 declare -r    __OUTD="${__TEMP:?}/${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${__ARCH//_/-}"}${__PROF+-"${__PROF}"}/outputs" # --output-directory=
 #declare -r    __OUTD="${__TEMP:?}/${__DIST}-${__VERS}${__PROF+-"${__PROF}"}" # --output-directory=
@@ -204,7 +210,7 @@ declare -r    __OUTD="${__TEMP:?}/${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${
 declare -r    __VLID="${__DIST^}-Live-Media"
 declare -r    __ISOS="${_DIRS_RMAK:?}/live-${__DIST}-${__VERS}${__ARCH:+-"${__ARCH//_/-}"}${__PROF+-"${__PROF}"}.iso"
 declare -r    __SQFS="squashfs.img"
-declare -r    __BOOT="no"				# --bootable=
+declare -r    __BOOT="yes"				# --bootable=
 declare -r    __OUTP="rootfs"			# --output=
 declare -r    __FMAT="directory"		# --format=
 #declare -r    __FMAT="tar"				# "
@@ -273,7 +279,8 @@ function fnMk_mkosi_boot() {
 	__COMD+=(
 		--force
 		--wipe-build-dir
-		boot
+		--console=gui
+		qemu
 	)
 	fnMk_mkosi "${__COMD[@]:-}"
 }
@@ -336,18 +343,19 @@ function fnMk_cdfs() {
 #	__KRNL="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'linux'    -print -quit)"
 	__VLNZ="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'vmlinuz'  -print -quit)"
 	__IRAM="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd-*' -print -quit)"
-	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd.img' -print -quit)"}"
-	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd'     -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd.img-*' -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd.img'   -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd'       -print -quit)"}"
 	mkdir -p "${__CDFS:?}"/{.disk,EFI/BOOT,boot/grub/{live-theme,x86_64-efi,i386-pc},isolinux,LiveOS}
-	cp --preserve=timestamps "${__OUTD}/${__SQFS}"                                             "${__CDFS}/LiveOS"
-	cp --preserve=timestamps "${__IRAM}"                                                       "${__CDFS}/LiveOS"
-	cp --preserve=timestamps "${__VLNZ}"                                                       "${__CDFS}/LiveOS"
-	cp --preserve=timestamps "${__UEFI}"                                                       "${__CDFS}"/boot/grub
-	cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP}"/usr/lib/grub/x86_64-efi/.       "${__CDFS}"/boot/grub/x86_64-efi
-	cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP}"/usr/lib/grub/i386-pc/.          "${__CDFS}"/boot/grub/i386-pc
-	cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP}"/usr/lib/syslinux/modules/bios/. "${__CDFS}"/isolinux
-	cp --preserve=timestamps  "${__ETRI}"                                                      "${__CDFS}"/isolinux
-	cp --preserve=timestamps  /usr/lib/syslinux/mbr/gptmbr.bin                                 "${__BIOS}"
+	cp --preserve=timestamps "${__OUTD}/${__SQFS:?}"                                             "${__CDFS:?}/LiveOS"
+	cp --preserve=timestamps "${__IRAM:?}"                                                       "${__CDFS:?}/LiveOS"
+	cp --preserve=timestamps "${__VLNZ:?}"                                                       "${__CDFS:?}/LiveOS"
+	cp --preserve=timestamps "${__UEFI:?}"                                                       "${__CDFS:?}"/boot/grub
+	cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP:?}"/usr/lib/grub/x86_64-efi/.       "${__CDFS:?}"/boot/grub/x86_64-efi
+	cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP:?}"/usr/lib/grub/i386-pc/.          "${__CDFS:?}"/boot/grub/i386-pc
+	cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP:?}"/usr/lib/syslinux/modules/bios/. "${__CDFS:?}"/isolinux
+	cp --preserve=timestamps  "${__ETRI:?}"                                                      "${__CDFS:?}"/isolinux
+	cp --preserve=timestamps  /usr/lib/syslinux/mbr/gptmbr.bin                                   "${__BIOS:?}"
 
 	touch "${__CDFS}/.disk/info"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__CDFS}"/EFI/BOOT/grub.cfg || true
@@ -489,6 +497,6 @@ case "${__OPRT:-}" in
 			;;
 esac
 
-# rm -rf "${__TEMP:?}"
+rm -rf "${__TEMP:?}"
 
 exit 0
