@@ -212,6 +212,7 @@ autoinstall:
   - smbclient                           # command-line SMB/CIFS clients for Unix
   - cifs-utils                          # Common Internet File System utilities
   - libnss-winbind                      # Samba nameservice integration plugins
+  - lvm2                                # Linux Logical Volume Manager
   - open-vm-tools                       # Open VMware Tools for virtual machines hosted on VMware (CLI)
   - open-vm-tools-desktop               # Open VMware Tools for virtual machines hosted on VMware (GUI)
   - ubuntu-server                       # Ubuntu Server system

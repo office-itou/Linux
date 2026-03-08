@@ -24,7 +24,7 @@ function fnTest_vmware() {
 			fnMsgout "\033[36m${_PROG_NAME:-}" "inactive" "${__COMD[0]}"
 		else
 			fnMsgout "\033[36m${_PROG_NAME:-}" "active" "${__COMD[0]}"
-			df -h /srv/hgfs/
+			[[ -e /srv/hgfs/. ]] && df -h /srv/hgfs/
 		fi
 	fi
 	unset __PARM __ARRY

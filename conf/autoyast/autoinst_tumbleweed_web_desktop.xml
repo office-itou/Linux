@@ -437,6 +437,7 @@ leap -->
       <package>samba-client</package>
       <package>cifs-utils</package>
       <package>samba-winbind</package>
+      <package>lvm2</package>
       <package>open-vm-tools</package>
       <package>open-vm-tools-desktop</package>
       <package>fuse</package>

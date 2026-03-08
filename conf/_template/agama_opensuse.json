@@ -125,6 +125,7 @@
       "samba-client",
       "cifs-utils",
       "samba-winbind",
+      "lvm2",
       "open-vm-tools",
       "open-vm-tools-desktop",
       "fuse",

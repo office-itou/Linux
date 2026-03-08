@@ -2,31 +2,55 @@
 
 set -eu
 
-PATH="/home/master/git/mkosi/bin:${PATH}"
+#PATH="/home/master/git/mkosi/bin:${PATH}"
 
 # --- packages ----------------------------------------------------------------
 #if ! command -v mkosi > /dev/null 2>&1; then
 if ! mkosi --version > /dev/null 2>&1; then
 	__HOME="${SUDO_HOME:-"${HOME:?}"}"
-	echo "The distribution's packages are out of date."
-	echo "Check git and get it from there."
-	echo "https://github.com/systemd/mkosi"
-	echo ""
-	echo "mkdir -p ${__HOME}/git"
-	echo "cd ${__HOME}/git"
-	echo "git clone https://github.com/systemd/mkosi"
-	echo "mkdir -p ${__HOME}/.local/bin/"
-	echo "ln -s ${__HOME}/git/mkosi/bin/mkosi ~/.local/bin/mkosi"
-	echo "mkosi --version"
-	echo ""
-	echo "ln -s ${__HOME}/git/mkosi/bin/mkosi-addon ${__HOME}/.local/bin/mkosi-addon"
-	echo "ln -s ${__HOME}/git/mkosi/bin/mkosi-initrd ${__HOME}/.local/bin/mkosi-initrd"
-	echo "ln -s ${__HOME}/git/mkosi/bin/mkosi-sandbox ${__HOME}/.local/bin/mkosi-sandbox"
-	echo ""
-    echo "sudo apt-get debian-archive-keyring ubuntu-keyring"
-    echo "sudo apt-get install systemd-ukify systemd-boot systemd-boot-tools systemd-boot-efi-amd64-signed squashfs-tools parted grub-pc-bin"
-	echo "sudo apt-get install systemd-repart"
-	echo "sudo apt-get install isolinux syslinux-common"
+	# -------------------------------------------------------------------------
+	#	git								fast, scalable, distributed revision control system
+	#	debian-archive-keyring			OpenPGP archive certificates of the Debian archive
+	#	ubuntu-keyring					all GnuPG keys used by Ubuntu Project
+	#	systemd-ukify					tool to build Unified Kernel Images
+	#	systemd-boot					simple UEFI boot manager - integration and services
+	#	systemd-boot-tools				simple UEFI boot manager - tools
+	#	systemd-boot-efi-amd64-signed	Tools to manage UEFI firmware updates (signed)
+	#	systemd-repart					Provides the systemd-repart and systemd-sbsign utilities
+	#	grub-pc-bin						GRand Unified Bootloader, version 2 (PC/BIOS modules)
+	#	isolinux						collection of bootloaders (ISO 9660 bootloader)
+	#	syslinux-common					collection of bootloaders (common)
+	#	xorriso							command line ISO-9660 and Rock Ridge manipulation tool
+	#	squashfs-tools					Tool to create and append to squashfs filesystems
+	#	parted							disk partition manipulator
+	#	xxd								tool to make (or reverse) a hex dump
+	#	python3-pefile					Portable Executable (PE) parsing module for Python
+	#	systemd-boot					simple UEFI boot manager - integration and services
+	#	systemd-boot-tools				simple UEFI boot manager - tools
+	#	systemd-boot-efi-amd64-signed	Tools to manage UEFI firmware updates (signed)
+	# -------------------------------------------------------------------------
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+		The distribution's packages are out of date.
+		Check git and get it from there.
+		https://github.com/systemd/mkosi
+		# --- mkdir -----------------------------------------------
+		sudo mkdir -p /srv/user/private/{bin,src/git}
+		cd /srv/user/private/src/git/
+		# --- download --------------------------------------------
+		sudo apt-get install git
+		sudo git clone https://github.com/systemd/mkosi
+		# --- setup -----------------------------------------------
+		sudo ln -s $PWD/mkosi/bin/mkosi /usr/local/bin/mkosi
+		mkosi --version
+		sudo ln -s $PWD/mkosi/bin/mkosi-addon /usr/local/bin/mkosi-addon
+		sudo ln -s $PWD/mkosi/bin/mkosi-initrd /usr/local/bin/mkosi-initrd
+		sudo ln -s $PWD/mkosi/bin/mkosi-sandbox /usr/local/bin/mkosi-sandbox
+		# --- dependencies ----------------------------------------
+		sudo apt-get install debian-archive-keyring ubuntu-keyring
+		sudo apt-get install grub-pc-bin isolinux syslinux-common
+		sudo apt-get install xorriso squashfs-tools parted
+		sudo apt-get install systemd-boot systemd-boot-tools systemd-boot-efi-amd64-signed
+_EOT_
 	exit 0
 #	declare -r -a __PACK=(
 #		mkosi                           # build Bespoke OS Images
@@ -192,6 +216,9 @@ declare -r    _DIRS_CACH="/srv/user/share/cache"
 declare -r    _DIRS_IMGS="/srv/user/share/imgs"
 declare -r    _DIRS_ISOS="/srv/user/share/isos"
 declare -r    _DIRS_RMAK="/srv/user/share/rmak"
+declare       __DATE=""
+              __DATE="$(date +"%Y/%m/%d %H:%M:%S")"
+readonly      __DATE
 declare -r    __HOME="${SUDO_HOME:-"${SUDO_USER:-"${HOME:-"/root"}"}${SUDO_USER:+"/home/${SUDO_USER}"}"}"
 declare -r    __WTOP="${__HOME:-"${TMPDIR:-"/tmp"}"}/.workdirs"
 mkdir -p   "${__WTOP}"
@@ -341,7 +368,11 @@ function fnMk_uefi() {
 # --- cdfs --------------------------------------------------------------------
 function fnMk_cdfs() {
 #	__KRNL="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'linux'    -print -quit)"
-	__VLNZ="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'vmlinuz'  -print -quit)"
+#	__VLNZ="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'vmlinuz'  -print -quit)"
+	__VLNZ="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'vmlinuz-*' -print -quit)"
+	__VLNZ="${__VLNZ:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'vmlinuz'      -print -quit)"}"
+	__VLNZ="${__VLNZ:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'linux-*'      -print -quit)"}"
+	__VLNZ="${__VLNZ:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'linux'        -print -quit)"}"
 	__IRAM="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd-*' -print -quit)"
 	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd.img-*' -print -quit)"}"
 	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd.img'   -print -quit)"}"
@@ -357,6 +388,16 @@ function fnMk_cdfs() {
 	cp --preserve=timestamps  "${__ETRI:?}"                                                      "${__CDFS:?}"/isolinux
 	cp --preserve=timestamps  /usr/lib/syslinux/mbr/gptmbr.bin                                   "${__BIOS:?}"
 
+	__SPLS="${__CDFS}/isolinux/splash.png"
+	mkdir -p "${__SPLS%/*}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | xxd -p -r | gzip -d -k > "${__SPLS:?}"
+		1f8b0808462b8d69000373706c6173682e706e6700eb0cf073e7e592e262
+		6060e0f5f47009626060566060608ae060028a888a88aa3330b0767bba38
+		8654dc7a7b909117287868c177ff5c3ef3050ca360148c8251300ae8051a
+		c299ff4c6660bcb6edd00b10d7d3d5cf659d53421300e6198186c4050000
+_EOT_
+	__SPLS="${__SPLS#"${__CDFS}"}"
+	__TITL="$(printf "%s%s" "${__ISOS##*/}" "${__DATE:+" ${__DATE}"}")"
 	touch "${__CDFS}/.disk/info"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__CDFS}"/EFI/BOOT/grub.cfg || true
 		search --file --set=root /.disk/info
@@ -364,86 +405,167 @@ function fnMk_cdfs() {
 		source \$prefix/grub.cfg
 	_EOT_
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__CDFS}"/boot/grub/grub.cfg || true
-		set default=0
+		set default="0"
+		set timeout="5"
 
-		if [ x\$feature_default_font_path = xy ] ; then
-		  font=unicode
-		else
-		  font=\$prefix/unicode.pf2
+		if [ "x\${font}" = "x" ] ; then
+		  if [ "x\${feature_default_font_path}" = "xy" ] ; then
+		    font="unicode"
+		  else
+		    font="\${prefix}/fonts/font.pf2"
+		  fi
 		fi
+		export font
 
-		if loadfont \$font ; then
-		  set gfxmode=800x600
-		  set gfxpayload=keep
-		  insmod efi_gop
-		  insmod efi_uga
+		if loadfont "\$font" ; then
+		# set lang="ja_JP"
+		# export lang
+		  set gfxmode=${_MENU_RESO:+"${_MENU_RESO}x${_MENU_DPTH},"}auto
+		  set gfxpayload="keep"
+		  export gfxmode
+		  export gfxpayload
+		  if [ "\${grub_platform}" = "efi" ]; then
+		    insmod efi_gop
+		    insmod efi_uga
+		  else
+		    insmod vbe
+		    insmod vga
+		  fi
 		  insmod video_bochs
 		  insmod video_cirrus
-		else
-		  set gfxmode=auto
-		  insmod all_video
+		  insmod gfxterm
+		  insmod gettext
+		  insmod png
+		  terminal_output gfxterm
 		fi
 
-		insmod gfxterm
-		insmod png
+		#set timeout_style=menu
+		#set color_normal=light-gray/black
+		#set color_highlight=white/dark-gray
+		#export color_normal
+		#export color_highlight
 
-		source /boot/grub/theme.cfg
-
-		terminal_output gfxterm
+		set theme=/boot/grub/theme.cfg
+		export theme
 
 		insmod play
 		play 960 440 1 0 4 440 1
 
 		menuentry "Live system (amd64)" --hotkey=l {
-		  linux  /LiveOS/${__VLNZ##*/} root=live:CDLABEL=${__VLID} rd.live.image security=apparmor apparmor=1
+		  set gfxpayload="keep"
+		  set background_color="black"
+		  set options="root=live:CDLABEL=${__VLID} rd.live.image security=apparmor apparmor=1"
+		  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+		  echo 'Loading boot files ...'
+		  linux  /LiveOS/${__VLNZ##*/} \${options} --- quiet
 		  initrd /LiveOS/${__IRAM##*/}
 		}
 _EOT_
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__CDFS}"/boot/grub/theme.cfg || true
-		set color_normal=light-gray/black
-		set color_highlight=white/dark-gray
+		${__SPLS:+"desktop-image: \"${__SPLS}\""}
+		desktop-color: "#000000"
+		title-color: "#ffffff"
+		title-font: "Unifont Regular 16"
+		${__TITL:+"title-text: \"Boot Menu: ${__TITL}"\"}
+		message-font: "Unifont Regular 16"
+		terminal-font: "Unifont Regular 16"
+		terminal-border: "0"
 
-		if [ -e /boot/grub/splash.png ]; then
-		  set theme=/boot/grub/live-theme/theme.txt
-		else
-		  set menu_color_normal=cyan/blue
-		  set menu_color_highlight=white/blue
-		fi
+		#help bar at the bottom
+		+ label {
+		  top = 100%-50
+		  left = 0
+		  width = 100%
+		  height = 20
+		  text = "@KEYMAP_SHORT@"
+		  align = "center"
+		  color = "#ffffff"
+		  font = "Unifont Regular 16"
+		}
+
+		#boot menu
+		+ boot_menu {
+		  left = 10%
+		  width = 80%
+		  top = 20%
+		  height = 50%-80
+		  item_color = "#a8a8a8"
+		  item_font = "Unifont Regular 16"
+		  selected_item_color= "#ffffff"
+		  selected_item_font = "Unifont Regular 16"
+		  item_height = 16
+		  item_padding = 0
+		  item_spacing = 4
+		  icon_width = 0
+		  icon_heigh = 0
+		  item_icon_space = 0
+		}
+
+		#progress bar
+		+ progress_bar {
+		  id = "__timeout__"
+		  left = 15%
+		  top = 100%-80
+		  height = 16
+		  width = 70%
+		  font = "Unifont Regular 16"
+		  text_color = "#000000"
+		  fg_color = "#ffffff"
+		  bg_color = "#a8a8a8"
+		  border_color = "#ffffff"
+		  text = "@TIMEOUT_NOTIFICATION_LONG@"
+		}
 _EOT_
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__CDFS}"/isolinux/isolinux.cfg || true
-		default vesamenu.c32
+		path ./
 		prompt 0
-		timeout 0
+		#timeout 0
+		default vesamenu.c32
 
-		menu hshift 0
-		menu width 82
+		menu clear
+		${__SPLS:+"menu background ${__SPLS}"}
+		${__TITL:+"menu title Boot Menu: ${__TITL}"}
 
-		menu title Boot menu
+		# MENU COLOR <Item>  <ANSI Seq.> <foreground> <background> <shadow type>
+		menu color   screen       *       #80ffffff    #00000000         *       # background colour not covered by the splash image
+		menu color   border       *       #ffffffff    #ee000000         *       # The wire-frame border
+		menu color   title        *       #ffff3f7f    #ee000000         *       # Menu title text
+		menu color   sel          *       #ff00dfdf    #ee000000         *       # Selected menu option
+		menu color   hotsel       *       #ff7f7fff    #ee000000         *       # The selected hotkey (set with ^ in MENU LABEL)
+		menu color   unsel        *       #ffffffff    #ee000000         *       # Unselected menu options
+		menu color   hotkey       *       #ff7f7fff    #ee000000         *       # Unselected hotkeys (set with ^ in MENU LABEL)
+		menu color   tabmsg       *       #c07f7fff    #00000000         *       # Tab text
+		menu color   timeout_msg  *       #8000dfdf    #00000000         *       # Timout text
+		menu color   timeout      *       #c0ff3f7f    #00000000         *       # Timout counter
+		menu color   disabled     *       #807f7f7f    #ee000000         *       # Disabled menu options, including SEPARATORs
+		menu color   cmdmark      *       #c000ffff    #ee000000         *       # Command line marker - The '> ' on the left when editing an option
+		menu color   cmdline      *       #c0ffffff    #ee000000         *       # Command line - The text being edited
+		menu color   scrollbar    *       #40000000    #00000000         *       # Scroll bar
+		menu color   pwdborder    *       #80ffffff    #20ffffff         *       # Password box wire-frame border
+		menu color   pwdheader    *       #80ff8080    #20ffffff         *       # Password box header
+		menu color   pwdentry     *       #80ffffff    #20ffffff         *       # Password entry field
+		menu color   help         *       #c0ffffff    #00000000         *       # Help text, if set via 'TEXT HELP ... ENDTEXT'
 
-		menu background splash.png
-		menu color title        * #FFFFFFFF *
-		menu color border       * #00000000 #00000000 none
-		menu color sel          * #ffffffff #76a1d0ff *
-		menu color hotsel       1;7;37;40 #ffffffff #76a1d0ff *
-		menu color tabmsg       * #ffffffff #00000000 *
-		menu color help         37;40 #ffdddd00 #00000000 none
-		menu vshift 12
-		menu rows 10
-		menu helpmsgrow 15
-		# The command line must be at least one line from the bottom.
-		menu cmdlinerow 16
-		menu timeoutrow 16
-		menu tabmsgrow 18
+		menu margin               2
+		menu vshift               3
+		menu rows                12
+		menu tabmsgrow           28
+		menu cmdlinerow          26
+		menu timeoutrow          26
+		menu helpmsgrow          24
+		menu hekomsgendrow       38
+
 		menu tabmsg Press ENTER to boot or TAB to edit a menu entry
+
+		timeout 50
+		#default auto-install
 
 		label live-amd64
 		  menu label ^Live system (amd64)
 		  menu default
 		  linux  /LiveOS/${__VLNZ##*/}
 		  initrd /LiveOS/${__IRAM##*/}
-		  append root=live:CDLABEL=${__VLID} rd.live.image security=apparmor apparmor=1
-
-		menu clear
+		  append root=live:CDLABEL=${__VLID} rd.live.image security=apparmor apparmor=1 --- quiet
 _EOT_
 }
 
