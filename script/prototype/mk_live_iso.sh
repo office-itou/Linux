@@ -378,6 +378,8 @@ function fnMk_cdfs() {
 	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd.img'   -print -quit)"}"
 	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd'       -print -quit)"}"
 	mkdir -p "${__CDFS:?}"/{.disk,EFI/BOOT,boot/grub/{live-theme,x86_64-efi,i386-pc},isolinux,LiveOS}
+	ln --symbolic --relative "${__IRAM:?}"                                                       "${__CDFS:?}/LiveOS/initrd.img"
+	ln --symbolic --relative "${__VLNZ:?}"                                                       "${__CDFS:?}/LiveOS/vmlinuz"
 	cp --preserve=timestamps "${__OUTD}/${__SQFS:?}"                                             "${__CDFS:?}/LiveOS"
 	cp --preserve=timestamps "${__IRAM:?}"                                                       "${__CDFS:?}/LiveOS"
 	cp --preserve=timestamps "${__VLNZ:?}"                                                       "${__CDFS:?}/LiveOS"

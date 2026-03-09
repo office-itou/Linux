@@ -38,7 +38,7 @@ function fnMkosi_finalize_dracut() {
 		"-  01  systemd-ldconfig                systemd-ldconfig                                                                                        "	\
 		"a  01  systemd-modules-load            systemd-modules-load                                                                                    "	\
 		"-  01  systemd-networkd                systemd-networkd                                                                                        "	\
-		"a  01  systemd-pcrphase                systemd-pcrphase                                                                                        "	\
+		"=  01  systemd-pcrphase                systemd-pcrphase                                                                                        "	\
 		"-  01  systemd-portabled               systemd-portabled                                                                                       "	\
 		"-  01  systemd-pstore                  systemd-pstore                                                                                          "	\
 		"-  01  systemd-repart                  systemd-repart                                                                                          "	\
