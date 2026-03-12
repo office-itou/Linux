@@ -34,6 +34,13 @@ fnPackage_update() {
 		elif ! apt-get --quiet --assume-yes autoclean   ; then fnMsgout "${_PROG_NAME:-}" "failed"   "apt-get autoclean";    \
 		elif ! apt-get --quiet --assume-yes clean       ; then fnMsgout "${_PROG_NAME:-}" "failed"   "apt-get clean";        \
 		else                                                   fnMsgout "${_PROG_NAME:-}" "complete" "apt-get";              fi
+		if command -v apt > /dev/null 2>&1; then
+			if apt --assume-yes modernize-sources; then
+				fnMsgout "${_PROG_NAME:-}" "complete" "apt modernize-sources"
+			else
+				fnMsgout "${_PROG_NAME:-}" "failed" "apt modernize-sources"
+			fi
+		fi
 	elif command -v dnf     > /dev/null 2>&1; then
 		if ! dnf --quiet --assumeyes update; then fnMsgout "${_PROG_NAME:-}" "failed" "dnf update"; fi
 	elif command -v yum     > /dev/null 2>&1; then

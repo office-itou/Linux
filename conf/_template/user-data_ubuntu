@@ -200,6 +200,7 @@ autoinstall:
   - shellcheck                          # lint tool for shell scripts
   - xxd                                 # tool to make (or reverse) a hex dump
   - xorriso                             # command line ISO-9660 and Rock Ridge manipulation tool
+  - jq                                  # lightweight and flexible command-line JSON processor
   - tasksel                             # tool for selecting tasks for installation on Debian systems
   - clamav                              # anti-virus utility for Unix - command-line interface
   - openssh-server                      # secure shell (SSH) server, for secure access from remote machines
@@ -256,6 +257,9 @@ autoinstall:
 # - libavcodec-extra                    # FFmpeg library with extra codecs (metapackage)
 # - gstreamer1.0-libav                  # ffmpeg plugin for GStreamer
 # - pipewire-audio-client-libraries     # transitional package for pipewire-alsa and pipewire-jack
+# - vlc                                 # multimedia player and streamer
+# - vlc-l10n                            # translations for VLC
+# - vlc-plugin-pipewire                 # PipeWire audio plugins for VLC
 # - bluetooth                           # Bluetooth support (metapackage)
 # - bluez                               # Bluetooth tools and daemons
 # - bluez-firmware                      # Firmware for Bluetooth devices

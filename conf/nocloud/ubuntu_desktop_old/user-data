@@ -256,6 +256,9 @@ autoinstall:
   - libavcodec-extra                    # FFmpeg library with extra codecs (metapackage)
   - gstreamer1.0-libav                  # ffmpeg plugin for GStreamer
   - pipewire-audio-client-libraries     # transitional package for pipewire-alsa and pipewire-jack
+  - vlc                                 # multimedia player and streamer
+  - vlc-l10n                            # translations for VLC
+  - vlc-plugin-pipewire                 # PipeWire audio plugins for VLC
   - bluetooth                           # Bluetooth support (metapackage)
   - bluez                               # Bluetooth tools and daemons
   - bluez-firmware                      # Firmware for Bluetooth devices

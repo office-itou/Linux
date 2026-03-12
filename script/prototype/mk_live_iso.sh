@@ -182,9 +182,9 @@ readonly      __DIST
 declare       __VERS="${2:-}"			# version
               __VERS="${__VERS,,}"		# --release=
 readonly      __VERS
-declare       __PROF="${3:-}"			# profile
-              __PROF="${__PROF,,}"		# --image-id=
-readonly      __PROF
+declare       __EDTN="${3:-}"			# EDITION
+              __EDTN="${__EDTN,,}"		# --environment=EDITION=
+readonly      __EDTN
 declare       __OPRT="${4:-}"			# operation
               __OPRT="${__OPRT,,}"
 readonly      __OPRT
@@ -229,13 +229,13 @@ readonly      __TEMP
 declare -r    __ARCH="x86_64"
 declare -r    __MKOS="${_DIRS_MKOS:?}"	# --directory=
 #declare -r    __CACH="${_DIRS_CACH:?}/${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${__ARCH//_/-}"}" # --package-cache-dir
-declare -r    __WRKD="${__TEMP:?}/${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${__ARCH//_/-}"}${__PROF+-"${__PROF}"}/workdir" # --workspace-directory=
-declare -r    __OUTD="${__TEMP:?}/${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${__ARCH//_/-}"}${__PROF+-"${__PROF}"}/outputs" # --output-directory=
-#declare -r    __OUTD="${__TEMP:?}/${__DIST}-${__VERS}${__PROF+-"${__PROF}"}" # --output-directory=
+declare -r    __WRKD="${__TEMP:?}/${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${__ARCH//_/-}"}${__EDTN+-"${__EDTN}"}/workdir" # --workspace-directory=
+declare -r    __OUTD="${__TEMP:?}/${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${__ARCH//_/-}"}${__EDTN+-"${__EDTN}"}/outputs" # --output-directory=
+#declare -r    __OUTD="${__TEMP:?}/${__DIST}-${__VERS}${__EDTN+-"${__EDTN}"}" # --output-directory=
 #declare -r    __OUTD="${_DIRS_IMGS:?}/mkosi/${__DIST}-${__VERS}"
 #declare -r    __VLID="Live ${__DIST} ${__VERS}${__CODE:+" (${__CODE})"}"
 declare -r    __VLID="${__DIST^}-Live-Media"
-declare -r    __ISOS="${_DIRS_RMAK:?}/live-${__DIST}-${__VERS}${__ARCH:+-"${__ARCH//_/-}"}${__PROF+-"${__PROF}"}.iso"
+declare -r    __ISOS="${_DIRS_RMAK:?}/live-${__DIST}-${__VERS}${__ARCH:+-"${__ARCH//_/-}"}${__EDTN+-"${__EDTN}"}.iso"
 declare -r    __SQFS="squashfs.img"
 declare -r    __BOOT="yes"				# --bootable=
 declare -r    __OUTP="rootfs"			# --output=
@@ -273,7 +273,7 @@ declare -a    __COMD=(
 	${__WRKD:+--workspace-directory="${__WRKD}"}
 	${__CACH:+--package-cache-dir="${__CACH}"}
 	${__OUTD:+--output-directory="${__OUTD}"}
-	${__PROF:+--image-id="${__PROF}"}
+	${__EDTN:+--environment=EDITION="${__EDTN}"}
 )
 
 function fnMk_mkosi() {
@@ -378,8 +378,8 @@ function fnMk_cdfs() {
 	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd.img'   -print -quit)"}"
 	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd'       -print -quit)"}"
 	mkdir -p "${__CDFS:?}"/{.disk,EFI/BOOT,boot/grub/{live-theme,x86_64-efi,i386-pc},isolinux,LiveOS}
-	ln --symbolic --relative "${__IRAM:?}"                                                       "${__CDFS:?}/LiveOS/initrd.img"
-	ln --symbolic --relative "${__VLNZ:?}"                                                       "${__CDFS:?}/LiveOS/vmlinuz"
+	cp --preserve=timestamps "${__IRAM:?}"                                                       "${__CDFS:?}/LiveOS/initrd.img"
+	cp --preserve=timestamps "${__VLNZ:?}"                                                       "${__CDFS:?}/LiveOS/vmlinuz"
 	cp --preserve=timestamps "${__OUTD}/${__SQFS:?}"                                             "${__CDFS:?}/LiveOS"
 	cp --preserve=timestamps "${__IRAM:?}"                                                       "${__CDFS:?}/LiveOS"
 	cp --preserve=timestamps "${__VLNZ:?}"                                                       "${__CDFS:?}/LiveOS"
@@ -456,7 +456,7 @@ _EOT_
 		menuentry "Live system (amd64)" --hotkey=l {
 		  set gfxpayload="keep"
 		  set background_color="black"
-		  set options="root=live:CDLABEL=${__VLID} rd.live.image security=apparmor apparmor=1"
+		  set options="root=live:CDLABEL=${__VLID} rd.live.image rd.live.overlay.overlayfs=1 security=apparmor apparmor=1"
 		  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 		  echo 'Loading boot files ...'
 		  linux  /LiveOS/${__VLNZ##*/} \${options} --- quiet
@@ -567,7 +567,7 @@ _EOT_
 		  menu default
 		  linux  /LiveOS/${__VLNZ##*/}
 		  initrd /LiveOS/${__IRAM##*/}
-		  append root=live:CDLABEL=${__VLID} rd.live.image security=apparmor apparmor=1 --- quiet
+		  append root=live:CDLABEL=${__VLID} rd.live.image rd.live.overlay.overlayfs=1 security=apparmor apparmor=1 --- quiet
 _EOT_
 }
 
