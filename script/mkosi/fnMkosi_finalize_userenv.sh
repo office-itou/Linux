@@ -16,8 +16,8 @@ function fnMkosi_finalize_userenv() {
 	# --- user environment ----------------------------------------------------
 	declare -a    __OPTN=()
 	declare -r    __SHEL="/bin/bash"	# login shell
-	declare -r    __USER="user"			# user name
-	declare -r    __PAWD="live"			# password
+	declare -r    __USER="master"		# user name
+	declare -r    __PAWD="master"		# password
 	declare       __CRYP=""				# encrypted password
 	declare       __SUDO=""				# sudo group name
 	__SUDO="$(awk -F ':' '$1~/sudo|wheel/ {print $1;}' /etc/group)"

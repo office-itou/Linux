@@ -64,6 +64,8 @@
 	source "${_SHEL_MAIN}"/fnMkosi_finalize_setup.sh		# finalize setup
 	# shellcheck source=/dev/null
 	source "${_SHEL_MAIN}"/fnMkosi_finalize_dracut.sh		# finalize dracut
+	# shellcheck source=/dev/null
+	source "${_SHEL_MAIN}"/fnMkosi_finalize_service.sh		# finalize preset service
 
 # *** main section ************************************************************
 

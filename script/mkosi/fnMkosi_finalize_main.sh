@@ -21,6 +21,7 @@ function fnMain() {
 	fnMkosi_finalize_userenv			# finalize user environment
 	fnMkosi_finalize_setup				# finalize setup
 	fnMkosi_finalize_dracut				# finalize dracut
+	fnMkosi_finalize_service			# finalize preset service
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"

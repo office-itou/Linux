@@ -85,7 +85,7 @@ function fnMkosi_finalize_dracut() {
 		"a  90  kernel-modules                  kernel_modules_for_root_filesystems_and_other_boot-time_devices                                         "	\
 		"a  90  kernel-modules-extra            extra_out-of-tree_kernel_modules                                                                        "	\
 		"a  90  kernel-network-modules          Includes_and_loads_kernel_modules_for_network_devices                                                   "	\
-		"!  90  livenet                         Fetch_live_updates_for_SquashFS_images                                                                  "	\
+		"a  90  livenet                         Fetch_live_updates_for_SquashFS_images                                                                  "	\
 		"!  90  lvm                             LVM_devices                                                                                             "	\
 		"!  90  mdraid                          kernel_module_for_md_raid_cluster,_mdadm                                                                "	\
 		"!  90  multipath                       multipath_devices                                                                                       "	\
@@ -119,7 +119,7 @@ function fnMkosi_finalize_dracut() {
 		"-  95  qeth_rules                      -                                                                                                       "	\
 		"!  95  resume                          resume_from_low-power_state                                                                             "	\
 		"!  95  rootfs-block                    mount_block_device_as_rootfs                                                                            "	\
-		"!  95  ssh-client                      Includes_ssh_and_scp_clients                                                                            "	\
+		"a  95  ssh-client                      Includes_ssh_and_scp_clients                                                                            "	\
 		"!  95  terminfo                        Includes_a_terminfo_file                                                                                "	\
 		"!  95  udev-rules                      Includes_udev_and_some_basic_rules                                                                      "	\
 		"!  95  virtfs                          virtual_filesystems_(9p)                                                                                "	\

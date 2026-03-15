@@ -190,6 +190,38 @@ declare       __OPRT="${4:-}"			# operation
 readonly      __OPRT
 # ---
 declare       __CODE=""
+case "${__DIST,,}-${__VERS}" in
+#	debian-11.0         | \
+	debian-12.0         | \
+	debian-13.0         | \
+	debian-14.0         | \
+	debian-15.0         | \
+	debian-testing      | \
+	debian-sid          ) ;;
+#	debian-experimental ) ;;
+#	ubuntu-16.04        | \
+#	ubuntu-18.04        | \
+#	ubuntu-20.04        | \
+#	ubuntu-22.04        | \
+	ubuntu-24.04        | \
+	ubuntu-25.04        | \
+	ubuntu-25.10        | \
+	ubuntu-26.04        ) ;;
+#	rhel-*              ) ;;
+	fedora-43           | \
+	fedora-44           ) ;;
+#	centos-8            | \
+	centos-9            | \
+	centos-10           ) ;;
+#	alma-8              | \
+	alma-9              | \
+	alma-10             ) ;;
+#	rocky-8             | \
+	rocky-9             | \
+	rocky-10            ) ;;
+	opensuse-*          ) ;;
+	*) echo "not supported: ${__DIST,,}-${__VERS}"; exit 1;;
+esac
 case "${__DIST,,}" in
 	debian | \
 	ubuntu )
@@ -253,7 +285,12 @@ declare -r    __FMAT="directory"		# --format=
 #declare -r    __FMAT="none"			# "
 #declare -r    __NWRK="yes"				# --with-network=
 #declare -r    __HBRD="/usr/lib/ISOLINUX/isohdpfx.bin"
-declare -r    __ETRI="/usr/lib/ISOLINUX/isolinux.bin"
+declare       __ETRI=""
+  if [[ -e /usr/share/syslinux/dosutil/eltorito.sys ]]; then __ETRI="/usr/share/syslinux/dosutil/eltorito.sys"
+elif [[ -e /usr/share/syslinux/isolinux.bin         ]]; then __ETRI="/usr/share/syslinux/isolinux.bin"
+elif [[ -e /usr/lib/ISOLINUX/isolinux.bin           ]]; then __ETRI="/usr/lib/ISOLINUX/isolinux.bin"
+fi
+readonly      __ETRI
 #declare -r    __BIOS="/usr/lib/syslinux/mbr/gptmbr.bin"
 declare -r    __BIOS="${__OUTD:?}/mbr.bin"
 declare -r    __UEFI="${__OUTD:?}/efi.img"
@@ -370,25 +407,38 @@ function fnMk_cdfs() {
 #	__KRNL="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'linux'    -print -quit)"
 #	__VLNZ="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'vmlinuz'  -print -quit)"
 	__VLNZ="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'vmlinuz-*' -print -quit)"
-	__VLNZ="${__VLNZ:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'vmlinuz'      -print -quit)"}"
-	__VLNZ="${__VLNZ:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'linux-*'      -print -quit)"}"
-	__VLNZ="${__VLNZ:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'linux'        -print -quit)"}"
+	__VLNZ="${__VLNZ:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'vmlinuz'         -print -quit)"}"
+	__VLNZ="${__VLNZ:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'linux-*'         -print -quit)"}"
+	__VLNZ="${__VLNZ:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'linux'           -print -quit)"}"
 	__IRAM="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd-*' -print -quit)"
-	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd.img-*' -print -quit)"}"
-	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd.img'   -print -quit)"}"
-	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd'       -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd.img-*'    -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd.img'      -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd'          -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initramfs-*.img' -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initramfs.img'   -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initramfs-*'     -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initramfs'       -print -quit)"}"
 	mkdir -p "${__CDFS:?}"/{.disk,EFI/BOOT,boot/grub/{live-theme,x86_64-efi,i386-pc},isolinux,LiveOS}
-	cp --preserve=timestamps "${__IRAM:?}"                                                       "${__CDFS:?}/LiveOS/initrd.img"
-	cp --preserve=timestamps "${__VLNZ:?}"                                                       "${__CDFS:?}/LiveOS/vmlinuz"
-	cp --preserve=timestamps "${__OUTD}/${__SQFS:?}"                                             "${__CDFS:?}/LiveOS"
-	cp --preserve=timestamps "${__IRAM:?}"                                                       "${__CDFS:?}/LiveOS"
-	cp --preserve=timestamps "${__VLNZ:?}"                                                       "${__CDFS:?}/LiveOS"
-	cp --preserve=timestamps "${__UEFI:?}"                                                       "${__CDFS:?}"/boot/grub
-	cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP:?}"/usr/lib/grub/x86_64-efi/.       "${__CDFS:?}"/boot/grub/x86_64-efi
-	cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP:?}"/usr/lib/grub/i386-pc/.          "${__CDFS:?}"/boot/grub/i386-pc
-	cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP:?}"/usr/lib/syslinux/modules/bios/. "${__CDFS:?}"/isolinux
-	cp --preserve=timestamps  "${__ETRI:?}"                                                      "${__CDFS:?}"/isolinux
-	cp --preserve=timestamps  /usr/lib/syslinux/mbr/gptmbr.bin                                   "${__BIOS:?}"
+	[[ -e "${__IRAM:?}"                                           ]] && cp --preserve=timestamps "${__IRAM:?}"                                                       "${__CDFS:?}/LiveOS/initrd.img"
+	[[ -e "${__VLNZ:?}"                                           ]] && cp --preserve=timestamps "${__VLNZ:?}"                                                       "${__CDFS:?}/LiveOS/vmlinuz"
+	[[ -e "${__OUTD}/${__SQFS:?}"                                 ]] && cp --preserve=timestamps "${__OUTD}/${__SQFS:?}"                                             "${__CDFS:?}/LiveOS"
+	[[ -e "${__IRAM:?}"                                           ]] && cp --preserve=timestamps "${__IRAM:?}"                                                       "${__CDFS:?}/LiveOS"
+	[[ -e "${__VLNZ:?}"                                           ]] && cp --preserve=timestamps "${__VLNZ:?}"                                                       "${__CDFS:?}/LiveOS"
+	[[ -e "${__UEFI:?}"                                           ]] && cp --preserve=timestamps "${__UEFI:?}"                                                       "${__CDFS:?}"/boot/grub
+	[[ -e "${__OUTD}/${__OUTP:?}"/usr/lib/grub/x86_64-efi/.       ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP:?}"/usr/lib/grub/x86_64-efi/.       "${__CDFS:?}"/boot/grub/x86_64-efi
+	[[ -e "${__OUTD}/${__OUTP:?}"/usr/lib/grub/i386-pc/.          ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP:?}"/usr/lib/grub/i386-pc/.          "${__CDFS:?}"/boot/grub/i386-pc
+	[[ -e "${__OUTD}/${__OUTP:?}"/usr/lib/syslinux/modules/bios/. ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP:?}"/usr/lib/syslinux/modules/bios/. "${__CDFS:?}"/isolinux
+	[[ -e "${__ETRI:?}"                                           ]] && cp --preserve=timestamps  "${__ETRI:?}"                                                      "${__CDFS:?}"/isolinux
+	[[ -e /usr/lib/syslinux/mbr/gptmbr.bin                        ]] && cp --preserve=timestamps  /usr/lib/syslinux/mbr/gptmbr.bin                                   "${__BIOS:?}"
+	case "${__DIST}" in
+		debian | \
+		ubuntu ) __SECR="security=apparmor apparmor=1";;
+		fedora | \
+		centos | \
+		alma   | \
+		rocky  ) __SECR="security=selinux selinux=0";;
+		*      ) __SECR="";;
+	esac
 
 	__SPLS="${__CDFS}/isolinux/splash.png"
 	mkdir -p "${__SPLS%/*}"
@@ -456,7 +506,7 @@ _EOT_
 		menuentry "Live system (amd64)" --hotkey=l {
 		  set gfxpayload="keep"
 		  set background_color="black"
-		  set options="root=live:CDLABEL=${__VLID} rd.live.image rd.live.overlay.overlayfs=1 security=apparmor apparmor=1"
+		  set options="root=live:CDLABEL=${__VLID} rd.live.image rd.live.overlay.overlayfs=1${__SECR:+" ${__SECR}"}"
 		  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 		  echo 'Loading boot files ...'
 		  linux  /LiveOS/${__VLNZ##*/} \${options} --- quiet
@@ -567,7 +617,7 @@ _EOT_
 		  menu default
 		  linux  /LiveOS/${__VLNZ##*/}
 		  initrd /LiveOS/${__IRAM##*/}
-		  append root=live:CDLABEL=${__VLID} rd.live.image rd.live.overlay.overlayfs=1 security=apparmor apparmor=1 --- quiet
+		  append root=live:CDLABEL=${__VLID} rd.live.image rd.live.overlay.overlayfs=1${__SECR:+" ${__SECR}"} --- quiet
 _EOT_
 }
 

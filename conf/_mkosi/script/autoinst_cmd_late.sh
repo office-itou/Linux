@@ -3853,9 +3853,13 @@ fnSetup_service() {
 		smbd.service
 	do
 		__STAT="$(systemctl is-enabled "${__LIST}" || true)"
-		[ "${__STAT:-}" = "alias" ] && continue
+		if [ "${__STAT:-}" = "alias" ]; then
+			fnMsgout "${_PROG_NAME:-}" "alias" "${__LIST}"
+			continue
+		fi
 		if [ ! -e "${_DIRS_TGET:-}/lib/systemd/system/${__LIST}"     ] \
 		&& [ ! -e "${_DIRS_TGET:-}/usr/lib/systemd/system/${__LIST}" ]; then
+			fnMsgout "${_PROG_NAME:-}" "not found" "${__LIST}"
 			continue
 		fi
 		fnMsgout "${_PROG_NAME:-}" "enable" "${__LIST}"

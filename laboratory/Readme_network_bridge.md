@@ -67,11 +67,14 @@ sudo qemu-system-x86_64 \
   -device nvme,drive=nvme0,serial=deadbeef \
   -drive file=qemu-nvme.raw,if=none,id=nvme0,format=raw \
   -nic bridge,id=br0 \
-  -nographic \
-  -vga virtio \
+  -vga std \
   -full-screen \
   -display curses,charset=CP932 \
-  -k ja
+  -k ja \
+  -chardev stdio,mux=on,id=char0 \
+  -mon chardev=char0,mode=readline \
+  -serial chardev:char0 \
+  -serial chardev:char0
 ```
 
 </details>

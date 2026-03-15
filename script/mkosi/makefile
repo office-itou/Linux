@@ -45,6 +45,7 @@ OBJS=\
 	../mkosi/fnMkosi_finalize_locale.sh\
 	../mkosi/fnMkosi_finalize_setup.sh\
 	../mkosi/fnMkosi_finalize_dracut.sh\
+	../mkosi/fnMkosi_finalize_service.sh\
 	../mkosi/fnMkosi_finalize_main.sh
 
 $(TGET): $(SRCS) $(OBJS)
