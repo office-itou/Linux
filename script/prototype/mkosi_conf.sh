@@ -116,10 +116,20 @@ do
 					sed -i "${__SRVR}"                                         \
 					    -e '/^\[Content\]/,/^#*\[.\+\]/                     {' \
 					    -e '/^Packages=/,/^#*\(\[.\+\]\|[[:alnum:]]\+=\)/   {' \
-					    -e '/^ *flake-pilot-firecracker-dracut-netstart */ s/^ /#/' \
+					    -e '/^ *selinux-policy */                     s/^ /#/' \
+					    -e '/^ *policycoreutils */                    s/^ /#/' \
+					    -e '/^ *libsemanage2 */                       s/^ /#/' \
 					    -e '/^ *dbus-1-daemon */                      s/^ /#/' \
-					    -e '/^ *systemd-resolved */                   s/^ /#/' \
 					    -e '}}'
+					;;
+				opensuse.*)
+					sed -i "${__SRVR}"                                         \
+					    -e '/^\[Distribution\]/,/^#*\[.\+\]/                {' \
+					    -e '/^Repositories=.*$/                        s/^/#/' \
+					    -e '}'                                                 \
+					    -e '/^\[Build\]/,/^#*\[.\+\]/                       {' \
+					    -e '/^SandboxTrees=.*$/                        s/^/#/' \
+					    -e '}'
 					;;
 				*) ;;
 			esac

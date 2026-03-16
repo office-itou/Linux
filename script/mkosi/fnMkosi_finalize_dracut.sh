@@ -144,7 +144,12 @@ function fnMkosi_finalize_dracut() {
 		"a  99  shutdown                        Sets_up_hooks_to_run_on_shutdown                                                                        "	\
 		"!  99  uefi-lib                        Includes_UEFI_tools                                                                                     "	\
 	)
-	declare -r    __KRNL="$(ls /usr/lib/modules/)"
+	if [[ -e /usr/lib/modules/. ]]; then
+		declare -r    __KDIR="/usr/lib/modules"
+	else
+		declare -r    __KDIR="/lib/modules"
+	fi
+	declare -r    __KRNL="$(ls "${__KDIR:?}")"
 	declare -r    __ARCH="${__KRNL##*[-.]}"
 	declare -r    __VERS="${__KRNL%[-.]"${__ARCH}"}"
 	declare       __DIST=""				# D:debian/ubuntu, R:rhel/..., S:opensuse/suse
@@ -217,7 +222,9 @@ function fnMkosi_finalize_dracut() {
 			fnMsgout "${_PROG_NAME:-}" "complete" "${__SHEL}"
 			exit "${__RTCD}"
 		fi
-		cp -a "/usr/lib/modules/${__KRNL}/vmlinuz" "/boot/vmlinuz-${__KRNL}"
+		if [[ ! -e "/boot/vmlinuz-${__KRNL}" ]]; then
+			cp -a "${__KDIR}/${__KRNL}/vmlinuz" "/boot/vmlinuz-${__KRNL}"
+		fi
 	fi
 
 	# --- complete ------------------------------------------------------------

@@ -30,13 +30,17 @@ function fnMkosi_finalize_userenv() {
 		${__SHEL:+--shell "${__SHEL}"}
 		"${__USER:?}"
 	)
-	if ! useradd "${__OPTN[@]}"; then
-		__RTCD="$?"
-		fnMsgout "${_PROG_NAME:-}" "failed" "useradd ${__OPTN[*]}"
-		fnMsgout "${_PROG_NAME:-}" "start" "${__SHEL}"
-		"${__SHEL:?}"
-		fnMsgout "${_PROG_NAME:-}" "complete" "${__SHEL}"
-		exit "${__RTCD}"
+	if id "${__USER:?}" > /dev/null 2>&1; then
+		fnMsgout "${_PROG_NAME:-}" "skip" "useradd ${__OPTN[*]}"
+	else
+		if ! useradd "${__OPTN[@]}"; then
+			__RTCD="$?"
+			fnMsgout "${_PROG_NAME:-}" "failed" "useradd ${__OPTN[*]}"
+			fnMsgout "${_PROG_NAME:-}" "start" "${__SHEL}"
+			"${__SHEL:?}"
+			fnMsgout "${_PROG_NAME:-}" "complete" "${__SHEL}"
+			exit "${__RTCD}"
+		fi
 	fi
 
 	# --- complete ------------------------------------------------------------

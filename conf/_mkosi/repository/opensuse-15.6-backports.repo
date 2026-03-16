@@ -1,0 +1,5 @@
+[repo-backports-update]
+name=Update repository of openSUSE Backports
+baseurl=http://download.opensuse.org/update/leap/15.6/backports/
+enabled=0
+gpgcheck=1

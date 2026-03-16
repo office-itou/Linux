@@ -54,7 +54,7 @@ fnSetup_samba() {
 	# <-- global settings section -------------------------------------------->
 	# allow insecure wide links = Yes
 	fnMsgout "${_PROG_NAME:-}" "info" "global settings section"
-	testparm -s -v                                                                   | \
+	testparm -s -v || true                                                           | \
 	sed -ne '/^\[global\]$/,/^[ \t]*$/                                              {' \
 	    -e  '/^[ \t]*acl check permissions[ \t]*=/        s/^/#/'                      \
 	    -e  '/^[ \t]*allocation roundup size[ \t]*=/      s/^/#/'                      \
@@ -252,7 +252,7 @@ fnSetup_samba() {
 _EOT_
 	# --- output --------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "info" "output"
-	testparm -s "${__CONF}" > "${__PATH}"
+	testparm -s "${__CONF}" || true > "${__PATH}"
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
 	# --- service restart -----------------------------------------------------

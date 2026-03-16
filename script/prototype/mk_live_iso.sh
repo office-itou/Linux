@@ -653,6 +653,14 @@ function fnMk_xorrisofs() {
 	popd > /dev/null 2>&1
 }
 
+# shellcheck disable=SC2329,SC2317
+function fnTrap() {
+	echo "start   : ${FUNCNAME[0]}"
+	rm -rf "${__TEMP:?}"
+	echo "complete: ${FUNCNAME[0]}"
+}
+
+trap fnTrap EXIT
 
 case "${__OPRT:-}" in
 	build)	fnMk_mkosi_build
@@ -671,6 +679,6 @@ case "${__OPRT:-}" in
 			;;
 esac
 
-rm -rf "${__TEMP:?}"
+#rm -rf "${__TEMP:?}"
 
 exit 0
