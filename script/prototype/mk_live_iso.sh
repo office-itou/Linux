@@ -269,7 +269,7 @@ declare -r    __OUTD="${__TEMP:?}/${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${
 declare -r    __VLID="${__DIST^}-Live-Media"
 declare -r    __ISOS="${_DIRS_RMAK:?}/live-${__DIST}-${__VERS}${__ARCH:+-"${__ARCH//_/-}"}${__EDTN+-"${__EDTN}"}.iso"
 declare -r    __SQFS="squashfs.img"
-declare -r    __BOOT="yes"				# --bootable=
+#declare -r    __BOOT="yes"				# --bootable=
 declare -r    __OUTP="rootfs"			# --output=
 declare -r    __FMAT="directory"		# --format=
 #declare -r    __FMAT="tar"				# "
