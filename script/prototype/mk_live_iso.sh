@@ -29,7 +29,7 @@ if ! mkosi --version > /dev/null 2>&1; then
 	#	systemd-boot-tools				simple UEFI boot manager - tools
 	#	systemd-boot-efi-amd64-signed	Tools to manage UEFI firmware updates (signed)
 	# -------------------------------------------------------------------------
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		The distribution's packages are out of date.
 		Check git and get it from there.
 		https://github.com/systemd/mkosi
@@ -40,11 +40,11 @@ if ! mkosi --version > /dev/null 2>&1; then
 		sudo apt-get install git
 		sudo git clone https://github.com/systemd/mkosi
 		# --- setup -----------------------------------------------
-		sudo ln -s $PWD/mkosi/bin/mkosi /usr/local/bin/mkosi
+		sudo ln -s \"${PWD}\"/mkosi/bin/mkosi /usr/local/bin/mkosi
 		mkosi --version
-		sudo ln -s $PWD/mkosi/bin/mkosi-addon /usr/local/bin/mkosi-addon
-		sudo ln -s $PWD/mkosi/bin/mkosi-initrd /usr/local/bin/mkosi-initrd
-		sudo ln -s $PWD/mkosi/bin/mkosi-sandbox /usr/local/bin/mkosi-sandbox
+		sudo ln -s \"${PWD}\"/mkosi/bin/mkosi-addon /usr/local/bin/mkosi-addon
+		sudo ln -s \"${PWD}\"/mkosi/bin/mkosi-initrd /usr/local/bin/mkosi-initrd
+		sudo ln -s \"${PWD}\"/mkosi/bin/mkosi-sandbox /usr/local/bin/mkosi-sandbox
 		# --- dependencies ----------------------------------------
 		sudo apt-get install debian-archive-keyring ubuntu-keyring
 		sudo apt-get install grub-pc-bin isolinux syslinux-common
@@ -190,7 +190,7 @@ declare       __OPRT="${4:-}"			# operation
 readonly      __OPRT
 # ---
 declare       __CODE=""
-case "${__DIST,,}-${__VERS}" in
+case "${__DIST}-${__VERS}" in
 #	debian-11.0         | \
 	debian-12.0         | \
 	debian-13.0         | \
@@ -265,8 +265,24 @@ declare -r    __WRKD="${__TEMP:?}/${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${
 declare -r    __OUTD="${__TEMP:?}/${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${__ARCH//_/-}"}${__EDTN+-"${__EDTN}"}/outputs" # --output-directory=
 #declare -r    __OUTD="${__TEMP:?}/${__DIST}-${__VERS}${__EDTN+-"${__EDTN}"}" # --output-directory=
 #declare -r    __OUTD="${_DIRS_IMGS:?}/mkosi/${__DIST}-${__VERS}"
-#declare -r    __VLID="Live ${__DIST} ${__VERS}${__CODE:+" (${__CODE})"}"
-declare -r    __VLID="${__DIST^}-Live-Media"
+#declare       __VLID="Live ${__DIST}"
+declare       __VLID=""
+case "${__DIST}" in
+	debian  ) __VLID="Debian";;
+	ubuntu  ) __VLID="Ubuntu";;
+	fedora  ) __VLID="Fedora";;
+	centos  ) __VLID="CentOS-Stream";;
+	alma    ) __VLID="AlmaLinux";;
+	rocky   ) __VLID="Rocky";;
+	opensuse) __VLID="openSUSE";;
+#	miracle ) __VLID="MIRACLE-LINUX";;
+	*       ) __VLID="${__DIST^}";;
+esac
+              __VLID="${__VLID}${__VERS:+" ${__VERS^}${__EDTN:+" ${__EDTN^}"}"}"
+              __VLID="${__VLID// /-}"
+#             __VLID="${__VLID// /$'\x20'}"
+readonly      __VLID
+#declare -r    __VLID="${__DIST^} Live Media"
 declare -r    __ISOS="${_DIRS_RMAK:?}/live-${__DIST}-${__VERS}${__ARCH:+-"${__ARCH//_/-}"}${__EDTN+-"${__EDTN}"}.iso"
 declare -r    __SQFS="squashfs.img"
 #declare -r    __BOOT="yes"				# --bootable=
@@ -286,13 +302,15 @@ declare -r    __FMAT="directory"		# --format=
 #declare -r    __NWRK="yes"				# --with-network=
 #declare -r    __HBRD="/usr/lib/ISOLINUX/isohdpfx.bin"
 declare       __ETRI=""
-  if [[ -e /usr/share/syslinux/dosutil/eltorito.sys ]]; then __ETRI="/usr/share/syslinux/dosutil/eltorito.sys"
-elif [[ -e /usr/share/syslinux/isolinux.bin         ]]; then __ETRI="/usr/share/syslinux/isolinux.bin"
-elif [[ -e /usr/lib/ISOLINUX/isolinux.bin           ]]; then __ETRI="/usr/lib/ISOLINUX/isolinux.bin"
-fi
-readonly      __ETRI
-#declare -r    __BIOS="/usr/lib/syslinux/mbr/gptmbr.bin"
-declare -r    __BIOS="${__OUTD:?}/mbr.bin"
+#  if [[ -e /usr/share/syslinux/dosutil/eltorito.sys ]]; then __ETRI="/usr/share/syslinux/dosutil/eltorito.sys"
+#elif [[ -e /usr/share/syslinux/isolinux.bin         ]]; then __ETRI="/usr/share/syslinux/isolinux.bin"
+#elif [[ -e /usr/lib/ISOLINUX/isolinux.bin           ]]; then __ETRI="/usr/lib/ISOLINUX/isolinux.bin"
+#fi
+#readonly      __ETRI
+#declare -r    __GMBR="/usr/lib/syslinux/mbr/gptmbr.bin"
+#declare       __GMBR=""
+declare -r    __FMBR="${__OUTD:?}/mbr.bin"
+declare       __BIOS=""
 declare -r    __UEFI="${__OUTD:?}/efi.img"
 declare -r    __MNTP="${__OUTD:?}/mnt"
 declare -r    __CDFS="${__OUTD:?}/img"
@@ -399,46 +417,56 @@ function fnMk_uefi() {
 	__STRT="$(printf "%s\n" "${__ARRY[@]}" | sed -ne '/'"${__WORK##*/}"'1/ s/^[^ \t]\+[ \t]\+\([0-9,]\+\)[ \t]\+.*$/\1/p')"
 	__CONT="$(printf "%s\n" "${__ARRY[@]}" | sed -ne '/'"${__WORK##*/}"'1/ s/^[^ \t]\+[ \t]\+[0-9,]\+[ \t]\+[0-9,]\+[ \t]\+\([0-9,]\+\)[ \t]\+.*$/\1/p')"
 	dd if="${__WORK}" of="${__UEFI}" bs="${__SECT}" skip="${__STRT}" count="${__CONT}"
-#	dd if="${__WORK}" of="${__BIOS}" bs=1 count=446
+	dd if="${__WORK}" of="${__FMBR}" bs=1 count=446
 }
 
 # --- cdfs --------------------------------------------------------------------
 function fnMk_cdfs() {
-#	__KRNL="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'linux'    -print -quit)"
-#	__VLNZ="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'vmlinuz'  -print -quit)"
-	__VLNZ="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'vmlinuz-*' -print -quit)"
-	__VLNZ="${__VLNZ:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'vmlinuz'         -print -quit)"}"
-	__VLNZ="${__VLNZ:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'linux-*'         -print -quit)"}"
-	__VLNZ="${__VLNZ:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'linux'           -print -quit)"}"
-	__IRAM="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd-*' -print -quit)"
-	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd.img-*'    -print -quit)"}"
-	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd.img'      -print -quit)"}"
-	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initrd'          -print -quit)"}"
-	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initramfs-*.img' -print -quit)"}"
-	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initramfs.img'   -print -quit)"}"
-	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initramfs-*'     -print -quit)"}"
-	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 -name 'initramfs'       -print -quit)"}"
+	           __VLNZ="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 \( -name 'vmlinuz-*'    -o -name 'linux-*'         \) -print -quit)"
+	__VLNZ="${__VLNZ:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 \( -name 'vmlinuz'      -o -name 'linux'           \) -print -quit)"}"
+	           __IRAM="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 \( -name 'initrd-*'     -o -name 'initramfs-*'     \) -print -quit)"
+	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 \( -name 'initrd-*.img' -o -name 'initramfs-*.img' \) -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 \( -name 'initrd.img-*' -o -name 'initramfs.img-*' \) -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 \( -name 'initrd.img'   -o -name 'initramfs.img'   \) -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 \( -name 'initrd-*'     -o -name 'initramfs-*'     \) -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 \( -name 'initrd'       -o -name 'initramfs'       \) -print -quit)"}"
 	mkdir -p "${__CDFS:?}"/{.disk,EFI/BOOT,boot/grub/{live-theme,x86_64-efi,i386-pc},isolinux,LiveOS}
-	[[ -e "${__IRAM:?}"                                           ]] && cp --preserve=timestamps "${__IRAM:?}"                                                       "${__CDFS:?}/LiveOS/initrd.img"
-	[[ -e "${__VLNZ:?}"                                           ]] && cp --preserve=timestamps "${__VLNZ:?}"                                                       "${__CDFS:?}/LiveOS/vmlinuz"
-	[[ -e "${__OUTD}/${__SQFS:?}"                                 ]] && cp --preserve=timestamps "${__OUTD}/${__SQFS:?}"                                             "${__CDFS:?}/LiveOS"
-	[[ -e "${__IRAM:?}"                                           ]] && cp --preserve=timestamps "${__IRAM:?}"                                                       "${__CDFS:?}/LiveOS"
-	[[ -e "${__VLNZ:?}"                                           ]] && cp --preserve=timestamps "${__VLNZ:?}"                                                       "${__CDFS:?}/LiveOS"
-	[[ -e "${__UEFI:?}"                                           ]] && cp --preserve=timestamps "${__UEFI:?}"                                                       "${__CDFS:?}"/boot/grub
+	[[ -e "${__UEFI:?}"                                           ]] && cp --preserve=timestamps             "${__UEFI:?}"                                           "${__CDFS:?}"/boot/grub
+	[[ -e "${__IRAM:?}"                                           ]] && cp --preserve=timestamps             "${__IRAM:?}"                                           "${__CDFS:?}"/LiveOS
+	[[ -e "${__VLNZ:?}"                                           ]] && cp --preserve=timestamps             "${__VLNZ:?}"                                           "${__CDFS:?}"/LiveOS
+	[[ -e "${__IRAM:?}"                                           ]] && cp --preserve=timestamps             "${__IRAM:?}"                                           "${__CDFS:?}"/LiveOS/initrd.img
+	[[ -e "${__VLNZ:?}"                                           ]] && cp --preserve=timestamps             "${__VLNZ:?}"                                           "${__CDFS:?}"/LiveOS/vmlinuz
+	[[ -e "${__OUTD}/${__SQFS:?}"                                 ]] && cp --preserve=timestamps             "${__OUTD}/${__SQFS:?}"                                 "${__CDFS:?}"/LiveOS
+	[[ -e "${__OUTD}/${__OUTP:?}"/usr/lib/ISOLINUX/isolinux.bin   ]] && cp --preserve=timestamps             "${__OUTD}/${__OUTP:?}"/usr/lib/ISOLINUX/isolinux.bin   "${__CDFS:?}"/isolinux
+	[[ -e "${__OUTD}/${__OUTP:?}"/usr/lib/syslinux/mbr/gptmbr.bin ]] && cp --preserve=timestamps             "${__OUTD}/${__OUTP:?}"/usr/lib/syslinux/mbr/gptmbr.bin "${__CDFS:?}"/isolinux
+	[[ -e "${__OUTD}/${__OUTP:?}"/usr/lib/syslinux/modules/bios/. ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP:?}"/usr/lib/syslinux/modules/bios/. "${__CDFS:?}"/isolinux
 	[[ -e "${__OUTD}/${__OUTP:?}"/usr/lib/grub/x86_64-efi/.       ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP:?}"/usr/lib/grub/x86_64-efi/.       "${__CDFS:?}"/boot/grub/x86_64-efi
 	[[ -e "${__OUTD}/${__OUTP:?}"/usr/lib/grub/i386-pc/.          ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP:?}"/usr/lib/grub/i386-pc/.          "${__CDFS:?}"/boot/grub/i386-pc
-	[[ -e "${__OUTD}/${__OUTP:?}"/usr/lib/syslinux/modules/bios/. ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP:?}"/usr/lib/syslinux/modules/bios/. "${__CDFS:?}"/isolinux
-	[[ -e "${__ETRI:?}"                                           ]] && cp --preserve=timestamps  "${__ETRI:?}"                                                      "${__CDFS:?}"/isolinux
-	[[ -e /usr/lib/syslinux/mbr/gptmbr.bin                        ]] && cp --preserve=timestamps  /usr/lib/syslinux/mbr/gptmbr.bin                                   "${__BIOS:?}"
-	case "${__DIST}" in
-		debian | \
-		ubuntu ) __SECR="security=apparmor apparmor=1";;
-		fedora | \
-		centos | \
-		alma   | \
-		rocky  ) __SECR="security=selinux selinux=0";;
-		*      ) __SECR="";;
-	esac
+	[[ -e "${__OUTD}/${__OUTP:?}"/usr/share/syslinux/.            ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP:?}"/usr/share/syslinux/.            "${__CDFS:?}"/isolinux
+	[[ -e "${__OUTD}/${__OUTP:?}"/usr/share/grub2/x86_64-efi/.    ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP:?}"/usr/share/grub2/x86_64-efi/.    "${__CDFS:?}"/boot/grub/x86_64-efi
+	[[ -e "${__OUTD}/${__OUTP:?}"/usr/share/grub2/i386-pc/.       ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP:?}"/usr/share/grub2/i386-pc/.       "${__CDFS:?}"/boot/grub/i386-pc
+#	find "${__CDFS:?}"/isolinux -name 'gptmbr.bin' -exec cp --preserve=timestamps {} "${__BIOS:?}" \;
+#	__ETRI="$(find "${__CDFS:?}"/isolinux \( -name 'eltorito.sys' -o -name 'isolinux.bin' \) -print -quit)"
+	__ETRI="$(find "${__CDFS:?}"/isolinux    -name 'isolinux.bin'                            -print -quit)"
+	__ETRI="${__ETRI#"${__CDFS:-}/"}"
+	__BIOS="$(find "${__CDFS:?}"/isolinux    -name 'gptmbr.bin'                              -print -quit)"
+	__BIOS="${__BIOS#"${__CDFS:?}/"}"
+	[[ -z "${__BIOS:-}" ]] && __BIOS="${__FMBR}"
+	  if [[ -e "${__OUTD}/${__OUTP:?}"/usr/bin/aa-enabled ]];  then __SECR="security=apparmor apparmor=1"; \
+	elif [[ -e "${__OUTD}/${__OUTP:?}"/usr/sbin/getenforce ]]; then __SECR="security=selinux selinux=0"; \
+	else                                                            __SECR=""; \
+	fi
+	printf "%-10.10s: [%s]\n" "__SECR" "${__SECR:-}"
+#	case "${__DIST}" in
+#		debian  | \
+#		ubuntu  ) __SECR="security=apparmor apparmor=1";;
+#		fedora  | \
+#		centos  | \
+#		alma    | \
+#		rocky   ) __SECR="security=selinux selinux=0";;
+#		opensuse) ;;
+#		*       ) __SECR="";;
+#	esac
 
 	__SPLS="${__CDFS}/isolinux/splash.png"
 	mkdir -p "${__SPLS%/*}"
@@ -602,9 +630,9 @@ _EOT_
 		menu vshift               3
 		menu rows                12
 		menu tabmsgrow           28
-		menu cmdlinerow          26
+		menu cmdlinerow          24
 		menu timeoutrow          26
-		menu helpmsgrow          24
+		menu helpmsgrow          22
 		menu hekomsgendrow       38
 
 		menu tabmsg Press ENTER to boot or TAB to edit a menu entry
@@ -615,8 +643,8 @@ _EOT_
 		label live-amd64
 		  menu label ^Live system (amd64)
 		  menu default
-		  linux  /LiveOS/${__VLNZ##*/}
-		  initrd /LiveOS/${__IRAM##*/}
+		  linux  /LiveOS/vmlinuz
+		  initrd /LiveOS/initrd.img
 		  append root=live:CDLABEL=${__VLID} rd.live.image rd.live.overlay.overlayfs=1${__SECR:+" ${__SECR}"} --- quiet
 _EOT_
 }
@@ -625,16 +653,16 @@ _EOT_
 function fnMk_xorrisofs() {
 	declare -r -a __COMD=(
 		-rational-rock
-		${__VLID:+-volid "${__VLID// /-}"}
+		${__VLID:+-volid "${__VLID}"}
 		-joliet -joliet-long
 		-full-iso9660-filenames -iso-level 3
 		-partition_offset 16
-		--grub2-mbr "${__BIOS}"
+		${__BIOS:+--grub2-mbr "${__BIOS}"}
 		--mbr-force-bootable
 		-append_partition 2 0xEF "boot/grub/${__UEFI##*/}"
 		-appended_part_as_gpt
 		${__BCAT:+-eltorito-catalog "isolinux/${__BCAT##*/}"}
-		${__ETRI:+-eltorito-boot "isolinux/${__ETRI##*/}"}
+		${__ETRI:+-eltorito-boot "${__ETRI}"}
 		-no-emul-boot
 		-boot-load-size 4 -boot-info-table
 		--grub2-boot-info
@@ -643,6 +671,13 @@ function fnMk_xorrisofs() {
 		-output "${__ISOS:?}"
 		.
 	)
+
+	printf "%-10.10s: [%s]\n" "__ISOS" "${__ISOS:-}"
+	printf "%-10.10s: [%s]\n" "__VLID" "${__VLID:-}"
+	printf "%-10.10s: [%s]\n" "__BIOS" "${__BIOS:-}"
+	printf "%-10.10s: [%s]\n" "__ETRI" "${__ETRI:-}"
+	printf "%-10.10s: [%s]\n" "__UEFI" "${__UEFI:-}"
+	printf "%-10.10s: [%s]\n" "__BCAT" "${__BCAT:-}"
 
 	pushd "${__CDFS:?}" > /dev/null 2>&1
 	if ! xorrisofs "${__COMD[@]}"; then
@@ -682,3 +717,7 @@ esac
 #rm -rf "${__TEMP:?}"
 
 exit 0
+
+# memo
+# https://man.archlinux.org/man/mkosi.1.en
+# https://wiki.archlinux.jp/index.php/Dracut
