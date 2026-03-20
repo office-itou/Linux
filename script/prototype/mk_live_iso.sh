@@ -278,19 +278,25 @@ case "${__DIST}" in
 #	miracle ) __VLID="MIRACLE-LINUX";;
 	*       ) __VLID="${__DIST^}";;
 esac
-              __VLID="${__VLID}${__VERS:+" ${__VERS^}${__EDTN:+" ${__EDTN^}"}"}"
+              __VLID="${__VLID}${__VERS:+" ${__VERS^}"}${__ARCH:+" ${__ARCH}"}${__EDTN:+" ${__EDTN^}"}"
               __VLID="${__VLID// /-}"
 #             __VLID="${__VLID// /$'\x20'}"
 readonly      __VLID
 #declare -r    __VLID="${__DIST^} Live Media"
-declare -r    __ISOS="${_DIRS_RMAK:?}/live-${__DIST}-${__VERS}${__ARCH:+-"${__ARCH//_/-}"}${__EDTN+-"${__EDTN}"}.iso"
+#declare -r    __ISOS="${_DIRS_RMAK:?}/live-${__DIST}-${__VERS}${__ARCH:+-"${__ARCH//_/-}"}${__EDTN+-"${__EDTN}"}.iso"
+declare -r    __ISOS="${_DIRS_RMAK:?}/live-${__VLID,,}.iso"
 declare -r    __SQFS="squashfs.img"
+declare -r    __RTFS="rtfsys"			# root image
+declare       __HOST=""					# --hostname=
+              __HOST="sv-${__VLID%%-*}.workgroup"
+              __HOST="${__HOST,,}"
+readonly      __HOST
 #declare -r    __BOOT="yes"				# --bootable=
-declare -r    __OUTP="rootfs"			# --output=
-declare -r    __FMAT="directory"		# --format=
+declare -r    __OUTP="rtdisk"			# --output=
+#declare -r    __FMAT="directory"		# --format=
 #declare -r    __FMAT="tar"				# "
 #declare -r    __FMAT="cpio"			# "
-#declare -r    __FMAT="disk"			# "
+declare -r    __FMAT="disk"				# "
 #declare -r    __FMAT="uki"				# "
 #declare -r    __FMAT="esp"				# "
 #declare -r    __FMAT="oci"				# "
@@ -300,6 +306,8 @@ declare -r    __FMAT="directory"		# --format=
 #declare -r    __FMAT="addon"			# "
 #declare -r    __FMAT="none"			# "
 #declare -r    __NWRK="yes"				# --with-network=
+
+declare       __LOOP=""
 #declare -r    __HBRD="/usr/lib/ISOLINUX/isohdpfx.bin"
 declare       __ETRI=""
 #  if [[ -e /usr/share/syslinux/dosutil/eltorito.sys ]]; then __ETRI="/usr/share/syslinux/dosutil/eltorito.sys"
@@ -329,6 +337,7 @@ declare -a    __COMD=(
 	${__CACH:+--package-cache-dir="${__CACH}"}
 	${__OUTD:+--output-directory="${__OUTD}"}
 	${__EDTN:+--environment=EDITION="${__EDTN}"}
+	${__HOST:+--hostname="${__HOST}"}
 )
 
 function fnMk_mkosi() {
@@ -367,10 +376,30 @@ function fnMk_mkosi_boot() {
 	fnMk_mkosi "${__COMD[@]:-}"
 }
 
+# --- mount -------------------------------------------------------------------
+function fnMk_mount_fs() {
+	if [[ "${__FMAT:-}" != "disk" ]]; then
+		return
+	fi
+	mkdir -p "${__OUTD}/${__RTFS}"
+	__LOOP="$(losetup --find --show "${__OUTD}/${__OUTP}")"
+	partprobe "${__LOOP}"
+	mount -r "${__LOOP}"p1 "${__OUTD}/${__RTFS}"
+}
+
+# --- umount ------------------------------------------------------------------
+function fnMk_umount_fs() {
+	if [[ "${__FMAT:-}" != "disk" ]]; then
+		return
+	fi
+	umount "${__OUTD}/${__RTFS}"
+	losetup --detach "${__LOOP}"
+}
+
 # --- mksquashfs --------------------------------------------------------------
 function fnMk_mksquashfs() {
 	declare -r -a __COMD=(
-		"${__OUTD}/${__OUTP}"
+		"${__OUTD}/${__RTFS}"
 		"${__OUTD}/${__SQFS}"
 		-quiet
 		-progress
@@ -379,12 +408,14 @@ function fnMk_mksquashfs() {
 	if ! mksquashfs "${__COMD[@]}"; then
 		__RTCD="$?"
 		printf "%s\n" "mksquashfs ${__COMD[*]}"
+		umount "${__OUTD}/${__RTFS}"
 		exit "${__RTCD}"
 	fi
 }
 
 # --- uefi --------------------------------------------------------------------
 function fnMk_uefi() {
+	declare       __LOOP=""
 	__WORK="${__UEFI:?}.work"
 	dd if=/dev/zero of="${__WORK}" bs=1M count=100
 	__LOOP="$(losetup --find --show "${__WORK}")"
@@ -422,14 +453,14 @@ function fnMk_uefi() {
 
 # --- cdfs --------------------------------------------------------------------
 function fnMk_cdfs() {
-	           __VLNZ="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 \( -name 'vmlinuz-*'    -o -name 'linux-*'         \) -print -quit)"
-	__VLNZ="${__VLNZ:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 \( -name 'vmlinuz'      -o -name 'linux'           \) -print -quit)"}"
-	           __IRAM="$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 \( -name 'initrd-*'     -o -name 'initramfs-*'     \) -print -quit)"
-	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 \( -name 'initrd-*.img' -o -name 'initramfs-*.img' \) -print -quit)"}"
-	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 \( -name 'initrd.img-*' -o -name 'initramfs.img-*' \) -print -quit)"}"
-	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 \( -name 'initrd.img'   -o -name 'initramfs.img'   \) -print -quit)"}"
-	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 \( -name 'initrd-*'     -o -name 'initramfs-*'     \) -print -quit)"}"
-	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__OUTP}"/{boot,} -maxdepth 1 \( -name 'initrd'       -o -name 'initramfs'       \) -print -quit)"}"
+	           __VLNZ="$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'vmlinuz-*'    -o -name 'linux-*'         \) -print -quit)"
+	__VLNZ="${__VLNZ:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'vmlinuz'      -o -name 'linux'           \) -print -quit)"}"
+	           __IRAM="$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd-*'     -o -name 'initramfs-*'     \) -print -quit)"
+	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd-*.img' -o -name 'initramfs-*.img' \) -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd.img-*' -o -name 'initramfs.img-*' \) -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd.img'   -o -name 'initramfs.img'   \) -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd-*'     -o -name 'initramfs-*'     \) -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd'       -o -name 'initramfs'       \) -print -quit)"}"
 	mkdir -p "${__CDFS:?}"/{.disk,EFI/BOOT,boot/grub/{live-theme,x86_64-efi,i386-pc},isolinux,LiveOS}
 	[[ -e "${__UEFI:?}"                                           ]] && cp --preserve=timestamps             "${__UEFI:?}"                                           "${__CDFS:?}"/boot/grub
 	[[ -e "${__IRAM:?}"                                           ]] && cp --preserve=timestamps             "${__IRAM:?}"                                           "${__CDFS:?}"/LiveOS
@@ -437,14 +468,14 @@ function fnMk_cdfs() {
 	[[ -e "${__IRAM:?}"                                           ]] && cp --preserve=timestamps             "${__IRAM:?}"                                           "${__CDFS:?}"/LiveOS/initrd.img
 	[[ -e "${__VLNZ:?}"                                           ]] && cp --preserve=timestamps             "${__VLNZ:?}"                                           "${__CDFS:?}"/LiveOS/vmlinuz
 	[[ -e "${__OUTD}/${__SQFS:?}"                                 ]] && cp --preserve=timestamps             "${__OUTD}/${__SQFS:?}"                                 "${__CDFS:?}"/LiveOS
-	[[ -e "${__OUTD}/${__OUTP:?}"/usr/lib/ISOLINUX/isolinux.bin   ]] && cp --preserve=timestamps             "${__OUTD}/${__OUTP:?}"/usr/lib/ISOLINUX/isolinux.bin   "${__CDFS:?}"/isolinux
-	[[ -e "${__OUTD}/${__OUTP:?}"/usr/lib/syslinux/mbr/gptmbr.bin ]] && cp --preserve=timestamps             "${__OUTD}/${__OUTP:?}"/usr/lib/syslinux/mbr/gptmbr.bin "${__CDFS:?}"/isolinux
-	[[ -e "${__OUTD}/${__OUTP:?}"/usr/lib/syslinux/modules/bios/. ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP:?}"/usr/lib/syslinux/modules/bios/. "${__CDFS:?}"/isolinux
-	[[ -e "${__OUTD}/${__OUTP:?}"/usr/lib/grub/x86_64-efi/.       ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP:?}"/usr/lib/grub/x86_64-efi/.       "${__CDFS:?}"/boot/grub/x86_64-efi
-	[[ -e "${__OUTD}/${__OUTP:?}"/usr/lib/grub/i386-pc/.          ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP:?}"/usr/lib/grub/i386-pc/.          "${__CDFS:?}"/boot/grub/i386-pc
-	[[ -e "${__OUTD}/${__OUTP:?}"/usr/share/syslinux/.            ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP:?}"/usr/share/syslinux/.            "${__CDFS:?}"/isolinux
-	[[ -e "${__OUTD}/${__OUTP:?}"/usr/share/grub2/x86_64-efi/.    ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP:?}"/usr/share/grub2/x86_64-efi/.    "${__CDFS:?}"/boot/grub/x86_64-efi
-	[[ -e "${__OUTD}/${__OUTP:?}"/usr/share/grub2/i386-pc/.       ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__OUTP:?}"/usr/share/grub2/i386-pc/.       "${__CDFS:?}"/boot/grub/i386-pc
+	[[ -e "${__OUTD}/${__RTFS:?}"/usr/lib/ISOLINUX/isolinux.bin   ]] && cp --preserve=timestamps             "${__OUTD}/${__RTFS:?}"/usr/lib/ISOLINUX/isolinux.bin   "${__CDFS:?}"/isolinux
+	[[ -e "${__OUTD}/${__RTFS:?}"/usr/lib/syslinux/mbr/gptmbr.bin ]] && cp --preserve=timestamps             "${__OUTD}/${__RTFS:?}"/usr/lib/syslinux/mbr/gptmbr.bin "${__CDFS:?}"/isolinux
+	[[ -e "${__OUTD}/${__RTFS:?}"/usr/lib/syslinux/modules/bios/. ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__RTFS:?}"/usr/lib/syslinux/modules/bios/. "${__CDFS:?}"/isolinux
+	[[ -e "${__OUTD}/${__RTFS:?}"/usr/lib/grub/x86_64-efi/.       ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__RTFS:?}"/usr/lib/grub/x86_64-efi/.       "${__CDFS:?}"/boot/grub/x86_64-efi
+	[[ -e "${__OUTD}/${__RTFS:?}"/usr/lib/grub/i386-pc/.          ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__RTFS:?}"/usr/lib/grub/i386-pc/.          "${__CDFS:?}"/boot/grub/i386-pc
+	[[ -e "${__OUTD}/${__RTFS:?}"/usr/share/syslinux/.            ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__RTFS:?}"/usr/share/syslinux/.            "${__CDFS:?}"/isolinux
+	[[ -e "${__OUTD}/${__RTFS:?}"/usr/share/grub2/x86_64-efi/.    ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__RTFS:?}"/usr/share/grub2/x86_64-efi/.    "${__CDFS:?}"/boot/grub/x86_64-efi
+	[[ -e "${__OUTD}/${__RTFS:?}"/usr/share/grub2/i386-pc/.       ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__RTFS:?}"/usr/share/grub2/i386-pc/.       "${__CDFS:?}"/boot/grub/i386-pc
 #	find "${__CDFS:?}"/isolinux -name 'gptmbr.bin' -exec cp --preserve=timestamps {} "${__BIOS:?}" \;
 #	__ETRI="$(find "${__CDFS:?}"/isolinux \( -name 'eltorito.sys' -o -name 'isolinux.bin' \) -print -quit)"
 	__ETRI="$(find "${__CDFS:?}"/isolinux    -name 'isolinux.bin'                            -print -quit)"
@@ -452,8 +483,8 @@ function fnMk_cdfs() {
 	__BIOS="$(find "${__CDFS:?}"/isolinux    -name 'gptmbr.bin'                              -print -quit)"
 	__BIOS="${__BIOS#"${__CDFS:?}/"}"
 	[[ -z "${__BIOS:-}" ]] && __BIOS="${__FMBR}"
-	  if [[ -e "${__OUTD}/${__OUTP:?}"/usr/bin/aa-enabled ]];  then __SECR="security=apparmor apparmor=1"; \
-	elif [[ -e "${__OUTD}/${__OUTP:?}"/usr/sbin/getenforce ]]; then __SECR="security=selinux selinux=0"; \
+	  if [[ -e "${__OUTD}/${__RTFS:?}"/usr/bin/aa-enabled ]];  then __SECR="security=apparmor apparmor=1"; \
+	elif [[ -e "${__OUTD}/${__RTFS:?}"/usr/sbin/getenforce ]]; then __SECR="security=selinux selinux=0"; \
 	else                                                            __SECR=""; \
 	fi
 	printf "%-10.10s: [%s]\n" "__SECR" "${__SECR:-}"
@@ -691,7 +722,7 @@ function fnMk_xorrisofs() {
 # shellcheck disable=SC2329,SC2317
 function fnTrap() {
 	echo "start   : ${FUNCNAME[0]}"
-	rm -rf "${__TEMP:?}"
+#	rm -rf "${__TEMP:?}"
 	echo "complete: ${FUNCNAME[0]}"
 }
 
@@ -699,16 +730,14 @@ trap fnTrap EXIT
 
 case "${__OPRT:-}" in
 	build)	fnMk_mkosi_build
+			fnMk_mount_fs
 			fnMk_mksquashfs
 			fnMk_uefi
 			fnMk_cdfs
+			fnMk_umount_fs
 			fnMk_xorrisofs
 			;;
 	boot )	fnMk_mkosi_boot
-			fnMk_mksquashfs
-			fnMk_uefi
-			fnMk_cdfs
-			fnMk_xorrisofs
 			;;
 	*)		fnMk_mkosi_summary
 			;;

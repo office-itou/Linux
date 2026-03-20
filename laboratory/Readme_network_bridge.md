@@ -1,5 +1,41 @@
 # **Bridge Connection**
 
+## Package
+
+<details><summary>mkosi</summary>
+
+|              Name              |                       Description                       |
+| :----------------------------- | :------------------------------------------------------ |
+| git                            | fast, scalable, distributed revision control system     |
+| apt                            | commandline package manager                             |
+| dnf                            | Dandified Yum package manager                           |
+| zypper                         | command line software manager using libzypp             |
+| debian-archive-keyring         | OpenPGP archive certificates of the Debian archive      |
+| ubuntu-keyring                 | all GnuPG keys used by Ubuntu Project                   |
+| grub-pc-bin                    | GRand Unified Bootloader, version 2 (PC/BIOS modules)   |
+| syslinux-common                | collection of bootloaders (common)                      |
+| isolinux                       | collection of bootloaders (ISO 9660 bootloader)         |
+| systemd-boot                   | simple UEFI boot manager - integration and services     |
+| systemd-container              | systemd container/nspawn tools                          |
+| jq                             | lightweight and flexible command-line JSON processor    |
+| parted                         | disk partition manipulator                              |
+| squashfs-tools                 | Tool to create and append to squashfs filesystems       |
+| xorriso                        | command line ISO-9660 and Rock Ridge manipulation tool  |
+
+</details>
+
+<details><summary>qemu</summary>
+
+|              Name              |                       Description                       |
+| :----------------------------- | :------------------------------------------------------ |
+| qemu-system                    | QEMU full system emulation binaries                     |
+| bridge-utils                   | Utilities for configuring the Linux Ethernet bridge     |
+| websockify                     | WebSockets support for any application/server           |
+| novnc                          | HTML5 VNC client - daemon and programs                  |
+| libvirt-daemon                 | virtualization daemon                                   |
+
+</details>
+
 ## setup
 
 <details><summary>install (apt-get)</summary>
@@ -7,7 +43,7 @@
 ``` bash:
 sudo bash -c '
   apt-get update
-  apt-get install qemu-system bridge-utils
+  apt-get install qemu-system bridge-utils websockify novnc
 '
 ```
 
@@ -56,26 +92,43 @@ sudo bash -c '
 
 <details><summary>qemu (nvme) (debian/ubuntu)</summary>
 
-``` bash:
-mkdir -p ~/qemu
-cd ~/qemu
-qemu-img create -f raw qemu-nvme.raw 20G
-sudo qemu-system-x86_64 \
-  -enable-kvm \
-  -boot menu=on \
-  -m 4G \
-  -device nvme,drive=nvme0,serial=deadbeef \
-  -drive file=qemu-nvme.raw,if=none,id=nvme0,format=raw \
-  -nic bridge,id=br0 \
-  -vga std \
-  -full-screen \
-  -display curses,charset=CP932 \
-  -k ja \
-  -chardev stdio,mux=on,id=char0 \
-  -mon chardev=char0,mode=readline \
-  -serial chardev:char0 \
-  -serial chardev:char0
-```
+* qemu
+
+  ``` bash:
+  mkdir -p ~/qemu
+  cd ~/qemu
+  qemu-img create -f raw qemu-nvme.raw 20G
+  sudo qemu-system-x86_64 \
+    -cpu Skylake-Client \
+    -machine pc \
+    -enable-kvm \
+    -m size=4G \
+    -boot menu=on \
+    -cdrom /srv/user/share/isos/linux/debian/mini-trixie-amd64.iso \
+    -device nvme,id=nvme-ctrl-0,serial=deadbeef \
+    -drive file=qemu-nvme.raw,format=raw,if=none,id=nvm-1 \
+    -device nvme-ns,drive=nvm-1 \
+    -audiodev alsa,id=snd0 \
+    -device ich9-intel-hda \
+    -device hda-output,audiodev=snd0 \
+    -nic bridge \
+    -vga std \
+    -full-screen \
+    -display curses,charset=CP932 \
+    -k ja \
+    -monitor stdio \
+    -vnc :0
+  echo -e "\x12\x1bc"
+  ```
+
+* novnc
+
+  ``` bash:
+  /usr/share/novnc/utils/novnc_proxy
+  ```
+
+* vnc access example:  
+  http://sv-developer:6080/vnc.html
 
 </details>
 
