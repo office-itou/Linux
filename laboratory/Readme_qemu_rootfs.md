@@ -42,6 +42,93 @@
 
 </details>
 
+<details><summary>mkosi (debian)</summary>
+
+|              Name              |                                   Description                                   |
+| :----------------------------- | :------------------------------------------------------------------------------ |
+| apt                            | commandline package manager                                                     |
+| apt-utils                      | package management related utility programs                                     |
+| bash                           | GNU Bourne Again SHell                                                          |
+| btrfs-progs                    | Checksumming Copy on Write Filesystem utilities                                 |
+| ca-certificates                | Common CA certificates                                                          |
+| coreutils                      | GNU core utilities                                                              |
+| cpio                           | GNU cpio -- a program to manage archives of files                               |
+| curl                           | command line tool for transferring data with URL syntax                         |
+| debian-archive-keyring         | OpenPGP archive certificates of the Debian archive                              |
+| dnf                            | Dandified Yum package manager                                                   |
+| dnf-plugins-core               | Core plugins for DNF, the Dandified Yum package manager                         |
+| dosfstools                     | utilities for making and checking MS-DOS FAT filesystems                        |
+| e2fsprogs                      | ext2/ext3/ext4 file system utilities                                            |
+| erofs-utils                    | Utilities for EROFS File System                                                 |
+| grub-common                    | GRand Unified Bootloader (common files)                                         |
+| keyutils                       | Linux Key Management Utilities                                                  |
+| kmod                           | tools for managing Linux kernel modules                                         |
+| libarchive-tools               | FreeBSD implementations of 'tar' and 'cpio' and other archive tools             |
+| libcryptsetup12:amd64          | disk encryption support - shared library                                        |
+| libseccomp2:amd64              | high level interface to Linux seccomp filter                                    |
+| libtss2-dev:amd64              | TPM2 Software stack library - development files                                 |
+| mtools                         | Tools for manipulating MSDOS files                                              |
+| opensc                         | Smart card utilities with support for PKCS#15 compatible cards                  |
+| openssl                        | Secure Sockets Layer toolkit - cryptographic utility                            |
+| pkcs11-provider:amd64          | OpenSSL 3 provider for PKCS11                                                   |
+| policycoreutils                | SELinux core policy utilities                                                   |
+| python3                        | interactive high-level object-oriented language (default python3 version)       |
+| python3-pefile                 | Portable Executable (PE) parsing module for Python                              |
+| sbsigntool                     | Tools to manipulate signatures on UEFI binaries and drivers                     |
+| squashfs-tools                 | Tool to create and append to squashfs filesystems                               |
+| systemd                        | system and service manager                                                      |
+| systemd-boot-tools             | simple UEFI boot manager - tools                                                |
+| systemd-repart                 | Provides the systemd-repart and systemd-sbsign utilities                        |
+| systemd-ukify                  | tool to build Unified Kernel Images                                             |
+| tar                            | GNU version of the tar archiving utility                                        |
+| xfsprogs                       | Utilities for managing the XFS filesystem                                       |
+| xz-utils                       | XZ-format compression utilities                                                 |
+| zstd                           | fast lossless compression algorithm -- CLI tool                                 |
+
+</details>
+
+<details><summary>mkosi (almalinux)</summary>
+
+|              Name              |                                   Description                                   |
+| :----------------------------- | :------------------------------------------------------------------------------ |
+| apt                            | Command-line package manager for Debian packages                                |
+| apt-utils                      | Package management related utility programs                                     |
+| bash                           | The GNU Bourne Again shell                                                      |
+| btrfs-progs                    | Userspace programs for btrfs                                                    |
+| ca-certificates                | The Mozilla CA root certificate bundle                                          |
+| coreutils                      | A set of basic GNU tools commonly used in shell scripts                         |
+| cpio                           | A GNU archiving program                                                         |
+| createrepo_c                   | Creates a common metadata repository                                            |
+| curl                           | A utility for getting files from remote servers (FTP, HTTP, and others)         |
+| dnf                            | Package manager                                                                 |
+| dnf-plugins-core               | Core Plugins for DNF                                                            |
+| dosfstools                     | Utilities for making and checking MS-DOS FAT filesystems on Linux               |
+| e2fsprogs                      | Utilities for managing ext2, ext3, and ext4 file systems                        |
+| erofs-utils                    | Utilities for working with EROFS                                                |
+| grub2-tools                    | Support tools for GRUB.                                                         |
+| keyutils                       | Linux Key Management Utilities                                                  |
+| kmod                           | Linux kernel module management utilities                                        |
+| libseccomp                     | Enhanced seccomp library                                                        |
+| mtools                         | Programs for accessing MS-DOS disks without mounting the disks                  |
+| opensc                         | Smart card library and applications                                             |
+| openssl                        | Utilities from the general purpose cryptography library with TLS implementation |
+| pkcs11-provider                | A PKCS#11 provider for OpenSSL 3.0+                                             |
+| policycoreutils                | SELinux policy core utilities                                                   |
+| python3                        | Python 3.12 interpreter                                                         |
+| python3-pefile                 | Python module for working with Portable Executable files                        |
+| qemu-img                       | QEMU command line tool for manipulating disk images                             |
+| squashfs-tools                 | Utility for the creation of squashfs filesystems                                |
+| systemd                        | System and Service Manager                                                      |
+| systemd-repart                 |                                                                                 |
+| systemd-udev                   | Rule-based device node and kernel event manager                                 |
+| systemd-ukify                  | Tool to build Unified Kernel Images                                             |
+| tar                            | GNU file archiving program                                                      |
+| xfsprogs                       | Utilities for managing the XFS filesystem                                       |
+| xz                             | LZMA compression utilities                                                      |
+| zstd                           | Zstd compression library                                                        |
+
+</details>
+
 <details><summary>qemu</summary>
 
 |              Name              |                       Description                       |

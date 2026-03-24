@@ -54,7 +54,7 @@ fnSetup_samba() {
 	# <-- global settings section -------------------------------------------->
 	# allow insecure wide links = Yes
 	fnMsgout "${_PROG_NAME:-}" "info" "global settings section"
-	testparm -s -v || true                                                           | \
+	testparm -s -v                                                                   | \
 	sed -ne '/^\[global\]$/,/^[ \t]*$/                                              {' \
 	    -e  '/^[ \t]*acl check permissions[ \t]*=/        s/^/#/'                      \
 	    -e  '/^[ \t]*allocation roundup size[ \t]*=/      s/^/#/'                      \
@@ -110,7 +110,7 @@ fnSetup_samba() {
 	    -e  '                                             s/=.*$/= ALL/'               \
 	    -e  '                                                                       }' \
 	    -e  'p                                                                      }' \
-	> "${__CONF}" 2> /dev/null
+	> "${__CONF}" 2> /dev/null || true
 	[ -z "${_NICS_HOST##-}" ] && sed -i "${__CONF}" -e '/^[ \t]*netbios name[ \t]*=/d'
 	[ -z "${_NICS_WGRP##-}" ] && sed -i "${__CONF}" -e '/^[ \t]*workgroup[ \t]*=/d'
 	[ -z "${_NICS_NAME##-}" ] && sed -i "${__CONF}" -e '/^[ \t]*interfaces[ \t]*=/d'
@@ -252,7 +252,7 @@ fnSetup_samba() {
 _EOT_
 	# --- output --------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "info" "output"
-	testparm -s "${__CONF}" || true > "${__PATH}"
+	testparm -s "${__CONF}" > "${__PATH}" || true
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
 	# --- service restart -----------------------------------------------------

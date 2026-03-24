@@ -2,6 +2,108 @@
 
 set -eu
 
+#PATH="/home/master/git/mkosi/bin:${PATH}"
+
+# --- packages ----------------------------------------------------------------
+#if ! command -v mkosi > /dev/null 2>&1; then
+if ! mkosi --version > /dev/null 2>&1; then
+	__HOME="${SUDO_HOME:-"${HOME:?}"}"
+	# -------------------------------------------------------------------------
+	#	git								fast, scalable, distributed revision control system
+	#	debian-archive-keyring			OpenPGP archive certificates of the Debian archive
+	#	ubuntu-keyring					all GnuPG keys used by Ubuntu Project
+	#	systemd-ukify					tool to build Unified Kernel Images
+	#	systemd-boot					simple UEFI boot manager - integration and services
+	#	systemd-boot-tools				simple UEFI boot manager - tools
+	#	systemd-boot-efi-amd64-signed	Tools to manage UEFI firmware updates (signed)
+	#	systemd-repart					Provides the systemd-repart and systemd-sbsign utilities
+	#	grub-pc-bin						GRand Unified Bootloader, version 2 (PC/BIOS modules)
+	#	isolinux						collection of bootloaders (ISO 9660 bootloader)
+	#	syslinux-common					collection of bootloaders (common)
+	#	xorriso							command line ISO-9660 and Rock Ridge manipulation tool
+	#	squashfs-tools					Tool to create and append to squashfs filesystems
+	#	parted							disk partition manipulator
+	#	xxd								tool to make (or reverse) a hex dump
+	#	python3-pefile					Portable Executable (PE) parsing module for Python
+	#	systemd-boot					simple UEFI boot manager - integration and services
+	#	systemd-boot-tools				simple UEFI boot manager - tools
+	#	systemd-boot-efi-amd64-signed	Tools to manage UEFI firmware updates (signed)
+	# -------------------------------------------------------------------------
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+		The distribution's packages are out of date.
+		Check git and get it from there.
+		https://github.com/systemd/mkosi
+		# --- mkdir -----------------------------------------------
+		sudo mkdir -p /srv/user/private/{bin,src/git}
+		cd /srv/user/private/src/git/
+		# --- download --------------------------------------------
+		sudo apt-get install git
+		sudo git clone https://github.com/systemd/mkosi
+		# --- setup -----------------------------------------------
+		sudo ln -s \"${PWD}\"/mkosi/bin/mkosi /usr/local/bin/mkosi
+		mkosi --version
+		sudo ln -s \"${PWD}\"/mkosi/bin/mkosi-addon /usr/local/bin/mkosi-addon
+		sudo ln -s \"${PWD}\"/mkosi/bin/mkosi-initrd /usr/local/bin/mkosi-initrd
+		sudo ln -s \"${PWD}\"/mkosi/bin/mkosi-sandbox /usr/local/bin/mkosi-sandbox
+		# --- dependencies ----------------------------------------
+		sudo apt-get install debian-archive-keyring ubuntu-keyring
+		sudo apt-get install grub-pc-bin isolinux syslinux-common
+		sudo apt-get install xorriso squashfs-tools parted
+		sudo apt-get install systemd-boot systemd-boot-tools systemd-boot-efi-amd64-signed
+_EOT_
+	exit 0
+#	declare -r -a __PACK=(
+#		mkosi                           # build Bespoke OS Images
+#		systemd-boot                    # simple UEFI boot manager - integration and services
+#		apt                             # commandline package manager
+#		btrfs-progs                     # Checksumming Copy on Write Filesystem utilities
+#		cpio                            # GNU cpio -- a program to manage archives of files
+#		cryptsetup-bin                  # disk encryption support - command line tools
+#		debian-archive-keyring          # OpenPGP archive certificates of the Debian archive
+#		dosfstools                      # utilities for making and checking MS-DOS FAT filesystems
+#		e2fsprogs                       # ext2/ext3/ext4 file system utilities
+#		efitools                        # Tools to manipulate EFI secure boot keys and signatures
+#		erofs-utils                     # Utilities for EROFS File System
+#		fdisk                           # collection of partitioning utilities
+#		gnupg                           # GNU privacy guard - a free PGP replacement
+#		jq                              # lightweight and flexible command-line JSON processor
+#		kmod                            # tools for managing Linux kernel modules
+#		mtools                          # Tools for manipulating MSDOS files
+#		openssl                         # Secure Sockets Layer toolkit - cryptographic utility
+#		pesign                          # Signing utility for UEFI binaries
+#		python3                         # interactive high-level object-oriented language (default python3 version)
+#		python3-cryptography            # Python library exposing cryptographic recipes and primitives
+#		python3-pefile                  # Portable Executable (PE) parsing module for Python
+#		squashfs-tools                  # Tool to create and append to squashfs filesystems
+#		systemd                         # system and service manager
+#		systemd-boot-efi                # simple UEFI boot manager - EFI binaries
+#		systemd-boot-tools              # simple UEFI boot manager - tools
+#		systemd-container               # systemd container/nspawn tools
+#		systemd-repart                  # Provides the systemd-repart and systemd-sbsign utilities
+#		systemd-ukify                   # tool to build Unified Kernel Images
+#		tpm2-tools                      # TPM 2.0 utilities
+#		xz-utils                        # XZ-format compression utilities
+#		zstd                            # fast lossless compression algorithm -- CLI tool
+#		archlinux-keyring               # Arch Linux PGP keyring
+#		debian-archive-keyring          # OpenPGP archive certificates of the Debian archive
+#		distribution-gpg-keys           # Archive keyrings for RPM-based Linux distributions
+#		dnf                             # Dandified Yum package manager
+#		ipxe-qemu                       # PXE boot firmware - ROM images for qemu
+#		ovmf                            # UEFI firmware for 64-bit x86 virtual machines
+#		pacman-package-manager          # Simple library-based package manager
+#		qemu-system                     # QEMU full system emulation binaries
+#		systemd-timesyncd               # minimalistic service to synchronize local time with NTP servers
+#		ubuntu-keyring                  # all GnuPG keys used by Ubuntu Project
+#		uidmap                          # programs to help use subuids
+#		virtiofsd                       # Virtio-fs vhost-user device daemon
+#		zypper                          # command line software manager using libzypp
+#	)
+#	declare -a    __TGET=()
+#
+#	mapfile -d $'\n' -t __TGET < <(LANG=C dpkg-query -W -f "\${Status}\t\${Package}\n" "${__PACK[@]}" 2>&1 | awk '/not-installed|no packages found matching/ {gsub(/.*[ \t]/,""); print $0;}' || true)
+#	[[ -n "${__TGET[*]}" ]] && echo "sudo apt-get install ${__TGET[*]}"; exit 0
+fi
+
 # ---
 declare -r -a __LIST=(
 	"name                    version_id              code_name                               life            release         support         long_term       "
@@ -149,7 +251,7 @@ declare -r    _DIRS_RMAK="/srv/user/share/rmak"
 declare       __DATE=""
               __DATE="$(date +"%Y/%m/%d %H:%M:%S")"
 readonly      __DATE
-declare -r    __HOME="${SUDO_HOME:-"${HOME:?}"}"
+declare -r    __HOME="${SUDO_HOME:-"${SUDO_USER:-"${HOME:-"/root"}"}${SUDO_USER:+"/home/${SUDO_USER}"}"}"
 declare -r    __WTOP="${__HOME:-"${TMPDIR:-"/tmp"}"}/.workdirs"
 mkdir -p   "${__WTOP}"
 [[ -n "${UDO_USE:-}" ]] && chown "${SUDO_USER:?}": "${__WTOP}"
@@ -204,7 +306,6 @@ declare -r    __FMAT="disk"				# "
 #declare -r    __FMAT="addon"			# "
 #declare -r    __FMAT="none"			# "
 #declare -r    __NWRK="yes"				# --with-network=
-declare -r    __RECM="yes"				# --with-recommends
 
 declare       __LOOP=""
 #declare -r    __HBRD="/usr/lib/ISOLINUX/isohdpfx.bin"
@@ -229,7 +330,6 @@ declare -a    __COMD=(
 	${__OUTP:+--output="${__OUTP}"}
 	${__FMAT:+--format="${__FMAT}"}
 	${__NWRK:+--with-network="${__NWRK}"}
-	${__RECM:+--with-recommends="${__RECM}"}
 	${__DIST:+--distribution="${__DIST}"}
 	${__VERS:+--release="${__CODE:-"${__VERS}"}"}
 	${__MKOS:+--directory="${__MKOS}"}
@@ -242,7 +342,7 @@ declare -a    __COMD=(
 
 function fnMk_mkosi() {
 	declare -r -a __COMD=("${@:-}")
-	if ! /usr/local/bin/mkosi "${__COMD[@]}"; then
+	if ! mkosi "${__COMD[@]}"; then
 		__RTCD="$?"
 		printf "%s\n" "mkosi ${__COMD[*]}"
 		exit "${__RTCD}"
@@ -329,29 +429,16 @@ function fnMk_uefi() {
 	# --- install grub module -------------------------------------------------
 	mkdir -p "${__MNTP:?}"
 	mount "${__LOOP}"p1 "${__MNTP}"
-	if command -v grub-install > /dev/null 2>&1; then
-		grub-install \
-			--target=x86_64-efi \
-			--efi-directory="${__MNTP}" \
-			--boot-directory="${__MNTP}/boot" \
-			--bootloader-id="${__DIST}" \
-			--removable
-		grub-install \
-			--target=i386-pc \
-			--boot-directory="${__MNTP}/boot" \
-			"${__LOOP}"
-	elif command -v grub2-install > /dev/null 2>&1; then
-		grub2-install \
-			--target=x86_64-efi \
-			--efi-directory="${__MNTP}" \
-			--boot-directory="${__MNTP}/boot" \
-			--bootloader-id="${__DIST}" \
-			--removable
-		grub2-install \
-			--target=i386-pc \
-			--boot-directory="${__MNTP}/boot" \
-			"${__LOOP}"
-	fi
+	grub-install \
+		--target=x86_64-efi \
+		--efi-directory="${__MNTP}" \
+		--boot-directory="${__MNTP}/boot" \
+		--bootloader-id="${__DIST}" \
+		--removable
+	grub-install \
+		--target=i386-pc \
+		--boot-directory="${__MNTP}/boot" \
+		"${__LOOP}"
 	umount "${__MNTP}"
 	losetup --detach "${__LOOP}"
 
@@ -397,7 +484,7 @@ function fnMk_cdfs() {
 	__BIOS="${__BIOS#"${__CDFS:?}/"}"
 	[[ -z "${__BIOS:-}" ]] && __BIOS="${__FMBR}"
 	  if [[ -e "${__OUTD}/${__RTFS:?}"/usr/bin/aa-enabled ]];  then __SECR="security=apparmor apparmor=1"; \
-	elif [[ -e "${__OUTD}/${__RTFS:?}"/usr/sbin/getenforce ]]; then __SECR="security=selinux selinux=1 enforcing=0"; \
+	elif [[ -e "${__OUTD}/${__RTFS:?}"/usr/sbin/getenforce ]]; then __SECR="security=selinux selinux=0"; \
 	else                                                            __SECR=""; \
 	fi
 	printf "%-10.10s: [%s]\n" "__SECR" "${__SECR:-}"
