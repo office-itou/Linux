@@ -49,14 +49,33 @@ sudo bash -c '
 
 </details>
 
-<details><summary>bridge</summary>
+<details><summary>install (dnf)</summary>
 
 ``` bash:
-sudo bash -c '
-  mkdir -p /etc/qemu
-  echo "allow br0" > /etc/qemu/bridge.conf
-'
+sudo dnf install qemu-kvm bridge-utils python3-websockify novnc
 ```
+
+</details>
+
+<details><summary>bridge</summary>
+
+* debian/ubuntu
+
+  ``` bash:
+  sudo bash -c '
+    mkdir -p /etc/qemu
+    echo "allow br0" > /etc/qemu/bridge.conf
+  '
+  ```
+
+* almalinux
+
+  ``` bash:
+  sudo bash -c '
+    mkdir -p /etc/qemu-kvm
+    echo "allow br0" > /etc/qemu-kvm/bridge.conf
+  '
+  ```
 
 </details>
 
