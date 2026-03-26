@@ -236,6 +236,7 @@ function fnMkosi_finalize_dracut() {
 		${__ADDS[*]:+--add "${__ADDS[*]}"} \
 		${__OMIT[*]:+--omit "${__OMIT[*]}"} \
 		--filesystems "ext4 fat exfat isofs squashfs udf xfs" \
+		--force-drivers "nvme" \
 	)
 	readonly __OPTN
 
