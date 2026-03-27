@@ -183,6 +183,7 @@ readonly      __VLID
 #declare -r    __VLID="${__DIST^} Live Media"
 #declare -r    __ISOS="${_DIRS_RMAK:?}/live-${__DIST}-${__VERS}${__ARCH:+-"${__ARCH//_/-}"}${__EDTN+-"${__EDTN}"}.iso"
 declare -r    __ISOS="${_DIRS_RMAK:?}/live-${__VLID,,}.iso"
+declare -r    __STRG="vm_uefi_${__VLID,,}.raw"
 declare -r    __SQFS="squashfs.img"
 declare -r    __RTFS="rtfsys"			# root image
 declare       __HOST=""					# --hostname=
@@ -223,6 +224,30 @@ declare -r    __MNTP="${__OUTD:?}/mnt"
 declare -r    __CDFS="${__OUTD:?}/img"
 declare -r    __BCAT="boot.cat"
 
+function fnMsgout() {
+	case "${2:-}" in
+		start    | complete)
+			case "${3:-}" in
+				*/*/*) printf "\033[m${1:-}\033[m: \033[45m--- %-8.8s: %s ---\033[m\n" "${2:-}" "${3:-}";; # date
+				*    ) printf "\033[m${1:-}\033[m: \033[92m--- %-8.8s: %s ---\033[m\n" "${2:-}" "${3:-}";; # info
+			esac
+			;;
+		skip               ) printf "\033[m${1:-}\033[m: \033[92m--- %-8.8s: %s ---\033[m\n"    "${2:-}" "${3:-}";; # info
+		remove   | umount  ) printf "\033[m${1:-}\033[m:     \033[93m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # warn
+		archive            ) printf "\033[m${1:-}\033[m:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${2:-}" "${3:-}";; # warn
+		success            ) printf "\033[m${1:-}\033[m:     \033[92m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # info
+		failed             ) printf "\033[m${1:-}\033[m:     \033[41m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # alert
+		active             ) printf "\033[m${1:-}\033[m:     \033[92m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # info
+		inactive           ) printf "\033[m${1:-}\033[m:     \033[93m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # warn
+		caution            ) printf "\033[m${1:-}\033[m:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${2:-}" "${3:-}";; # warn
+		-*                 ) printf "\033[m${1:-}\033[m:     \033[36m%-8.8s: %s\033[m\n"        "${2#-}" "${3:-}";; # gap
+		info               ) printf "\033[m${1:-}\033[m: \033[92m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # info
+		warn               ) printf "\033[m${1:-}\033[m: \033[93m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # warn
+		alert              ) printf "\033[m${1:-}\033[m: \033[91m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # alert
+		*                  ) printf "\033[m${1:-}\033[m: \033[37m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # normal
+	esac
+}
+
 # --- mkosi -------------------------------------------------------------------
 declare -a    __COMD=(
 	${__BOOT:+--bootable="${__BOOT}"}
@@ -241,32 +266,47 @@ declare -a    __COMD=(
 )
 
 function fnMk_mkosi() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
 	declare -r -a __COMD=("${@:-}")
 	if ! /usr/local/bin/mkosi "${__COMD[@]}"; then
 		__RTCD="$?"
 		printf "%s\n" "mkosi ${__COMD[*]}"
 		exit "${__RTCD}"
 	fi
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
 function fnMk_mkosi_summary() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
 	__COMD+=(
 		--no-pager
 		summary
 	)
 	fnMk_mkosi "${__COMD[@]:-}"
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
 function fnMk_mkosi_build() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
 	__COMD+=(
 		--force
 		--wipe-build-dir
 		build
 	)
 	fnMk_mkosi "${__COMD[@]:-}"
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
 function fnMk_mkosi_boot() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
 	__COMD+=(
 		--force
 		--wipe-build-dir
@@ -274,30 +314,247 @@ function fnMk_mkosi_boot() {
 		qemu
 	)
 	fnMk_mkosi "${__COMD[@]:-}"
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
 # --- mount -------------------------------------------------------------------
 function fnMk_mount_fs() {
+#	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+#	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
 	if [[ "${__FMAT:-}" != "disk" ]]; then
 		return
 	fi
-	mkdir -p "${__OUTD}/${__RTFS}"
-	__LOOP="$(losetup --find --show "${__OUTD}/${__OUTP}")"
+	mkdir -p "${1:?}"
+	__LOOP="$(losetup --find --show "${2:?}")"
 	partprobe "${__LOOP}"
-	mount -r "${__LOOP}"p1 "${__OUTD}/${__RTFS}"
+	mount -r "${__LOOP}"p1 "${1:?}"
+	printf "%s" "${__LOOP:?}"
+#	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
 # --- umount ------------------------------------------------------------------
 function fnMk_umount_fs() {
+#	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+#	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
 	if [[ "${__FMAT:-}" != "disk" ]]; then
 		return
 	fi
-	umount "${__OUTD}/${__RTFS}"
+	umount "${1:?}"
+	losetup --detach "${2:?}"
+#	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+}
+
+# --- find kernel -------------------------------------------------------------
+function fnMk_find_kernel() {
+#	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+#	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	declare       __VLNZ=""
+	declare       __IRAM=""
+	           __VLNZ="$(find "${1:-}"/{boot,} -maxdepth 1 \( -name 'vmlinuz-*'    -o -name 'linux-*'         \) -print -quit)"
+	__VLNZ="${__VLNZ:-"$(find "${1:-}"/{boot,} -maxdepth 1 \( -name 'vmlinuz'      -o -name 'linux'           \) -print -quit)"}"
+	           __IRAM="$(find "${1:-}"/{boot,} -maxdepth 1 \( -name 'initrd-*'     -o -name 'initramfs-*'     \) -print -quit)"
+	__IRAM="${__IRAM:-"$(find "${1:-}"/{boot,} -maxdepth 1 \( -name 'initrd-*.img' -o -name 'initramfs-*.img' \) -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${1:-}"/{boot,} -maxdepth 1 \( -name 'initrd.img-*' -o -name 'initramfs.img-*' \) -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${1:-}"/{boot,} -maxdepth 1 \( -name 'initrd.img'   -o -name 'initramfs.img'   \) -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${1:-}"/{boot,} -maxdepth 1 \( -name 'initrd-*'     -o -name 'initramfs-*'     \) -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${1:-}"/{boot,} -maxdepth 1 \( -name 'initrd'       -o -name 'initramfs'       \) -print -quit)"}"
+	printf "%s %s" "${__VLNZ}" "${__IRAM}"
+#	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+}
+
+# --- vm setup ----------------------------------------------------------------
+function fnMk_vm_setup() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	declare       __WORK=""
+	declare       __VLNZ=""
+	declare       __IRAM=""
+	declare       __LOOP=""
+
+	# --- find kernel ---------------------------------------------------------
+	__WORK="$(fnMk_find_kernel "${__OUTD}/${__RTFS}")"
+	read -r __VLNZ __IRAM < <(echo "${__WORK}")
+	__VLNZ="${__VLNZ#"${__OUTD}/${__RTFS}"}"
+	__IRAM="${__IRAM#"${__OUTD}/${__RTFS}"}"
+
+	# --- create dummy storage ------------------------------------------------
+	dd if=/dev/zero of="${__OUTD}/${__STRG}" bs=1G count=20
+	__LOOP="$(losetup --find --show "${__OUTD}/${__STRG}")"
+	partprobe "${__LOOP}"
+	sfdisk --force --wipe always "${__LOOP}" <<- _EOT_
+		,1GiB,U
+		,,L
+_EOT_
+	partprobe "${__LOOP}"
+	mkfs.vfat -F 32 "${__LOOP}"p1
+	mkfs.ext4 -F "${__LOOP}"p2
+
+	# --- boot area -----------------------------------------------------------
+	mkdir -p "${__MNTP:?}"
+	mount "${__LOOP}"p1 "${__MNTP}"
+
+	# --- install grub module -------------------------------------------------
+	if command -v grub-install > /dev/null 2>&1; then
+		grub-install \
+			--target=x86_64-efi \
+			--efi-directory="${__MNTP}" \
+			--boot-directory="${__MNTP}/boot" \
+			--bootloader-id="${__DIST}" \
+			--removable
+		grub-install \
+			--target=i386-pc \
+			--boot-directory="${__MNTP}/boot" \
+			"${__LOOP}"
+	elif command -v grub2-install > /dev/null 2>&1; then
+		grub2-install \
+			--target=x86_64-efi \
+			--efi-directory="${__MNTP}" \
+			--boot-directory="${__MNTP}/boot" \
+			--bootloader-id="${__DIST}" \
+			--removable
+		grub2-install \
+			--target=i386-pc \
+			--boot-directory="${__MNTP}/boot" \
+			"${__LOOP}"
+	fi
+
+	# --- create grub.cfg -----------------------------------------------------
+	__UUID="$(lsblk --noheadings --output=UUID "${__LOOP}"p2)"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__OUTD}"/grub.cfg || true
+		set default="0"
+		set timeout="5"
+
+		if [ "x\${font}" = "x" ] ; then
+		  if [ "x\${feature_default_font_path}" = "xy" ] ; then
+		    font="unicode"
+		  else
+		    font="\${prefix}/fonts/font.pf2"
+		  fi
+		fi
+		export font
+
+		if loadfont "\$font" ; then
+		# set lang="ja_JP"
+		# export lang
+		  set gfxmode=auto
+		  set gfxpayload="keep"
+		  export gfxmode
+		  export gfxpayload
+		  if [ "\${grub_platform}" = "efi" ]; then
+		    insmod efi_gop
+		    insmod efi_uga
+		  else
+		    insmod vbe
+		    insmod vga
+		  fi
+		  insmod video_bochs
+		  insmod video_cirrus
+		  insmod gfxterm
+		  insmod gettext
+		  insmod png
+		  terminal_output gfxterm
+		fi
+
+		set timeout_style=menu
+		set color_normal=light-gray/black
+		set color_highlight=white/dark-gray
+		export color_normal
+		export color_highlight
+
+		#set theme=/boot/grub/theme.cfg
+		#export theme
+
+		#insmod play
+		#play 960 440 1 0 4 440 1
+
+		menuentry "Live system (amd64)" --hotkey=l {
+		  set gfxpayload="keep"
+		  set background_color="black"
+		  set uuid="${__UUID:?}"
+		  search --no-floppy --fs-uuid --set=root \${uuid}
+		  echo root=\${root}
+		  set devs=/dev/sda2
+		# set ttys=console=ttyS0
+		  set options="\${ttys} root=\${devs} security=selinux selinux=1 enforcing=0"
+		# set options="\${ttys} root=\${devs} security=apparmor apparmor=1"
+		# if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+		  echo 'Loading boot files ...'
+		  echo 'Loading vmlinuz ...'
+		  linux  ${__VLNZ:?} \${options} ---
+		  echo 'Loading initramfs ...'
+		  initrd ${__IRAM:?}
+		}
+_EOT_
+	cp --preserve=timestamps "${__OUTD}"/grub.cfg "${__MNTP}"/boot/grub/
+	umount "${__MNTP}"
+	# --- install root files --------------------------------------------------
+	mount "${__LOOP}"p2 "${__MNTP}"
+	cp --preserve=mode,ownership,timestamps,links --recursive "${__OUTD}/${__RTFS}"/. "${__MNTP}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__OUTD}"/fstab || true
+		UUID=${__UUID:?} / ext4 defaults 0 0
+_EOT_
+	cp --preserve=timestamps "${__OUTD}"/fstab "${__MNTP}"/etc/
+	umount "${__MNTP}"
 	losetup --detach "${__LOOP}"
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+}
+
+# --- qemu --------------------------------------------------------------------
+function fnMk_qemu() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+#	declare -r -a __COMD=(
+#		-cpu "host"
+#		-machine "q35"
+#		-enable-kvm
+#		-device "intel-iommu"
+#		-m "size=4G"
+#		-boot "order=c"
+#		-nic "bridge"
+#		-vga "std"
+#		-full-screen
+#		-display "curses,charset=CP932"
+#		-k "ja"
+#		-device "ich9-intel-hda"
+#		-vnc ":0"
+#		-nographic
+#		-drive "file=\"${__OUTD}/${__STRG}\",format=raw"
+#	)
+	declare -r -a __COMD=(
+		-daemonize
+		-cpu "host"
+		-machine "q35"
+		-enable-kvm
+		-device "intel-iommu"
+		-m "size=4G"
+		-boot "order=c"
+		-nic "bridge"
+		-vga "std"
+		-device "ich9-intel-hda"
+		-vnc ":0"
+		-drive "file=\"${__OUTD}/${__STRG}\",format=raw"
+	)
+	if ! qemu-system-x86_64 "${__COMD[@]}"; then
+		__RTCD="$?"
+		printf "%s\n" "qemu-system-x86_64 ${__COMD[*]}"
+		exit "${__RTCD}"
+	fi
+	export sshpasswd="master"
+	echo "${sshpasswd}" | sshpass -p "${sshpasswd}" ssh -o StrictHostKeyChecking=no master@sv-debian 'sudo -S bash -c "ls -lahZ /; sudo shutdown -h now"'
+	unset sshpasswd
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
 # --- mksquashfs --------------------------------------------------------------
 function fnMk_mksquashfs() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
 	declare -r -a __COMD=(
 		"${__OUTD}/${__RTFS}"
 		"${__OUTD}/${__SQFS}"
@@ -311,16 +568,20 @@ function fnMk_mksquashfs() {
 		umount "${__OUTD}/${__RTFS}"
 		exit "${__RTCD}"
 	fi
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
 # --- uefi --------------------------------------------------------------------
 function fnMk_uefi() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
 	declare       __LOOP=""
 	__WORK="${__UEFI:?}.work"
 	dd if=/dev/zero of="${__WORK}" bs=1M count=100
 	__LOOP="$(losetup --find --show "${__WORK}")"
 	partprobe "${__LOOP}"
-	sfdisk "${__LOOP}" <<- _EOT_
+	sfdisk --force --wipe always "${__LOOP}" <<- _EOT_
 		,,U,
 	_EOT_
 	partprobe "${__LOOP}"
@@ -362,18 +623,27 @@ function fnMk_uefi() {
 	__CONT="$(printf "%s\n" "${__ARRY[@]}" | sed -ne '/'"${__WORK##*/}"'1/ s/^[^ \t]\+[ \t]\+[0-9,]\+[ \t]\+[0-9,]\+[ \t]\+\([0-9,]\+\)[ \t]\+.*$/\1/p')"
 	dd if="${__WORK}" of="${__UEFI}" bs="${__SECT}" skip="${__STRT}" count="${__CONT}"
 	dd if="${__WORK}" of="${__FMBR}" bs=1 count=446
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
 # --- cdfs --------------------------------------------------------------------
 function fnMk_cdfs() {
-	           __VLNZ="$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'vmlinuz-*'    -o -name 'linux-*'         \) -print -quit)"
-	__VLNZ="${__VLNZ:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'vmlinuz'      -o -name 'linux'           \) -print -quit)"}"
-	           __IRAM="$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd-*'     -o -name 'initramfs-*'     \) -print -quit)"
-	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd-*.img' -o -name 'initramfs-*.img' \) -print -quit)"}"
-	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd.img-*' -o -name 'initramfs.img-*' \) -print -quit)"}"
-	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd.img'   -o -name 'initramfs.img'   \) -print -quit)"}"
-	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd-*'     -o -name 'initramfs-*'     \) -print -quit)"}"
-	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd'       -o -name 'initramfs'       \) -print -quit)"}"
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	declare       __WORK=""
+	declare       __VLNZ=""
+	declare       __IRAM=""
+
+	__WORK="$(fnMk_find_kernel "${__OUTD}/${__RTFS}")"
+#	           __VLNZ="$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'vmlinuz-*'    -o -name 'linux-*'         \) -print -quit)"
+#	__VLNZ="${__VLNZ:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'vmlinuz'      -o -name 'linux'           \) -print -quit)"}"
+#	           __IRAM="$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd-*'     -o -name 'initramfs-*'     \) -print -quit)"
+#	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd-*.img' -o -name 'initramfs-*.img' \) -print -quit)"}"
+#	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd.img-*' -o -name 'initramfs.img-*' \) -print -quit)"}"
+#	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd.img'   -o -name 'initramfs.img'   \) -print -quit)"}"
+#	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd-*'     -o -name 'initramfs-*'     \) -print -quit)"}"
+#	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd'       -o -name 'initramfs'       \) -print -quit)"}"
 	mkdir -p "${__CDFS:?}"/{.disk,EFI/BOOT,boot/grub/{live-theme,x86_64-efi,i386-pc},isolinux,LiveOS}
 	[[ -e "${__UEFI:?}"                                           ]] && cp --preserve=timestamps             "${__UEFI:?}"                                           "${__CDFS:?}"/boot/grub
 	[[ -e "${__IRAM:?}"                                           ]] && cp --preserve=timestamps             "${__IRAM:?}"                                           "${__CDFS:?}"/LiveOS
@@ -591,10 +861,14 @@ _EOT_
 		  initrd /LiveOS/initrd.img
 		  append root=live:CDLABEL=${__VLID} rd.live.image rd.live.overlay.overlayfs=1${__SECR:+" ${__SECR}"} --- quiet
 _EOT_
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
 # --- xorrisofs ---------------------------------------------------------------
 function fnMk_xorrisofs() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
 	declare -r -a __COMD=(
 		-rational-rock
 		${__VLID:+-volid "${__VLID}"}
@@ -630,24 +904,33 @@ function fnMk_xorrisofs() {
 		exit "${__RTCD}"
 	fi
 	popd > /dev/null 2>&1
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
 # shellcheck disable=SC2329,SC2317
 function fnTrap() {
-	echo "start   : ${FUNCNAME[0]}"
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+#	echo "start   : ${FUNCNAME[0]}"
 #	rm -rf "${__TEMP:?}"
-	echo "complete: ${FUNCNAME[0]}"
+#	echo "complete: ${FUNCNAME[0]}"
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
 trap fnTrap EXIT
 
 case "${__OPRT:-}" in
 	build)	fnMk_mkosi_build
-			fnMk_mount_fs
+			__LOOP="$(fnMk_mount_fs "${__OUTD}/${__RTFS}" "${__OUTD}/${__OUTP}")"
+			fnMk_vm_setup
+			fnMk_umount_fs "${__OUTD}/${__RTFS}" "${__LOOP:?}"
+			fnMk_qemu
+			__LOOP="$(fnMk_mount_fs "${__OUTD}/${__RTFS}" "${__OUTD}/${__STRG}")"
 			fnMk_mksquashfs
 			fnMk_uefi
 			fnMk_cdfs
-			fnMk_umount_fs
+			fnMk_umount_fs "${__OUTD}/${__RTFS}" "${__LOOP:?}"
 			fnMk_xorrisofs
 			;;
 	boot )	fnMk_mkosi_boot
