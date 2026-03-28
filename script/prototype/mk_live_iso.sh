@@ -1,6 +1,23 @@
 #!/bin/bash
 
-set -eu
+	export LANG=C
+	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
+#	trap 'exit 1' 1 2 3 15
+
+#	set -n								# Check for syntax errors
+#	set -x								# Show command and argument expansion
+	set -o ignoreeof					# Do not exit with Ctrl+D
+	set +m								# Disable job control
+	set -e								# End with status other than 0
+	set -u								# End with undefined variable reference
+	set -o pipefail						# End with in pipe error
+
+	# --- working directory ---------------------------------------------------
+	declare -r    _PROG_PATH="$0"
+	declare -r    _PROG_PARM="${*:-}"
+	declare -r    _PROG_DIRS="${_PROG_PATH%/*}"
+	declare -r    _PROG_NAME="${_PROG_PATH##*/}"
+#	declare -r    _PROG_PROC="${_PROG_NAME}.$$"
 
 # ---
 declare -r -a __LIST=(
@@ -141,11 +158,78 @@ readonly      __CODE
 # ubuntu: https://packages.ubuntu.com/
 # mkosi : https://github.com/systemd/mkosi/blob/main/mkosi/resources/man/mkosi.1.md
 # dracut: https://github.com/zfsonlinux/dracut
-declare -r    _DIRS_MKOS="/srv/user/share/conf/_mkosi"
-declare -r    _DIRS_CACH="/srv/user/share/cache"
-declare -r    _DIRS_IMGS="/srv/user/share/imgs"
-declare -r    _DIRS_ISOS="/srv/user/share/isos"
-declare -r    _DIRS_RMAK="/srv/user/share/rmak"
+# --- shared directory parameter ----------------------------------------------
+declare -r    _DIRS_TOPS="/srv"								# top of shared directory
+declare -r    _DIRS_HGFS="${_DIRS_TOPS}/hgfs"				# vmware shared
+declare -r    _DIRS_HTML="${_DIRS_TOPS}/http/html"			# html contents
+declare -r    _DIRS_SAMB="${_DIRS_TOPS}/samba"				# samba shared
+declare -r    _DIRS_TFTP="${_DIRS_TOPS}/tftp"				# tftp contents
+declare -r    _DIRS_USER="${_DIRS_TOPS}/user"				# user file
+# --- shared of user file -----------------------------------------------------
+declare -r    _DIRS_PVAT="${_DIRS_USER}/private"			# private contents directory
+declare -r    _DIRS_SHAR="${_DIRS_USER}/share"				# shared of user file
+declare -r    _DIRS_CONF="${_DIRS_SHAR}/conf"				# configuration file
+declare -r    _DIRS_DATA="${_DIRS_CONF}/_data"				# data file
+declare -r    _DIRS_KEYS="${_DIRS_CONF}/_keyring"			# keyring file
+declare -r    _DIRS_MKOS="${_DIRS_CONF}/_mkosi"				# mkosi configuration files
+declare -r    _DIRS_TMPL="${_DIRS_CONF}/_template"			# templates for various configuration files
+declare -r    _DIRS_SHEL="${_DIRS_CONF}/script"				# shell script file
+declare -r    _DIRS_IMGS="${_DIRS_SHAR}/imgs"				# iso file extraction destination
+declare -r    _DIRS_ISOS="${_DIRS_SHAR}/isos"				# iso file
+declare -r    _DIRS_LOAD="${_DIRS_SHAR}/load"				# load module
+declare -r    _DIRS_RMAK="${_DIRS_SHAR}/rmak"				# remake file
+declare -r    _DIRS_CACH="${_DIRS_SHAR}/cache"				# cache file
+declare -r    _DIRS_CTNR="${_DIRS_SHAR}/containers"			# container file
+declare -r    _DIRS_CHRT="${_DIRS_SHAR}/chroot"				# container file (chroot)
+# --- common data file (prefer non-empty current file) ------------------------
+declare -r    _FILE_CONF="common.cfg"						# common configuration file
+declare -r    _FILE_DIST="distribution.dat"					# distribution data file
+declare -r    _FILE_MDIA="media.dat"						# media data file
+declare -r    _FILE_DSTP="debstrap.dat"						# debstrap data file
+declare -r    _PATH_CONF="${_DIRS_DATA}/${_FILE_CONF}"		# common configuration file
+declare -r    _PATH_DIST="${_DIRS_DATA}/${_FILE_DIST}"		# distribution data file
+declare -r    _PATH_MDIA="${_DIRS_DATA}/${_FILE_MDIA}"		# media data file
+declare -r    _PATH_DSTP="${_DIRS_DATA}/${_FILE_DSTP}"		# debstrap data file
+# --- pre-configuration file templates ----------------------------------------
+declare -r    _FILE_KICK="kickstart_rhel.cfg"				# for rhel
+declare -r    _FILE_CLUD="user-data_ubuntu"					# for ubuntu cloud-init
+declare -r    _FILE_SEDD="preseed_debian.cfg"				# for debian
+declare -r    _FILE_SEDU="preseed_ubuntu.cfg"				# for ubuntu
+declare -r    _FILE_YAST="yast_opensuse.xml"				# for opensuse
+declare -r    _FILE_AGMA="agama_opensuse.json"				# for opensuse
+declare -r    _PATH_KICK="${_DIRS_TMPL}/${_FILE_KICK}"		# for rhel
+declare -r    _PATH_CLUD="${_DIRS_TMPL}/${_FILE_CLUD}"		# for ubuntu cloud-init
+declare -r    _PATH_SEDD="${_DIRS_TMPL}/${_FILE_SEDD}"		# for debian
+declare -r    _PATH_SEDU="${_DIRS_TMPL}/${_FILE_SEDU}"		# for ubuntu
+declare -r    _PATH_YAST="${_DIRS_TMPL}/${_FILE_YAST}"		# for opensuse
+declare -r    _PATH_AGMA="${_DIRS_TMPL}/${_FILE_AGMA}"		# for opensuse
+# --- shell script ------------------------------------------------------------
+declare -r    _FILE_ERLY="autoinst_cmd_early.sh"			# shell commands to run early
+declare -r    _FILE_LATE="autoinst_cmd_late.sh"				# "              to run late
+declare -r    _FILE_PART="autoinst_cmd_part.sh"				# "              to run after partition
+declare -r    _FILE_RUNS="autoinst_cmd_run.sh"				# "              to run preseed/run
+declare -r    _PATH_ERLY="${_DIRS_SHEL}/${_FILE_ERLY}"		# shell commands to run early
+declare -r    _PATH_LATE="${_DIRS_SHEL}/${_FILE_LATE}"		# "              to run late
+declare -r    _PATH_PART="${_DIRS_SHEL}/${_FILE_PART}"		# "              to run after partition
+declare -r    _PATH_RUNS="${_DIRS_SHEL}/${_FILE_RUNS}"		# "              to run preseed/run
+# --- tftp menu ---------------------------------------------------------------
+declare -r    _FILE_IPXE="autoexec.ipxe"					# ipxe
+declare -r    _FILE_GRUB="boot/grub/grub.cfg"				# grub
+declare -r    _FILE_SLNX="menu-bios/syslinux.cfg"			# syslinux (bios)
+declare -r    _FILE_UEFI="menu-efi64/syslinux.cfg"			# syslinux (efi64)
+declare -r    _PATH_IPXE="${_DIRS_TFTP}/${_FILE_IPXE}"		# ipxe
+declare -r    _PATH_GRUB="${_DIRS_TFTP}/${_FILE_GRUB}"		# grub
+declare -r    _PATH_SLNX="${_DIRS_TFTP}/${_FILE_SLNX}"		# syslinux (bios)
+declare -r    _PATH_UEFI="${_DIRS_TFTP}/${_FILE_UEFI}"		# syslinux (efi64)
+# --- working directory parameter ---------------------------------------------
+declare -r    _DIRS_VADM="/var/admin"						# top of admin working directory
+declare -r    _DIRS_INST=""									# auto-install working directory
+declare -r    _DIRS_BACK=""									# top of backup directory
+declare -r    _DIRS_ORIG=""									# original file directory
+declare -r    _DIRS_INIT=""									# initial file directory
+declare -r    _DIRS_SAMP=""									# sample file directory
+declare -r    _DIRS_LOGS=""									# log file directory
+# -----------------------------------------------------------------------------
 declare       __DATE=""
               __DATE="$(date +"%Y/%m/%d %H:%M:%S")"
 readonly      __DATE
@@ -153,17 +237,35 @@ declare -r    __HOME="${SUDO_HOME:-"${HOME:?}"}"
 declare -r    __WTOP="${__HOME:-"${TMPDIR:-"/tmp"}"}/.workdirs"
 mkdir -p   "${__WTOP}"
 [[ -n "${UDO_USE:-}" ]] && chown "${SUDO_USER:?}": "${__WTOP}"
-declare       __TEMP=""
+declare       __TEMP=""					# local
               __TEMP="$(mktemp -qd "${__WTOP}/mkosi.XXXXXX")"
 readonly      __TEMP
-declare -r    __ARCH="x86_64"
+declare       __RTMP=""					# remote
+              __RTMP="$(mktemp -qd "${_DIRS_PVAT}/wrk/mkosi.XXXXXX")"
+readonly      __RTMP
 declare -r    __MKOS="${_DIRS_MKOS:?}"	# --directory=
-#declare -r    __CACH="${_DIRS_CACH:?}/${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${__ARCH//_/-}"}" # --package-cache-dir
-declare -r    __WRKD="${__TEMP:?}/${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${__ARCH//_/-}"}${__EDTN+-"${__EDTN}"}/workdir" # --workspace-directory=
-declare -r    __OUTD="${__TEMP:?}/${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${__ARCH//_/-}"}${__EDTN+-"${__EDTN}"}/outputs" # --output-directory=
-#declare -r    __OUTD="${__TEMP:?}/${__DIST}-${__VERS}${__EDTN+-"${__EDTN}"}" # --output-directory=
-#declare -r    __OUTD="${_DIRS_IMGS:?}/mkosi/${__DIST}-${__VERS}"
-#declare       __VLID="Live ${__DIST}"
+#declare -r    __ARCH="alpha"			# --architecture=
+#declare -r    __ARCH="arc"				# "
+#declare -r    __ARCH="arm"				# "
+#declare -r    __ARCH="arm64"			# "
+#declare -r    __ARCH="ia64"			# "
+#declare -r    __ARCH="loongarch64"		# "
+#declare -r    __ARCH="mips64-le"		# "
+#declare -r    __ARCH="mips-le"			# "
+#declare -r    __ARCH="parisc"			# "
+#declare -r    __ARCH="ppc"				# "
+#declare -r    __ARCH="ppc64"			# "
+#declare -r    __ARCH="ppc64-le"		# "
+#declare -r    __ARCH="riscv32"			# "
+#declare -r    __ARCH="riscv64"			# "
+#declare -r    __ARCH="s390"			# "
+#declare -r    __ARCH="s390x"			# "
+#declare -r    __ARCH="tilegx"			# "
+#declare -r    __ARCH="x86"				# "
+declare -r    __ARCH="x86-64"			# "
+declare -r    __SUBD="${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${__ARCH//_/-}"}${__EDTN+-"${__EDTN}"}"
+declare -r    __WRKD="${__TEMP:?}/${__SUBD:?}" # --workspace-directory=
+declare -r    __OUTD="${__RTMP:?}/${__SUBD:?}" # --output-directory=
 declare       __VLID=""
 case "${__DIST}" in
 	debian  ) __VLID="Debian";;
@@ -180,18 +282,13 @@ esac
               __VLID="${__VLID// /-}"
 #             __VLID="${__VLID// /$'\x20'}"
 readonly      __VLID
-#declare -r    __VLID="${__DIST^} Live Media"
-#declare -r    __ISOS="${_DIRS_RMAK:?}/live-${__DIST}-${__VERS}${__ARCH:+-"${__ARCH//_/-}"}${__EDTN+-"${__EDTN}"}.iso"
 declare -r    __ISOS="${_DIRS_RMAK:?}/live-${__VLID,,}.iso"
-declare -r    __STRG="vm_uefi_${__VLID,,}.raw"
-declare -r    __SQFS="squashfs.img"
-declare -r    __RTFS="rtfsys"			# root image
 declare       __HOST=""					# --hostname=
               __HOST="sv-${__VLID%%-*}.workgroup"
               __HOST="${__HOST,,}"
 readonly      __HOST
 #declare -r    __BOOT="yes"				# --bootable=
-declare -r    __OUTP="rtdisk"			# --output=
+declare -r    __OUTP="root_img"			# --output=
 #declare -r    __FMAT="directory"		# --format=
 #declare -r    __FMAT="tar"				# "
 #declare -r    __FMAT="cpio"			# "
@@ -209,20 +306,36 @@ declare -r    __RECM="yes"				# --with-recommends
 
 declare       __LOOP=""
 #declare -r    __HBRD="/usr/lib/ISOLINUX/isohdpfx.bin"
-declare       __ETRI=""
-#  if [[ -e /usr/share/syslinux/dosutil/eltorito.sys ]]; then __ETRI="/usr/share/syslinux/dosutil/eltorito.sys"
-#elif [[ -e /usr/share/syslinux/isolinux.bin         ]]; then __ETRI="/usr/share/syslinux/isolinux.bin"
-#elif [[ -e /usr/lib/ISOLINUX/isolinux.bin           ]]; then __ETRI="/usr/lib/ISOLINUX/isolinux.bin"
-#fi
-#readonly      __ETRI
-#declare -r    __GMBR="/usr/lib/syslinux/mbr/gptmbr.bin"
-#declare       __GMBR=""
-declare -r    __FMBR="${__OUTD:?}/mbr.bin"
-declare       __BIOS=""
-declare -r    __UEFI="${__OUTD:?}/efi.img"
-declare -r    __MNTP="${__OUTD:?}/mnt"
-declare -r    __CDFS="${__OUTD:?}/img"
+declare -r    __CDFS="${__OUTD:?}/cdfs"
+declare -r    __RTFS="${__OUTD:?}/rtfs"
+declare -r    __MNTP="${__OUTD:?}/mntp"
+declare -r    __UEFI="${__OUTD:?}/uefi.img"
+declare -r    __MBRF="${__OUTD:?}/bios.img"
+declare -r    __RAWF="${__OUTD:?}/${__OUTP}.raw"
+declare -r    __SQFS="${__OUTD:?}/squashfs.img"
+declare -r    __STRG="${__OUTD:?}/vm_uefi_${__VLID,,}.raw"
 declare -r    __BCAT="boot.cat"
+declare       __ETRI=""					# eltorito
+declare       __BIOS=""					# bios or uefi imga file path
+declare       __RTLP=""					# root image loop device name
+declare       __VLNZ=""					# kernel
+declare       __IRAM=""					# initramfs
+
+#	* mount point
+#		__CDFS: cdfs: cdfs image
+#		__RTFS: rtfs: root image
+#		__MNTP: mntp: work space
+#	* image file
+#		__UEFI: uefi.img    : uefi
+#		__MBRF: bios.img    : bios
+#		__RAWF: root_img.raw: root
+#		__SQFS: squashfs.img: squashfs
+#		__STRG: vm_uefi*.raw: storage
+#	* work file
+#		fstab           :
+#		grub.cfg        :
+#		run-once.service:
+#		run-once.sh     :
 
 function fnMsgout() {
 	case "${2:-}" in
@@ -257,6 +370,7 @@ declare -a    __COMD=(
 	${__RECM:+--with-recommends="${__RECM}"}
 	${__DIST:+--distribution="${__DIST}"}
 	${__VERS:+--release="${__CODE:-"${__VERS}"}"}
+	${__ARCH:+--architecture="${__ARCH//_/-}"}
 	${__MKOS:+--directory="${__MKOS}"}
 	${__WRKD:+--workspace-directory="${__WRKD}"}
 	${__CACH:+--package-cache-dir="${__CACH}"}
@@ -270,11 +384,12 @@ function fnMk_mkosi() {
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	declare -r -a __COMD=("${@:-}")
+	declare -i    __RTCD=0
 	if ! /usr/local/bin/mkosi "${__COMD[@]}"; then
 		__RTCD="$?"
 		printf "%s\n" "mkosi ${__COMD[*]}"
-		exit "${__RTCD}"
 	fi
+	[[ "${__RTCD}" -ne 0 ]] && exit "${__RTCD}"
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
@@ -303,100 +418,63 @@ function fnMk_mkosi_build() {
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
-function fnMk_mkosi_boot() {
-	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
-	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
-
-	__COMD+=(
-		--force
-		--wipe-build-dir
-		--console=gui
-		qemu
-	)
-	fnMk_mkosi "${__COMD[@]:-}"
-	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
-}
-
 # --- mount -------------------------------------------------------------------
 function fnMk_mount_fs() {
-#	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
-#	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	if [[ "${__FMAT:-}" != "disk" ]]; then
 		return
 	fi
-	mkdir -p "${1:?}"
-	__LOOP="$(losetup --find --show "${2:?}")"
-	partprobe "${__LOOP}"
-	mount -r "${__LOOP}"p1 "${1:?}"
-	printf "%s" "${__LOOP:?}"
-#	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	mkdir -p "${__RTFS:?}"
+	__RTLP="$(losetup --find --show "${__RAWF:?}")"
+	partprobe "${__RTLP}"
+	mount -r "${__RTLP}"p1 "${__RTFS}"
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
 # --- umount ------------------------------------------------------------------
 function fnMk_umount_fs() {
-#	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
-#	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	if [[ "${__FMAT:-}" != "disk" ]]; then
 		return
 	fi
-	umount "${1:?}"
-	losetup --detach "${2:?}"
-#	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	umount "${__RTFS:?}"
+	losetup --detach "${__RTLP:?}"
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
 # --- find kernel -------------------------------------------------------------
 function fnMk_find_kernel() {
-#	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
-#	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
-
-	declare       __VLNZ=""
-	declare       __IRAM=""
-	           __VLNZ="$(find "${1:-}"/{boot,} -maxdepth 1 \( -name 'vmlinuz-*'    -o -name 'linux-*'         \) -print -quit)"
-	__VLNZ="${__VLNZ:-"$(find "${1:-}"/{boot,} -maxdepth 1 \( -name 'vmlinuz'      -o -name 'linux'           \) -print -quit)"}"
-	           __IRAM="$(find "${1:-}"/{boot,} -maxdepth 1 \( -name 'initrd-*'     -o -name 'initramfs-*'     \) -print -quit)"
-	__IRAM="${__IRAM:-"$(find "${1:-}"/{boot,} -maxdepth 1 \( -name 'initrd-*.img' -o -name 'initramfs-*.img' \) -print -quit)"}"
-	__IRAM="${__IRAM:-"$(find "${1:-}"/{boot,} -maxdepth 1 \( -name 'initrd.img-*' -o -name 'initramfs.img-*' \) -print -quit)"}"
-	__IRAM="${__IRAM:-"$(find "${1:-}"/{boot,} -maxdepth 1 \( -name 'initrd.img'   -o -name 'initramfs.img'   \) -print -quit)"}"
-	__IRAM="${__IRAM:-"$(find "${1:-}"/{boot,} -maxdepth 1 \( -name 'initrd-*'     -o -name 'initramfs-*'     \) -print -quit)"}"
-	__IRAM="${__IRAM:-"$(find "${1:-}"/{boot,} -maxdepth 1 \( -name 'initrd'       -o -name 'initramfs'       \) -print -quit)"}"
-	printf "%s %s" "${__VLNZ}" "${__IRAM}"
-#	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
-}
-
-# --- vm setup ----------------------------------------------------------------
-function fnMk_vm_setup() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
-	declare       __WORK=""
-	declare       __VLNZ=""
-	declare       __IRAM=""
-	declare       __LOOP=""
+	           __VLNZ="$(find "${__RTFS:-}"/{boot,} -maxdepth 1 \( -name 'vmlinuz-*'    -o -name 'linux-*'         \) -print -quit)"
+	__VLNZ="${__VLNZ:-"$(find "${__RTFS:-}"/{boot,} -maxdepth 1 \( -name 'vmlinuz'      -o -name 'linux'           \) -print -quit)"}"
+	           __IRAM="$(find "${__RTFS:-}"/{boot,} -maxdepth 1 \( -name 'initrd-*'     -o -name 'initramfs-*'     \) -print -quit)"
+	__IRAM="${__IRAM:-"$(find "${__RTFS:-}"/{boot,} -maxdepth 1 \( -name 'initrd-*.img' -o -name 'initramfs-*.img' \) -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__RTFS:-}"/{boot,} -maxdepth 1 \( -name 'initrd.img-*' -o -name 'initramfs.img-*' \) -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__RTFS:-}"/{boot,} -maxdepth 1 \( -name 'initrd.img'   -o -name 'initramfs.img'   \) -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__RTFS:-}"/{boot,} -maxdepth 1 \( -name 'initrd-*'     -o -name 'initramfs-*'     \) -print -quit)"}"
+	__IRAM="${__IRAM:-"$(find "${__RTFS:-}"/{boot,} -maxdepth 1 \( -name 'initrd'       -o -name 'initramfs'       \) -print -quit)"}"
+	__VLNZ="${__VLNZ#"${__RTFS}"}"
+	__IRAM="${__IRAM#"${__RTFS}"}"
+	readonly __VLNZ
+	readonly __IRAM
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+}
 
-	# --- find kernel ---------------------------------------------------------
-	__WORK="$(fnMk_find_kernel "${__OUTD}/${__RTFS}")"
-	read -r __VLNZ __IRAM < <(echo "${__WORK}")
-	__VLNZ="${__VLNZ#"${__OUTD}/${__RTFS}"}"
-	__IRAM="${__IRAM#"${__OUTD}/${__RTFS}"}"
+# --- vm setup loopXp1 --------------------------------------------------------
+function fnMk_vm_setup_loopXp1() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
-	# --- create dummy storage ------------------------------------------------
-	dd if=/dev/zero of="${__OUTD}/${__STRG}" bs=1G count=20
-	__LOOP="$(losetup --find --show "${__OUTD}/${__STRG}")"
-	partprobe "${__LOOP}"
-	sfdisk --force --wipe always "${__LOOP}" <<- _EOT_
-		,1GiB,U
-		,,L
-_EOT_
-	partprobe "${__LOOP}"
-	mkfs.vfat -F 32 "${__LOOP}"p1
-	mkfs.ext4 -F "${__LOOP}"p2
-
-	# --- boot area -----------------------------------------------------------
+	declare -r    __LOOP="${1:?}"		# loop device name
+	declare -r    __UUID="${2:?}"		# loopXp2 uuid
 	mkdir -p "${__MNTP:?}"
 	mount "${__LOOP}"p1 "${__MNTP}"
-
 	# --- install grub module -------------------------------------------------
 	if command -v grub-install > /dev/null 2>&1; then
 		grub-install \
@@ -420,11 +498,12 @@ _EOT_
 			--target=i386-pc \
 			--boot-directory="${__MNTP}/boot" \
 			"${__LOOP}"
+	else
+		fnMsgout "${_PROG_NAME:-}" "abnormal termination" "[${__FUNC_NAME}]"
+		exit 1
 	fi
-
 	# --- create grub.cfg -----------------------------------------------------
-	__UUID="$(lsblk --noheadings --output=UUID "${__LOOP}"p2)"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__OUTD}"/grub.cfg || true
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__OUTD}"/grub.cfg
 		set default="0"
 		set timeout="5"
 
@@ -490,16 +569,87 @@ _EOT_
 		}
 _EOT_
 	cp --preserve=timestamps "${__OUTD}"/grub.cfg "${__MNTP}"/boot/grub/
+	# -------------------------------------------------------------------------
 	umount "${__MNTP}"
-	# --- install root files --------------------------------------------------
+}
+
+# --- vm setup loopXp1 --------------------------------------------------------
+function fnMk_vm_setup_loopXp2() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	declare -r    __LOOP="${1:?}"		# loop device name
+	declare -r    __UUID="${2:?}"		# loopXp2 uuid
+	mkdir -p "${__MNTP:?}"
 	mount "${__LOOP}"p2 "${__MNTP}"
-	cp --preserve=mode,ownership,timestamps,links --recursive "${__OUTD}/${__RTFS}"/. "${__MNTP}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__OUTD}"/fstab || true
+	# --- root files ----------------------------------------------------------
+	cp --preserve=mode,ownership,timestamps,links --recursive "${__RTFS}"/. "${__MNTP}"
+	# --- /etc/fstab ----------------------------------------------------------
+	__PATH="${__MNTP}"/etc/fstab
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__OUTD}/${__PATH##*/}"
 		UUID=${__UUID:?} / ext4 defaults 0 0
 _EOT_
-	cp --preserve=timestamps "${__OUTD}"/fstab "${__MNTP}"/etc/
+	cp --preserve=timestamps "${__OUTD}/${__PATH##*/}" "${__PATH}"
+	# --- run-once.sh ---------------------------------------------------------
+	__SRVC="${__MNTP}"/etc/systemd/system/run-once.service
+	__TGET="${__MNTP}"/var/admin/autoinst/run-once.sh
+	mkdir -p "${__TGET%/*}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__OUTD}/${__TGET##*/}"
+		#!/bin/bash
+		# touch /.autorelabel
+		systemctl disable ${__SRVC##*/}
+		rm -f "${__SRVC#"${__MNTP#}"}"
+		rm -f "\${0:?}"
+		ls -lahZ / > /var/admin/autoinst/"\${0##*/}".success
+		shutdown -h now
+_EOT_
+	cp --preserve=timestamps "${__OUTD}/${__TGET##*/}" "${__TGET}"
+	chmod +x "${__TGET}"
+	# --- /etc/systemd/system/run-once.service --------------------------------
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__OUTD}/${__SRVC##*/}"
+		[Unit]
+		Description=Run the script once after all services have started.
+		After=network.target multi-user.target
+		Requires=multi-user.target
+
+		[Service]
+		Type=oneshot
+		ExecStart=${__TGET#"${__MNTP}"}
+		RemainAfterExit=yes
+
+		[Install]
+		WantedBy=multi-user.target
+_EOT_
+	cp --preserve=timestamps "${__OUTD}/${__SRVC##*/}" "${__SRVC}"
+	chmod +x "${__SRVC}"
+	chroot "${__MNTP:?}" bash -c "systemctl enable ${__SRVC##*/}"
+	# -------------------------------------------------------------------------
 	umount "${__MNTP}"
+}
+
+# --- vm setup ----------------------------------------------------------------
+function fnMk_vm_setup() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	declare       __LOOP=""				# loop device name
+	declare       __UUID=""				# loopXp2 uuid
+	# --- create dummy storage ------------------------------------------------
+	dd if=/dev/zero of="${__STRG:?}" bs=1G count=20
+	__LOOP="$(losetup --find --show "${__STRG}")"
+	partprobe "${__LOOP:?}"
+	sfdisk --force --wipe always "${__LOOP}" <<- _EOT_
+		,100MiB,U
+		,,L
+_EOT_
+	partprobe "${__LOOP}"
+	mkfs.vfat -F 32 "${__LOOP}"p1
+	mkfs.ext4 -F "${__LOOP}"p2
+	__UUID="$(lsblk --noheadings --output=UUID "${__LOOP}"p2)"
+	fnMk_vm_setup_loopXp1 "${__LOOP:?}" "${__UUID:?}"
+	fnMk_vm_setup_loopXp2 "${__LOOP:?}" "${__UUID:?}"
 	losetup --detach "${__LOOP}"
+	# -------------------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
@@ -508,25 +658,7 @@ function fnMk_qemu() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
-#	declare -r -a __COMD=(
-#		-cpu "host"
-#		-machine "q35"
-#		-enable-kvm
-#		-device "intel-iommu"
-#		-m "size=4G"
-#		-boot "order=c"
-#		-nic "bridge"
-#		-vga "std"
-#		-full-screen
-#		-display "curses,charset=CP932"
-#		-k "ja"
-#		-device "ich9-intel-hda"
-#		-vnc ":0"
-#		-nographic
-#		-drive "file=\"${__OUTD}/${__STRG}\",format=raw"
-#	)
 	declare -r -a __COMD=(
-		-daemonize
 		-cpu "host"
 		-machine "q35"
 		-enable-kvm
@@ -535,18 +667,24 @@ function fnMk_qemu() {
 		-boot "order=c"
 		-nic "bridge"
 		-vga "std"
+		-full-screen
+		-display "curses,charset=CP932"
+		-k "ja"
 		-device "ich9-intel-hda"
 		-vnc ":0"
-		-drive "file=\"${__OUTD}/${__STRG}\",format=raw"
+		-nographic
+		-drive "file=${__STRG},format=raw"
 	)
+	declare -i    __RTCD=0
 	if ! qemu-system-x86_64 "${__COMD[@]}"; then
 		__RTCD="$?"
 		printf "%s\n" "qemu-system-x86_64 ${__COMD[*]}"
-		exit "${__RTCD}"
 	fi
-	export sshpasswd="master"
-	echo "${sshpasswd}" | sshpass -p "${sshpasswd}" ssh -o StrictHostKeyChecking=no master@sv-debian 'sudo -S bash -c "ls -lahZ /; sudo shutdown -h now"'
-	unset sshpasswd
+#	/usr/share/novnc/utils/novnc_proxy
+#	export sshpasswd="master"
+#	echo "${sshpasswd}" | sshpass -p "${sshpasswd}" ssh -o StrictHostKeyChecking=no master@sv-debian 'sudo -S bash -c "ls -lahZ /; sudo shutdown -h now"'
+#	unset sshpasswd
+	[[ "${__RTCD}" -ne 0 ]] && exit "${__RTCD}"
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
@@ -556,18 +694,27 @@ function fnMk_mksquashfs() {
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	declare -r -a __COMD=(
-		"${__OUTD}/${__RTFS}"
-		"${__OUTD}/${__SQFS}"
+		"${__MNTP}"
+		"${__SQFS}"
 		-quiet
 		-progress
+		-noappend
+		-no-xattrs
+		-e .autorelabel .cache
 	)
-
+	declare       __LOOP=""				# loop device name
+	declare -i    __RTCD=0
+	# --- create dummy storage ------------------------------------------------
+	__LOOP="$(losetup --find --show "${__STRG}")"
+	partprobe "${__LOOP}"
+	mount "${__LOOP}"p2 "${__MNTP}"
 	if ! mksquashfs "${__COMD[@]}"; then
 		__RTCD="$?"
 		printf "%s\n" "mksquashfs ${__COMD[*]}"
-		umount "${__OUTD}/${__RTFS}"
-		exit "${__RTCD}"
 	fi
+	umount "${__MNTP}"
+	losetup --detach "${__LOOP}"
+	[[ "${__RTCD}" -ne 0 ]] && exit "${__RTCD}"
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
@@ -576,53 +723,20 @@ function fnMk_uefi() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
-	declare       __LOOP=""
-	__WORK="${__UEFI:?}.work"
-	dd if=/dev/zero of="${__WORK}" bs=1M count=100
-	__LOOP="$(losetup --find --show "${__WORK}")"
+	declare       __LOOP=""				# loop device name
+	declare       __PATH=""				# path to the device node
+	declare       __PSEC=""				# physical sector size
+	declare       __STRT=""				# partition start offset (in 512-byte sectors)
+	declare       __SIZE=""				# size of the device (bytes)
+	declare       __CONT=""				# partition sector size (in 512-byte sectors)
+	__LOOP="$(losetup --find --show "${__STRG}")"
 	partprobe "${__LOOP}"
-	sfdisk --force --wipe always "${__LOOP}" <<- _EOT_
-		,,U,
-	_EOT_
-	partprobe "${__LOOP}"
-	mkfs.vfat -F 32 "${__LOOP}"p1
-
-	# --- install grub module -------------------------------------------------
-	mkdir -p "${__MNTP:?}"
-	mount "${__LOOP}"p1 "${__MNTP}"
-	if command -v grub-install > /dev/null 2>&1; then
-		grub-install \
-			--target=x86_64-efi \
-			--efi-directory="${__MNTP}" \
-			--boot-directory="${__MNTP}/boot" \
-			--bootloader-id="${__DIST}" \
-			--removable
-		grub-install \
-			--target=i386-pc \
-			--boot-directory="${__MNTP}/boot" \
-			"${__LOOP}"
-	elif command -v grub2-install > /dev/null 2>&1; then
-		grub2-install \
-			--target=x86_64-efi \
-			--efi-directory="${__MNTP}" \
-			--boot-directory="${__MNTP}/boot" \
-			--bootloader-id="${__DIST}" \
-			--removable
-		grub2-install \
-			--target=i386-pc \
-			--boot-directory="${__MNTP}/boot" \
-			"${__LOOP}"
-	fi
-	umount "${__MNTP}"
-	losetup --detach "${__LOOP}"
-
 	# --- create uefi/bios image ----------------------------------------------
-	__ARRY=("$(fdisk -l "${__WORK}")")
-	__SECT="$(printf "%s\n" "${__ARRY[@]}" | sed -ne '/Sector size/ s/^.*:[ \t]*\([0-9,]\+\)[ \t]*.*$/\1/p')"
-	__STRT="$(printf "%s\n" "${__ARRY[@]}" | sed -ne '/'"${__WORK##*/}"'1/ s/^[^ \t]\+[ \t]\+\([0-9,]\+\)[ \t]\+.*$/\1/p')"
-	__CONT="$(printf "%s\n" "${__ARRY[@]}" | sed -ne '/'"${__WORK##*/}"'1/ s/^[^ \t]\+[ \t]\+[0-9,]\+[ \t]\+[0-9,]\+[ \t]\+\([0-9,]\+\)[ \t]\+.*$/\1/p')"
-	dd if="${__WORK}" of="${__UEFI}" bs="${__SECT}" skip="${__STRT}" count="${__CONT}"
-	dd if="${__WORK}" of="${__FMBR}" bs=1 count=446
+	__WORK="$(lsblk -no-header --bytes --output=PATH,PHY-SEC,START,SIZE "${__LOOP}"p1)"
+	read -r __PATH __PSEC __STRT __SIZE < <(echo "${__WORK}")
+	__CONT="$(("${__SIZE}" / 512))"
+	dd if="${__STRG}" of="${__UEFI}" bs="${__PSEC}" skip="${__STRT}" count="${__CONT}"
+	dd if="${__STRG}" of="${__MBRF}" bs=1 count=446
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
@@ -631,74 +745,58 @@ function fnMk_cdfs() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
-	declare       __WORK=""
-	declare       __VLNZ=""
-	declare       __IRAM=""
-
-	__WORK="$(fnMk_find_kernel "${__OUTD}/${__RTFS}")"
-#	           __VLNZ="$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'vmlinuz-*'    -o -name 'linux-*'         \) -print -quit)"
-#	__VLNZ="${__VLNZ:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'vmlinuz'      -o -name 'linux'           \) -print -quit)"}"
-#	           __IRAM="$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd-*'     -o -name 'initramfs-*'     \) -print -quit)"
-#	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd-*.img' -o -name 'initramfs-*.img' \) -print -quit)"}"
-#	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd.img-*' -o -name 'initramfs.img-*' \) -print -quit)"}"
-#	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd.img'   -o -name 'initramfs.img'   \) -print -quit)"}"
-#	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd-*'     -o -name 'initramfs-*'     \) -print -quit)"}"
-#	__IRAM="${__IRAM:-"$(find "${__OUTD}/${__RTFS}"/{boot,} -maxdepth 1 \( -name 'initrd'       -o -name 'initramfs'       \) -print -quit)"}"
+	# --- create cdfs image ---------------------------------------------------
 	mkdir -p "${__CDFS:?}"/{.disk,EFI/BOOT,boot/grub/{live-theme,x86_64-efi,i386-pc},isolinux,LiveOS}
-	[[ -e "${__UEFI:?}"                                           ]] && cp --preserve=timestamps             "${__UEFI:?}"                                           "${__CDFS:?}"/boot/grub
-	[[ -e "${__IRAM:?}"                                           ]] && cp --preserve=timestamps             "${__IRAM:?}"                                           "${__CDFS:?}"/LiveOS
-	[[ -e "${__VLNZ:?}"                                           ]] && cp --preserve=timestamps             "${__VLNZ:?}"                                           "${__CDFS:?}"/LiveOS
-	[[ -e "${__IRAM:?}"                                           ]] && cp --preserve=timestamps             "${__IRAM:?}"                                           "${__CDFS:?}"/LiveOS/initrd.img
-	[[ -e "${__VLNZ:?}"                                           ]] && cp --preserve=timestamps             "${__VLNZ:?}"                                           "${__CDFS:?}"/LiveOS/vmlinuz
-	[[ -e "${__OUTD}/${__SQFS:?}"                                 ]] && cp --preserve=timestamps             "${__OUTD}/${__SQFS:?}"                                 "${__CDFS:?}"/LiveOS
-	[[ -e "${__OUTD}/${__RTFS:?}"/usr/lib/ISOLINUX/isolinux.bin   ]] && cp --preserve=timestamps             "${__OUTD}/${__RTFS:?}"/usr/lib/ISOLINUX/isolinux.bin   "${__CDFS:?}"/isolinux
-	[[ -e "${__OUTD}/${__RTFS:?}"/usr/lib/syslinux/mbr/gptmbr.bin ]] && cp --preserve=timestamps             "${__OUTD}/${__RTFS:?}"/usr/lib/syslinux/mbr/gptmbr.bin "${__CDFS:?}"/isolinux
-	[[ -e "${__OUTD}/${__RTFS:?}"/usr/lib/syslinux/modules/bios/. ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__RTFS:?}"/usr/lib/syslinux/modules/bios/. "${__CDFS:?}"/isolinux
-	[[ -e "${__OUTD}/${__RTFS:?}"/usr/lib/grub/x86_64-efi/.       ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__RTFS:?}"/usr/lib/grub/x86_64-efi/.       "${__CDFS:?}"/boot/grub/x86_64-efi
-	[[ -e "${__OUTD}/${__RTFS:?}"/usr/lib/grub/i386-pc/.          ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__RTFS:?}"/usr/lib/grub/i386-pc/.          "${__CDFS:?}"/boot/grub/i386-pc
-	[[ -e "${__OUTD}/${__RTFS:?}"/usr/share/syslinux/.            ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__RTFS:?}"/usr/share/syslinux/.            "${__CDFS:?}"/isolinux
-	[[ -e "${__OUTD}/${__RTFS:?}"/usr/share/grub2/x86_64-efi/.    ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__RTFS:?}"/usr/share/grub2/x86_64-efi/.    "${__CDFS:?}"/boot/grub/x86_64-efi
-	[[ -e "${__OUTD}/${__RTFS:?}"/usr/share/grub2/i386-pc/.       ]] && cp --preserve=timestamps --recursive "${__OUTD}/${__RTFS:?}"/usr/share/grub2/i386-pc/.       "${__CDFS:?}"/boot/grub/i386-pc
-#	find "${__CDFS:?}"/isolinux -name 'gptmbr.bin' -exec cp --preserve=timestamps {} "${__BIOS:?}" \;
-#	__ETRI="$(find "${__CDFS:?}"/isolinux \( -name 'eltorito.sys' -o -name 'isolinux.bin' \) -print -quit)"
-	__ETRI="$(find "${__CDFS:?}"/isolinux    -name 'isolinux.bin'                            -print -quit)"
+	touch "${__CDFS}/.disk/info"
+	[[ -e "${__UEFI:?}"                                 ]] && cp --preserve=timestamps             "${__UEFI:?}"                                 "${__CDFS:?}"/boot/grub
+	[[ -e "${__SQFS:?}"                                 ]] && cp --preserve=timestamps             "${__SQFS:?}"                                 "${__CDFS:?}"/LiveOS
+	[[ -e "${__RTFS:?}/${__IRAM:?}"                     ]] && cp --preserve=timestamps             "${__RTFS:?}/${__IRAM:?}"                     "${__CDFS:?}"/LiveOS
+	[[ -e "${__RTFS:?}/${__VLNZ:?}"                     ]] && cp --preserve=timestamps             "${__RTFS:?}/${__VLNZ:?}"                     "${__CDFS:?}"/LiveOS
+	[[ -e "${__RTFS:?}/${__IRAM:?}"                     ]] && cp --preserve=timestamps             "${__RTFS:?}/${__IRAM:?}"                     "${__CDFS:?}"/LiveOS/initrd.img
+	[[ -e "${__RTFS:?}/${__VLNZ:?}"                     ]] && cp --preserve=timestamps             "${__RTFS:?}/${__VLNZ:?}"                     "${__CDFS:?}"/LiveOS/vmlinuz
+	[[ -e "${__RTFS:?}"/usr/lib/ISOLINUX/isolinux.bin   ]] && cp --preserve=timestamps             "${__RTFS:?}"/usr/lib/ISOLINUX/isolinux.bin   "${__CDFS:?}"/isolinux
+	[[ -e "${__RTFS:?}"/usr/lib/syslinux/mbr/gptmbr.bin ]] && cp --preserve=timestamps             "${__RTFS:?}"/usr/lib/syslinux/mbr/gptmbr.bin "${__CDFS:?}"/isolinux
+	[[ -e "${__RTFS:?}"/usr/lib/syslinux/modules/bios/. ]] && cp --preserve=timestamps --recursive "${__RTFS:?}"/usr/lib/syslinux/modules/bios/. "${__CDFS:?}"/isolinux
+	[[ -e "${__RTFS:?}"/usr/lib/grub/x86_64-efi/.       ]] && cp --preserve=timestamps --recursive "${__RTFS:?}"/usr/lib/grub/x86_64-efi/.       "${__CDFS:?}"/boot/grub/x86_64-efi
+	[[ -e "${__RTFS:?}"/usr/lib/grub/i386-pc/.          ]] && cp --preserve=timestamps --recursive "${__RTFS:?}"/usr/lib/grub/i386-pc/.          "${__CDFS:?}"/boot/grub/i386-pc
+	[[ -e "${__RTFS:?}"/usr/share/syslinux/.            ]] && cp --preserve=timestamps --recursive "${__RTFS:?}"/usr/share/syslinux/.            "${__CDFS:?}"/isolinux
+	[[ -e "${__RTFS:?}"/usr/share/grub2/x86_64-efi/.    ]] && cp --preserve=timestamps --recursive "${__RTFS:?}"/usr/share/grub2/x86_64-efi/.    "${__CDFS:?}"/boot/grub/x86_64-efi
+	[[ -e "${__RTFS:?}"/usr/share/grub2/i386-pc/.       ]] && cp --preserve=timestamps --recursive "${__RTFS:?}"/usr/share/grub2/i386-pc/.       "${__CDFS:?}"/boot/grub/i386-pc
+	           __ETRI="$(find "${__CDFS:?}"/isolinux -name 'eltorito.sys' -print -quit)"
+	__ETRI="${__ETRI:-"$(find "${__CDFS:?}"/isolinux -name 'isolinux.bin' -print -quit)"}"
+	           __BIOS="$(find "${__CDFS:?}"/isolinux -name 'gptmbr.bin'   -print -quit)"
+	__BIOS="${__BIOS:-"${__MBRF}"}"
 	__ETRI="${__ETRI#"${__CDFS:-}/"}"
-	__BIOS="$(find "${__CDFS:?}"/isolinux    -name 'gptmbr.bin'                              -print -quit)"
 	__BIOS="${__BIOS#"${__CDFS:?}/"}"
-	[[ -z "${__BIOS:-}" ]] && __BIOS="${__FMBR}"
-	  if [[ -e "${__OUTD}/${__RTFS:?}"/usr/bin/aa-enabled ]];  then __SECR="security=apparmor apparmor=1"; \
-	elif [[ -e "${__OUTD}/${__RTFS:?}"/usr/sbin/getenforce ]]; then __SECR="security=selinux selinux=1 enforcing=0"; \
-	else                                                            __SECR=""; \
+	# --- add boot parameter (security) ---------------------------------------
+	  if [[ -e "${__RTFS:?}"/usr/bin/aa-enabled ]];  then __SECR="security=apparmor apparmor=1"
+	elif [[ -e "${__RTFS:?}"/usr/sbin/getenforce ]]; then __SECR="security=selinux selinux=1 enforcing=0"
+	else                                                  __SECR=""
 	fi
-	printf "%-10.10s: [%s]\n" "__SECR" "${__SECR:-}"
-#	case "${__DIST}" in
-#		debian  | \
-#		ubuntu  ) __SECR="security=apparmor apparmor=1";;
-#		fedora  | \
-#		centos  | \
-#		alma    | \
-#		rocky   ) __SECR="security=selinux selinux=0";;
-#		opensuse) ;;
-#		*       ) __SECR="";;
-#	esac
-
+	__SECR=""
+	# --- splash.png ----------------------------------------------------------
 	__SPLS="${__CDFS}/isolinux/splash.png"
 	mkdir -p "${__SPLS%/*}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | xxd -p -r | gzip -d -k > "${__SPLS:?}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | xxd -p -r | gzip -d -k > "${__OUTD}/${__SPLS##*/}"
 		1f8b0808462b8d69000373706c6173682e706e6700eb0cf073e7e592e262
 		6060e0f5f47009626060566060608ae060028a888a88aa3330b0767bba38
 		8654dc7a7b909117287868c177ff5c3ef3050ca360148c8251300ae8051a
 		c299ff4c6660bcb6edd00b10d7d3d5cf659d53421300e6198186c4050000
 _EOT_
+	cp --preserve=timestamps "${__OUTD}/${__SPLS##*/}" "${__SPLS}"
 	__SPLS="${__SPLS#"${__CDFS}"}"
+	# --- /EFI/BOOT/grub.cfg --------------------------------------------------
 	__TITL="$(printf "%s%s" "${__ISOS##*/}" "${__DATE:+" ${__DATE}"}")"
-	touch "${__CDFS}/.disk/info"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__CDFS}"/EFI/BOOT/grub.cfg || true
+	__PATH="${__CDFS}"/EFI/BOOT/grub.cfg
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__OUTD}/${__PATH##*/}"
 		search --file --set=root /.disk/info
 		set prefix=(\$root)/boot/grub
 		source \$prefix/grub.cfg
 	_EOT_
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__CDFS}"/boot/grub/grub.cfg || true
+	cp --preserve=timestamps "${__OUTD}/${__PATH##*/}" "${__PATH}"
+	# --- /boot/grub/grub.cfg -------------------------------------------------
+	__PATH="${__CDFS}"/boot/grub/grub.cfg
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__OUTD}/${__PATH##*/}"
 		set default="0"
 		set timeout="5"
 
@@ -755,7 +853,10 @@ _EOT_
 		  initrd /LiveOS/${__IRAM##*/}
 		}
 _EOT_
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__CDFS}"/boot/grub/theme.cfg || true
+	cp --preserve=timestamps "${__OUTD}/${__PATH##*/}" "${__PATH}"
+	# --- /boot/grub/theme.cfg ------------------------------------------------
+	__PATH="${__CDFS}"/boot/grub/theme.cfg
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__OUTD}/${__PATH##*/}"
 		${__SPLS:+"desktop-image: \"${__SPLS}\""}
 		desktop-color: "#000000"
 		title-color: "#ffffff"
@@ -810,7 +911,10 @@ _EOT_
 		  text = "@TIMEOUT_NOTIFICATION_LONG@"
 		}
 _EOT_
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__CDFS}"/isolinux/isolinux.cfg || true
+	cp --preserve=timestamps "${__OUTD}/${__PATH##*/}" "${__PATH}"
+	# --- /isolinux/isolinux.cfg ----------------------------------------------
+	__PATH="${__CDFS}"/isolinux/isolinux.cfg
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__OUTD}/${__PATH##*/}"
 		path ./
 		prompt 0
 		#timeout 0
@@ -861,6 +965,7 @@ _EOT_
 		  initrd /LiveOS/initrd.img
 		  append root=live:CDLABEL=${__VLID} rd.live.image rd.live.overlay.overlayfs=1${__SECR:+" ${__SECR}"} --- quiet
 _EOT_
+	cp --preserve=timestamps "${__OUTD}/${__PATH##*/}" "${__PATH}"
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
@@ -911,10 +1016,7 @@ function fnMk_xorrisofs() {
 function fnTrap() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
-
-#	echo "start   : ${FUNCNAME[0]}"
-#	rm -rf "${__TEMP:?}"
-#	echo "complete: ${FUNCNAME[0]}"
+	rm -rf "${__TEMP:?}"
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
@@ -922,18 +1024,15 @@ trap fnTrap EXIT
 
 case "${__OPRT:-}" in
 	build)	fnMk_mkosi_build
-			__LOOP="$(fnMk_mount_fs "${__OUTD}/${__RTFS}" "${__OUTD}/${__OUTP}")"
+			fnMk_mount_fs
+			fnMk_find_kernel
 			fnMk_vm_setup
-			fnMk_umount_fs "${__OUTD}/${__RTFS}" "${__LOOP:?}"
 			fnMk_qemu
-			__LOOP="$(fnMk_mount_fs "${__OUTD}/${__RTFS}" "${__OUTD}/${__STRG}")"
 			fnMk_mksquashfs
 			fnMk_uefi
 			fnMk_cdfs
-			fnMk_umount_fs "${__OUTD}/${__RTFS}" "${__LOOP:?}"
 			fnMk_xorrisofs
-			;;
-	boot )	fnMk_mkosi_boot
+			fnMk_umount_fs
 			;;
 	*)		fnMk_mkosi_summary
 			;;
@@ -946,3 +1045,5 @@ exit 0
 # memo
 # https://man.archlinux.org/man/mkosi.1.en
 # https://wiki.archlinux.jp/index.php/Dracut
+#
+# sudo find / \( -path '/srv' -o -path '/boot' -o -path '/proc' -o -path '/sys' \) -prune -o -size +10M -printf "%10s %p\n" | sort -r
