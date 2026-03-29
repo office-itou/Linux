@@ -25,6 +25,7 @@ function fnMk_preconf_agama() {
 	# -------------------------------------------------------------------------
 	__WORK="${__TGET_PATH##*/}"			# file name
 	__VERS="${__WORK#*_}"				# autoinst_(name)-(nums)_ ...: (ex: autoinst_leap-16.0_desktop.json)
+	__VERS="${__VERS%.*}"				# ...json
 	__VERS="${__VERS%%_*}"				# vers="(name)-(nums)"
 	__VERS="${__VERS,,}"
 	__NUMS="${__VERS##*-}"
@@ -46,6 +47,7 @@ function fnMk_preconf_agama() {
 	    -e '/"product": {/,/}/                             {' \
 	    -e '/"id":/ s/"[^ ]\+"$/"'"${__PDID}"'"/           }' \
 	    -e '/"extraRepositories": \[/,/\]/                 {' \
+	    -e 's/:_RELEASE_:/'"${__NUMS}"'/                    ' \
 	    -e '\%^// '"${__WORK}"'%,\%^// '"${__WORK}"'%d      ' \
 	    -e '\%^//.*$%d                                     }' \
 	    -e '\%^// fixed parameter%,\%^// fixed parameter%d  '
