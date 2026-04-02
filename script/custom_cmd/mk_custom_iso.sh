@@ -1755,7 +1755,7 @@ function fnMk_preconf_agama() {
 	esac
 	__ARRY=(
 		-e '/"product": {/,/}/{/"id":/ s/"[^ ]\+"$/"'"${__PDID}"'"/}'
-		-e '/"extraRepositories": \[/,/\]/{/"url":/ s%"[^"]\+",*$%"'"${__URLS}"'"%}'
+		-e '/"extraRepositories": \[/,/\]/{/"url":/ s%"[^"]\+"\(,*\)$%"'"${__URLS}"'"\1%}'
 		-e '/"__comment_fixed_parameter_start":/,/"__comment_fixed_parameter_end":/d'
 	)
 	if ! sed -i "${__TGET_PATH}" "${__ARRY[@]}"; then

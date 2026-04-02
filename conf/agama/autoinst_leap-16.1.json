@@ -96,7 +96,7 @@
       {
         "alias": "repo-oss",
         "name": "Main Repository",
-        "url": "https://download.opensuse.org/distribution/leap/16.1/repo/oss/"
+        "url": "https://download.opensuse.org/distribution/leap/16.1/repo/oss/",
         "productDir": "/",
         "priority": 99
       }

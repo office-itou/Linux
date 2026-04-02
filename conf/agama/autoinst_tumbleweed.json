@@ -96,7 +96,7 @@
       {
         "alias": "repo-oss",
         "name": "Main Repository",
-        "url": "https://download.opensuse.org/tumbleweed/repo/oss/"
+        "url": "https://download.opensuse.org/tumbleweed/repo/oss/",
         "productDir": "/",
         "priority": 99
       }
