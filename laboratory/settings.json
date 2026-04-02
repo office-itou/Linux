@@ -1,0 +1,31 @@
+{
+	"editor.minimap.enabled": false,
+	"editor.fontSize": 12,
+	"editor.renderControlCharacters": true,
+	"editor.renderWhitespace": "all",
+	"editor.insertSpaces": false,
+	"editor.detectIndentation": false,
+	"workbench.editor.enablePreview": false,
+	"editor.stickyScroll.enabled": false,
+	"editor.quickSuggestions": {
+		"comments": "off",
+		"strings": "off",
+		"other": "off"
+	},
+	"editor.inlineSuggest.edits.showCollapsed": true,
+	"editor.acceptSuggestionOnCommitCharacter": false,
+	"editor.fontFamily": "'BIZ UDゴシック', Consolas, 'Courier New', monospace",
+	"workbench.colorCustomizations": {
+		"editorWhitespace.foreground": "#ffcc00" // タブ文字を含む空白文字の表示色（明るい色にすると目立つ）
+	},
+	"editor.tokenColorCustomizations": {
+		"textMateRules": [
+			{
+				"scope": "character.control",
+				"settings": {
+					"foreground": "#FF0000" // 赤色に設定（例）
+				}
+			}
+		]
+	}
+}
