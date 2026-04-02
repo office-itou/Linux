@@ -26,11 +26,11 @@
 	declare -r    _SHEL_COMN="${_SHEL_TOPS:-}/_common_bash"
 	declare -r    _SHEL_COMD="${_SHEL_TOPS:-}/custom_cmd"
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD:?}"/fnSystem_common.sh				# global variables (for system)
+	source "${_SHEL_COMD:?}"/fnComm_system_common.sh		# global variables (for system)
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD:?}"/fnGlobal_variables.sh			# global variables (for basic)
+	source "${_SHEL_COMD:?}"/fnComm_global_variables.sh		# global variables (for basic)
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD:?}"/fnGlobal_common.sh				# global variables (for application)
+	source "${_SHEL_COMD:?}"/fnComm_global_common.sh		# global variables (for application)
 
 # *** function section (common functions) *************************************
 
@@ -60,42 +60,42 @@
 #	source "${_SHEL_COMN}"/fnWget.sh						# wget / curl
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnDbgout.sh						# message output (debug out)
+	source "${_SHEL_COMD}"/fnComm_dbgout.sh					# message output (debug out)
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnDbgdump.sh						# dump output (debug out)
+#	source "${_SHEL_COMD}"/fnComm_dbgdump.sh				# dump output (debug out)
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnDbgparam.sh					# parameter debug output
+#	source "${_SHEL_COMD}"/fnComm_dbgparam.sh				# parameter debug output
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnDbgparameters.sh				# print out of internal variables
+	source "${_SHEL_COMD}"/fnComm_dbgparameters.sh			# print out of internal variables
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnDbgparameters_all.sh			# Print all global variables (_[A..Z]*)
+	source "${_SHEL_COMD}"/fnComm_dbgparameters_all.sh		# Print all global variables (_[A..Z]*)
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnFind_command.sh				# find command
+	source "${_SHEL_COMD}"/fnComm_find_command.sh			# find command
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnFind_service.sh				# find service
+	source "${_SHEL_COMD}"/fnComm_find_service.sh			# find service
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnSystem_param.sh				# get system parameter
+	source "${_SHEL_COMD}"/fnComm_system_param.sh			# get system parameter
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnNetwork_param.sh				# get network parameter
+	source "${_SHEL_COMD}"/fnComm_network_param.sh			# get network parameter
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnFile_backup.sh					# file backup
+#	source "${_SHEL_COMD}"/fnComm_file_backup.sh			# file backup
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnDownload.sh					# wget / curl file download
+#	source "${_SHEL_COMD}"/fnComm_download.sh				# wget / curl file download
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnRsync.sh						# rsync
+#	source "${_SHEL_COMD}"/fnComm_rsync.sh					# rsync
 
 # *** function section (subroutine functions) *********************************
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTrap.sh						# trap
+	source "${_SHEL_COMD}"/fnComm_trap.sh					# trap
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnInitialize_test_server.sh		# initialize
+	source "${_SHEL_COMD}"/fnTest_init_test_server.sh		# initialize
 
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnList_conf_Get.sh				# get auto-installation configuration file
+#	source "${_SHEL_COMD}"/fnComm_list_conf_Get.sh			# get auto-installation configuration file
 
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnList_mdia_Get.sh				# get media information data
+#	source "${_SHEL_COMD}"/fnComm_list_mdia_Get.sh			# get media information data
 
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD}"/fnTest_cmdline.sh				# test cmdline
@@ -139,9 +139,9 @@
 # *** main section ************************************************************
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnHelp_test_server.sh			# help
+	source "${_SHEL_COMD}"/fnTest_help_test_server.sh		# help
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMain_test_server.sh			# main routine
+	source "${_SHEL_COMD}"/fnTest_main_test_server.sh		# main routine
 
 	# --- help / debug --------------------------------------------------------
 	[[ -z "${_PROG_PARM[*]:-}" ]] && fnHelp

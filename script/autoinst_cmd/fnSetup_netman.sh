@@ -18,6 +18,8 @@ fnSetup_netman() {
 		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
+	__VERS="$(nmcli --version 2>&1)"
+	fnMsgout "${_PROG_NAME:-}" "info" "__VERS:[${__VERS:-}]"
 	# --- configures ----------------------------------------------------------
 	if [ -z "${_NICS_NAME##-}" ]; then
 		for __CONF in zz-all-en zz-all-eth
@@ -55,10 +57,25 @@ fnSetup_netman() {
 		if [ -z "${_TGET_CHRT:-}" ]; then
 			if systemctl --quiet is-active "${__SRVC}"; then
 				__WORK="$(nmcli --terse --fields DEVICE,UUID,NAME connection show | awk -F ':' '$1=="'"${_NICS_NAME}"'"')"
-				__NAME="${__WORK##*:}"
-				__UUID="${__WORK%:"${__NAME}"}"
-				__UUID="${__UUID#"${_NICS_NAME}":}"
-				__PATH="$(find /etc/NetworkManager/system-connections/ /run/NetworkManager/system-connections/ -name "${__NAME}*")"
+				if [ -n "${__WORK:-}" ]; then
+					__NAME="${__WORK##*:}"
+					__UUID="${__WORK%:*}"
+					__UUID="${__UUID#*:}"
+					__PATH="$(
+						find \
+							"${_DIRS_TGET:-}"/run/NetworkManager/system-connections/ \
+							"${_DIRS_TGET:-}"/etc/NetworkManager/system-connections/ \
+							-type f ! -name 'lo*' | \
+						while IFS= read -r __WORK
+						do
+							if ! nmcli --terse connection show filename "${__WORK}" 2> /dev/null | grep -q "connection.uuid:${__UUID}"; then
+								continue
+							fi
+							echo "${__WORK}"
+							break
+						done
+					)"
+				fi
 			fi
 		fi
 		fnFile_backup "${__PATH}"			# backup original file
@@ -66,6 +83,10 @@ fnSetup_netman() {
 #		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 		__CNID="${__PATH##*/}"
 		__CNID="${__CNID%.*}"
+		fnMsgout "${_PROG_NAME:-}" "info" "__NAME:[${__NAME:-}]"
+		fnMsgout "${_PROG_NAME:-}" "info" "__UUID:[${__UUID:-}]"
+		fnMsgout "${_PROG_NAME:-}" "info" "__PATH:[${__PATH:-}]"
+		fnMsgout "${_PROG_NAME:-}" "info" "__CNID:[${__CNID:-}]"
 		set -f
 		set -- \
 			type ethernet \
@@ -83,7 +104,7 @@ fnSetup_netman() {
 		else
 			set -- "$@" \
 				ipv4.method manual \
-				${_NICS_IPV4:+ipv4.address "${_NICS_IPV4}"/"${_NICS_BIT4}"} \
+				${_NICS_IPV4:+ipv4.address "${_NICS_IPV4}/${_NICS_BIT4}"} \
 				${_NICS_GATE:+ipv4.gateway "${_NICS_GATE}"} \
 				${_NICS_DNS4:+ipv4.dns "${_NICS_DNS4}"} \
 				ipv6.method auto \
@@ -91,12 +112,16 @@ fnSetup_netman() {
 		fi
 		set +f
 		if [ -z "${__UUID:-}" ]; then
-			nmcli --offline connection add "$@" > "${__PATH}"
+			if ! nmcli --offline connection add "$@" 1> "${__PATH}"; then
+				fnMsgout "${_PROG_NAME:-}" "failed" "nmcli --offline connection add $* > ${__PATH}"
+			fi
+			chown root:root "${__PATH}"
+			chmod 600 "${__PATH}"
 		else
-			nmcli connection modify uuid "${__UUID}" "$@"
+			if ! nmcli connection modify uuid "${__UUID}" "$@"; then
+				fnMsgout "${_PROG_NAME:-}" "failed" "nmcli connection modify uuid ${__UUID} $*"
+			fi
 		fi
-		chown root:root "${__PATH}"
-		chmod 600 "${__PATH}"
 		fnDbgdump "${__PATH}"				# debugout
 		fnFile_backup "${__PATH}" "init"	# backup initial file
 	fi

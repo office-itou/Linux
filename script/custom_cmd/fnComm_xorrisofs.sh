@@ -1,7 +1,7 @@
 # shellcheck disable=SC2148
 
 # -----------------------------------------------------------------------------
-# descript: make customize iso files
+# descript: make iso files
 #   input :     $1     : target directory
 #   input :     $2     : output file name
 #   input :     $3     : volume id
@@ -13,7 +13,7 @@
 #   return:            : unused
 #   g-var :  FUNCNAME  : read
 #   g-var : _PROG_NAME : read
-function fnMk_isofile_rebuild() {
+function fnMk_xorrisofs() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"

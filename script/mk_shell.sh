@@ -98,11 +98,11 @@
 	source "${_SHEL_COMN:?}"/fnTrim.sh						# ltrim,rtrim,trim
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_CUST:?}"/fnDbgout.sh					# message output (debug out)
+	source "${_SHEL_CUST:?}"/fnComm_dbgout.sh				# message output (debug out)
 	# shellcheck source=/dev/null
-	source "${_SHEL_CUST:?}"/fnDbgparameters.sh				# print out of internal variables
+	source "${_SHEL_CUST:?}"/fnComm_dbgparameters.sh		# print out of internal variables
 	# shellcheck source=/dev/null
-	source "${_SHEL_CUST:?}"/fnTrap.sh						# trap
+	source "${_SHEL_CUST:?}"/fnComm_trap.sh					# trap
 
 # *** function section (subroutine functions) *********************************
 

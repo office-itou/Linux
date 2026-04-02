@@ -5,7 +5,7 @@
     "timezone": "Asia/Tokyo"
   },
   "product": {
-    "id": "openSUSE_Leap"
+    "id": "Tumbleweed"
   },
   "root": {
     "password": "r00t",
@@ -87,6 +87,7 @@
       "ShellCheck",
       "xxd",
       "xorriso",
+      "gawk",
       "clamav",
       "openssh-server",
       "systemd-resolved",
@@ -112,7 +113,7 @@
       {
         "alias": "repo-oss",
         "name": "Main Repository",
-        "url": "https://download.opensuse.org/distribution/leap/tumbleweed/repo/oss/",
+        "url": "https://download.opensuse.org/tumbleweed/repo/oss/"
         "productDir": "/",
         "priority": 99
       }
@@ -143,7 +144,11 @@
       {
         "name": "system",
         "physicalVolumes": [
-          { "generate": [ "pvs-disk" ] }
+          {
+            "generate": [
+              "pvs-disk"
+            ]
+          }
         ],
         "logicalVolumes": [
           {

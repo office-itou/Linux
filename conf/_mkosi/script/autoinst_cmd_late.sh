@@ -649,31 +649,28 @@ fnNetwork_param() {
 	_NICS_NAME="${_NICS_NAME:-"ens160"}"
 	___DIRS="${_DIRS_TGET:-}/sys/devices"
 	if [ ! -e "${___DIRS}"/. ]; then
-		fnMsgout "${_PROG_NAME:-}" "caution" "not exist: [${___DIRS}]"
+		fnMsgout "caution" "not exist: [${___DIRS}]"
 	else
-		if [ -z "${_NICS_NAME#*"*"}" ]; then
-			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | sort -V | head -n 1)"
-			_NICS_NAME="${_NICS_NAME##*/}"
+		  if [ -z "${_NICS_NAME:-}" ]; then
+			_NICS_NAME="$(ip -4 -oneline address show up | awk '$2!="lo" {print $2; exit;}')"
+		elif [ -z "${_NICS_NAME#*"*"}" ]; then
+			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME:?}" | sort -V | head -n 1)"
 		fi
-		_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME:-}" | sort -V | head -n 1)"
-		_NICS_NAME="${_NICS_NAME##*/}"
-		if [ -z "${_NICS_NAME:-}" ]; then
-			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name 'e*' | sort -V | head -n 1)"
-			_NICS_NAME="${_NICS_NAME##*/}"
-		fi
-		if ! find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | grep -q "${_NICS_NAME}"; then
-			fnMsgout "${_PROG_NAME:-}" "failed" "not exist: [${_NICS_NAME}]"
+		__WORK="$(ip -4 -oneline address show up dev "${_NICS_NAME}" 2> /dev/null)"
+		[ -z "${__WORK:-}" ] && _NICS_NAME="$(ip -4 -oneline address show up | awk '$2!="lo" {print $2; exit;}')"
+		_NICS_NAME="${_NICS_NAME:-"ens160"}"
+		if ! ip -0 -oneline address show up dev "${_NICS_NAME}" > /dev/null 2>&1; then
+			fnMsgout "failed" "not exist: [${_NICS_NAME}]"
 		else
-			if ip address show dev "${_NICS_NAME}" > /dev/null 2>&1; then
-				_NICS_STAT="true"
-			fi
-			_NICS_MADR="${_NICS_MADR:-"$(ip -0 -brief address show dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}' || true)"}"
-			_NICS_IPV4="${_NICS_IPV4:-"$(ip -4 -brief address show dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}' || true)"}"
+			_NICS_STAT="true"
+			_NICS_MADR="${_NICS_MADR:-"$(ip -0 -oneline address show dev "${_NICS_NAME}" 2> /dev/null | awk '$2!="lo" {print $15;}' || true)"}"
+			_NICS_IPV4="${_NICS_IPV4:-"$(ip -4 -oneline address show dev "${_NICS_NAME}" 2> /dev/null | awk '$2!="lo" {print $4;}' || true)"}"
 			if ip -4 -oneline address show dev "${_NICS_NAME}" 2> /dev/null | grep -qE '[ \t]dynamic[ \t]'; then
 				_NICS_AUTO="dhcp"
 			fi
 			if [ -z "${_NICS_DNS4:-}" ] || [ -z "${_NICS_WGRP:-}" ]; then
-				if command -v resolvectl > /dev/null 2>&1; then
+				__PATH="$(fnFind_command 'resolvectl' | sort -V | head -n 1)"
+				if [ -n "${__PATH:-}" ]; then
 					if resolvectl status > /dev/null 2>&1; then
 						_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/^Global:/             s/^.*:[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
 						_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*:[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
@@ -689,8 +686,8 @@ fnNetwork_param() {
 					_NICS_WGRP="${_NICS_WGRP%.}"
 				fi
 			fi
-			_IPV6_ADDR="$(ip -6 -brief address show primary dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}')"
-			_LINK_ADDR="$(ip -6 -brief address show primary dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $4;}')"
+			_IPV6_ADDR="$(ip -6 -oneline address show primary dev "${_NICS_NAME}" 2> /dev/null | awk '$2!="lo" && $6=="global" {print $4;}')"
+			_LINK_ADDR="$(ip -6 -oneline address show primary dev "${_NICS_NAME}" 2> /dev/null | awk '$2!="lo" && $6=="link"   {print $4;}')"
 		fi
 	fi
 	# --- ipv4 ----------------------------------------------------------------
@@ -705,7 +702,7 @@ fnNetwork_param() {
 		else
 			_NICS_MASK="$(fnIPv4Netmask "${_NICS_BIT4:-"24"}")"
 		fi
-		[ -n "${_NICS_STAT:-}" ] && _NICS_GATE="${_NICS_GATE:-"$(ip -4 -brief route list match default | awk '{print $3;}' | uniq)"}"
+		[ -n "${_NICS_STAT:-}" ] && _NICS_GATE="${_NICS_GATE:-"$(ip -4 -oneline route list match default | awk '{print $3;}' | uniq)"}"
 	fi
 	if [ "${_NICS_IPV4##*.}" = "0" ] || [ "${_NICS_IPV4##*.}" = "255" ]; then
 		_NICS_AUTO="dhcp"
@@ -1433,6 +1430,12 @@ fnSetup_netplan() {
 	fi
 	# --- configures ----------------------------------------------------------
 	if command -v nmcli > /dev/null 2>&1; then
+		find "${__DIRS}/etc/netplan/" -name '*.yaml' -type f | while read -r __PATH
+		do
+			fnFile_backup "${__PATH}"
+			fnMsgout "${_PROG_NAME:-}" "remove" "${__PATH}"
+			rm -f "${__PATH}"
+		done
 		# --- 99-network-config-all.yaml --------------------------------------
 		__PATH="${_DIRS_TGET:-}/etc/netplan/99-network-manager-all.yaml"
 		fnFile_backup "${__PATH}"			# backup original file
@@ -1527,6 +1530,8 @@ fnSetup_netman() {
 		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
+	__VERS="$(nmcli --version 2>&1)"
+	fnMsgout "${_PROG_NAME:-}" "info" "__VERS:[${__VERS:-}]"
 	# --- configures ----------------------------------------------------------
 	if [ -z "${_NICS_NAME##-}" ]; then
 		for __CONF in zz-all-en zz-all-eth
@@ -1564,10 +1569,25 @@ fnSetup_netman() {
 		if [ -z "${_TGET_CHRT:-}" ]; then
 			if systemctl --quiet is-active "${__SRVC}"; then
 				__WORK="$(nmcli --terse --fields DEVICE,UUID,NAME connection show | awk -F ':' '$1=="'"${_NICS_NAME}"'"')"
-				__NAME="${__WORK##*:}"
-				__UUID="${__WORK%:"${__NAME}"}"
-				__UUID="${__UUID#"${_NICS_NAME}":}"
-				__PATH="$(find /etc/NetworkManager/system-connections/ /run/NetworkManager/system-connections/ -name "${__NAME}*")"
+				if [ -n "${__WORK:-}" ]; then
+					__NAME="${__WORK##*:}"
+					__UUID="${__WORK%:*}"
+					__UUID="${__UUID#*:}"
+					__PATH="$(
+						find \
+							"${_DIRS_TGET:-}"/run/NetworkManager/system-connections/ \
+							"${_DIRS_TGET:-}"/etc/NetworkManager/system-connections/ \
+							-type f ! -name 'lo*' | \
+						while IFS= read -r __WORK
+						do
+							if ! nmcli --terse connection show filename "${__WORK}" 2> /dev/null | grep -q "connection.uuid:${__UUID}"; then
+								continue
+							fi
+							echo "${__WORK}"
+							break
+						done
+					)"
+				fi
 			fi
 		fi
 		fnFile_backup "${__PATH}"			# backup original file
@@ -1575,6 +1595,10 @@ fnSetup_netman() {
 #		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 		__CNID="${__PATH##*/}"
 		__CNID="${__CNID%.*}"
+		fnMsgout "${_PROG_NAME:-}" "info" "__NAME:[${__NAME:-}]"
+		fnMsgout "${_PROG_NAME:-}" "info" "__UUID:[${__UUID:-}]"
+		fnMsgout "${_PROG_NAME:-}" "info" "__PATH:[${__PATH:-}]"
+		fnMsgout "${_PROG_NAME:-}" "info" "__CNID:[${__CNID:-}]"
 		set -f
 		set -- \
 			type ethernet \
@@ -1592,7 +1616,7 @@ fnSetup_netman() {
 		else
 			set -- "$@" \
 				ipv4.method manual \
-				${_NICS_IPV4:+ipv4.address "${_NICS_IPV4}"/"${_NICS_BIT4}"} \
+				${_NICS_IPV4:+ipv4.address "${_NICS_IPV4}/${_NICS_BIT4}"} \
 				${_NICS_GATE:+ipv4.gateway "${_NICS_GATE}"} \
 				${_NICS_DNS4:+ipv4.dns "${_NICS_DNS4}"} \
 				ipv6.method auto \
@@ -1600,12 +1624,16 @@ fnSetup_netman() {
 		fi
 		set +f
 		if [ -z "${__UUID:-}" ]; then
-			nmcli --offline connection add "$@" > "${__PATH}"
+			if ! nmcli --offline connection add "$@" 1> "${__PATH}"; then
+				fnMsgout "${_PROG_NAME:-}" "failed" "nmcli --offline connection add $* > ${__PATH}"
+			fi
+			chown root:root "${__PATH}"
+			chmod 600 "${__PATH}"
 		else
-			nmcli connection modify uuid "${__UUID}" "$@"
+			if ! nmcli connection modify uuid "${__UUID}" "$@"; then
+				fnMsgout "${_PROG_NAME:-}" "failed" "nmcli connection modify uuid ${__UUID} $*"
+			fi
 		fi
-		chown root:root "${__PATH}"
-		chmod 600 "${__PATH}"
 		fnDbgdump "${__PATH}"				# debugout
 		fnFile_backup "${__PATH}" "init"	# backup initial file
 	fi
@@ -3971,7 +3999,7 @@ fnSetup_grub_menu() {
 			*) __DEFS="${__DEFS:+"${__DEFS} "}${__LINE:-}";;
 		esac
 	done
-	__DEFS="${__DEFS:+"${__DEFS} "}${__SCRT:-}"
+#	__DEFS="${__DEFS:+"${__DEFS} "}${__SCRT:-}"
 	# --- GRUB_CMDLINE_LINUX --------------------------------------------------
 	__WORK="$(sed -ne 's/^#*GRUB_CMDLINE_LINUX=\(.*\)$/\1/p' "${__CONF}")"
 #	[ -z "${__WORK:-}" ] && echo "GRUB_CMDLINE_LINUX=\"\"" >> "${__CONF}"
@@ -3993,7 +4021,15 @@ fnSetup_grub_menu() {
 			*) __BOPT="${__BOPT:+"${__BOPT} "}${__LINE:-}";;
 		esac
 	done
-#	__BOPT="${__BOPT:+"${__BOPT} "}${__SCRT:-}"
+	__BOPT="${__BOPT:+"${__BOPT} "}${__SCRT:-}"
+	if command -v netplan > /dev/null 2>&1 \
+	&& command -v nmcli   > /dev/null 2>&1; then
+		__BOPT="${__BOPT:+"${__BOPT} "}ip=off"
+	fi
+#	case "${_DIST_NAME:-}" in
+#		ubuntu) __BOPT="${__BOPT:+"${__BOPT} "}ip=off";;
+#		*     ) ;;
+#	esac
 	# -------------------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "info" "_DIST_NAME=[${_DIST_NAME:-}]"
 	fnMsgout "${_PROG_NAME:-}" "info" "    __BOPT=[${__BOPT:-}]"

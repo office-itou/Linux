@@ -17,7 +17,7 @@ autoinstall:
   apt:
 #   disable_components: []
 #   fallback: abort
-    geoip: true
+#   geoip: true
 #   conf: | # APT config
 #     APT {
 #       Install-Recommends "false";
@@ -180,10 +180,6 @@ autoinstall:
   packages:
   - apparmor                            # user-space parser utility for AppArmor
   - apparmor-utils                      # utilities for controlling AppArmor
-  - selinux-basics                      # SELinux basic support
-  - selinux-policy-default              # Strict and Targeted variants of the SELinux policy
-  - auditd                              # User space tools for security auditing
-  - rpm                                 # package manager for RPM
   - sudo                                # Provide limited super user privileges to specific users
   - firewalld                           # dynamically managed firewall with support for network zones
   - traceroute                          # Traces the route taken by packets over an IPv4/IPv6 network
@@ -200,6 +196,7 @@ autoinstall:
   - shellcheck                          # lint tool for shell scripts
   - xxd                                 # tool to make (or reverse) a hex dump
   - xorriso                             # command line ISO-9660 and Rock Ridge manipulation tool
+  - gawk                                # GNU awk, a pattern scanning and processing language
   - jq                                  # lightweight and flexible command-line JSON processor
   - tasksel                             # tool for selecting tasks for installation on Debian systems
   - clamav                              # anti-virus utility for Unix - command-line interface
@@ -246,13 +243,6 @@ autoinstall:
 # - mozc-utils-gui                      # GUI utilities of the Mozc input method
   - libreoffice-l10n-ja                 # office productivity suite -- Japanese language package
   - libreoffice-help-ja                 # office productivity suite -- Japanese help
-  - firefox                             # Installs Firefox snap and provides some system integration
-  - firefox-locale-ja                   # Transitional package - firefox-locale-ja -> firefox snap
-  - thunderbird                         # Transitional package - thunderbird -> thunderbird snap
-  - thunderbird-locale-ja               # Transitional package - thunderbird-locale-ja -> thunderbird snap
-  - chromium-browser                    # Transitional package - chromium-browser -> chromium snap
-  - chromium-browser-l10n               # Transitional package - chromium-browser-l10n -> chromium snap
-  - chromium-chromedriver               # Transitional package - chromium-chromedriver -> chromium snap
   - rhythmbox                           # music player and organizer for GNOME
   - libavcodec-extra                    # FFmpeg library with extra codecs (metapackage)
   - gstreamer1.0-libav                  # ffmpeg plugin for GStreamer
@@ -277,12 +267,18 @@ autoinstall:
 # - uim-anthy                           # Universal Input Method - Anthy support metapackage
 # - kasumi                              # Simple dictionary utility for Anthy
 # -----------------------------------------------------------------------------
-# - firefox                             # Installs Firefox snap and provides some system integration
-# - firefox-locale-ja                   # Transitional package - firefox-locale-ja -> firefox snap
-# - thunderbird                         # Transitional package - thunderbird -> thunderbird snap
-# - thunderbird-locale-ja               # Transitional package - thunderbird-locale-ja -> thunderbird snap
-# - chromium-browser                    # Transitional package - chromium-browser -> chromium snap
-# - chromium-browser-l10n               # Transitional package - chromium-browser-l10n -> chromium snap
+# - selinux-basics                      # SELinux basic support
+# - selinux-policy-default              # Strict and Targeted variants of the SELinux policy
+# - auditd                              # User space tools for security auditing
+# - rpm                                 # package manager for RPM
+# -----------------------------------------------------------------------------
+#x- firefox                             # Installs Firefox snap and provides some system integration
+#x- firefox-locale-ja                   # Transitional package - firefox-locale-ja -> firefox snap
+#x- thunderbird                         # Transitional package - thunderbird -> thunderbird snap
+#x- thunderbird-locale-ja               # Transitional package - thunderbird-locale-ja -> thunderbird snap
+#x- chromium-browser                    # Transitional package - chromium-browser -> chromium snap
+#x- chromium-browser-l10n               # Transitional package - chromium-browser-l10n -> chromium snap
+#x- chromium-chromedriver               # Transitional package - chromium-chromedriver -> chromium snap
 # -----------------------------------------------------------------------------
 # - canna                               # input system for Japanese - server and dictionary
 # - canna-shion                         # supporting dictionaries for Canna

@@ -1710,56 +1710,107 @@ function fnMk_preconf_agama() {
 	declare       __REAL=""
 	declare       __DIRS=""
 	declare       __OWNR=""
+	declare       __URLS=""
+	declare       __PROT=""
+	declare       __DMIN=""
+	declare -a    __ARRY=()
 
 	fnMsgout "${_PROG_NAME:-}" "create" "${__TGET_PATH}"
 	mkdir -p "${__TGET_PATH%/*}"
 	cp --backup "${_PATH_AGMA}" "${__TGET_PATH}"
 	# -------------------------------------------------------------------------
-	__WORK="${__TGET_PATH##*/}"			# file name
+	__WORK="${__TGET_PATH##*/}"			# file name (ex: autoinst_tumbleweed.json)
 	__VERS="${__WORK#*_}"				# autoinst_(name)-(nums)_ ...: (ex: autoinst_leap-16.0_desktop.json)
 	__VERS="${__VERS%.*}"				# ...json
 	__VERS="${__VERS%%_*}"				# vers="(name)-(nums)"
 	__VERS="${__VERS,,}"
 	__NUMS="${__VERS##*-}"
 #	__PDCT="${__VERS%%-*}"
-	__PDID="${__VERS//-/_}"
-	__PDID="${__PDID^}"
+#	__PDID="${__VERS//-/_}"
+#	__PDID="${__PDID^}"
 	# --- by product id -------------------------------------------------------
 	case "${__TGET_PATH}" in
-		*_tumbleweed_*) __PDID="Tumbleweed";;
-		*             ) __PDID="openSUSE_Leap";;
+		*_tumbleweed*) __PDID="Tumbleweed";;
+		*            ) __PDID="openSUSE_Leap";;
 	esac
 	# --- by media ------------------------------------------------------------
 	# --- by version ----------------------------------------------------------
+#	"url": "https://download.opensuse.org/distribution/leap/:_RELEASE_:/repo/oss/",
+#	"url": "https://download.opensuse.org/tumbleweed/repo/oss/",
+	__ARRY=(
+		-ne '/"extraRepositories": \[/,/\]/ {'
+		-e  '/"url":/{'
+		-e  's/^.*:[ \t]\+"*//'
+		-e  's/",*$//'
+		-e  's/:_RELEASE_:/'"${__NUMS}"'/'
+		-e 'p}}'
+	)
+	__URLS="$(sed "${__TGET_PATH}" "${__ARRY[@]}")"
+	__PROT="${__URLS%%://*}"
+	__DMIN="${__URLS#"${__PROT}://"}"
+	__DMIN="${__DMIN%%/*}"
 	case "${__TGET_PATH}" in
-		*_tumbleweed_*) __WORK="leap";;
-		*             ) __WORK="tumbleweed";;
+		*_tumbleweed*) __URLS="${__PROT}://${__DMIN}/tumbleweed/repo/oss/";;
+		*            ) ;;
 	esac
-	sed -i "${__TGET_PATH}"                                   \
-	    -e '/"product": {/,/}/                             {' \
-	    -e '/"id":/ s/"[^ ]\+"$/"'"${__PDID}"'"/           }' \
-	    -e '/"extraRepositories": \[/,/\]/                 {' \
-	    -e 's/:_RELEASE_:/'"${__NUMS}"'/                    ' \
-	    -e '\%^// '"${__WORK}"'%,\%^// '"${__WORK}"'%d      ' \
-	    -e '\%^//.*$%d                                     }' \
-	    -e '\%^// fixed parameter%,\%^// fixed parameter%d  '
+	__ARRY=(
+		-e '/"product": {/,/}/{/"id":/ s/"[^ ]\+"$/"'"${__PDID}"'"/}'
+		-e '/"extraRepositories": \[/,/\]/{/"url":/ s%"[^"]\+",*$%"'"${__URLS}"'"%}'
+		-e '/"__comment_fixed_parameter_start":/,/"__comment_fixed_parameter_end":/d'
+	)
+	if ! sed -i "${__TGET_PATH}" "${__ARRY[@]}"; then
+		__RTCD="$?"
+		printf "%s\n" "sed -i \"${__TGET_PATH}\" ${__ARRY[*]}"
+		exit "${__RTCD:-}"
+	fi
 	# --- desktop -------------------------------------------------------------
 	__WORK="${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
 	cp "${__TGET_PATH}" "${__WORK}"
-	sed -i "${__TGET_PATH}"                   \
-	    -e '/"patterns": \[/,/\]/          {' \
-	    -e '\%^// desktop%,\%^// desktop%d }' \
-	    -e '/"patterns": {/,/}/            {' \
-	    -e '\%^// desktop%,\%^// desktop%d }' \
-	    -e '/"packages": \[/,/\]/          {' \
-	    -e '\%^// desktop%,\%^// desktop%d }'
-	sed -i "${__WORK}"                        \
-	    -e '/"patterns": \[/,/\]/          {' \
-	    -e '\%^//.*$%d                     }' \
-	    -e '/"patterns": {/,/}/            {' \
-	    -e '\%^//.*$%d                     }' \
-	    -e '/"packages": \[/,/\]/          {' \
-	    -e '\%^//.*$%d                     }'
+	__ARRY=(
+		-e '/"patterns": \[/,/\]/ {/"__comment_desktop_start"/,/"__comment_desktop_end"/d}'
+		-e '/"patterns": {/,/}/   {/"__comment_desktop_start"/,/"__comment_desktop_end"/d}'
+		-e '/"packages": \[/,/\]/ {/"__comment_desktop_start"/,/"__comment_desktop_end"/d}'
+	)
+	if ! sed -i "${__TGET_PATH}" "${__ARRY[@]}"; then
+		__RTCD="$?"
+		printf "%s\n" "sed -i \"${__TGET_PATH}\" ${__ARRY[*]}"
+		exit "${__RTCD:-}"
+	fi
+	__ARRY=(
+		-e '/"__comment_desktop_start"/d'
+		-e '/"__comment_desktop_end"/d'
+	)
+	if ! sed -i "${__WORK}" "${__ARRY[@]}"; then
+		__RTCD="$?"
+		printf "%s\n" "sed -i \"${__WORK}\" ${__ARRY[*]}"
+		exit "${__RTCD:-}"
+	fi
+
+#	sed -i "${__TGET_PATH}"                                                                   \
+#	    -e '/"product": {/,/}/                                                             {' \
+#	    -e '/"id":/ s/"[^ ]\+"$/"'"${__PDID}"'"/                                           }' \
+#	    -e '/"extraRepositories": \[/,/\]/                                                 {' \
+#	    -e 's/:_RELEASE_:/'"${__NUMS}"'/                                                    ' \
+#	    -e '\%^// '"${__WORK}"'%,\%^// '"${__WORK}"'%d                                      ' \
+#	    -e '\%^//.*$%d                                                                     }' \
+#	    -e '\%^// fixed parameter%,\%^// fixed parameter%d                                  ' \
+#	    -e '/"__comment_fixed_parameter_start":/,/"__comment_fixed_parameter_end":/d'
+	# --- desktop -------------------------------------------------------------
+#	__WORK="${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
+#	cp "${__TGET_PATH}" "${__WORK}"
+#	sed -i "${__TGET_PATH}"                                                                   \
+#	    -e '/"patterns": \[/,/\]/ {\%^// desktop%,\%^// desktop%d}                          ' \
+#	    -e '/"patterns": {/,/}/   {\%^// desktop%,\%^// desktop%d}                          ' \
+#	    -e '/"packages": \[/,/\]/ {\%^// desktop%,\%^// desktop%d}                          ' \
+#	    -e '/"patterns": \[/,/\]/ {/"__comment_desktop_start":/,/"__comment_desktop_end":/d}' \
+#	    -e '/"patterns": {/,/}/   {/"__comment_desktop_start":/,/"__comment_desktop_end":/d}' \
+#	    -e '/"packages": \[/,/\]/ {/"__comment_desktop_start":/,/"__comment_desktop_end":/d}'
+#	sed -i "${__WORK}"                                                                        \
+#	    -e '/"patterns": \[/,/\]/ \%^//.*$%d                                                ' \
+#	    -e '/"patterns": {/,/}/   \%^//.*$%d                                                ' \
+#	    -e '/"packages": \[/,/\]/ \%^//.*$%d                                                ' \
+#	    -e '/"__comment_desktop_start"/gd                                                   ' \
+#	    -e '/"__comment_desktop_end"/gd'
 	# -------------------------------------------------------------------------
 	__REAL="$(realpath "${__TGET_PATH}")"
 	__DIRS="$(fnDirname "${__TGET_PATH}")"
@@ -4173,7 +4224,7 @@ function fnMk_isofile_ilnx() {
 }
 
 # -----------------------------------------------------------------------------
-# descript: make customize iso files
+# descript: make iso files
 #   input :     $1     : target directory
 #   input :     $2     : output file name
 #   input :     $3     : volume id
@@ -4183,7 +4234,7 @@ function fnMk_isofile_ilnx() {
 #   input :     $7     : eltorito boot file name
 #   output:   stdout   : message
 #   return:            : unused
-function fnMk_isofile_rebuild() {
+function fnMk_xorrisofs() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
@@ -4532,7 +4583,7 @@ function fnMk_isofile() {
 							# -------------------------------------------------
 							__FCAT="$(find "${__DMRG}" \( -iname 'boot.cat'     -o -iname 'boot.catalog' \))"
 							__FBIN="$(find "${__DMRG}" \( -iname 'isolinux.bin' -o -iname 'eltorito.img' \))"
-							fnMk_isofile_rebuild "${__DMRG}" "${__MDIA[$((_OSET_MDIA+18))]}" "${__MDIA[$((_OSET_MDIA+17))]}" "${__HBRD:-}" "${__FMBR:-}" "${__FEFI:-}" "${__FCAT#"${__DMRG}/"}" "${__FBIN#"${__DMRG}/"}"
+							fnMk_xorrisofs "${__DMRG}" "${__MDIA[$((_OSET_MDIA+18))]}" "${__MDIA[$((_OSET_MDIA+17))]}" "${__HBRD:-}" "${__FMBR:-}" "${__FEFI:-}" "${__FCAT#"${__DMRG}/"}" "${__FBIN#"${__DMRG}/"}"
 							__RETN="$(fnGetFileinfo "${__MDIA[$((_OSET_MDIA+18))]}")"
 							read -r -a __ARRY < <(echo "${__RETN}")
 							__MDIA[_OSET_MDIA+19]="${__ARRY[1]:-}"	# rmk_tstamp

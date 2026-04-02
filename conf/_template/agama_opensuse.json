@@ -1,5 +1,5 @@
 {
-// fixed parameter
+  "__comment_fixed_parameter_start": "",
   "bootloader": {
     "extraKernelParams": ""
   },
@@ -14,12 +14,16 @@
         "method6": "auto",
         "method4": "manual",
         "gateway4": "192.168.1.254",
-        "addresses": ["192.168.1.1/24"],
-        "nameservers": ["192.168.1.254"]
+        "addresses": [
+          "192.168.1.1/24"
+        ],
+        "nameservers": [
+          "192.168.1.254"
+        ]
       }
     ]
   },
-// fixed parameter
+  "__comment_fixed_parameter_end": "",
   "localization": {
     "language": "ja_JP.UTF-8",
     "keyboard": "jp",
@@ -68,9 +72,9 @@
   "software": {
     "patterns": {
       "add": [
-// desktop
+        "__comment_desktop_start",
         "gnome",
-// desktop
+        "__comment_desktop_end",
         "base",
         "basesystem",
         "enhanced_base",
@@ -78,7 +82,7 @@
       ]
     },
     "packages": [
-// desktop
+      "__comment_desktop_start",
       "gnome-desktop-lang",
       "gnome-terminal",
       "gstreamer-plugins-libav",
@@ -95,7 +99,7 @@
       "chromium",
       "rhythmbox",
       "bluez",
-// desktop
+      "__comment_desktop_end",
       "lvm2",
       "selinux-policy-targeted",
       "sudo",
@@ -112,6 +116,7 @@
       "ShellCheck",
       "xxd",
       "xorriso",
+      "gawk",
       "clamav",
       "openssh-server",
       "systemd-resolved",
@@ -168,7 +173,11 @@
       {
         "name": "system",
         "physicalVolumes": [
-          { "generate": [ "pvs-disk" ] }
+          {
+            "generate": [
+              "pvs-disk"
+            ]
+          }
         ],
         "logicalVolumes": [
           {

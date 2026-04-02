@@ -260,7 +260,7 @@ function fnMk_isofile() {
 							# -------------------------------------------------
 							__FCAT="$(find "${__DMRG}" \( -iname 'boot.cat'     -o -iname 'boot.catalog' \))"
 							__FBIN="$(find "${__DMRG}" \( -iname 'isolinux.bin' -o -iname 'eltorito.img' \))"
-							fnMk_isofile_rebuild "${__DMRG}" "${__MDIA[$((_OSET_MDIA+18))]}" "${__MDIA[$((_OSET_MDIA+17))]}" "${__HBRD:-}" "${__FMBR:-}" "${__FEFI:-}" "${__FCAT#"${__DMRG}/"}" "${__FBIN#"${__DMRG}/"}"
+							fnMk_xorrisofs "${__DMRG}" "${__MDIA[$((_OSET_MDIA+18))]}" "${__MDIA[$((_OSET_MDIA+17))]}" "${__HBRD:-}" "${__FMBR:-}" "${__FEFI:-}" "${__FCAT#"${__DMRG}/"}" "${__FBIN#"${__DMRG}/"}"
 							__RETN="$(fnGetFileinfo "${__MDIA[$((_OSET_MDIA+18))]}")"
 							read -r -a __ARRY < <(echo "${__RETN}")
 							__MDIA[_OSET_MDIA+19]="${__ARRY[1]:-}"	# rmk_tstamp

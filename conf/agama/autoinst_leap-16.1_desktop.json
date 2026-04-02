@@ -87,6 +87,7 @@
       "ShellCheck",
       "xxd",
       "xorriso",
+      "gawk",
       "clamav",
       "openssh-server",
       "systemd-resolved",
@@ -112,7 +113,7 @@
       {
         "alias": "repo-oss",
         "name": "Main Repository",
-        "url": "https://download.opensuse.org/distribution/leap/16.1/repo/oss/",
+        "url": "https://download.opensuse.org/distribution/leap/16.1/repo/oss/"
         "productDir": "/",
         "priority": 99
       }
@@ -143,7 +144,11 @@
       {
         "name": "system",
         "physicalVolumes": [
-          { "generate": [ "pvs-disk" ] }
+          {
+            "generate": [
+              "pvs-disk"
+            ]
+          }
         ],
         "logicalVolumes": [
           {

@@ -216,23 +216,23 @@ $(TGET): $(SRCS) $(OBJS)
 TGET=./custom_cmd/test_server.sh
 SRCS=./custom_cmd/skel_test_server.sh
 OBJS=\
-	./custom_cmd/fnSystem_common.sh \
-	./custom_cmd/fnGlobal_variables.sh \
-	./custom_cmd/fnGlobal_common.sh \
+	./custom_cmd/fnComm_system_common.sh \
+	./custom_cmd/fnComm_global_variables.sh \
+	./custom_cmd/fnComm_global_common.sh \
 	./_common_bash/fnMsgout.sh \
 	./_common_bash/fnString.sh \
 	./_common_bash/fnStrmsg.sh \
 	./_common_bash/fnIPv6FullAddr.sh \
 	./_common_bash/fnIPv6RevAddr.sh \
 	./_common_bash/fnIPv4Netmask.sh \
-	./custom_cmd/fnDbgout.sh \
-	./custom_cmd/fnDbgparameters.sh \
-	./custom_cmd/fnDbgparameters_all.sh \
-	./custom_cmd/fnFind_command.sh \
-	./custom_cmd/fnSystem_param.sh \
-	./custom_cmd/fnNetwork_param.sh \
-	./custom_cmd/fnTrap.sh \
-	./custom_cmd/fnInitialize_test_server.sh \
+	./custom_cmd/fnComm_dbgout.sh \
+	./custom_cmd/fnComm_dbgparameters.sh \
+	./custom_cmd/fnComm_dbgparameters_all.sh \
+	./custom_cmd/fnComm_find_command.sh \
+	./custom_cmd/fnComm_system_param.sh \
+	./custom_cmd/fnComm_network_param.sh \
+	./custom_cmd/fnComm_trap.sh \
+	./custom_cmd/fnTest_init_test_server.sh \
 	./custom_cmd/fnTest_cmdline.sh \
 	./custom_cmd/fnTest_param.sh \
 	./custom_cmd/fnTest_service.sh \
@@ -252,8 +252,8 @@ OBJS=\
 	./custom_cmd/fnTest_smbclient.sh \
 	./custom_cmd/fnTest_pdbedit.sh \
 	./custom_cmd/fnTest_httpd.sh \
-	./custom_cmd/fnHelp_test_server.sh \
-	./custom_cmd/fnMain_test_server.sh \
+	./custom_cmd/fnTest_help_test_server.sh \
+	./custom_cmd/fnTest_main_test_server.sh \
 	./custom_cmd/skel_test_server.sh
 
 $(TGET): $(SRCS) $(OBJS)
@@ -269,9 +269,9 @@ $(TGET): $(SRCS) $(OBJS)
 TGET=./custom_cmd/mk_custom_iso.sh
 SRCS=./custom_cmd/skel_mk_custom_iso.sh
 OBJS=\
-	./custom_cmd/fnSystem_common.sh \
-	./custom_cmd/fnGlobal_variables.sh \
-	./custom_cmd/fnGlobal_common.sh \
+	./custom_cmd/fnComm_system_common.sh \
+	./custom_cmd/fnComm_global_variables.sh \
+	./custom_cmd/fnComm_global_common.sh \
 	./_common_bash/fnTrim.sh \
 	./_common_bash/fnBasename.sh \
 	./_common_bash/fnMsgout.sh \
@@ -279,67 +279,67 @@ OBJS=\
 	./_common_bash/fnStrmsg.sh \
 	./_common_bash/fnGetWebinfo.sh \
 	./_common_bash/fnGetFileinfo.sh \
-	./custom_cmd/fnDbgout.sh \
-	./custom_cmd/fnDbgparameters.sh \
-	./custom_cmd/fnDbgparameters_all.sh \
-	./custom_cmd/fnFind_command.sh \
-	./custom_cmd/fnDownload.sh \
-	./custom_cmd/fnRsync.sh \
-	./custom_cmd/fnTrap.sh \
-	./custom_cmd/fnInitialize.sh \
-	./custom_cmd/fnList_conf_Get.sh \
-	./custom_cmd/fnList_mdia_Get.sh \
-	./custom_cmd/fnList_mdia_Put.sh \
-	./custom_cmd/fnMk_symlink_dir.sh \
-	./custom_cmd/fnMk_symlink.sh \
-	./custom_cmd/fnMk_preconf_preseed.sh \
-	./custom_cmd/fnMk_preconf_nocloud.sh \
-	./custom_cmd/fnMk_preconf_kickstart.sh \
-	./custom_cmd/fnMk_preconf_autoyast.sh \
-	./custom_cmd/fnMk_preconf_agama.sh \
-	./custom_cmd/fnMk_preconf.sh \
-	./custom_cmd/fnMk_print_list.sh \
-	./custom_cmd/fnXinitrd.sh \
-	./custom_cmd/fnMk_boot_option_preseed.sh \
-	./custom_cmd/fnMk_boot_option_nocloud.sh \
-	./custom_cmd/fnMk_boot_option_kickstart.sh \
-	./custom_cmd/fnMk_boot_option_autoyast.sh \
-	./custom_cmd/fnMk_boot_option_agama.sh \
-	./custom_cmd/fnMk_boot_options.sh \
-	./custom_cmd/fnMk_pxeboot_clear_menu.sh \
-	./custom_cmd/fnMk_pxeboot_ipxe_hdrftr.sh \
-	./custom_cmd/fnMk_pxeboot_ipxe_windows.sh \
-	./custom_cmd/fnMk_pxeboot_ipxe_winpe.sh \
-	./custom_cmd/fnMk_pxeboot_ipxe_aomei.sh \
-	./custom_cmd/fnMk_pxeboot_ipxe_m86p.sh \
-	./custom_cmd/fnMk_pxeboot_ipxe_linux.sh \
-	./custom_cmd/fnMk_pxeboot_ipxe.sh \
-	./custom_cmd/fnMk_pxeboot_grub_hdrftr.sh \
-	./custom_cmd/fnMk_pxeboot_grub_windows.sh \
-	./custom_cmd/fnMk_pxeboot_grub_winpe.sh \
-	./custom_cmd/fnMk_pxeboot_grub_aomei.sh \
-	./custom_cmd/fnMk_pxeboot_grub_m86p.sh \
-	./custom_cmd/fnMk_pxeboot_grub_linux.sh \
-	./custom_cmd/fnMk_pxeboot_grub.sh \
-	./custom_cmd/fnMk_pxeboot_slnx_hdrftr.sh \
-	./custom_cmd/fnMk_pxeboot_slnx_windows.sh \
-	./custom_cmd/fnMk_pxeboot_slnx_winpe.sh \
-	./custom_cmd/fnMk_pxeboot_slnx_aomei.sh \
-	./custom_cmd/fnMk_pxeboot_slnx_m86p.sh \
-	./custom_cmd/fnMk_pxeboot_slnx_linux.sh \
-	./custom_cmd/fnMk_pxeboot_slnx.sh \
-	./custom_cmd/fnMk_pxeboot.sh \
-	./custom_cmd/fnMk_isofile_conf.sh \
-	./custom_cmd/fnMk_isofile_grub_autoinst.sh \
-	./custom_cmd/fnMk_isofile_grub_theme.sh \
-	./custom_cmd/fnMk_isofile_grub.sh \
-	./custom_cmd/fnMk_isofile_ilnx_autoinst.sh \
-	./custom_cmd/fnMk_isofile_ilnx_theme.sh \
-	./custom_cmd/fnMk_isofile_ilnx.sh \
-	./custom_cmd/fnMk_isofile_rebuild.sh \
-	./custom_cmd/fnMk_isofile.sh \
-	./custom_cmd/fnHelp_mk_custom_iso.sh \
-	./custom_cmd/fnMain_mk_custom_iso.sh \
+	./custom_cmd/fnComm_dbgout.sh \
+	./custom_cmd/fnComm_dbgparameters.sh \
+	./custom_cmd/fnComm_dbgparameters_all.sh \
+	./custom_cmd/fnComm_find_command.sh \
+	./custom_cmd/fnComm_download.sh \
+	./custom_cmd/fnComm_rsync.sh \
+	./custom_cmd/fnComm_trap.sh \
+	./custom_cmd/fnMake_init_mk_custom_iso.sh \
+	./custom_cmd/fnComm_list_conf_Get.sh \
+	./custom_cmd/fnComm_list_mdia_Get.sh \
+	./custom_cmd/fnComm_list_mdia_Put.sh \
+	./custom_cmd/fnMake_symlink_dir.sh \
+	./custom_cmd/fnMake_symlink.sh \
+	./custom_cmd/fnMake_preconf_preseed.sh \
+	./custom_cmd/fnMake_preconf_nocloud.sh \
+	./custom_cmd/fnMake_preconf_kickstart.sh \
+	./custom_cmd/fnMake_preconf_autoyast.sh \
+	./custom_cmd/fnMake_preconf_agama.sh \
+	./custom_cmd/fnMake_preconf.sh \
+	./custom_cmd/fnMake_print_list.sh \
+	./custom_cmd/fnComm_xinitrd.sh \
+	./custom_cmd/fnMake_boot_option_preseed.sh \
+	./custom_cmd/fnMake_boot_option_nocloud.sh \
+	./custom_cmd/fnMake_boot_option_kickstart.sh \
+	./custom_cmd/fnMake_boot_option_autoyast.sh \
+	./custom_cmd/fnMake_boot_option_agama.sh \
+	./custom_cmd/fnMake_boot_options.sh \
+	./custom_cmd/fnMake_pxeboot_clear_menu.sh \
+	./custom_cmd/fnMake_pxeboot_ipxe_hdrftr.sh \
+	./custom_cmd/fnMake_pxeboot_ipxe_windows.sh \
+	./custom_cmd/fnMake_pxeboot_ipxe_winpe.sh \
+	./custom_cmd/fnMake_pxeboot_ipxe_aomei.sh \
+	./custom_cmd/fnMake_pxeboot_ipxe_m86p.sh \
+	./custom_cmd/fnMake_pxeboot_ipxe_linux.sh \
+	./custom_cmd/fnMake_pxeboot_ipxe.sh \
+	./custom_cmd/fnMake_pxeboot_grub_hdrftr.sh \
+	./custom_cmd/fnMake_pxeboot_grub_windows.sh \
+	./custom_cmd/fnMake_pxeboot_grub_winpe.sh \
+	./custom_cmd/fnMake_pxeboot_grub_aomei.sh \
+	./custom_cmd/fnMake_pxeboot_grub_m86p.sh \
+	./custom_cmd/fnMake_pxeboot_grub_linux.sh \
+	./custom_cmd/fnMake_pxeboot_grub.sh \
+	./custom_cmd/fnMake_pxeboot_slnx_hdrftr.sh \
+	./custom_cmd/fnMake_pxeboot_slnx_windows.sh \
+	./custom_cmd/fnMake_pxeboot_slnx_winpe.sh \
+	./custom_cmd/fnMake_pxeboot_slnx_aomei.sh \
+	./custom_cmd/fnMake_pxeboot_slnx_m86p.sh \
+	./custom_cmd/fnMake_pxeboot_slnx_linux.sh \
+	./custom_cmd/fnMake_pxeboot_slnx.sh \
+	./custom_cmd/fnMake_pxeboot.sh \
+	./custom_cmd/fnMake_isofile_conf.sh \
+	./custom_cmd/fnMake_isofile_grub_autoinst.sh \
+	./custom_cmd/fnMake_isofile_grub_theme.sh \
+	./custom_cmd/fnMake_isofile_grub.sh \
+	./custom_cmd/fnMake_isofile_ilnx_autoinst.sh \
+	./custom_cmd/fnMake_isofile_ilnx_theme.sh \
+	./custom_cmd/fnMake_isofile_ilnx.sh \
+	./custom_cmd/fnComm_xorrisofs.sh \
+	./custom_cmd/fnMake_isofile.sh \
+	./custom_cmd/fnMake_help_mk_custom_iso.sh \
+	./custom_cmd/fnMake_main_mk_custom_iso.sh \
 	./custom_cmd/skel_mk_custom_iso.sh
 
 $(TGET): $(SRCS) $(OBJS)

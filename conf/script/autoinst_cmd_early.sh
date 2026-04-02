@@ -649,31 +649,28 @@ fnNetwork_param() {
 	_NICS_NAME="${_NICS_NAME:-"ens160"}"
 	___DIRS="${_DIRS_TGET:-}/sys/devices"
 	if [ ! -e "${___DIRS}"/. ]; then
-		fnMsgout "${_PROG_NAME:-}" "caution" "not exist: [${___DIRS}]"
+		fnMsgout "caution" "not exist: [${___DIRS}]"
 	else
-		if [ -z "${_NICS_NAME#*"*"}" ]; then
-			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | sort -V | head -n 1)"
-			_NICS_NAME="${_NICS_NAME##*/}"
+		  if [ -z "${_NICS_NAME:-}" ]; then
+			_NICS_NAME="$(ip -4 -oneline address show up | awk '$2!="lo" {print $2; exit;}')"
+		elif [ -z "${_NICS_NAME#*"*"}" ]; then
+			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME:?}" | sort -V | head -n 1)"
 		fi
-		_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME:-}" | sort -V | head -n 1)"
-		_NICS_NAME="${_NICS_NAME##*/}"
-		if [ -z "${_NICS_NAME:-}" ]; then
-			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name 'e*' | sort -V | head -n 1)"
-			_NICS_NAME="${_NICS_NAME##*/}"
-		fi
-		if ! find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME}" | grep -q "${_NICS_NAME}"; then
-			fnMsgout "${_PROG_NAME:-}" "failed" "not exist: [${_NICS_NAME}]"
+		__WORK="$(ip -4 -oneline address show up dev "${_NICS_NAME}" 2> /dev/null)"
+		[ -z "${__WORK:-}" ] && _NICS_NAME="$(ip -4 -oneline address show up | awk '$2!="lo" {print $2; exit;}')"
+		_NICS_NAME="${_NICS_NAME:-"ens160"}"
+		if ! ip -0 -oneline address show up dev "${_NICS_NAME}" > /dev/null 2>&1; then
+			fnMsgout "failed" "not exist: [${_NICS_NAME}]"
 		else
-			if ip address show dev "${_NICS_NAME}" > /dev/null 2>&1; then
-				_NICS_STAT="true"
-			fi
-			_NICS_MADR="${_NICS_MADR:-"$(ip -0 -brief address show dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}' || true)"}"
-			_NICS_IPV4="${_NICS_IPV4:-"$(ip -4 -brief address show dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}' || true)"}"
+			_NICS_STAT="true"
+			_NICS_MADR="${_NICS_MADR:-"$(ip -0 -oneline address show dev "${_NICS_NAME}" 2> /dev/null | awk '$2!="lo" {print $15;}' || true)"}"
+			_NICS_IPV4="${_NICS_IPV4:-"$(ip -4 -oneline address show dev "${_NICS_NAME}" 2> /dev/null | awk '$2!="lo" {print $4;}' || true)"}"
 			if ip -4 -oneline address show dev "${_NICS_NAME}" 2> /dev/null | grep -qE '[ \t]dynamic[ \t]'; then
 				_NICS_AUTO="dhcp"
 			fi
 			if [ -z "${_NICS_DNS4:-}" ] || [ -z "${_NICS_WGRP:-}" ]; then
-				if command -v resolvectl > /dev/null 2>&1; then
+				__PATH="$(fnFind_command 'resolvectl' | sort -V | head -n 1)"
+				if [ -n "${__PATH:-}" ]; then
 					if resolvectl status > /dev/null 2>&1; then
 						_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/^Global:/             s/^.*:[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
 						_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*:[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
@@ -689,8 +686,8 @@ fnNetwork_param() {
 					_NICS_WGRP="${_NICS_WGRP%.}"
 				fi
 			fi
-			_IPV6_ADDR="$(ip -6 -brief address show primary dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $3;}')"
-			_LINK_ADDR="$(ip -6 -brief address show primary dev "${_NICS_NAME}" 2> /dev/null | awk '$1!="lo" {print $4;}')"
+			_IPV6_ADDR="$(ip -6 -oneline address show primary dev "${_NICS_NAME}" 2> /dev/null | awk '$2!="lo" && $6=="global" {print $4;}')"
+			_LINK_ADDR="$(ip -6 -oneline address show primary dev "${_NICS_NAME}" 2> /dev/null | awk '$2!="lo" && $6=="link"   {print $4;}')"
 		fi
 	fi
 	# --- ipv4 ----------------------------------------------------------------
@@ -705,7 +702,7 @@ fnNetwork_param() {
 		else
 			_NICS_MASK="$(fnIPv4Netmask "${_NICS_BIT4:-"24"}")"
 		fi
-		[ -n "${_NICS_STAT:-}" ] && _NICS_GATE="${_NICS_GATE:-"$(ip -4 -brief route list match default | awk '{print $3;}' | uniq)"}"
+		[ -n "${_NICS_STAT:-}" ] && _NICS_GATE="${_NICS_GATE:-"$(ip -4 -oneline route list match default | awk '{print $3;}' | uniq)"}"
 	fi
 	if [ "${_NICS_IPV4##*.}" = "0" ] || [ "${_NICS_IPV4##*.}" = "255" ]; then
 		_NICS_AUTO="dhcp"

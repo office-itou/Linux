@@ -26,11 +26,11 @@
 	declare -r    _SHEL_COMN="${_SHEL_TOPS:-}/_common_bash"
 	declare -r    _SHEL_COMD="${_SHEL_TOPS:-}/custom_cmd"
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD:?}"/fnSystem_common.sh				# global variables (for system)
+	source "${_SHEL_COMD:?}"/fnComm_system_common.sh		# global variables (for system)
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD:?}"/fnGlobal_variables.sh			# global variables (for basic)
+	source "${_SHEL_COMD:?}"/fnComm_global_variables.sh		# global variables (for basic)
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD:?}"/fnGlobal_common.sh				# global variables (for application)
+	source "${_SHEL_COMD:?}"/fnComm_global_common.sh		# global variables (for application)
 
 # *** function section (common functions) *************************************
 
@@ -60,167 +60,167 @@
 #	source "${_SHEL_COMN}"/fnWget.sh						# wget / curl
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnDbgout.sh						# message output (debug out)
+	source "${_SHEL_COMD}"/fnComm_dbgout.sh					# message output (debug out)
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnDbgdump.sh						# dump output (debug out)
+#	source "${_SHEL_COMD}"/fnComm_dbgdump.sh				# dump output (debug out)
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnDbgparam.sh					# parameter debug output
+#	source "${_SHEL_COMD}"/fnComm_dbgparam.sh				# parameter debug output
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnDbgparameters.sh				# print out of internal variables
+	source "${_SHEL_COMD}"/fnComm_dbgparameters.sh			# print out of internal variables
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnDbgparameters_all.sh			# Print all global variables (_[A..Z]*)
+	source "${_SHEL_COMD}"/fnComm_dbgparameters_all.sh		# Print all global variables (_[A..Z]*)
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnFind_command.sh				# find command
+	source "${_SHEL_COMD}"/fnComm_find_command.sh			# find command
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnFind_service.sh				# find service
+#	source "${_SHEL_COMD}"/fnComm_find_service.sh			# find service
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnSystem_param.sh				# get system parameter
+#	source "${_SHEL_COMD}"/fnComm_system_param.sh			# get system parameter
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnNetwork_param.sh				# get network parameter
+#	source "${_SHEL_COMD}"/fnComm_network_param.sh			# get network parameter
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnFile_backup.sh					# file backup
+#	source "${_SHEL_COMD}"/fnComm_file_backup.sh			# file backup
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnDownload.sh					# wget / curl file download
+	source "${_SHEL_COMD}"/fnComm_download.sh				# wget / curl file download
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnRsync.sh						# rsync
+	source "${_SHEL_COMD}"/fnComm_rsync.sh					# rsync
 
 # *** function section (subroutine functions) *********************************
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTrap.sh						# trap
+	source "${_SHEL_COMD}"/fnComm_trap.sh					# trap
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnInitialize.sh					# initialize
+	source "${_SHEL_COMD}"/fnMake_init_mk_custom_iso.sh		# initialize
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnList_conf_Get.sh				# get auto-installation configuration file
+	source "${_SHEL_COMD}"/fnComm_list_conf_Get.sh			# get auto-installation configuration file
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnList_conf_Put.sh				# put common configuration data
+#	source "${_SHEL_COMD}"/fnComm_list_conf_Put.sh			# put common configuration data
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnList_mdia_Get.sh				# get media information data
+	source "${_SHEL_COMD}"/fnComm_list_mdia_Get.sh			# get media information data
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnList_mdia_Put.sh				# put media information data
+	source "${_SHEL_COMD}"/fnComm_list_mdia_Put.sh			# put media information data
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_symlink_dir.sh				# make directory
+	source "${_SHEL_COMD}"/fnMake_symlink_dir.sh			# make directory
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_symlink.sh					# make symlink
+	source "${_SHEL_COMD}"/fnMake_symlink.sh				# make symlink
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_preconf_preseed.sh			# make preseed.cfg
+	source "${_SHEL_COMD}"/fnMake_preconf_preseed.sh		# make preseed.cfg
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_preconf_nocloud.sh			# make nocloud
+	source "${_SHEL_COMD}"/fnMake_preconf_nocloud.sh		# make nocloud
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_preconf_kickstart.sh		# make kickstart.cfg
+	source "${_SHEL_COMD}"/fnMake_preconf_kickstart.sh		# make kickstart.cfg
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_preconf_autoyast.sh			# make autoyast.xml
+	source "${_SHEL_COMD}"/fnMake_preconf_autoyast.sh		# make autoyast.xml
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_preconf_agama.sh			# make autoinst.json
+	source "${_SHEL_COMD}"/fnMake_preconf_agama.sh			# make autoinst.json
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_preconf.sh					# make preconfiguration files
+	source "${_SHEL_COMD}"/fnMake_preconf.sh				# make preconfiguration files
 
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnCopy_iso.sh					# copy iso files
+#	source "${_SHEL_COMD}"/fnComm_copy_iso.sh				# copy iso files
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnSelect_target.sh				# select target
+#	source "${_SHEL_COMD}"/fnComm_select_target.sh			# select target
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_print_list.sh				# print media list
+	source "${_SHEL_COMD}"/fnMake_print_list.sh				# print media list
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnXinitrd.sh						# extract the initrd
+	source "${_SHEL_COMD}"/fnComm_xinitrd.sh				# extract the initrd
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_boot_option_preseed.sh		# make boot options for preseed
+	source "${_SHEL_COMD}"/fnMake_boot_option_preseed.sh	# make boot options for preseed
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_boot_option_nocloud.sh		# make boot options for nocloud
+	source "${_SHEL_COMD}"/fnMake_boot_option_nocloud.sh	# make boot options for nocloud
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_boot_option_kickstart.sh	# make boot options for kickstart
+	source "${_SHEL_COMD}"/fnMake_boot_option_kickstart.sh	# make boot options for kickstart
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_boot_option_autoyast.sh		# make boot options for autoyast
+	source "${_SHEL_COMD}"/fnMake_boot_option_autoyast.sh	# make boot options for autoyast
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_boot_option_agama.sh		# make boot options for agama
+	source "${_SHEL_COMD}"/fnMake_boot_option_agama.sh		# make boot options for agama
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_boot_options.sh				# make boot options
+	source "${_SHEL_COMD}"/fnMake_boot_options.sh			# make boot options
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot_clear_menu.sh		# clear pxeboot menu
+	source "${_SHEL_COMD}"/fnMake_pxeboot_clear_menu.sh		# clear pxeboot menu
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe_hdrftr.sh		# make header and footer for ipxe menu
+	source "${_SHEL_COMD}"/fnMake_pxeboot_ipxe_hdrftr.sh	# make header and footer for ipxe menu
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe_windows.sh		# make Windows section for ipxe menu
+	source "${_SHEL_COMD}"/fnMake_pxeboot_ipxe_windows.sh	# make Windows section for ipxe menu
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe_winpe.sh		# make WinPE section for ipxe menu
+	source "${_SHEL_COMD}"/fnMake_pxeboot_ipxe_winpe.sh		# make WinPE section for ipxe menu
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe_aomei.sh		# make aomei backup section for ipxe menu
+	source "${_SHEL_COMD}"/fnMake_pxeboot_ipxe_aomei.sh		# make aomei backup section for ipxe menu
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe_m86p.sh		# make memtest86+ section for ipxe menu
+	source "${_SHEL_COMD}"/fnMake_pxeboot_ipxe_m86p.sh		# make memtest86+ section for ipxe menu
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe_linux.sh		# make linux section for ipxe menu
+	source "${_SHEL_COMD}"/fnMake_pxeboot_ipxe_linux.sh		# make linux section for ipxe menu
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot_ipxe.sh				# make ipxe menu
+	source "${_SHEL_COMD}"/fnMake_pxeboot_ipxe.sh			# make ipxe menu
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot_grub_hdrftr.sh		# make header and footer for grub.cfg
+	source "${_SHEL_COMD}"/fnMake_pxeboot_grub_hdrftr.sh	# make header and footer for grub.cfg
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot_grub_windows.sh		# make Windows section for grub.cfg
+	source "${_SHEL_COMD}"/fnMake_pxeboot_grub_windows.sh	# make Windows section for grub.cfg
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot_grub_winpe.sh		# make WinPE section for grub.cfg
+	source "${_SHEL_COMD}"/fnMake_pxeboot_grub_winpe.sh		# make WinPE section for grub.cfg
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot_grub_aomei.sh		# make aomei backup section for grub.cfg
+	source "${_SHEL_COMD}"/fnMake_pxeboot_grub_aomei.sh		# make aomei backup section for grub.cfg
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot_grub_m86p.sh		# make memtest86+ section for grub.cfg
+	source "${_SHEL_COMD}"/fnMake_pxeboot_grub_m86p.sh		# make memtest86+ section for grub.cfg
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot_grub_linux.sh		# make linux section for grub.cfg
+	source "${_SHEL_COMD}"/fnMake_pxeboot_grub_linux.sh		# make linux section for grub.cfg
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot_grub.sh				# make grub.cfg for pxeboot
+	source "${_SHEL_COMD}"/fnMake_pxeboot_grub.sh			# make grub.cfg for pxeboot
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_hdrftr.sh		# make header and footer for syslinux
+	source "${_SHEL_COMD}"/fnMake_pxeboot_slnx_hdrftr.sh	# make header and footer for syslinux
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_windows.sh		# make Windows section for syslinux
+	source "${_SHEL_COMD}"/fnMake_pxeboot_slnx_windows.sh	# make Windows section for syslinux
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_winpe.sh		# make WinPE section for syslinux
+	source "${_SHEL_COMD}"/fnMake_pxeboot_slnx_winpe.sh		# make WinPE section for syslinux
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_aomei.sh		# make aomei backup section for syslinux
+	source "${_SHEL_COMD}"/fnMake_pxeboot_slnx_aomei.sh		# make aomei backup section for syslinux
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_m86p.sh		# make memtest86+ section for syslinux
+	source "${_SHEL_COMD}"/fnMake_pxeboot_slnx_m86p.sh		# make memtest86+ section for syslinux
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx_linux.sh		# make linux section for syslinux
+	source "${_SHEL_COMD}"/fnMake_pxeboot_slnx_linux.sh		# make linux section for syslinux
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot_slnx.sh				# make syslinux for pxeboot
+	source "${_SHEL_COMD}"/fnMake_pxeboot_slnx.sh			# make syslinux for pxeboot
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_pxeboot.sh					# make pxeboot files
+	source "${_SHEL_COMD}"/fnMake_pxeboot.sh				# make pxeboot files
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_isofile_conf.sh				# copy the configuration file
+	source "${_SHEL_COMD}"/fnMake_isofile_conf.sh			# copy the configuration file
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_isofile_grub_autoinst.sh	# make autoinst.cfg files for grub.cfg
+	source "${_SHEL_COMD}"/fnMake_isofile_grub_autoinst.sh	# make autoinst.cfg files for grub.cfg
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_isofile_grub_theme.sh		# make theme.txt files for grub.cfg
+	source "${_SHEL_COMD}"/fnMake_isofile_grub_theme.sh		# make theme.txt files for grub.cfg
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_isofile_grub.sh				# make grub.cfg files
+	source "${_SHEL_COMD}"/fnMake_isofile_grub.sh			# make grub.cfg files
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_isofile_ilnx_autoinst.sh	# make autoinst.cfg files for isolinux
+	source "${_SHEL_COMD}"/fnMake_isofile_ilnx_autoinst.sh	# make autoinst.cfg files for isolinux
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_isofile_ilnx_theme.sh		# make theme.txt files for isolinux
+	source "${_SHEL_COMD}"/fnMake_isofile_ilnx_theme.sh		# make theme.txt files for isolinux
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_isofile_ilnx.sh				# make isolinux files
+	source "${_SHEL_COMD}"/fnMake_isofile_ilnx.sh			# make isolinux files
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_isofile_rebuild.sh			# make customize iso files
+	source "${_SHEL_COMD}"/fnComm_xorrisofs.sh				# make iso files
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMk_isofile.sh					# make iso files
+	source "${_SHEL_COMD}"/fnMake_isofile.sh				# make iso files
 
 # *** main section ************************************************************
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnHelp_mk_custom_iso.sh			# help
+	source "${_SHEL_COMD}"/fnMake_help_mk_custom_iso.sh		# help
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnMain_mk_custom_iso.sh			# main routine
+	source "${_SHEL_COMD}"/fnMake_main_mk_custom_iso.sh		# main routine
 
 	# --- help / debug --------------------------------------------------------
 	[[ -z "${_PROG_PARM[*]:-}" ]] && fnHelp

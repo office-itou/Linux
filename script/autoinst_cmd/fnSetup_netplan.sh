@@ -18,6 +18,12 @@ fnSetup_netplan() {
 	fi
 	# --- configures ----------------------------------------------------------
 	if command -v nmcli > /dev/null 2>&1; then
+		find "${__DIRS}/etc/netplan/" -name '*.yaml' -type f | while read -r __PATH
+		do
+			fnFile_backup "${__PATH}"
+			fnMsgout "${_PROG_NAME:-}" "remove" "${__PATH}"
+			rm -f "${__PATH}"
+		done
 		# --- 99-network-config-all.yaml --------------------------------------
 		__PATH="${_DIRS_TGET:-}/etc/netplan/99-network-manager-all.yaml"
 		fnFile_backup "${__PATH}"			# backup original file

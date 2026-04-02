@@ -81,7 +81,7 @@ fnSetup_grub_menu() {
 			*) __DEFS="${__DEFS:+"${__DEFS} "}${__LINE:-}";;
 		esac
 	done
-	__DEFS="${__DEFS:+"${__DEFS} "}${__SCRT:-}"
+#	__DEFS="${__DEFS:+"${__DEFS} "}${__SCRT:-}"
 	# --- GRUB_CMDLINE_LINUX --------------------------------------------------
 	__WORK="$(sed -ne 's/^#*GRUB_CMDLINE_LINUX=\(.*\)$/\1/p' "${__CONF}")"
 #	[ -z "${__WORK:-}" ] && echo "GRUB_CMDLINE_LINUX=\"\"" >> "${__CONF}"
@@ -103,7 +103,15 @@ fnSetup_grub_menu() {
 			*) __BOPT="${__BOPT:+"${__BOPT} "}${__LINE:-}";;
 		esac
 	done
-#	__BOPT="${__BOPT:+"${__BOPT} "}${__SCRT:-}"
+	__BOPT="${__BOPT:+"${__BOPT} "}${__SCRT:-}"
+	if command -v netplan > /dev/null 2>&1 \
+	&& command -v nmcli   > /dev/null 2>&1; then
+		__BOPT="${__BOPT:+"${__BOPT} "}ip=off"
+	fi
+#	case "${_DIST_NAME:-}" in
+#		ubuntu) __BOPT="${__BOPT:+"${__BOPT} "}ip=off";;
+#		*     ) ;;
+#	esac
 	# -------------------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "info" "_DIST_NAME=[${_DIST_NAME:-}]"
 	fnMsgout "${_PROG_NAME:-}" "info" "    __BOPT=[${__BOPT:-}]"
