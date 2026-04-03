@@ -71,6 +71,7 @@
       "xxd",
       "xorriso",
       "gawk",
+      "jq",
       "clamav",
       "openssh-server",
       "systemd-resolved",

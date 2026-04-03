@@ -13,6 +13,7 @@ function fnHelp() {
 		usage: [sudo] ${_PROG_PATH:-"$0"} (options) [command]
 		  commands:
 		    -h|--help   : this message output
+		    -c|--conf   : making preconfiguration files
 		    -m|--make   : making iso files
 		    -P|--DBGP   : debug output for internal global variables
 		    -T|--TREE   : debug output in a directory tree-like format

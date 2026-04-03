@@ -557,7 +557,7 @@ function fnMk_vm_setup_loopXp1() {
 		  search --no-floppy --fs-uuid --set=root \${uuid}
 		  echo root=\${root}
 		  set devs=/dev/sda2
-		# set ttys=console=ttyS0
+		  set ttys=console=ttyS0
 		  set options="\${ttys} root=\${devs} security=selinux selinux=1 enforcing=0"
 		# set options="\${ttys} root=\${devs} security=apparmor apparmor=1"
 		# if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
@@ -635,7 +635,9 @@ function fnMk_vm_setup() {
 	declare       __LOOP=""				# loop device name
 	declare       __UUID=""				# loopXp2 uuid
 	# --- create dummy storage ------------------------------------------------
-	dd if=/dev/zero of="${__STRG:?}" bs=1G count=20
+#	echo $((($(lsblk --noheadings --output=SIZE --bytes "${__RTLP:?}") + (100 * (1024 ** 2))) / $((1024 ** 3)) + 1))
+#	dd if=/dev/zero of="${__STRG:?}" bs=1G count=20
+	truncate --size=20G "${__STRG:?}"
 	__LOOP="$(losetup --find --show "${__STRG}")"
 	partprobe "${__LOOP:?}"
 	sfdisk --force --wipe always "${__LOOP}" <<- _EOT_
@@ -700,7 +702,7 @@ function fnMk_mksquashfs() {
 		-progress
 		-noappend
 		-no-xattrs
-		-e .autorelabel .cache
+		-ef /.autorelabel /.cache /.viminfo
 	)
 	declare       __LOOP=""				# loop device name
 	declare -i    __RTCD=0
@@ -708,6 +710,7 @@ function fnMk_mksquashfs() {
 	__LOOP="$(losetup --find --show "${__STRG}")"
 	partprobe "${__LOOP}"
 	mount "${__LOOP}"p2 "${__MNTP}"
+	rm -f "${__MNTP}"/{.autorelabel,.cache,.viminfo}
 	if ! mksquashfs "${__COMD[@]}"; then
 		__RTCD="$?"
 		printf "%s\n" "mksquashfs ${__COMD[*]}"
@@ -736,7 +739,7 @@ function fnMk_uefi() {
 	read -r __PATH __PSEC __STRT __SIZE < <(echo "${__WORK}")
 	__CONT="$(("${__SIZE}" / 512))"
 	dd if="${__STRG}" of="${__UEFI}" bs="${__PSEC}" skip="${__STRT}" count="${__CONT}"
-	dd if="${__STRG}" of="${__MBRF}" bs=1 count=446
+	dd if="${__STRG}" of="${__MBRF}" bs=1 count=440
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
@@ -769,11 +772,13 @@ function fnMk_cdfs() {
 	__ETRI="${__ETRI#"${__CDFS:-}/"}"
 	__BIOS="${__BIOS#"${__CDFS:?}/"}"
 	# --- add boot parameter (security) ---------------------------------------
-	  if [[ -e "${__RTFS:?}"/usr/bin/aa-enabled ]];  then __SECR="security=apparmor apparmor=1"
-	elif [[ -e "${__RTFS:?}"/usr/sbin/getenforce ]]; then __SECR="security=selinux selinux=1 enforcing=0"
-	else                                                  __SECR=""
-	fi
+#	  if [[ -e "${__RTFS:?}"/usr/bin/aa-enabled ]];  then __SECR="security=apparmor apparmor=1"
+#	elif [[ -e "${__RTFS:?}"/usr/sbin/getenforce ]]; then __SECR="security=selinux selinux=1 enforcing=0"
+#	else                                                  __SECR=""
+#	fi
 	__SECR=""
+	[[ -e "${__RTFS:?}"/usr/bin/aa-enabled  ]] && __SECR="${__SECR:+"${__SECR} "}apparmor=1"
+	[[ -e "${__RTFS:?}"/usr/sbin/getenforce ]] && __SECR="${__SECR:+"${__SECR} "}selinux=1 enforcing=0"
 	# --- splash.png ----------------------------------------------------------
 	__SPLS="${__CDFS}/isolinux/splash.png"
 	mkdir -p "${__SPLS%/*}"

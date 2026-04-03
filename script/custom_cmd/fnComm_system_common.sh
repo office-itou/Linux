@@ -53,9 +53,12 @@
 	chown "${_SUDO_USER:?}": "${_DIRS_WTOP}"
 
 	# --- temporary directory -------------------------------------------------
-	declare       _DIRS_TEMP="${_DIRS_WTOP}"
-	              _DIRS_TEMP="$(mktemp -qd "${_DIRS_TEMP}/${_PROG_NAME}.XXXXXX")"
+	declare       _DIRS_TEMP=""			# local
+	              _DIRS_TEMP="$(mktemp -qd "${_DIRS_WTOP}/${_PROG_NAME}.XXXXXX")"
 	readonly      _DIRS_TEMP
+	declare       _DIRS_RTMP=""			# remote
+#	              _DIRS_RTMP="$(mktemp -qd "${_DIRS_PVAT:?}/wrk/mkosi.XXXXXX")"
+#	readonly      _DIRS_RTMP
 
 	# --- trap list -----------------------------------------------------------
 	trap fnTrap EXIT

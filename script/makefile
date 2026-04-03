@@ -1,11 +1,12 @@
 # --- all ---------------------------------------------------------------------
-EXES=\
+EXES= \
 	./autoinst_cmd/autoinst_cmd_early.sh \
 	./autoinst_cmd/autoinst_cmd_late.sh \
 	./autoinst_cmd/autoinst_cmd_part.sh \
 	./autoinst_cmd/autoinst_cmd_run.sh \
 	./custom_cmd/test_server.sh \
-	./custom_cmd/mk_custom_iso.sh
+	./custom_cmd/mk_custom_iso.sh \
+	./custom_cmd/mk_live_iso.sh
 
 .PHONY: all
 all:
@@ -44,26 +45,26 @@ clbak:
 # --- autoinst_cmd_early.sh ---------------------------------------------------
 TGET=./autoinst_cmd/autoinst_cmd_early.sh
 SRCS=./autoinst_cmd/skel_autoinst_cmd_early.sh
-OBJS=\
-	./autoinst_cmd/fnGlobal_variables.sh\
-	./_common_sh/fnMsgout.sh\
-	./_common_sh/fnString.sh\
-	./_common_sh/fnStrmsg.sh\
-	./_common_sh/fnIPv6FullAddr.sh\
-	./_common_sh/fnIPv6RevAddr.sh\
-	./_common_sh/fnIPv4Netmask.sh\
-	./autoinst_cmd/fnDbgout.sh\
-	./autoinst_cmd/fnDbgdump.sh\
-	./autoinst_cmd/fnDbgparam.sh\
-	./autoinst_cmd/fnFind_command.sh\
-	./autoinst_cmd/fnFind_service.sh\
-	./autoinst_cmd/fnSystem_param.sh\
-	./autoinst_cmd/fnNetwork_param.sh\
-	./autoinst_cmd/fnFile_backup.sh\
-	./autoinst_cmd/fnInitialize.sh\
-	./autoinst_cmd/fnSetup_wireplumber.sh\
-	./autoinst_cmd/fnGet_conf_file.sh\
-	./autoinst_cmd/fnCmdline.sh\
+OBJS= \
+	./autoinst_cmd/fnGlobal_variables.sh \
+	./_common_sh/fnMsgout.sh \
+	./_common_sh/fnString.sh \
+	./_common_sh/fnStrmsg.sh \
+	./_common_sh/fnIPv6FullAddr.sh \
+	./_common_sh/fnIPv6RevAddr.sh \
+	./_common_sh/fnIPv4Netmask.sh \
+	./autoinst_cmd/fnDbgout.sh \
+	./autoinst_cmd/fnDbgdump.sh \
+	./autoinst_cmd/fnDbgparam.sh \
+	./autoinst_cmd/fnFind_command.sh \
+	./autoinst_cmd/fnFind_service.sh \
+	./autoinst_cmd/fnSystem_param.sh \
+	./autoinst_cmd/fnNetwork_param.sh \
+	./autoinst_cmd/fnFile_backup.sh \
+	./autoinst_cmd/fnInitialize.sh \
+	./autoinst_cmd/fnSetup_wireplumber.sh \
+	./autoinst_cmd/fnGet_conf_file.sh \
+	./autoinst_cmd/fnCmdline.sh \
 	./autoinst_cmd/skel_autoinst_cmd_early.sh
 
 $(TGET): $(SRCS) $(OBJS)
@@ -80,61 +81,61 @@ $(TGET): $(SRCS) $(OBJS)
 # --- autoinst_cmd_late.sh ----------------------------------------------------
 TGET=./autoinst_cmd/autoinst_cmd_late.sh
 SRCS=./autoinst_cmd/skel_autoinst_cmd_late.sh
-OBJS=\
-	./autoinst_cmd/fnGlobal_variables.sh\
-	./_common_sh/fnMsgout.sh\
-	./_common_sh/fnString.sh\
-	./_common_sh/fnStrmsg.sh\
-	./_common_sh/fnIPv6FullAddr.sh\
-	./_common_sh/fnIPv6RevAddr.sh\
-	./_common_sh/fnIPv4Netmask.sh\
-	./autoinst_cmd/fnDbgout.sh\
-	./autoinst_cmd/fnDbgdump.sh\
-	./autoinst_cmd/fnDbgparam.sh\
-	./autoinst_cmd/fnFind_command.sh\
-	./autoinst_cmd/fnFind_service.sh\
-	./autoinst_cmd/fnSystem_param.sh\
-	./autoinst_cmd/fnNetwork_param.sh\
-	./autoinst_cmd/fnFile_backup.sh\
-	./autoinst_cmd/fnInitialize.sh\
-	./autoinst_cmd/fnPackage_update.sh\
+OBJS= \
+	./autoinst_cmd/fnGlobal_variables.sh \
+	./_common_sh/fnMsgout.sh \
+	./_common_sh/fnString.sh \
+	./_common_sh/fnStrmsg.sh \
+	./_common_sh/fnIPv6FullAddr.sh \
+	./_common_sh/fnIPv6RevAddr.sh \
+	./_common_sh/fnIPv4Netmask.sh \
+	./autoinst_cmd/fnDbgout.sh \
+	./autoinst_cmd/fnDbgdump.sh \
+	./autoinst_cmd/fnDbgparam.sh \
+	./autoinst_cmd/fnFind_command.sh \
+	./autoinst_cmd/fnFind_service.sh \
+	./autoinst_cmd/fnSystem_param.sh \
+	./autoinst_cmd/fnNetwork_param.sh \
+	./autoinst_cmd/fnFile_backup.sh \
+	./autoinst_cmd/fnInitialize.sh \
+	./autoinst_cmd/fnPackage_update.sh \
 	./autoinst_cmd/fnPackage_install.sh \
-	./autoinst_cmd/fnMkdir_share.sh\
-	./autoinst_cmd/fnSetup_connman.sh\
-	./autoinst_cmd/fnSetup_netplan.sh\
-	./autoinst_cmd/fnSetup_netman.sh\
-	./autoinst_cmd/fnSetup_hostname.sh\
-	./autoinst_cmd/fnSetup_hosts.sh\
-	./autoinst_cmd/fnSetup_tcp_wrapper.sh\
-	./autoinst_cmd/fnSetup_firewalld.sh\
-	./autoinst_cmd/fnSetup_dnsmasq.sh\
-	./autoinst_cmd/fnSetup_resolv.sh\
-	./autoinst_cmd/fnSetup_clamav.sh\
-	./autoinst_cmd/fnSetup_apache.sh\
-	./autoinst_cmd/fnSetup_samba.sh\
-	./autoinst_cmd/fnSetup_timesyncd.sh\
-	./autoinst_cmd/fnSetup_chronyd.sh\
-	./autoinst_cmd/fnSetup_ssh.sh\
-	./autoinst_cmd/fnSetup_vmware.sh\
-	./autoinst_cmd/fnSetup_wireplumber.sh\
-	./autoinst_cmd/fnSetup_input_method.sh\
-	./autoinst_cmd/fnSetup_locale.sh\
-	./autoinst_cmd/fnSetup_desktop.sh\
-	./autoinst_cmd/fnSetup_skel_user.sh\
-	./autoinst_cmd/fnSetup_skel_im_fcitx5.sh\
-	./autoinst_cmd/fnSetup_skel_im_ibus.sh\
-	./autoinst_cmd/fnSetup_skel_im.sh\
-	./autoinst_cmd/fnSetup_skel_copy.sh\
-	./autoinst_cmd/fnSetup_dconf.sh\
-	./autoinst_cmd/fnSetup_sudo.sh\
-	./autoinst_cmd/fnSetup_blacklist.sh\
-	./autoinst_cmd/fnSetup_module_ipxe.sh\
-	./autoinst_cmd/fnSetup_apparmor.sh\
-	./autoinst_cmd/fnSetup_selinux.sh\
-	./autoinst_cmd/fnSetup_ipfilter.sh\
-	./autoinst_cmd/fnSetup_service.sh\
-	./autoinst_cmd/fnSetup_grub_menu.sh\
-	./autoinst_cmd/fnCmdline.sh\
+	./autoinst_cmd/fnMkdir_share.sh \
+	./autoinst_cmd/fnSetup_connman.sh \
+	./autoinst_cmd/fnSetup_netplan.sh \
+	./autoinst_cmd/fnSetup_netman.sh \
+	./autoinst_cmd/fnSetup_hostname.sh \
+	./autoinst_cmd/fnSetup_hosts.sh \
+	./autoinst_cmd/fnSetup_tcp_wrapper.sh \
+	./autoinst_cmd/fnSetup_firewalld.sh \
+	./autoinst_cmd/fnSetup_dnsmasq.sh \
+	./autoinst_cmd/fnSetup_resolv.sh \
+	./autoinst_cmd/fnSetup_clamav.sh \
+	./autoinst_cmd/fnSetup_apache.sh \
+	./autoinst_cmd/fnSetup_samba.sh \
+	./autoinst_cmd/fnSetup_timesyncd.sh \
+	./autoinst_cmd/fnSetup_chronyd.sh \
+	./autoinst_cmd/fnSetup_ssh.sh \
+	./autoinst_cmd/fnSetup_vmware.sh \
+	./autoinst_cmd/fnSetup_wireplumber.sh \
+	./autoinst_cmd/fnSetup_input_method.sh \
+	./autoinst_cmd/fnSetup_locale.sh \
+	./autoinst_cmd/fnSetup_desktop.sh \
+	./autoinst_cmd/fnSetup_skel_user.sh \
+	./autoinst_cmd/fnSetup_skel_im_fcitx5.sh \
+	./autoinst_cmd/fnSetup_skel_im_ibus.sh \
+	./autoinst_cmd/fnSetup_skel_im.sh \
+	./autoinst_cmd/fnSetup_skel_copy.sh \
+	./autoinst_cmd/fnSetup_dconf.sh \
+	./autoinst_cmd/fnSetup_sudo.sh \
+	./autoinst_cmd/fnSetup_blacklist.sh \
+	./autoinst_cmd/fnSetup_module_ipxe.sh \
+	./autoinst_cmd/fnSetup_apparmor.sh \
+	./autoinst_cmd/fnSetup_selinux.sh \
+	./autoinst_cmd/fnSetup_ipfilter.sh \
+	./autoinst_cmd/fnSetup_service.sh \
+	./autoinst_cmd/fnSetup_grub_menu.sh \
+	./autoinst_cmd/fnCmdline.sh \
 	./autoinst_cmd/skel_autoinst_cmd_late.sh
 
 $(TGET): $(SRCS) $(OBJS)
@@ -151,22 +152,22 @@ $(TGET): $(SRCS) $(OBJS)
 # --- autoinst_cmd_part.sh ----------------------------------------------------
 TGET=./autoinst_cmd/autoinst_cmd_part.sh
 SRCS=./autoinst_cmd/skel_autoinst_cmd_part.sh
-OBJS=\
-	./autoinst_cmd/fnGlobal_variables.sh\
-	./_common_sh/fnMsgout.sh\
-	./_common_sh/fnString.sh\
-	./_common_sh/fnStrmsg.sh\
-	./_common_sh/fnIPv6FullAddr.sh\
-	./_common_sh/fnIPv6RevAddr.sh\
-	./_common_sh/fnIPv4Netmask.sh\
-	./autoinst_cmd/fnDbgout.sh\
-	./autoinst_cmd/fnDbgparam.sh\
-	./autoinst_cmd/fnFind_command.sh\
-	./autoinst_cmd/fnSystem_param.sh\
-	./autoinst_cmd/fnNetwork_param.sh\
-	./autoinst_cmd/fnFile_backup.sh\
-	./autoinst_cmd/fnInitialize.sh\
-	./autoinst_cmd/fnCmdline.sh\
+OBJS= \
+	./autoinst_cmd/fnGlobal_variables.sh \
+	./_common_sh/fnMsgout.sh \
+	./_common_sh/fnString.sh \
+	./_common_sh/fnStrmsg.sh \
+	./_common_sh/fnIPv6FullAddr.sh \
+	./_common_sh/fnIPv6RevAddr.sh \
+	./_common_sh/fnIPv4Netmask.sh \
+	./autoinst_cmd/fnDbgout.sh \
+	./autoinst_cmd/fnDbgparam.sh \
+	./autoinst_cmd/fnFind_command.sh \
+	./autoinst_cmd/fnSystem_param.sh \
+	./autoinst_cmd/fnNetwork_param.sh \
+	./autoinst_cmd/fnFile_backup.sh \
+	./autoinst_cmd/fnInitialize.sh \
+	./autoinst_cmd/fnCmdline.sh \
 	./autoinst_cmd/skel_autoinst_cmd_part.sh
 
 $(TGET): $(SRCS) $(OBJS)
@@ -183,22 +184,22 @@ $(TGET): $(SRCS) $(OBJS)
 # --- autoinst_cmd_run.sh -----------------------------------------------------
 TGET=./autoinst_cmd/autoinst_cmd_run.sh
 SRCS=./autoinst_cmd/skel_autoinst_cmd_run.sh
-OBJS=\
-	./autoinst_cmd/fnGlobal_variables.sh\
-	./_common_sh/fnMsgout.sh\
-	./_common_sh/fnString.sh\
-	./_common_sh/fnStrmsg.sh\
-	./_common_sh/fnIPv6FullAddr.sh\
-	./_common_sh/fnIPv6RevAddr.sh\
-	./_common_sh/fnIPv4Netmask.sh\
-	./autoinst_cmd/fnDbgout.sh\
-	./autoinst_cmd/fnDbgparam.sh\
-	./autoinst_cmd/fnFind_command.sh\
-	./autoinst_cmd/fnSystem_param.sh\
-	./autoinst_cmd/fnNetwork_param.sh\
-	./autoinst_cmd/fnFile_backup.sh\
-	./autoinst_cmd/fnInitialize.sh\
-	./autoinst_cmd/fnCmdline.sh\
+OBJS= \
+	./autoinst_cmd/fnGlobal_variables.sh \
+	./_common_sh/fnMsgout.sh \
+	./_common_sh/fnString.sh \
+	./_common_sh/fnStrmsg.sh \
+	./_common_sh/fnIPv6FullAddr.sh \
+	./_common_sh/fnIPv6RevAddr.sh \
+	./_common_sh/fnIPv4Netmask.sh \
+	./autoinst_cmd/fnDbgout.sh \
+	./autoinst_cmd/fnDbgparam.sh \
+	./autoinst_cmd/fnFind_command.sh \
+	./autoinst_cmd/fnSystem_param.sh \
+	./autoinst_cmd/fnNetwork_param.sh \
+	./autoinst_cmd/fnFile_backup.sh \
+	./autoinst_cmd/fnInitialize.sh \
+	./autoinst_cmd/fnCmdline.sh \
 	./autoinst_cmd/skel_autoinst_cmd_run.sh
 
 $(TGET): $(SRCS) $(OBJS)
@@ -215,7 +216,7 @@ $(TGET): $(SRCS) $(OBJS)
 # --- test_server.sh ----------------------------------------------------------
 TGET=./custom_cmd/test_server.sh
 SRCS=./custom_cmd/skel_test_server.sh
-OBJS=\
+OBJS= \
 	./custom_cmd/fnComm_system_common.sh \
 	./custom_cmd/fnComm_global_variables.sh \
 	./custom_cmd/fnComm_global_common.sh \
@@ -268,7 +269,7 @@ $(TGET): $(SRCS) $(OBJS)
 # ---- mk_custom_iso.sh -------------------------------------------------------
 TGET=./custom_cmd/mk_custom_iso.sh
 SRCS=./custom_cmd/skel_mk_custom_iso.sh
-OBJS=\
+OBJS= \
 	./custom_cmd/fnComm_system_common.sh \
 	./custom_cmd/fnComm_global_variables.sh \
 	./custom_cmd/fnComm_global_common.sh \
@@ -341,6 +342,57 @@ OBJS=\
 	./custom_cmd/fnMake_help_mk_custom_iso.sh \
 	./custom_cmd/fnMake_main_mk_custom_iso.sh \
 	./custom_cmd/skel_mk_custom_iso.sh
+
+$(TGET): $(SRCS) $(OBJS)
+	@echo "start   : $@"
+	@echo "create  : $@"
+	@./mk_shell.sh --create $<
+	@echo "check   : $@"
+	@shellcheck -o all $@
+	@sudo chmod +x $@
+	@echo "complete: $@"
+
+# ---- mk_live_iso.sh ---------------------------------------------------------
+TGET=./custom_cmd/mk_live_iso.sh
+SRCS=./custom_cmd/skel_mk_live_iso.sh
+OBJS= \
+	./custom_cmd/fnComm_system_common.sh \
+	./custom_cmd/fnComm_global_variables.sh \
+	./custom_cmd/fnComm_global_common.sh \
+	./_common_bash/fnTrim.sh \
+	./_common_bash/fnBasename.sh \
+	./_common_bash/fnMsgout.sh \
+	./_common_bash/fnString.sh \
+	./_common_bash/fnStrmsg.sh \
+	./_common_bash/fnGetWebinfo.sh \
+	./_common_bash/fnGetFileinfo.sh \
+	./custom_cmd/fnComm_dbgout.sh \
+	./custom_cmd/fnComm_dbgparameters.sh \
+	./custom_cmd/fnComm_dbgparameters_all.sh \
+	./custom_cmd/fnComm_find_command.sh \
+	./custom_cmd/fnComm_download.sh \
+	./custom_cmd/fnComm_rsync.sh \
+	./custom_cmd/fnComm_trap.sh \
+	./custom_cmd/fnMake_init_mk_live_iso.sh \
+	./custom_cmd/fnComm_list_conf_Get.sh \
+	./custom_cmd/fnComm_list_mdia_Get.sh \
+	./custom_cmd/fnComm_list_mdia_Put.sh \
+	./custom_cmd/fnMake_mkosi_preconf.sh \
+	./custom_cmd/fnMake_print_list.sh \
+	./custom_cmd/fnMake_mkosi_build.sh \
+	./custom_cmd/fnMake_mkosi_boot_options.sh \
+	./custom_cmd/fnMake_mkosi_grub_conf.sh \
+	./custom_cmd/fnMake_mkosi_grub_theme.sh \
+	./custom_cmd/fnMake_mkosi_grub.sh \
+	./custom_cmd/fnMake_mkosi_ilnx_isolinux.sh \
+	./custom_cmd/fnMake_mkosi_ilnx_theme.sh \
+	./custom_cmd/fnMake_mkosi_ilnx.sh \
+	./custom_cmd/fnMake_mkosi_cdfs.sh \
+	./custom_cmd/fnComm_squashfs.sh \
+	./custom_cmd/fnComm_xorrisofs.sh \
+	./custom_cmd/fnMake_isofile.sh \
+	./custom_cmd/fnMake_help_mk_live_iso.sh \
+	./custom_cmd/fnMake_main_mk_live_iso.sh
 
 $(TGET): $(SRCS) $(OBJS)
 	@echo "start   : $@"

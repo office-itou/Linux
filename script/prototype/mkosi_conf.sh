@@ -4,8 +4,8 @@ set -eu
 
 declare -r    _DIRS_MKOS="/srv/user/share/conf/_mkosi"
 
-declare -a    __DIST=""
-declare -a    __CODE=""
+declare       __DIST=""
+declare       __CODE=""
 
 for __CONF in "${_DIRS_MKOS:?}"/_template/mkosi.*.conf
 do
