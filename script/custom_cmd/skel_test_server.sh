@@ -35,113 +35,113 @@
 # *** function section (common functions) *************************************
 
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMN}"/fnTrim.sh						# ltrim/rtrim/trim
+#	source "${_SHEL_COMN:?}"/fnTrim.sh						# ltrim/rtrim/trim
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMN}"/fnBasename.sh					# dirname/basename
+#	source "${_SHEL_COMN:?}"/fnBasename.sh					# dirname/basename
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnMsgout.sh						# message output
+	source "${_SHEL_COMN:?}"/fnMsgout.sh					# message output
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnString.sh						# string output
+	source "${_SHEL_COMN:?}"/fnString.sh					# string output
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnStrmsg.sh						# string output with message
+	source "${_SHEL_COMN:?}"/fnStrmsg.sh					# string output with message
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMN}"/fnTargetsys.sh					# target system state
+#	source "${_SHEL_COMN:?}"/fnTargetsys.sh					# target system state
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnIPv6FullAddr.sh				# IPv6 full address
+	source "${_SHEL_COMN:?}"/fnIPv6FullAddr.sh				# IPv6 full address
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnIPv6RevAddr.sh					# IPv6 reverse address
+	source "${_SHEL_COMN:?}"/fnIPv6RevAddr.sh				# IPv6 reverse address
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMN}"/fnIPv4Netmask.sh					# IPv4 netmask conversion
+	source "${_SHEL_COMN:?}"/fnIPv4Netmask.sh				# IPv4 netmask conversion
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMN}"/fnGetWebinfo.sh					# get web information data
+#	source "${_SHEL_COMN:?}"/fnGetWebinfo.sh				# get web information data
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMN}"/fnGetFileinfo.sh					# get file information data
+#	source "${_SHEL_COMN:?}"/fnGetFileinfo.sh				# get file information data
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMN}"/fnWget.sh						# wget / curl
+#	source "${_SHEL_COMN:?}"/fnWget.sh						# wget / curl
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnComm_dbgout.sh					# message output (debug out)
+	source "${_SHEL_COMD:?}"/fnComm_dbgout.sh				# message output (debug out)
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnComm_dbgdump.sh				# dump output (debug out)
+#	source "${_SHEL_COMD:?}"/fnComm_dbgdump.sh				# dump output (debug out)
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnComm_dbgparam.sh				# parameter debug output
+#	source "${_SHEL_COMD:?}"/fnComm_dbgparam.sh				# parameter debug output
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnComm_dbgparameters.sh			# print out of internal variables
+	source "${_SHEL_COMD:?}"/fnComm_dbgparameters.sh		# print out of internal variables
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnComm_dbgparameters_all.sh		# Print all global variables (_[A..Z]*)
+	source "${_SHEL_COMD:?}"/fnComm_dbgparameters_all.sh	# Print all global variables (_[A..Z]*)
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnComm_find_command.sh			# find command
+	source "${_SHEL_COMD:?}"/fnComm_find_command.sh			# find command
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnComm_find_service.sh			# find service
+	source "${_SHEL_COMD:?}"/fnComm_find_service.sh			# find service
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnComm_system_param.sh			# get system parameter
+	source "${_SHEL_COMD:?}"/fnComm_system_param.sh			# get system parameter
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnComm_network_param.sh			# get network parameter
+	source "${_SHEL_COMD:?}"/fnComm_network_param.sh		# get network parameter
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnComm_file_backup.sh			# file backup
+#	source "${_SHEL_COMD:?}"/fnComm_file_backup.sh			# file backup
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnComm_download.sh				# wget / curl file download
+#	source "${_SHEL_COMD:?}"/fnComm_download.sh				# wget / curl file download
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnComm_rsync.sh					# rsync
+#	source "${_SHEL_COMD:?}"/fnComm_rsync.sh				# rsync
 
 # *** function section (subroutine functions) *********************************
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnComm_trap.sh					# trap
+	source "${_SHEL_COMD:?}"/fnComm_trap.sh					# trap
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_init_test_server.sh		# initialize
+	source "${_SHEL_COMD:?}"/fnTest_init_test_server.sh		# initialize
 
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnComm_list_conf_Get.sh			# get auto-installation configuration file
+#	source "${_SHEL_COMD:?}"/fnComm_list_conf_Get.sh		# get auto-installation configuration file
 
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMD}"/fnComm_list_mdia_Get.sh			# get media information data
+#	source "${_SHEL_COMD:?}"/fnComm_list_mdia_Get.sh		# get media information data
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_cmdline.sh				# test cmdline
+	source "${_SHEL_COMD:?}"/fnTest_cmdline.sh				# test cmdline
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_param.sh					# test parameter
+	source "${_SHEL_COMD:?}"/fnTest_param.sh				# test parameter
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_service.sh				# test service
+	source "${_SHEL_COMD:?}"/fnTest_service.sh				# test service
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_apparmor.sh				# test apparmor
+	source "${_SHEL_COMD:?}"/fnTest_apparmor.sh				# test apparmor
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_selinux.sh				# test selinux
+	source "${_SHEL_COMD:?}"/fnTest_selinux.sh				# test selinux
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_vmware.sh					# test vmware
+	source "${_SHEL_COMD:?}"/fnTest_vmware.sh				# test vmware
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_netman.sh					# test network manager
+	source "${_SHEL_COMD:?}"/fnTest_netman.sh				# test network manager
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_port_dns.sh				# test port dns
+	source "${_SHEL_COMD:?}"/fnTest_port_dns.sh				# test port dns
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_port_smb.sh				# test port smb
+	source "${_SHEL_COMD:?}"/fnTest_port_smb.sh				# test port smb
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_nslookup.sh				# test nslookup
+	source "${_SHEL_COMD:?}"/fnTest_nslookup.sh				# test nslookup
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_dig.sh					# test dig
+	source "${_SHEL_COMD:?}"/fnTest_dig.sh					# test dig
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_getent.sh					# test getent
+	source "${_SHEL_COMD:?}"/fnTest_getent.sh				# test getent
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_ping.sh					# test ping
+	source "${_SHEL_COMD:?}"/fnTest_ping.sh					# test ping
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_timedatectl.sh			# test timedatectl
+	source "${_SHEL_COMD:?}"/fnTest_timedatectl.sh			# test timedatectl
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_chronyc.sh				# test chronyc
+	source "${_SHEL_COMD:?}"/fnTest_chronyc.sh				# test chronyc
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_nmblookup.sh				# test nmblookup
+	source "${_SHEL_COMD:?}"/fnTest_nmblookup.sh			# test nmblookup
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_smbclient.sh				# test smbclient
+	source "${_SHEL_COMD:?}"/fnTest_smbclient.sh			# test smbclient
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_pdbedit.sh				# test pdbedit
+	source "${_SHEL_COMD:?}"/fnTest_pdbedit.sh				# test pdbedit
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_httpd.sh					# test httpd
+	source "${_SHEL_COMD:?}"/fnTest_httpd.sh				# test httpd
 
 # *** main section ************************************************************
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_help_test_server.sh		# help
+	source "${_SHEL_COMD:?}"/fnTest_help_test_server.sh		# help
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD}"/fnTest_main_test_server.sh		# main routine
+	source "${_SHEL_COMD:?}"/fnTest_main_test_server.sh		# main routine
 
 	# --- help / debug --------------------------------------------------------
 	[[ -z "${_PROG_PARM[*]:-}" ]] && fnHelp

@@ -359,6 +359,7 @@ OBJS= \
 	./custom_cmd/fnComm_system_common.sh \
 	./custom_cmd/fnComm_global_variables.sh \
 	./custom_cmd/fnComm_global_common.sh \
+	./custom_cmd/fnMake_live_global_var.sh \
 	./_common_bash/fnTrim.sh \
 	./_common_bash/fnBasename.sh \
 	./_common_bash/fnMsgout.sh \
@@ -370,29 +371,34 @@ OBJS= \
 	./custom_cmd/fnComm_dbgparameters.sh \
 	./custom_cmd/fnComm_dbgparameters_all.sh \
 	./custom_cmd/fnComm_find_command.sh \
-	./custom_cmd/fnComm_download.sh \
-	./custom_cmd/fnComm_rsync.sh \
 	./custom_cmd/fnComm_trap.sh \
 	./custom_cmd/fnMake_init_mk_live_iso.sh \
 	./custom_cmd/fnComm_list_conf_Get.sh \
 	./custom_cmd/fnComm_list_mdia_Get.sh \
-	./custom_cmd/fnComm_list_mdia_Put.sh \
-	./custom_cmd/fnMake_mkosi_preconf.sh \
-	./custom_cmd/fnMake_print_list.sh \
-	./custom_cmd/fnMake_mkosi_build.sh \
-	./custom_cmd/fnMake_mkosi_boot_options.sh \
-	./custom_cmd/fnMake_mkosi_grub_conf.sh \
-	./custom_cmd/fnMake_mkosi_grub_theme.sh \
-	./custom_cmd/fnMake_mkosi_grub.sh \
-	./custom_cmd/fnMake_mkosi_ilnx_isolinux.sh \
-	./custom_cmd/fnMake_mkosi_ilnx_theme.sh \
-	./custom_cmd/fnMake_mkosi_ilnx.sh \
-	./custom_cmd/fnMake_mkosi_cdfs.sh \
-	./custom_cmd/fnComm_squashfs.sh \
 	./custom_cmd/fnComm_xorrisofs.sh \
-	./custom_cmd/fnMake_isofile.sh \
+	./custom_cmd/fnComm_find_codename.sh \
+	./custom_cmd/fnComm_find_distribution.sh \
+	./custom_cmd/fnComm_find_kernel.sh \
+	./custom_cmd/fnComm_mkosi.sh \
+	./custom_cmd/fnComm_squashfs.sh \
+	./custom_cmd/fnComm_grub_module.sh \
+	./custom_cmd/fnComm_grub_conf.sh \
+	./custom_cmd/fnComm_grub_theme.sh \
+	./custom_cmd/fnComm_ilnx_conf.sh \
+	./custom_cmd/fnComm_ilnx_theme.sh \
+	./custom_cmd/fnMake_live_preconf.sh \
+	./custom_cmd/fnMake_live_mkosi.sh \
+	./custom_cmd/fnMake_live_vmimg_p1.sh \
+	./custom_cmd/fnMake_live_vmimg_p2.sh \
+	./custom_cmd/fnMake_live_vmimg.sh \
+	./custom_cmd/fnMake_live_cdimg_cdfs.sh \
+	./custom_cmd/fnMake_live_cdimg_grub.sh \
+	./custom_cmd/fnMake_live_cdimg_ilnx.sh \
+	./custom_cmd/fnMake_live_cdimg.sh \
+	./custom_cmd/fnMake_live_build.sh \
 	./custom_cmd/fnMake_help_mk_live_iso.sh \
-	./custom_cmd/fnMake_main_mk_live_iso.sh
+	./custom_cmd/fnMake_main_mk_live_iso.sh \
+	./custom_cmd/skel_mk_live_iso.sh
 
 $(TGET): $(SRCS) $(OBJS)
 	@echo "start   : $@"

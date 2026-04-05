@@ -4,6 +4,7 @@
 # descript: grub theme install
 #   input :     $1     : target path
 #   input :     $2     : menu title
+#   input :     $3     : splash.png
 #   output:   stdout   : message
 #   return:            : unused
 #   g-var : _DIRS_TGET : read
@@ -14,14 +15,15 @@ function fnGrub_theme() {
 
 	declare -r    __TGET_PATH="${1:?}"	# target path
 	declare -r    __MENU_TITL="${2:?}"	# menu title
+	declare -r    __TGET_SPLS="${3:-}"	# splash.png
 
 	# --- create grub.cfg -----------------------------------------------------
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__TGET_PATH}"
-		desktop-image: ":_DTPIMG_:"
+		${__TGET_SPLS:+"desktop-image: \"${__TGET_SPLS}\""}
 		desktop-color: "#000000"
 		title-color: "#ffffff"
 		title-font: "Unifont Regular 16"
-		${__TITL:+"title-text: \"Boot Menu: ${__TITL}"\"}
+		${__MENU_TITL:+"title-text: \"Boot Menu: ${__MENU_TITL}\""}
 		message-font: "Unifont Regular 16"
 		terminal-font: "Unifont Regular 16"
 		terminal-border: "0"

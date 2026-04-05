@@ -86,7 +86,7 @@ function fnFind_codename() {
 	)
 
 	__DIST="${__TGET_DIST,,}"
-	__VERS="${__TGET_DIST,,}"
+	__VERS="${__TGET_VERS,,}"
 
 	case "${__DIST}-${__VERS}" in
 #		debian-11.0         | \

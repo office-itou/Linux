@@ -74,9 +74,12 @@
 	chown "${_SUDO_USER:?}": "${_DIRS_WTOP}"
 
 	# --- temporary directory -------------------------------------------------
-	declare       _DIRS_TEMP="${_DIRS_WTOP}"
-	              _DIRS_TEMP="$(mktemp -qd "${_DIRS_TEMP}/${_PROG_NAME}.XXXXXX")"
+	declare       _DIRS_TEMP=""			# local
+	              _DIRS_TEMP="$(mktemp -qd "${_DIRS_WTOP}/${_PROG_NAME}.XXXXXX")"
 	readonly      _DIRS_TEMP
+	declare       _DIRS_RTMP=""			# remote
+#	              _DIRS_RTMP="$(mktemp -qd "${_DIRS_PVAT:?}/wrk/mkosi.XXXXXX")"
+#	readonly      _DIRS_RTMP
 
 	# --- trap list -----------------------------------------------------------
 	trap fnTrap EXIT
@@ -221,7 +224,8 @@
 	declare       _PATH_LATE=":_DIRS_SHEL_:/:_FILE_LATE_:"	# "              to run late
 	declare       _PATH_PART=":_DIRS_SHEL_:/:_FILE_PART_:"	# "              to run after partition
 	declare       _PATH_RUNS=":_DIRS_SHEL_:/:_FILE_RUNS_:"	# "              to run preseed/run
-# --- tftp menu ---------------------------------------------------------------
+
+	# --- tftp menu -----------------------------------------------------------
 	declare       _FILE_IPXE="autoexec.ipxe"				# ipxe
 	declare       _FILE_GRUB="boot/grub/grub.cfg"			# grub
 	declare       _FILE_SLNX="menu-bios/syslinux.cfg"		# syslinux (bios)

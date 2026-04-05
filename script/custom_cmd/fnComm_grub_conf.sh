@@ -26,7 +26,7 @@ function fnGrub_conf() {
 	# --- create grub.cfg -----------------------------------------------------
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__TGET_PATH}"
 		set default="0"
-		set timeout="${_MENU_TOUT:-5}"
+		set timeout="${__MENU_TOUT:-5}"
 
 		if [ "x\${font}" = "x" ] ; then
 		  if [ "x\${feature_default_font_path}" = "xy" ] ; then
@@ -40,7 +40,7 @@ function fnGrub_conf() {
 		if loadfont "\$font" ; then
 		# set lang="ja_JP"
 		# export lang
-		  set gfxmode=${_MENU_RESO:+"${_MENU_RESO}${_MENU_DPTH:+"x${_MENU_DPTH}"},"}auto
+		  set gfxmode=${__MENU_RESO:+"${__MENU_RESO}${__MENU_RESO:+"x${__MENU_DPTH}"},"}auto
 		  set gfxpayload="keep"
 		  export gfxmode
 		  export gfxpayload

@@ -8,7 +8,7 @@
 #   g-var :  FUNCNAME  : read
 #   g-var : _PROG_NAME : read
 # shellcheck disable=SC2148,SC2317,SC2329
-function fnMake_mkosi_preconf() {
+function fnMake_live_preconf() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"

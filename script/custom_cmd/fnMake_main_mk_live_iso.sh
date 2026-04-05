@@ -30,7 +30,8 @@ function fnMain() {
 		__OPTN=("${@:-}")
 		case "${__PROC:-}" in
 			-h|--help) fnHelp;;
-			-m|--make) fnMk_mkosi_build "__RSLT" "${__OPTN[@]:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
+			-c|--conf) fnMake_live_preconf;;
+			-m|--make) fnMake_live_build "__RSLT" "${__OPTN[@]:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
 			-P|--DBGP) fnDbgparameters_all; break;;
 			-T|--TREE) tree --charset C -x -a --filesfirst "${_DIRS_TOPS:-}"; break;;
 			*        ) ;;

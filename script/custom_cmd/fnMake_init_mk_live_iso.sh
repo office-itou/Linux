@@ -110,6 +110,12 @@ function fnInitialize() {
 	# --- media information data ----------------------------------------------
 	fnList_mdia_Get "${_PATH_MDIA}"		# get media information data
 
+	# --- create temporary directory ------------------------------------------
+#	declare       _DIRS_RTMP=""			# remote
+	              _DIRS_RTMP="$(mktemp -qd "${_DIRS_PVAT:?}/wrk/mkosi.XXXXXX")"
+	readonly      _DIRS_RTMP
+	              _LIST_RMOV+=("${_DIRS_RTMP:?}")			# temporary
+
 	unset __PATH __DIRS __WORK
 
 	# --- complete ------------------------------------------------------------
