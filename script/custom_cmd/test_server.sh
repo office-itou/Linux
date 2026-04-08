@@ -1,5 +1,4 @@
 #!/bin/bash
-
 ###############################################################################
 #
 #	post-installation test shell
@@ -17,9 +16,7 @@
 #	            : shellcheck -o all -e SC2154 *.sh
 #
 ###############################################################################
-
 # *** global section **********************************************************
-
 	# --- include -------------------------------------------------------------
 	export LANG=C
 	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
@@ -229,11 +226,11 @@
 	declare       _FILE_IPXE="autoexec.ipxe"				# ipxe
 	declare       _FILE_GRUB="boot/grub/grub.cfg"			# grub
 	declare       _FILE_SLNX="menu-bios/syslinux.cfg"		# syslinux (bios)
-	declare       _FILE_UEFI="menu-efi64/syslinux.cfg"		# syslinux (efi64)
+	declare       _FILE_EF64="menu-efi64/syslinux.cfg"		# syslinux (efi64)
 	declare       _PATH_IPXE=":_DIRS_TFTP_:/:_FILE_IPXE_:"	# ipxe
 	declare       _PATH_GRUB=":_DIRS_TFTP_:/:_FILE_GRUB_:"	# grub
 	declare       _PATH_SLNX=":_DIRS_TFTP_:/:_FILE_SLNX_:"	# syslinux (bios)
-	declare       _PATH_UEFI=":_DIRS_TFTP_:/:_FILE_UEFI_:"	# syslinux (efi64)
+	declare       _PATH_EF64=":_DIRS_TFTP_:/:_FILE_EF64_:"	# syslinux (efi64)
 
 	# --- tftp / web server network parameter ---------------------------------
 	declare       _SRVR_HTTP="http"							# server connection protocol (http or https)
@@ -300,7 +297,6 @@
 	declare -r -a _OPTN_RSYC=("--recursive" "--links" "--perms" "--times" "--group" "--owner" "--devices" "--specials" "--hard-links" "--acls" "--xattrs" "--human-readable" "--delete")
 
 # *** function section (common functions) *************************************
-
 # -----------------------------------------------------------------------------
 # descript: message output
 #   input :     $1     : title (program name, etc)
@@ -689,7 +685,6 @@ function fnNetwork_param() {
 }
 
 # *** function section (subroutine functions) *********************************
-
 # -----------------------------------------------------------------------------
 # descript: trap
 #   input :            : unused
@@ -725,9 +720,14 @@ function fnTrap() {
 			umount --quiet --lazy  --recursive "${__PATH}"
 		fi
 		case "${__PATH}" in
-			"${_DIRS_TEMP:?}")
+			"${_DIRS_TEMP:?}" | \
+			"${_DIRS_RTMP:?}"  )
 				fnMsgout "${_PROG_NAME:-}" "remove" "${__PATH}"
-				rm -rf "${__PATH:?}"
+				rm -rf "${__PATH:?}" || true
+				;;
+			/dev/*)
+				fnMsgout "${_PROG_NAME:-}" "detach" "${__PATH}"
+				losetup --detach "${__PATH}" || true
 				;;
 			*) ;;
 		esac
@@ -821,8 +821,6 @@ function fnInitialize() {
 	fnDbgparameters
 #	unset __FUNC_NAME
 }
-
-
 
 # -----------------------------------------------------------------------------
 # descript: test cmdline
@@ -1726,7 +1724,6 @@ function fnTest_httpd() {
 }
 
 # *** main section ************************************************************
-
 # -----------------------------------------------------------------------------
 # descript: help
 #   input :            : unused
@@ -1850,36 +1847,28 @@ function fnMain() {
 		set -f -- "${__OPTN[@]}"
 		set +f
 	done
-
 	# --- debug output redirection --------------------------------------------
 	if set -o | grep "^xtrace\s*on$"; then
 		exec 2>&1
 	fi
-
 	# --- debug output --------------------------------------------------------
 	if [[ -n "${_DBGS_FLAG:-}" ]]; then
 		fnDbgout "command line" \
 			"debug,_COMD_LINE=[${_COMD_LINE:-}]"
 	fi
-
 	# --- start ---------------------------------------------------------------
 	declare -i    __time_start=0
 	declare -i    __time_end=0
 	declare -i    __time_elapsed=0
-
 	__time_start=$(date +%s)
 	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
-
 	# --- main processing -----------------------------------------------------
 	fnMain
-
 	# --- complete ------------------------------------------------------------
 	__time_end=$(date +%s)
 	__time_elapsed=$((__time_end - __time_start))
 	fnMsgout "${_PROG_NAME:-}" "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"
 	fnMsgout "${_PROG_NAME:-}" "elapsed" "$(printf "%dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60)) || true)"
 	unset __time_start __time_end __time_elapsed
-
 	exit 0
-
 # ### eof #####################################################################

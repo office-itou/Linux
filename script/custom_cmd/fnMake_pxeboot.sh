@@ -66,7 +66,7 @@ function fnMk_pxeboot() {
 	fnMk_pxeboot_clear_menu "${_PATH_IPXE:?}"				# ipxe
 	fnMk_pxeboot_clear_menu "${_PATH_GRUB:?}"				# grub
 	fnMk_pxeboot_clear_menu "${_PATH_SLNX:?}"				# syslinux (bios)
-	fnMk_pxeboot_clear_menu "${_PATH_UEFI:?}"				# syslinux (efi64)
+	fnMk_pxeboot_clear_menu "${_PATH_EF64:?}"				# syslinux (efi64)
 	for __TYPE in "${_LIST_TYPE[@]}"
 	do
 		[[ -z "${__PTRN["${__TYPE:-}"]:-}" ]] && continue
@@ -109,7 +109,7 @@ function fnMk_pxeboot() {
 			fnMk_pxeboot_ipxe "${_PATH_IPXE:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# ipxe
 			fnMk_pxeboot_grub "${_PATH_GRUB:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# grub
 			fnMk_pxeboot_slnx "${_PATH_SLNX:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# syslinux (bios)
-			fnMk_pxeboot_slnx "${_PATH_UEFI:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# syslinux (efi64)
+			fnMk_pxeboot_slnx "${_PATH_EF64:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# syslinux (efi64)
 			# --- tab ---------------------------------------------------------
 			case "${__MDIA[$((_OSET_MDIA+1))]}" in
 				m)						# (menu)

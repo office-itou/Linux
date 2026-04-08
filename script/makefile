@@ -274,7 +274,9 @@ OBJS= \
 	./custom_cmd/fnComm_global_variables.sh \
 	./custom_cmd/fnComm_global_common.sh \
 	./_common_bash/fnTrim.sh \
+	./_common_bash/fnDirname.sh \
 	./_common_bash/fnBasename.sh \
+	./_common_bash/fnFilename.sh \
 	./_common_bash/fnMsgout.sh \
 	./_common_bash/fnString.sh \
 	./_common_bash/fnStrmsg.sh \
@@ -361,7 +363,9 @@ OBJS= \
 	./custom_cmd/fnComm_global_common.sh \
 	./custom_cmd/fnMake_live_global_var.sh \
 	./_common_bash/fnTrim.sh \
+	./_common_bash/fnDirname.sh \
 	./_common_bash/fnBasename.sh \
+	./_common_bash/fnFilename.sh \
 	./_common_bash/fnMsgout.sh \
 	./_common_bash/fnString.sh \
 	./_common_bash/fnStrmsg.sh \
@@ -380,6 +384,7 @@ OBJS= \
 	./custom_cmd/fnComm_find_distribution.sh \
 	./custom_cmd/fnComm_find_kernel.sh \
 	./custom_cmd/fnComm_mkosi.sh \
+	./custom_cmd/fnComm_qemu.sh \
 	./custom_cmd/fnComm_squashfs.sh \
 	./custom_cmd/fnComm_grub_module.sh \
 	./custom_cmd/fnComm_grub_conf.sh \

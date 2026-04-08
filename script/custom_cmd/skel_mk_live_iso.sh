@@ -39,7 +39,11 @@
 	# shellcheck source=/dev/null
 #	source "${_SHEL_COMN:?}"/fnTrim.sh						# ltrim/rtrim/trim
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMN:?}"/fnBasename.sh					# dirname/basename
+	source "${_SHEL_COMN:?}"/fnDirname.sh					# dirname
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMN:?}"/fnBasename.sh					# basename
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMN:?}"/fnFilename.sh					# filename
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMN:?}"/fnMsgout.sh					# message output
 	# shellcheck source=/dev/null
@@ -228,6 +232,9 @@
 	source "${_SHEL_COMD:?}"/fnComm_mkosi.sh				# make mkosi files
 
 	# shellcheck source=/dev/null
+	source "${_SHEL_COMD:?}"/fnComm_qemu.sh					# execute qemu
+
+	# shellcheck source=/dev/null
 	source "${_SHEL_COMD:?}"/fnComm_squashfs.sh				# make squashfs file
 
 	# shellcheck source=/dev/null
@@ -253,6 +260,9 @@
 	source "${_SHEL_COMD:?}"/fnMake_live_vmimg_p2.sh		# make live vm-image partition2
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD:?}"/fnMake_live_vmimg.sh			# make live vm-image
+
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD:?}"/fnMake_live_qemu.sh			# make live vm-image on qemu
 
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD:?}"/fnMake_live_cdimg_cdfs.sh		# make live cd-image (create cdfs)

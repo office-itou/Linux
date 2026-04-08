@@ -1,5 +1,4 @@
 #!/bin/sh
-
 ###############################################################################
 #
 #	autoinstall (part) shell script
@@ -17,13 +16,10 @@
 #	            : shellcheck -o all -e SC2154 *.sh
 #
 ###############################################################################
-
 # *** global section **********************************************************
-
 	export LANG=C
 #	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
 	trap 'exit 1' 1 2 3 15
-
 #	set -n								# Check for syntax errors
 #	set -x								# Show command and argument expansion
 	set -o ignoreeof					# Do not exit with Ctrl+D
@@ -31,7 +27,6 @@
 	set -e								# End with status other than 0
 	set -u								# End with undefined variable reference
 #	set -o pipefail						# End with in pipe error
-
 	# --- debug parameter -----------------------------------------------------
 	_DBGS_FLAG=""						# debug flag (empty: normal, else: debug)
 	_DBGS_PARM="true"					# debug flag (empty: normal, else: debug out parameter)
@@ -40,14 +35,12 @@
 		[ -n "${debug:-}" ] && set -x
 		export -p
 	fi
-
 	# --- working directory ---------------------------------------------------
 	readonly _PROG_PATH="$0"
 	readonly _PROG_PARM="${*:-}"
 	readonly _PROG_DIRS="${_PROG_PATH%/*}"
 	readonly _PROG_NAME="${_PROG_PATH##*/}"
 #	readonly _PROG_PROC="${_PROG_NAME}.$$"
-
 	# --- command line parameter ----------------------------------------------
 										# command line parameter
 	_COMD_LINE="$(cat /proc/cmdline || true)"
@@ -167,7 +160,6 @@
 #	readonly _FILE_AGMA="agama_opensuse.json"	# for opensuse
 
 # *** function section (common functions) *************************************
-
 # -----------------------------------------------------------------------------
 # descript: message output
 #   input :     $1     : title (program name, etc)
@@ -786,7 +778,6 @@ fnFile_backup() {
 }
 
 # *** function section (subroutine functions) *********************************
-
 # -----------------------------------------------------------------------------
 # descript: initialize
 #   input :            : unused
@@ -922,7 +913,6 @@ fnInitialize() {
 }
 
 # *** main section ************************************************************
-
 # -----------------------------------------------------------------------------
 # descript: main routine
 #   input :            : unused
@@ -932,11 +922,9 @@ fnInitialize() {
 fnMain() {
 	_FUNC_NAME="fnMain"
 	fnMsgout "${_PROG_NAME:-}" "start" "[${_FUNC_NAME}]"
-
 	# --- initial setup -------------------------------------------------------
 	fnInitialize						# initialize
 	fnDbgparam							# parameter debug output
-
 	# --- main processing -----------------------------------------------------
 	if [ ! -e /run/systemd/resolve/stub-resolv.conf ]; then
 		if [ ! -L /etc/resolv.conf ]; then
@@ -945,21 +933,17 @@ fnMain() {
 			cp -v /etc/resolv.conf /run/systemd/resolve/stub-resolv.conf
 		fi
 	fi
-
 	# --- debug output --------------------------------------------------------
 	if [ -n "${_DBGS_FLAG:-}" ]; then
 		tree --charset C -n --filesfirst "${_DIRS_BACK:-}"
 	fi
-
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${_FUNC_NAME}]"
 	unset _FUNC_NAME
 }
-
 	# --- start ---------------------------------------------------------------
 	__time_start=$(date +%s)
 	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
-
 	# --- boot parameter selection --------------------------------------------
 	for __LINE in ${_COMD_LINE:-} ${_PROG_PARM:-}
 	do
@@ -1031,25 +1015,19 @@ fnMain() {
 	if set -o | grep "^xtrace\s*on$"; then
 		exec 2>&1
 	fi
-
 	# --- debug output --------------------------------------------------------
 	if [ -n "${_DBGS_FLAG:-}" ]; then
 		fnDbgout "command line" \
 			"debug,_COMD_LINE=[${_COMD_LINE:-}]"
 	fi
-
 	# --- main processing -----------------------------------------------------
 	fnMain
-
 	# --- complete ------------------------------------------------------------
 	__time_end=$(date +%s)
 	__time_elapsed=$((__time_end - __time_start))
 	fnMsgout "${_PROG_NAME:-}" "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"
 	fnMsgout "${_PROG_NAME:-}" "elapsed" "$(printf "%dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60)) || true)"
 	unset __time_start __time_end __time_elapsed
-
 	mkdir -p "${_PROG_PATH:?}.success"
-
 	exit 0
-
 # ### eof #####################################################################

@@ -210,6 +210,7 @@ function funcCreate() {
 			__WORK="${__LINE#"${__LINE%%[!"${IFS}"]*}"}"	# ltrim
 			__WORK="${__WORK%"${__WORK##*[!"${IFS}"]}"}"	# rtrim
 			case "${__WORK:-}" in
+				"") continue;;
 				"set"[${IFS}]*"#"[${IFS}]*"debug:"*) continue;;
 				"#"[${IFS}]*"shellcheck"[${IFS}]*"source="* ) continue;;
 				"#"[${IFS}]*"shellcheck"[${IFS}]*"disable="*) continue;;

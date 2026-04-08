@@ -70,9 +70,9 @@ _EOT_
 	mkdir -p "${__DEST%/*}"
 	cp --preserve=timestamps "${__SRCS:?}" "${__DEST:?}"
 	# --- create grub.cfg -----------------------------------------------------
-	__PATH="${__OUTD}/grub.cfg"
-	__MENU="${__OUTD}/menu.cfg"
-	__THME="${__OUTD}/theme.cfg"
+	__PATH="${__OUTD}/${_FILE_GCFG:?}"
+	__MENU="${__OUTD}/${_FILE_MENU:?}"
+	__THME="${__OUTD}/${_FILE_THME:?}"
 	__TITL="Live system"
 	__SECU=""
 	[[ -e "${__TGET_RTMP:?}"/usr/bin/aa-enabled  ]] && __SECU="security=apparmor apparmor=1"

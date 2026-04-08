@@ -24,11 +24,11 @@
 	declare       _FILE_IPXE="autoexec.ipxe"				# ipxe
 	declare       _FILE_GRUB="boot/grub/grub.cfg"			# grub
 	declare       _FILE_SLNX="menu-bios/syslinux.cfg"		# syslinux (bios)
-	declare       _FILE_UEFI="menu-efi64/syslinux.cfg"		# syslinux (efi64)
+	declare       _FILE_EF64="menu-efi64/syslinux.cfg"		# syslinux (efi64)
 	declare       _PATH_IPXE=":_DIRS_TFTP_:/:_FILE_IPXE_:"	# ipxe
 	declare       _PATH_GRUB=":_DIRS_TFTP_:/:_FILE_GRUB_:"	# grub
 	declare       _PATH_SLNX=":_DIRS_TFTP_:/:_FILE_SLNX_:"	# syslinux (bios)
-	declare       _PATH_UEFI=":_DIRS_TFTP_:/:_FILE_UEFI_:"	# syslinux (efi64)
+	declare       _PATH_EF64=":_DIRS_TFTP_:/:_FILE_EF64_:"	# syslinux (efi64)
 
 	# --- tftp / web server network parameter ---------------------------------
 	declare       _SRVR_HTTP="http"							# server connection protocol (http or https)

@@ -37,7 +37,11 @@
 	# shellcheck source=/dev/null
 #	source "${_SHEL_COMN:?}"/fnTrim.sh						# ltrim/rtrim/trim
 	# shellcheck source=/dev/null
-#	source "${_SHEL_COMN:?}"/fnBasename.sh					# dirname/basename
+#	source "${_SHEL_COMN:?}"/fnDirname.sh					# dirname
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMN:?}"/fnBasename.sh					# basename
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMN:?}"/fnFilename.sh					# filename
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMN:?}"/fnMsgout.sh					# message output
 	# shellcheck source=/dev/null

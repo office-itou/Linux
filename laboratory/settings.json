@@ -16,7 +16,15 @@
 	"editor.acceptSuggestionOnCommitCharacter": false,
 	"editor.fontFamily": "'BIZ UDゴシック', Consolas, 'Courier New', monospace",
 	"workbench.colorCustomizations": {
-		"editorWhitespace.foreground": "#ffcc00" // タブ文字を含む空白文字の表示色（明るい色にすると目立つ）
+		"editorCursor.foreground": "#aaaaaa",
+		"editor.lineHighlightBackground": "#5555aa",
+		"editor.wordHighlightBackground": "#0055aa",
+		"editorWhitespace.foreground": "#ccaa00", // タブ文字を含む空白文字の表示色（明るい色にすると目立つ）
+		"editor.selectionBackground": "#55aaff",
+		"editor.selectionHighlightBackground": "#5555aa",
+		"editor.findMatchBorder": "#aaaaaa",
+		"editor.findMatchBackground": "#ffaa55",
+		"editor.findMatchHighlightBackground": "#aa5555"
 	},
 	"editor.tokenColorCustomizations": {
 		"textMateRules": [

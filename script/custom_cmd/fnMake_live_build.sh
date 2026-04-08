@@ -16,7 +16,7 @@
 #   g-var : _MKOS_ARCH : read
 #   g-var : _DIRS_MKOS : read
 #   g-var : _DIRS_TEMP : read
-#   g-var : _DIRS_RTMP : read
+#   g-var : _DIRS_RTFS : read
 function fnMake_live_build() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
@@ -42,7 +42,7 @@ function fnMake_live_build() {
 	declare       __HOST=""				# --hostname=
 #	declare -a    __COMD=()				# command
 	declare       __CODE=""				# code name
-	declare       __ARCH=""				# architecture
+#	declare       __ARCH=""				# architecture
 	declare       __VLID=""				# volume id
 	declare       __SUBD=""				# sub directory
 	declare -r    __TEMP="${_DIRS_TEMP:?}"	# local
@@ -50,27 +50,30 @@ function fnMake_live_build() {
 	declare -a    __TGET=()				# target list
 	declare       __WORK=""				# work
 	declare -a    __ARRY=()				# work
+	declare -i    I=0					# work
 	# --- get options ---------------------------------------------------------
 	set -f -- "${@:-}"
 	set +f
 	__TGET=()
 	while [[ -n "${1:-}" ]]
 	do
-		__WORK="${1%%:*}"
-		__WORK="${__WORK,,}"
-		case "${__WORK:-}" in
+		IFS=':' read -r -a __ARRY < <(echo "${1:-}")
+		__OPRT="${__ARRY[0]:?}"								# operation
+		__DIST="${__ARRY[1]:?}"								# distribution
+		__VERS="${__ARRY[2]:-}"								# version
+		__EDTN="${__ARRY[3]:-}"								# edition
+		case "${__DIST,,}" in
 			-*      ) break;;
-			debian  ) ;;
-			ubuntu  ) ;;
-			fedora  ) ;;
-			centos  ) ;;
-			alma    ) ;;
-			rocky   ) ;;
-			opensuse) ;;
-#			miracle ) ;;
-			*       ) continue;;
+			debian  ) __TGET+=("${1:-}");;
+			ubuntu  ) __TGET+=("${1:-}");;
+			fedora  ) __TGET+=("${1:-}");;
+			centos  ) __TGET+=("${1:-}");;
+			alma    ) __TGET+=("${1:-}");;
+			rocky   ) __TGET+=("${1:-}");;
+			opensuse) __TGET+=("${1:-}");;
+#			miracle ) __TGET+=("${1:-}");;
+			*       ) ;;
 		esac
-		__TGET+=("${1:-}")
 		shift
 	done
 	__NAME_REFR="${*:-}"
@@ -78,17 +81,17 @@ function fnMake_live_build() {
 	# -m build:debian:13.0:server build:ubuntu:26.04:desktop ...
 	for I in "${!__TGET[@]}"
 	do
-		read -r -d ':' -a __ARRY < <(echo "${__TGET[I]}")
-		__OPRT="${__ARRY[1]:?}"								# operation
-		__DIST="${__ARRY[2]:?}"								# distribution
-		__VERS="${__ARRY[3]:-}"								# version
-		__EDTN="${__ARRY[4]:-}"								# edition
+		IFS=':' read -r -a __ARRY < <(echo "${__TGET[I]:-}")
+		__OPRT="${__ARRY[0]:?}"								# operation
+		__DIST="${__ARRY[1]:?}"								# distribution
+		__VERS="${__ARRY[2]:-}"								# version
+		__EDTN="${__ARRY[3]:-}"								# edition
 		__OPRT="${__OPRT,,}"								# operation
 		__DIST="${__DIST,,}"								# --distribution=
 		__VERS="${__VERS,,}"								# --release=
 		__EDTN="${__EDTN,,}"								# --environment=EDITION=
 		__CODE="$(fnFind_codename "${__DIST}" "${__VERS}")"	# code name
-		__ARCH="${_MKOS_ARCH//_/-}"							# architecture
+#		__ARCH="${_MKOS_ARCH//_/-}"							# architecture
 		__VLID="$(fnFind_distribution "${__DIST}")"			# volume id
 		__VLID="${__VLID}${__VERS:+" ${__VERS^}"}${__ARCH:+" ${__ARCH}"}${__EDTN:+" ${__EDTN^}"}"
 		__VLID="${__VLID// /-}"
@@ -97,11 +100,19 @@ function fnMake_live_build() {
 		__OUTD="${__RTMP:?}/${__SUBD:?}" # --output-directory=
 		# --- build -----------------------------------------------------------
 		fnMake_live_mkosi "${__OPRT:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}" "${__WRKD:-}" "${__OUTD:-}"
-		fnMake_live_vmimg "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}" "${__VLID:-}" "${__OUTD:-}"
-		fnMake_live_cdimg "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}" "${__VLID:-}" "${__OUTD:-}"
+		case "${__OPRT:-}" in
+			build        )
+				fnMake_live_vmimg "${__OUTD:-}" "${__VLID:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}"
+				fnMake_live_qemu  "${__OUTD:-}" "${__VLID:-}"
+				fnMake_live_cdimg "${__OUTD:-}" "${__VLID:-}"
+				;;
+			*            ) __OPTN=("help");;
+		esac
+		rm -rf "${__WRKD:?}" \
+		       "${__OUTD:?}"
 	done
 
-	unset __ARRY __WORK __TGET __SUBD __VLID __ARCH __CODE __HOST __EDTN __OUTD __WRKD __VERS __DIST
+	unset __ARRY __WORK __TGET __SUBD __VLID __CODE __HOST __EDTN __OUTD __WRKD __VERS __DIST
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"

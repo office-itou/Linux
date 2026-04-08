@@ -21,7 +21,7 @@ function fnMk_mkosi() {
 	echo "create mkosi file ..."
 	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
 	if ! nice -n 19 mkosi "${__OPTN[@]}"; then
-		printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [mkosi]" "${__FILE_ISOS##*/}" 1>&2
+		printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [mkosi]" "mkosi ${__OPTN[*]}" 1>&2
 		printf "%s\n" "mkosi ${__OPTN[*]}"
 	fi
 	__time_end=$(date +%s)

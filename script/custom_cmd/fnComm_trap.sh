@@ -40,9 +40,14 @@ function fnTrap() {
 			umount --quiet --lazy  --recursive "${__PATH}"
 		fi
 		case "${__PATH}" in
-			"${_DIRS_TEMP:?}")
+			"${_DIRS_TEMP:?}" | \
+			"${_DIRS_RTMP:?}"  )
 				fnMsgout "${_PROG_NAME:-}" "remove" "${__PATH}"
-				rm -rf "${__PATH:?}"
+				rm -rf "${__PATH:?}" || true
+				;;
+			/dev/*)
+				fnMsgout "${_PROG_NAME:-}" "detach" "${__PATH}"
+				losetup --detach "${__PATH}" || true
 				;;
 			*) ;;
 		esac

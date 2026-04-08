@@ -1,39 +1,34 @@
 # shellcheck disable=SC2148
 
 # -----------------------------------------------------------------------------
-# descript: make squashfs file
+# descript: execute qemu
 #   input :     $@     : parameter
 #   output:   stdout   : message
 #   return:            : unused
 #   g-var :  FUNCNAME  : read
 #   g-var : _PROG_NAME : read
-# shellcheck disable=SC2148
-function fnMk_squashfs() {
+function fnMk_qemu() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
-	declare -r    __DIRS_TGET="${1:?}"	# target directory
-	declare -r    __FILE_SQFS="${2:?}"	# output file name
-	declare -r -a __OPTN=(
-		"${@:-}"
-		-quiet
-		-progress
-		-noappend
-		-no-xattrs
-		-e /.autorelabel /.cache /.viminfo
-	)
-
+	declare -r -a __OPTN=("${@:-}")
 	declare -i    __time_start=0
 	declare -i    __time_end=0
 	declare -i    __time_elapsed=0
+	declare       __COMD=""				# command
 
 	__time_start=$(date +%s)
-	echo "create squashfs file ..."
+	echo "execute qemu ..."
 	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
-	if ! nice -n 19 mksquashfs "${__OPTN[@]}"; then
-		printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [mksquashfs]" "${__FILE_ISOS##*/}" 1>&2
-		printf "%s\n" "mksquashfs ${__OPTN[*]}"
+	  if command -v qemu-system-x86_64 > /dev/null 2>&1; then __COMD="qemu-system-x86_64"
+	else
+		fnMsgout "${_PROG_NAME:-}" "abnormal termination" "[${__FUNC_NAME}]"
+		exit 1
+	fi
+	if ! nice -n 19 "${__COMD:?}" "${__OPTN[@]}"; then
+		printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [qemu]" "${__COMD} ${__OPTN[*]}" 1>&2
+		printf "%s\n" "${__COMD} ${__OPTN[*]}"
 	fi
 	__time_end=$(date +%s)
 	__time_elapsed=$((__time_end - __time_start))

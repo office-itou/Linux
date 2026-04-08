@@ -15,6 +15,10 @@ function fnHelp() {
 		    -h|--help   : this message output
 		    -c|--conf   : making preconfiguration files
 		    -m|--make   : making iso files
+		      -m operation:distribution:version:edition
+		      ex: -m summary:ubuntu:26.04:desktop
+		      ex: -m build:debian:13.0:server
+		      ex: -m build:ubuntu:26.04:desktop
 		    -P|--DBGP   : debug output for internal global variables
 		    -T|--TREE   : debug output in a directory tree-like format
 		  options:

@@ -54,7 +54,7 @@
 	declare -r    _MKOS_ARCH="x86-64"	# "
 
 	# --- live files ----------------------------------------------------------
-	declare -r    _FILE_RTFS="${_MKOS_OUTP:?}.raw"			# root image
+	declare -r    _FILE_RTIM="${_MKOS_OUTP:?}.raw"			# root image
 	declare -r    _FILE_SQFS="squashfs.img"					# squashfs
 	declare -r    _FILE_MBRF="bios.img"						# mbr image
 	declare -r    _FILE_UEFI="uefi.img"						# uefi image
@@ -62,17 +62,19 @@
 #	declare -r    _FILE_ETRI=""								# 
 #	declare -r    _FILE_BIOS=""								# 
 
-	declare -r    _FILE_GRUB="grub.cfg"						# grub.cfg
+	declare -r    _FILE_ICFG="isolinux.cfg"					# isolinux.cfg
+	declare -r    _FILE_GCFG="grub.cfg"						# grub.cfg
 	declare -r    _FILE_MENU="menu.cfg"						# menu.cfg
 	declare -r    _FILE_THME="theme.cfg"					# theme.cfg
 
 	declare -r    _DIRS_MNTP="mntp"							# mount point
-	declare -r    _DIRS_RTMP="rtfs"							# root image
+	declare -r    _DIRS_RTFS="rtfs"							# root image
 	declare -r    _DIRS_CDFS="cdfs"							# cdfs image
 
 #	declare       _PATH_VLNZ=""								# kernel
 #	declare       _PATH_IRAM=""								# initramfs
 	declare -r    _PATH_SPLS="/boot/grub/${_MENU_SPLS:?}"	# splash.png
 
+	declare       _SECU_OPTN=""								# security option
 	declare -r    _SECU_APPA="security=apparmor apparmor=1"
 	declare -r    _SECU_SLNX="security=selinux selinux=1 enforcing=0"

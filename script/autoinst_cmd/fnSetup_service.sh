@@ -21,7 +21,8 @@ fnSetup_service() {
 		nmbd.service \
 		winbind.service \
 		wicked.service \
-		systemd-networkd.service
+		systemd-networkd.service \
+		systemd-networkd-wait-online.service
 	do
 		__STAT="$(systemctl is-enabled "${__LIST}" || true)"
 		[ "${__STAT:-}" = "alias" ] && continue
