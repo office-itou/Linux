@@ -16,13 +16,16 @@ function fnMk_mkosi() {
 	declare -i    __time_start=0
 	declare -i    __time_end=0
 	declare -i    __time_elapsed=0
+	declare       __RTCD=""
 
 	__time_start=$(date +%s)
 	echo "create mkosi file ..."
 	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
 	if ! nice -n 19 mkosi "${__OPTN[@]}"; then
+		__RTCD="$?"
 		printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [mkosi]" "mkosi ${__OPTN[*]}" 1>&2
-		printf "%s\n" "mkosi ${__OPTN[*]}"
+		printf "%s\n" "mkosi: ${__RTCD:-}"
+		exit "${__RTCD:-}"
 	fi
 	__time_end=$(date +%s)
 	__time_elapsed=$((__time_end - __time_start))

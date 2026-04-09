@@ -27,13 +27,17 @@ function fnMk_squashfs() {
 	declare -i    __time_start=0
 	declare -i    __time_end=0
 	declare -i    __time_elapsed=0
+	declare       __RTCD=""
 
 	__time_start=$(date +%s)
 	echo "create squashfs file ..."
 	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
+	mkdir -p "${__FILE_SQFS%/*}"
 	if ! nice -n 19 mksquashfs "${__OPTN[@]}"; then
-		printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [mksquashfs]" "${__FILE_ISOS##*/}" 1>&2
-		printf "%s\n" "mksquashfs ${__OPTN[*]}"
+		__RTCD="$?"
+		printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [mksquashfs]" "mksquashfs ${__OPTN[*]}" 1>&2
+		printf "%s\n" "mksquashfs: ${__RTCD:-}"
+		exit "${__RTCD:-}"
 	fi
 	__time_end=$(date +%s)
 	__time_elapsed=$((__time_end - __time_start))

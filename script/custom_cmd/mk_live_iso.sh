@@ -297,83 +297,41 @@
 	declare -r -a _OPTN_RSYC=("--recursive" "--links" "--perms" "--times" "--group" "--owner" "--devices" "--specials" "--hard-links" "--acls" "--xattrs" "--human-readable" "--delete")
 
 	# --- mkosi command line parameter ----------------------------------------
-#	declare -r    _MKOS_BOOT="yes"		# --bootable=
-	declare -r    _MKOS_OUTP="root_img"	# --output=
-#	declare -r    _MKOS_FMAT="directory" # --format=
-#	declare -r    _MKOS_FMAT="tar"		# "
-#	declare -r    _MKOS_FMAT="cpio"		# "
-	declare -r    _MKOS_FMAT="disk"		# "
-#	declare -r    _MKOS_FMAT="uki"		# "
-#	declare -r    _MKOS_FMAT="esp"		# "
-#	declare -r    _MKOS_FMAT="oci"		# "
-#	declare -r    _MKOS_FMAT="sysext"	# "
-#	declare -r    _MKOS_FMAT="confext"	# "
-#	declare -r    _MKOS_FMAT="portable"	# "
-#	declare -r    _MKOS_FMAT="addon"	# "
-#	declare -r    _MKOS_FMAT="none"		# "
-#	declare -r    _MKOS_NWRK="yes"		# --with-network=
-	declare -r    _MKOS_RECM="yes"		# --with-recommends
-#	declare -r    _MKOS_DIST="fedora"	# --distribution=
-#	declare -r    _MKOS_DIST="debian"	# "
-#	declare -r    _MKOS_DIST="kali"		# "
-#	declare -r    _MKOS_DIST="ubuntu"	# "
-#	declare -r    _MKOS_DIST="arch"		# "
-#	declare -r    _MKOS_DIST="opensuse"	# "
-#	declare -r    _MKOS_DIST="mageia"	# "
-#	declare -r    _MKOS_DIST="centos"	# "
-#	declare -r    _MKOS_DIST="rhel"		# "
-#	declare -r    _MKOS_DIST="rhel-ubi"	# "
-#	declare -r    _MKOS_DIST="openmandriva" # "
-#	declare -r    _MKOS_DIST="rocky"	# "
-#	declare -r    _MKOS_DIST="alma"		# "
-#	declare -r    _MKOS_DIST="azure"	# "
-#	declare -r    _MKOS_DIST="custom"	# "
-#	declare -r    _MKOS_VERS=""			# --release=
-#	declare -r    _MKOS_ARCH="alpha"	# --architecture=
-#	declare -r    _MKOS_ARCH="arc"		# "
-#	declare -r    _MKOS_ARCH="arm"		# "
-#	declare -r    _MKOS_ARCH="arm64"	# "
-#	declare -r    _MKOS_ARCH="ia64"		# "
-#	declare -r    _MKOS_ARCH="loongarch64" # "
-#	declare -r    _MKOS_ARCH="mips64-le" # "
-#	declare -r    _MKOS_ARCH="mips-le"	# "
-#	declare -r    _MKOS_ARCH="parisc"	# "
-#	declare -r    _MKOS_ARCH="ppc"		# "
-#	declare -r    _MKOS_ARCH="ppc64"	# "
-#	declare -r    _MKOS_ARCH="ppc64-le"	# "
-#	declare -r    _MKOS_ARCH="riscv32"	# "
-#	declare -r    _MKOS_ARCH="riscv64"	# "
-#	declare -r    _MKOS_ARCH="s390"		# "
-#	declare -r    _MKOS_ARCH="s390x"	# "
-#	declare -r    _MKOS_ARCH="tilegx"	# "
-#	declare -r    _MKOS_ARCH="x86"		# "
-	declare -r    _MKOS_ARCH="x86-64"	# "
+	declare       _MKOS_BOOT=""			# --bootable=
+	declare       _MKOS_OUTP=""			# --output=
+	declare       _MKOS_FMAT=""			# --format=
+	declare       _MKOS_NWRK=""			# --with-network=
+	declare       _MKOS_RECM=""			# --with-recommends
+	declare       _MKOS_DIST=""			# --distribution=
+	declare       _MKOS_VERS=""			# --release=
+	declare       _MKOS_ARCH=""			# --architecture=
 
 	# --- live files ----------------------------------------------------------
-	declare -r    _FILE_RTIM="${_MKOS_OUTP:?}.raw"			# root image
-	declare -r    _FILE_SQFS="squashfs.img"					# squashfs
-	declare -r    _FILE_MBRF="bios.img"						# mbr image
-	declare -r    _FILE_UEFI="uefi.img"						# uefi image
-	declare -r    _FILE_BCAT="boot.cat"						# eltorito catalog
-#	declare -r    _FILE_ETRI=""								# 
-#	declare -r    _FILE_BIOS=""								# 
+	declare       _FILE_RTIM=""			# root image
+	declare       _FILE_SQFS=""			# squashfs
+	declare       _FILE_MBRF=""			# mbr image
+	declare       _FILE_UEFI=""			# uefi image
+	declare       _FILE_BCAT=""			# eltorito catalog
+	declare       _FILE_ETRI=""			# 
+	declare       _FILE_BIOS=""			# 
 
-	declare -r    _FILE_ICFG="isolinux.cfg"					# isolinux.cfg
-	declare -r    _FILE_GCFG="grub.cfg"						# grub.cfg
-	declare -r    _FILE_MENU="menu.cfg"						# menu.cfg
-	declare -r    _FILE_THME="theme.cfg"					# theme.cfg
+	declare       _FILE_ICFG=""			# isolinux.cfg
+	declare       _FILE_GCFG=""			# grub.cfg
+	declare       _FILE_MENU=""			# menu.cfg
+	declare       _FILE_THME=""			# theme.cfg
 
-	declare -r    _DIRS_MNTP="mntp"							# mount point
-	declare -r    _DIRS_RTFS="rtfs"							# root image
-	declare -r    _DIRS_CDFS="cdfs"							# cdfs image
+	declare       _DIRS_LIVE=""			# live directory
+	declare       _DIRS_MNTP=""			# mount point
+	declare       _DIRS_RTFS=""			# root image
+	declare       _DIRS_CDFS=""			# cdfs image
 
-#	declare       _PATH_VLNZ=""								# kernel
-#	declare       _PATH_IRAM=""								# initramfs
-	declare -r    _PATH_SPLS="/boot/grub/${_MENU_SPLS:?}"	# splash.png
+	declare       _PATH_VLNZ=""			# kernel
+	declare       _PATH_IRAM=""			# initramfs
+	declare       _PATH_SPLS=""			# splash.png
 
-	declare       _SECU_OPTN=""								# security option
-	declare -r    _SECU_APPA="security=apparmor apparmor=1"
-	declare -r    _SECU_SLNX="security=selinux selinux=1 enforcing=0"
+	declare       _SECU_OPTN=""			# security option
+	declare       _SECU_APPA=""			# " (apparmor)
+	declare       _SECU_SLNX=""			# " (selinux)
 
 # *** function section (common functions) *************************************
 # -----------------------------------------------------------------------------
@@ -877,6 +835,7 @@ function fnMk_xorrisofs() {
 	declare -i    __time_start=0
 	declare -i    __time_end=0
 	declare -i    __time_elapsed=0
+	declare       __RTCD=""
 
 	__time_start=$(date +%s)
 	echo "create iso image file ..."
@@ -885,11 +844,17 @@ function fnMk_xorrisofs() {
 	[[ -n "${__FILE_BIOS:-}" ]] && echo "eltorito mode"
 	pushd "${__DIRS_TGET:?}" > /dev/null || exit
 		if ! nice -n 19 xorrisofs "${__OPTN[@]}" -output "${__TEMP}" .; then
+			__RTCD="$?"
 			printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [xorriso]" "${__FILE_ISOS##*/}" 1>&2
-			printf "%s\n" "xorrisofs ${__OPTN[*]} -output ${__TEMP} ."
+			printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [xorriso]" "xorriso ${__OPTN[*]}" 1>&2
+			printf "%s\n" "xorriso: ${__RTCD:-}"
+			exit "${__RTCD:-}"
 		else
 			if ! cp --preserve=timestamps "${__TEMP}" "${__FILE_ISOS}"; then
+				__RTCD="$?"
 				printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [cp]" "${__FILE_ISOS##*/}" 1>&2
+				printf "%s\n" "cp: ${__RTCD:-}"
+				exit "${__RTCD:-}"
 			else
 				__REAL="$(realpath "${__FILE_ISOS}")"
 				__DIRS="$(fnDirname "${__FILE_ISOS}")"
@@ -1113,13 +1078,16 @@ function fnMk_mkosi() {
 	declare -i    __time_start=0
 	declare -i    __time_end=0
 	declare -i    __time_elapsed=0
+	declare       __RTCD=""
 
 	__time_start=$(date +%s)
 	echo "create mkosi file ..."
 	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
 	if ! nice -n 19 mkosi "${__OPTN[@]}"; then
+		__RTCD="$?"
 		printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [mkosi]" "mkosi ${__OPTN[*]}" 1>&2
-		printf "%s\n" "mkosi ${__OPTN[*]}"
+		printf "%s\n" "mkosi: ${__RTCD:-}"
+		exit "${__RTCD:-}"
 	fi
 	__time_end=$(date +%s)
 	__time_elapsed=$((__time_end - __time_start))
@@ -1150,6 +1118,7 @@ function fnMk_qemu() {
 	declare -i    __time_end=0
 	declare -i    __time_elapsed=0
 	declare       __COMD=""				# command
+	declare       __RTCD=""
 
 	__time_start=$(date +%s)
 	echo "execute qemu ..."
@@ -1160,8 +1129,10 @@ function fnMk_qemu() {
 		exit 1
 	fi
 	if ! nice -n 19 "${__COMD:?}" "${__OPTN[@]}"; then
+		__RTCD="$?"
 		printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [qemu]" "${__COMD} ${__OPTN[*]}" 1>&2
-		printf "%s\n" "${__COMD} ${__OPTN[*]}"
+		printf "%s\n" "${__COMD}: ${__RTCD:-}"
+		exit "${__RTCD:-}"
 	fi
 	__time_end=$(date +%s)
 	__time_elapsed=$((__time_end - __time_start))
@@ -1201,13 +1172,17 @@ function fnMk_squashfs() {
 	declare -i    __time_start=0
 	declare -i    __time_end=0
 	declare -i    __time_elapsed=0
+	declare       __RTCD=""
 
 	__time_start=$(date +%s)
 	echo "create squashfs file ..."
 	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
+	mkdir -p "${__FILE_SQFS%/*}"
 	if ! nice -n 19 mksquashfs "${__OPTN[@]}"; then
-		printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [mksquashfs]" "${__FILE_ISOS##*/}" 1>&2
-		printf "%s\n" "mksquashfs ${__OPTN[*]}"
+		__RTCD="$?"
+		printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [mksquashfs]" "mksquashfs ${__OPTN[*]}" 1>&2
+		printf "%s\n" "mksquashfs: ${__RTCD:-}"
+		exit "${__RTCD:-}"
 	fi
 	__time_end=$(date +%s)
 	__time_elapsed=$((__time_end - __time_start))
@@ -1821,13 +1796,12 @@ function fnMake_live_mkosi() {
 # descript: make live vm-image partition1
 #   input :     $1     : device name
 #   input :     $2     : partition
-#   input :     $3     : uuid
-#   input :     $4     : distribution
-#   input :     $5     : volume id
-#   input :     $6     : output directory
-#   input :     $7     : root image mount point
-#   input :     $8     : kernel
-#   input :     $9     : initramfs
+#   input :     $3     : output directory
+#   input :     $4     : uuid
+#   input :     $5     : distribution
+#   input :     $6     : volume id
+#   input :     $7     : kernel
+#   input :     $8     : initramfs
 #   output:   stdout   : message
 #   return:            : unused
 function fnMake_live_vmimg_p1() {
@@ -1836,25 +1810,35 @@ function fnMake_live_vmimg_p1() {
 
 	declare -r    __TGET_DEVS="${1:?}"	# device name
 	declare -r    __TGET_PART="${2:?}"	# partition
-	declare -r    __TGET_UUID="${3:?}"	# uuid
-	declare -r    __TGET_DIST="${4:?}"	# distribution
-	declare -r    __TGET_VLID="${5:?}"	# volume id
-	declare -r    __TGET_OUTD="${6:?}"	# output directory
-	declare -r    __TGET_RTMP="${7:?}"	# root image mount point
-	declare -r    __TGET_VLNZ="${8:?}"	# kernel
-	declare -r    __TGET_IRAM="${9:?}"	# initramfs
-	declare       __MNTP=""				# mount point
-	declare       __COMD=""				# command
-	declare       __PATH=""				# work
-	declare       __MENU=""				# main menu
-	declare       __THME=""				# theme file
-	declare       __TITL=""				# menu title
-	declare       __SECU=""				# security
-	declare       __SPLS=""				# splash.png
-
-	__MNTP="${__TGET_OUTD}/mnt1"
-	mkdir -p "${__MNTP}"
-	mount "${__TGET_DEVS}${__TGET_PART}" "${__MNTP}"
+	declare -r    __TGET_OUTD="${3:?}"	# output directory
+	declare -r    __TGET_UUID="${4:?}"	# uuid
+	declare -r    __TGET_DIST="${5:?}"	# distribution
+	declare -r    __TGET_VLID="${6:?}"	# volume id
+	declare -r    __INPD="/boot/grub"						# input directory
+	declare -r    __OUTD="${__TGET_OUTD:?}/strg"			# output directory
+	declare -r    __MNTP="${__TGET_OUTD:?}/mnt1"			# mount point
+#	declare -r    __CDFS="${__TGET_OUTD:?}/${_DIRS_CDFS:?}"	# cdfs image mount point
+#	declare -r    __EGRU="${__OUTD:?}/${_FILE_GCFG:?}.efi"	# grub.cfg (/EFI/BOOT)
+	declare -r    __GCFG="${__OUTD:?}/${_FILE_GCFG:?}"		# grub.cfg (/boot/grub)
+#	declare -r    __ICFG="${__OUTD:?}/${_FILE_ICFG:?}"		# isolinux.cfg
+	declare -r    __MENU="${__OUTD:?}/${_FILE_MENU:?}"		# menu.cfg
+	declare -r    __THME="${__OUTD:?}/${_FILE_THME:?}"		# theme.cfg
+	declare -r    __SPLS="${__TGET_OUTD:?}/${_MENU_SPLS:?}"	# splash.png
+	declare -r    __MBRF="${__OUTD:?}/${_FILE_MBRF:?}"		# mbr image
+	declare -r    __UEFI="${__OUTD:?}/${_FILE_UEFI:?}"		# uefi image
+	declare -r    __VLNZ="${_PATH_VLNZ:?}"					# kernel
+	declare -r    __IRAM="${_PATH_IRAM:?}"					# initramfs
+	declare -r    __TITL="Live system"						# title
+	declare       __COMD=""									# command
+	declare       __PSEC=""									# physical sector size
+	declare       __STRT=""									# partition start offset (in 512-byte sectors)
+	declare       __SIZE=""									# size of the device (bytes)
+	declare       __CONT=""									# partition sector size (in 512-byte sectors)
+	declare       __PATH=""									# work
+	declare       __WORK=""									# work
+	# --- local ---------------------------------------------------------------
+	mkdir -p "${__OUTD:?}"
+	mkdir -p "${__MNTP:?}"
 	# --- install grub module -------------------------------------------------
 	  if command -v grub-install  > /dev/null 2>&1; then __COMD="grub-install"
 	elif command -v grub2-install > /dev/null 2>&1; then __COMD="grub2-install"
@@ -1862,6 +1846,7 @@ function fnMake_live_vmimg_p1() {
 		fnMsgout "${_PROG_NAME:-}" "abnormal termination" "[${__FUNC_NAME}]"
 		exit 1
 	fi
+	mount "${__TGET_DEVS}${__TGET_PART}" "${__MNTP}" && _LIST_RMOV+=("${__MNTP}")
 	"${__COMD:?}" \
 		--target=x86_64-efi \
 		--efi-directory="${__MNTP}" \
@@ -1872,29 +1857,17 @@ function fnMake_live_vmimg_p1() {
 		--target=i386-pc \
 		--boot-directory="${__MNTP}/boot" \
 		"${__TGET_DEVS}"
-	# --- splash.png ----------------------------------------------------------
-	__SPLS="/boot/grub/${_MENU_SPLS:?}"
-	__SRCS="${__OUTD}/${__SPLS##*/}"
-	__DEST="${__MNTP}/${__SPLS#/}"
-	mkdir -p "${__SRCS%/*}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__SRCS:?}"
-		1f8b0808462b8d69000373706c6173682e706e6700eb0cf073e7e592e262
-		6060e0f5f47009626060566060608ae060028a888a88aa3330b0767bba38
-		8654dc7a7b909117287868c177ff5c3ef3050ca360148c8251300ae8051a
-		c299ff4c6660bcb6edd00b10d7d3d5cf659d53421300e6198186c4050000
-_EOT_
-	mkdir -p "${__DEST%/*}"
-	cp --preserve=timestamps "${__SRCS:?}" "${__DEST:?}"
+	umount "${__MNTP}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
+	# --- create uefi/bios image ----------------------------------------------
+	__WORK="$(lsblk -no-header --bytes --output=PATH,PHY-SEC,START,SIZE "${__TGET_DEVS:?}${__TGET_PART:?}")"
+	read -r __PATH __PSEC __STRT __SIZE < <(echo "${__WORK:?}")
+	__CONT="$(("${__SIZE:?}" / "${__PSEC:?}"))"
+	dd if="${__TGET_DEVS:?}" of="${__UEFI:?}" bs="${__PSEC:?}" skip="${__STRT:?}" count="${__CONT:?}"
+	dd if="${__TGET_DEVS:?}" of="${__MBRF:?}" bs=1 count=440
 	# --- create grub.cfg -----------------------------------------------------
-	__PATH="${__OUTD}/${_FILE_GCFG:?}"
-	__MENU="${__OUTD}/${_FILE_MENU:?}"
-	__THME="${__OUTD}/${_FILE_THME:?}"
-	__TITL="Live system"
-	__SECU=""
-	[[ -e "${__TGET_RTMP:?}"/usr/bin/aa-enabled  ]] && __SECU="security=apparmor apparmor=1"
-	[[ -e "${__TGET_RTMP:?}"/usr/sbin/getenforce ]] && __SECU="security=selinux selinux=1 enforcing=0"
-	fnGrub_conf "${__PATH:?}" "${__MENU:?}" "${__THME:?}" "${_MENU_TOUT:?}" "${_MENU_RESO:?}" "${_MENU_DPTH:?}"
-	fnGrub_theme "${__THME:?}" "${__TITL:?}" "${__SPLS:-}"
+	mount "${__TGET_DEVS}${__TGET_PART}" "${__MNTP}" && _LIST_RMOV+=("${__MNTP}")
+	fnGrub_conf  "${__GCFG:?}" "${__INPD}/${_FILE_MENU:?}" "${__INPD}/${_FILE_THME:?}" "${_MENU_TOUT:?}" "${_MENU_RESO:?}" "${_MENU_DPTH:?}"
+	fnGrub_theme "${__THME:?}" "${__TITL:?}" "${__INPD}/${_MENU_SPLS:?}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__MENU:?}"
 		menuentry "${__TGET_VLID}" {
 		  set gfxpayload="keep"
@@ -1904,20 +1877,24 @@ _EOT_
 		  echo root=\${root}
 		  set devs=/dev/sda2
 		  set ttys=console=ttyS0
-		  set options="\${ttys} root=\${devs} ${__SECU}"
+		  set options="\${ttys} root=\${devs}${_SECU_OPTN:+" ${_SECU_OPTN}"}"
 		# if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 		  echo 'Loading boot files ...'
 		  echo 'Loading vmlinuz ...'
-		  linux  ${__TGET_VLNZ:?} \${options} --- quiet
+		  linux  ${__VLNZ:?} \${options} --- quiet
 		  echo 'Loading initramfs ...'
-		  initrd ${__TGET_IRAM:?}
+		  initrd ${__IRAM:?}
 		}
 _EOT_
-	cp --preserve=timestamps "${__PATH:?}" "${__MNTP}"/boot/grub/
-	cp --preserve=timestamps "${__THME:?}" "${__MNTP}"/boot/grub/
-	cp --preserve=timestamps "${__MENU:?}" "${__MNTP}"/boot/grub/
+#	[[ -e "${__EGRU:?}" ]] && cp --preserve=timestamps "${__EGRU:?}" "${__MNTP:?}/EFI/BOOT/${_FILE_GCFG##*/}"
+	[[ -e "${__GCFG:?}" ]] && cp --preserve=timestamps "${__GCFG:?}" "${__MNTP:?}/${__INPD:?}"
+#	[[ -e "${__ICFG:?}" ]] && cp --preserve=timestamps "${__ICFG:?}" "${__MNTP:?}/${__INPD:?}"
+	[[ -e "${__THME:?}" ]] && cp --preserve=timestamps "${__THME:?}" "${__MNTP:?}/${__INPD:?}"
+	[[ -e "${__MENU:?}" ]] && cp --preserve=timestamps "${__MENU:?}" "${__MNTP:?}/${__INPD:?}"
+	[[ -e "${__SPLS:?}" ]] && cp --preserve=timestamps "${__SPLS:?}" "${__MNTP:?}/${__INPD:?}"
+	umount "${__MNTP}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
 	# -------------------------------------------------------------------------
-	umount "${__MNTP}"
+	unset __WORK __PATH __COMD
 	# -------------------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
@@ -1926,11 +1903,11 @@ _EOT_
 # descript: make live vm-image partition2
 #   input :     $1     : device name
 #   input :     $2     : partition
-#   input :     $3     : uuid
-#   input :     $4     : distribution
-#   input :     $5     : volume id
-#   input :     $6     : output directory
-#   input :     $7     : root image mount point
+#   input :     $3     : output directory
+#   input :     $4     : root image mount point
+#   input :     $5     : uuid
+#   input :     $6     : distribution
+#   input :     $7     : volume id
 #   input :     $8     : kernel
 #   input :     $9     : initramfs
 #   output:   stdout   : message
@@ -1941,60 +1918,73 @@ function fnMake_live_vmimg_p2() {
 
 	declare -r    __TGET_DEVS="${1:?}"	# device name
 	declare -r    __TGET_PART="${2:?}"	# partition
-	declare -r    __TGET_UUID="${3:?}"	# uuid
-	declare -r    __TGET_DIST="${4:?}"	# distribution
-	declare -r    __TGET_VLID="${5:?}"	# volume id
-	declare -r    __TGET_OUTD="${6:?}"	# output directory
-	declare -r    __TGET_RTMP="${7:?}"	# root image mount point
-	declare -r    __TGET_VLNZ="${8:?}"	# kernel
-	declare -r    __TGET_IRAM="${9:?}"	# initramfs
-	declare       __MNTP=""				# mount point
-	declare       __COMD=""				# command
-	declare       __PATH=""				# work
-	declare       __MENU=""				# main menu
-	declare       __THME=""				# theme file
-	declare       __TITL=""				# menu title
-	declare       __SECU=""				# security
-	declare       __SRCS=""				# work
-	declare       __DEST=""				# work
-
-	__MNTP="${__TGET_OUTD}/mnt2"
-	mkdir -p "${__MNTP}"
-	mount "${__TGET_DEVS}${__TGET_PART}" "${__MNTP}"
+	declare -r    __TGET_OUTD="${3:?}"	# output directory
+	declare -r    __TGET_RTFS="${4:?}"	# root image mount point
+	declare -r    __TGET_UUID="${5:?}"	# uuid
+#	declare -r    __TGET_DIST="${6:?}"	# distribution
+#	declare -r    __TGET_VLID="${7:?}"	# volume id
+#	declare -r    __TGET_VLNZ="${8:?}"	# kernel
+#	declare -r    __TGET_IRAM="${9:?}"	# initramfs
+#	declare -r    __INPD="/boot/grub"						# input directory
+	declare -r    __OUTD="${__TGET_OUTD:?}/strg"			# output directory
+	declare -r    __MNTP="${__TGET_OUTD:?}/mnt2"			# mount point
+#	declare -r    __CDFS="${__TGET_OUTD:?}/${_DIRS_CDFS:?}"	# cdfs image mount point
+#	declare -r    __EGRU="${__OUTD:?}/${_FILE_GCFG:?}.efi"	# grub.cfg (/EFI/BOOT)
+#	declare -r    __GCFG="${__OUTD:?}/${_FILE_GCFG:?}"		# grub.cfg (/boot/grub)
+#	declare -r    __ICFG="${__OUTD:?}/${_FILE_ICFG:?}"		# isolinux.cfg
+#	declare -r    __MENU="${__OUTD:?}/${_FILE_MENU:?}"		# menu.cfg
+#	declare -r    __THME="${__OUTD:?}/${_FILE_THME:?}"		# theme.cfg
+#	declare -r    __SPLS="${__OUTD:?}/${_MENU_SPLS:?}"		# splash.png
+#	declare -r    __TITL="Live system"						# title
+#	declare       __COMD=""									# command
+	declare       __PATH=""									# work
+	declare       __SRCS=""									# work
+	declare       __DEST=""									# work
+	declare       __SRVC=""									# work
+	declare       __TGET=""									# work
+#	declare       __WORK=""									# work
+	# --- local ---------------------------------------------------------------
+	mkdir -p "${__OUTD:?}"
+	mkdir -p "${__MNTP:?}"
+	mount "${__TGET_DEVS}${__TGET_PART}" "${__MNTP}" && _LIST_RMOV+=("${__MNTP}")
 	# --- root files ----------------------------------------------------------
-	cp --preserve=mode,ownership,timestamps,links --recursive "${__TGET_RTMP}"/. "${__MNTP}"
+	cp --preserve=mode,ownership,timestamps,links --recursive "${__TGET_RTFS}"/. "${__MNTP}"
 	# --- /etc/fstab ----------------------------------------------------------
 	__PATH="/etc/fstab"
-	__SRCS="${__OUTD}/${__PATH##*/}"
-	__DEST="${__MNTP}/${__PATH#/}"
+	__SRCS="${__OUTD:?}/${__PATH##*/}"
+	__DEST="${__MNTP:?}/${__PATH#/}"
 	mkdir -p "${__SRCS%/*}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__SRCS:?}"
-		UUID=${__TGET_UUID:?} / ext4 defaults 0 0
-_EOT_
 	mkdir -p "${__DEST%/*}"
-	cp --preserve=timestamps "${__SRCS:?}" "${__DEST:?}"
+	{
+		printf "%-43s %-43s -s31s -31s -7s -s\n" "# <file system>"  "<mount point>" "<type>"           "<options>"                   "<dump>" "<pass>"
+		printf "%-43s %-43s -s31s -31s -7s -s\n" "UUID=${__UUID:?}" "/"             "ext4"             "defaults"                    "0"      "0"
+		printf "%-43s %-43s -s31s -31s -7s -s\n" ".host:/"          "/srv/hgfs"     "fuse.vmhgfs-fuse" "nofail,allow_other,defaults" "0"      "0"
+	} > "${__SRCS:?}"
+	[[ -e "${__SRCS:?}" ]] && cp --preserve=timestamps "${__SRCS:?}" "${__DEST:?}"
 	# --- run-once.sh ---------------------------------------------------------
 	__SRVC="/etc/systemd/system/run-once.service"
 	__TGET="/var/admin/autoinst/run-once.sh"
-	__SRCS="${__OUTD}/${__TGET##*/}"
-	__DEST="${__MNTP}/${__TGET#/}"
+	__SRCS="${__OUTD:?}/${__TGET##*/}"
+	__DEST="${__MNTP:?}/${__TGET#/}"
 	mkdir -p "${__SRCS%/*}"
+	mkdir -p "${__DEST%/*}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__SRCS:?}"
 		#!/bin/bash
 		# touch /.autorelabel
 		systemctl disable ${__SRVC##*/}
-		rm -f "${__SRVC}"
+		sed -i "${__PATH:?}" '/^UUID=/d'
+		rm -f "${__SRVC:?}"
 		rm -f "\${0:?}"
 		ls -lahZ / > /var/admin/autoinst/"\${0##*/}".success
 		shutdown -h now
 _EOT_
-	mkdir -p "${__DEST%/*}"
-	cp --preserve=timestamps "${__SRCS:?}" "${__DEST:?}"
-	chmod +x "${__DEST}"
+	[[ -e "${__SRCS:?}" ]] && cp --preserve=timestamps "${__SRCS:?}" "${__DEST:?}"
+	[[ -e "${__DEST:?}" ]] && chmod +x "${__DEST}"
 	# --- /etc/systemd/system/run-once.service --------------------------------
-	__SRCS="${__OUTD}/${__SRVC##*/}"
-	__DEST="${__MNTP}/${__SRVC#/}"
+	__SRCS="${__OUTD:?}/${__SRVC##*/}"
+	__DEST="${__MNTP:?}/${__SRVC#/}"
 	mkdir -p "${__SRCS%/*}"
+	mkdir -p "${__DEST%/*}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__SRCS:?}"
 		[Unit]
 		Description=Run the script once after all services have started.
@@ -2003,18 +1993,19 @@ _EOT_
 
 		[Service]
 		Type=oneshot
-		ExecStart=${__TGET#"${__MNTP}"}
+		ExecStart=${__TGET:?}
 		RemainAfterExit=yes
 
 		[Install]
 		WantedBy=multi-user.target
 _EOT_
-	mkdir -p "${__DEST%/*}"
-	cp --preserve=timestamps "${__SRCS:?}" "${__DEST:?}"
-	chmod +x "${__DEST}"
+	[[ -e "${__SRCS:?}" ]] && cp --preserve=timestamps "${__SRCS:?}" "${__DEST:?}"
+	[[ -e "${__DEST:?}" ]] && chmod +x "${__DEST}"
+	# --- setup ---------------------------------------------------------------
 	chroot "${__MNTP:?}" bash -c "systemctl enable ${__SRVC##*/}"
 	# -------------------------------------------------------------------------
-	umount "${__MNTP}"
+	umount "${__MNTP}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
+	unset __TGET __SRVC __DEST __SRCS __PATH
 	# -------------------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
@@ -2023,9 +2014,10 @@ _EOT_
 # descript: make live vm-image
 #   input :     $1     : output directory
 #   input :     $2     : volume id
-#   input :     $3     : distribution
-#   input :     $4     : version
-#   input :     $5     : edition
+#   input :     $3     : storage
+#   input :     $4     : distribution
+#   input :     $5     : version
+#   input :     $6     : edition
 #   output:   stdout   : message
 #   return:            : unused
 function fnMake_live_vmimg() {
@@ -2035,10 +2027,10 @@ function fnMake_live_vmimg() {
 
 	declare -r    __TGET_OUTD="${1:-}"	# output directory
 	declare -r    __TGET_VLID="${2:-}"	# volume id
-	declare -r    __TGET_DIST="${3:-}"	# distribution
-	declare -r    __TGET_VERS="${4:-}"	# version
-	declare -r    __TGET_EDTN="${5:-}"	# edition
-	declare       __STRG=""				# storage
+	declare -r    __TGET_STRG="${3:-}"	# storage
+	declare -r    __TGET_DIST="${4:-}"	# distribution
+	declare -r    __TGET_VERS="${5:-}"	# version
+	declare -r    __TGET_EDTN="${6:-}"	# edition
 	declare       __LOOP=""				# loop device name
 	declare       __UUID=""				# loopXp2 uuid device name
 	declare       __RTIM=""				# root image
@@ -2055,9 +2047,8 @@ function fnMake_live_vmimg() {
 	declare       __CONT=""				# work
 	declare       __WORK=""				# work
 	# --- create dummy storage ------------------------------------------------
-	__STRG="${__TGET_OUTD:?}/vm_uefi_${__TGET_VLID,,}.raw"
-	truncate --size=20G "${__STRG:?}"
-	__LOOP="$(losetup --find --show "${__STRG}")" && _LIST_RMOV+=("${__LOOP}")
+	truncate --size=20G "${__TGET_STRG:?}"
+	__LOOP="$(losetup --find --show "${__TGET_STRG}")" && _LIST_RMOV+=("${__LOOP}")
 	partprobe "${__LOOP:?}"
 	sfdisk --force --wipe always "${__LOOP}" <<- _EOT_
 		,100MiB,U
@@ -2076,12 +2067,19 @@ _EOT_
 	partprobe "${__RTLP:?}"
 	mkdir -p "${__RTFS:?}"
 	mount -r "${__RTLP}"p1 "${__RTFS}" && _LIST_RMOV+=("${__RTFS}")
+	# --- kernel --------------------------------------------------------------
 	__WORK="$(fnFind_kernel "${__RTFS}")"
 	read -r __VLNZ __IRAM < <(echo "${__WORK:-}")
-	__VLNZ="/${__VLNZ:?}"
-	__IRAM="/${__IRAM:?}"
-	fnMake_live_vmimg_p1 "${__LOOP:?}" "p1" "${__UUID:?}" "${__TGET_DIST:?}" "${__TGET_VLID:?}" "${__TGET_OUTD:?}" "${__RTFS:?}" "${__VLNZ}" "${__IRAM}"
-	fnMake_live_vmimg_p2 "${__LOOP:?}" "p2" "${__UUID:?}" "${__TGET_DIST:?}" "${__TGET_VLID:?}" "${__TGET_OUTD:?}" "${__RTFS:?}" "${__VLNZ}" "${__IRAM}"
+	__VLNZ="${__VLNZ##-}"
+	__IRAM="${__IRAM##-}"
+	readonly _PATH_VLNZ="${__VLNZ:+"/${__VLNZ}"}"
+	readonly _PATH_IRAM="${__IRAM:+"/${__IRAM}"}"
+	# --- security option -----------------------------------------------------
+	[[ -e "${__RTFS:?}"/usr/sbin/getenforce ]] && _SECU_OPTN="${_SECU_SLNX:-}"
+	[[ -e "${__RTFS:?}"/usr/bin/aa-enabled  ]] && _SECU_OPTN="${_SECU_APPA:-}"
+	readonly _SECU_OPTN
+	fnMake_live_vmimg_p1 "${__LOOP:?}" "p1" "${__TGET_OUTD:?}" "${__UUID:?}" "${__TGET_DIST:?}" "${__TGET_VLID:?}"
+	fnMake_live_vmimg_p2 "${__LOOP:?}" "p2" "${__TGET_OUTD:?}" "${__RTFS:?}" "${__UUID:?}"
 	umount "${__RTFS}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
 	# --- create uefi/bios image ----------------------------------------------
 	__MBRF="${__TGET_OUTD:?}/${_FILE_MBRF:?}"
@@ -2095,7 +2093,7 @@ _EOT_
 	losetup --detach "${__RTLP}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
 	losetup --detach "${__LOOP}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
 
-	unset __WORK __CONT __SIZE __STRT __PSEC __PATH __UEFI __MBRF __IRAM __VLNZ __RTFS __RTLP __RTIM __UUID __LOOP __STRG
+	unset __WORK __CONT __SIZE __STRT __PSEC __PATH __UEFI __MBRF __IRAM __VLNZ __RTFS __RTLP __RTIM __UUID __LOOP
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
@@ -2106,19 +2104,17 @@ _EOT_
 
 # -----------------------------------------------------------------------------
 # descript: make live vm-image on qemu
-#   input :     $1     : output directory
-#   input :     $2     : volume id
+#   input :     $1     : storage
 #   output:   stdout   : message
 #   return:            : unused
 function fnMake_live_qemu() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
-	declare -r    __TGET_OUTD="${1:-}"	# output directory
-	declare -r    __TGET_VLID="${2:-}"	# volume id
-	declare       __STRG=""				# storage
+	declare -r    __TGET_STRG="${1:-}"	# storage
 	# --- command -------------------------------------------------------------
-	__STRG="${__TGET_OUTD:?}/vm_uefi_${__TGET_VLID,,}.raw"
+	# /usr/share/novnc/utils/novnc_proxy
+	# http://sv-developer:6080/vnc.html
 	__OPTN=(
 		-cpu "host"
 		-machine "q35"
@@ -2134,11 +2130,11 @@ function fnMake_live_qemu() {
 		-device "ich9-intel-hda"
 		-vnc ":0"
 		-nographic
-		-drive "file=${__STRG},format=raw"
+		-drive "file=${__TGET_STRG:?},format=raw"
 	)
 	fnMk_qemu "${__OPTN[@]}"
 
-	unset __OPTN __HOST
+	unset __OPTN
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
@@ -2147,6 +2143,8 @@ function fnMake_live_qemu() {
 # -----------------------------------------------------------------------------
 # descript: make live cd-image (create cdfs)
 #   input :     $1     : output directory
+#   input :     $2     : volume id
+#   input :     $3     : storage
 #   output:   stdout   : message
 #   return:            : unused
 function fnMake_live_cdimg_cdfs() {
@@ -2155,82 +2153,48 @@ function fnMake_live_cdimg_cdfs() {
 
 	declare -r    __TGET_OUTD="${1:?}"	# output directory
 	declare -r    __TGET_VLID="${2:?}"	# volume id
-	declare       __STRG=""				# storage
-	declare       __RTIM=""				# root image
-	declare       __RTLP=""				# root image loop
-	declare       __RTFS=""				# root image mount point
-	declare       __VLNZ=""				# kernel
-	declare       __IRAM=""				# initramfs
-	declare       __CDFS=""				# cdfs image mount point
-	declare       __SQFS=""				# squashfs
-	declare       __MBRF=""				# mbr image
-	declare       __UEFI=""				# uefi image
-	declare       __SPLS=""				# splash.png
-	declare       __PATH=""				# work
-	declare       __PSEC=""				# work
-	declare       __STRT=""				# work
-	declare       __SIZE=""				# work
-	declare       __CONT=""				# work
-	declare       __WORK=""				# work
-	# --- local ---------------------------------------------------------------
-	__STRG="${__TGET_OUTD:?}/vm_uefi_${__TGET_VLID,,}.raw"
-	__CDFS="${__TGET_OUTD:?}/${_DIRS_CDFS:?}"
-	__SQFS="${__TGET_OUTD:?}/${_FILE_SQFS:?}"
-	__MBRF="${__TGET_OUTD:?}/${_FILE_MBRF:?}"
-	__UEFI="${__TGET_OUTD:?}/${_FILE_UEFI:?}"
-	__SPLS="${__TGET_OUTD:?}/${_MENU_SPLS:?}"
-	__RTIM="${__TGET_OUTD:?}/${_FILE_RTIM:?}"
-	__RTFS="${__TGET_OUTD:?}/${_DIRS_RTFS:?}"
-	# --- create uefi/bios image ----------------------------------------------
-	__RTLP="$(losetup --find --show "${__RTIM}")" && _LIST_RMOV+=("${__RTLP}")
-	partprobe "${__RTLP:?}"
-#	__WORK="$(lsblk -no-header --bytes --output=PATH,PHY-SEC,START,SIZE "${__RTLP}"p1)"
-#	read -r __PATH __PSEC __STRT __SIZE < <(echo "${__WORK:-}")
-#	__CONT="$(("${__SIZE}" / "${__PSEC}"))"
-#	dd if="${__RTIM}" of="${__UEFI}" bs="${__PSEC}" skip="${__STRT}" count="${__CONT}"
-#	dd if="${__RTIM}" of="${__MBRF}" bs=1 count=440
+	declare -r    __TGET_STRG="${3:-}"	# storage
+	declare -r    __OUTD="${__TGET_OUTD:?}/grub"			# output directory
+	declare -r    __MNTP="${__TGET_OUTD:?}/mnt2"			# mount point
+	declare -r    __STRG="${__TGET_OUTD:?}/strg"			# storage work
+	declare -r    __CDFS="${__TGET_OUTD:?}/${_DIRS_CDFS:?}"	# cdfs image mount point
+	declare -r    __SQFS="${__TGET_OUTD:?}/${_FILE_SQFS:?}"	# squashfs
+	declare -r    __SPLS="${__TGET_OUTD:?}/${_MENU_SPLS:?}"	# splash.png
+#	declare -r    __MBRF="${__STRG:?}/${_FILE_MBRF:?}"		# mbr image
+	declare -r    __UEFI="${__STRG:?}/${_FILE_UEFI:?}"		# uefi image
+	declare -r    __TITL="Live system"						# title
+	declare -r    __VLNZ="${_PATH_VLNZ:?}"					# kernel
+	declare -r    __IRAM="${_PATH_IRAM:?}"					# initramfs
+	declare       __LOOP=""									# loop device name
 	# --- mount root image ----------------------------------------------------
-	mkdir -p "${__RTFS:?}"
-	mount -r "${__RTLP}"p1 "${__RTFS}"
-	__WORK="$(fnFind_kernel "${__RTFS}")"
-	read -r __VLNZ __IRAM < <(echo "${__WORK:-}")
-	# --- create splash.png ---------------------------------------------------
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | xxd -p -r | gzip -d -k > "${__SPLS:?}"
-		1f8b0808462b8d69000373706c6173682e706e6700eb0cf073e7e592e262
-		6060e0f5f47009626060566060608ae060028a888a88aa3330b0767bba38
-		8654dc7a7b909117287868c177ff5c3ef3050ca360148c8251300ae8051a
-		c299ff4c6660bcb6edd00b10d7d3d5cf659d53421300e6198186c4050000
-_EOT_
+	mkdir -p "${__MNTP:?}"
+	__LOOP="$(losetup --find --show "${__TGET_STRG:?}")" && _LIST_RMOV+=("${__LOOP}")
+	partprobe "${__LOOP:?}"
+	mount -r "${__LOOP}"p2 "${__MNTP}" && _LIST_RMOV+=("${__MNTP}")
 	# --- create squashfs -----------------------------------------------------
-	fnMk_squashfs "${__RTFS:?}" "${__SQFS:?}"
+	fnMk_squashfs "${__MNTP:?}" "${__SQFS:?}"
 	# --- create cdfs image ---------------------------------------------------
-	mkdir -p "${__CDFS:?}"/{.disk,EFI/BOOT,boot/grub/{live-theme,x86_64-efi,i386-pc},isolinux,LiveOS}
+	mkdir -p "${__CDFS:?}"/{.disk,EFI/BOOT,boot/grub/{live-theme,x86_64-efi,i386-pc},isolinux,"${_DIRS_LIVE:?}"}
 	touch "${__CDFS}/.disk/info"
 	[[ -e "${__UEFI:?}"                                 ]] && cp --preserve=timestamps             "${__UEFI:?}"                                 "${__CDFS:?}"/boot/grub
-	[[ -e "${__SQFS:?}"                                 ]] && cp --preserve=timestamps             "${__SQFS:?}"                                 "${__CDFS:?}"/LiveOS
-	[[ -e "${__SPLS:?}"                                 ]] && cp --preserve=timestamps             "${__SPLS:?}"                                 "${__CDFS:?}"/LiveOS
-	[[ -e "${__RTFS:?}/${__IRAM:?}"                     ]] && cp --preserve=timestamps             "${__RTFS:?}/${__IRAM:?}"                     "${__CDFS:?}"/LiveOS
-	[[ -e "${__RTFS:?}/${__VLNZ:?}"                     ]] && cp --preserve=timestamps             "${__RTFS:?}/${__VLNZ:?}"                     "${__CDFS:?}"/LiveOS
-	[[ -e "${__RTFS:?}/${__IRAM:?}"                     ]] && cp --preserve=timestamps             "${__RTFS:?}/${__IRAM:?}"                     "${__CDFS:?}"/LiveOS/initrd.img
-	[[ -e "${__RTFS:?}/${__VLNZ:?}"                     ]] && cp --preserve=timestamps             "${__RTFS:?}/${__VLNZ:?}"                     "${__CDFS:?}"/LiveOS/vmlinuz
-	[[ -e "${__RTFS:?}"/usr/lib/ISOLINUX/isolinux.bin   ]] && cp --preserve=timestamps             "${__RTFS:?}"/usr/lib/ISOLINUX/isolinux.bin   "${__CDFS:?}"/isolinux
-	[[ -e "${__RTFS:?}"/usr/lib/syslinux/mbr/gptmbr.bin ]] && cp --preserve=timestamps             "${__RTFS:?}"/usr/lib/syslinux/mbr/gptmbr.bin "${__CDFS:?}"/isolinux
-	[[ -e "${__RTFS:?}"/usr/lib/syslinux/modules/bios/. ]] && cp --preserve=timestamps --recursive "${__RTFS:?}"/usr/lib/syslinux/modules/bios/. "${__CDFS:?}"/isolinux
-	[[ -e "${__RTFS:?}"/usr/lib/grub/x86_64-efi/.       ]] && cp --preserve=timestamps --recursive "${__RTFS:?}"/usr/lib/grub/x86_64-efi/.       "${__CDFS:?}"/boot/grub/x86_64-efi
-	[[ -e "${__RTFS:?}"/usr/lib/grub/i386-pc/.          ]] && cp --preserve=timestamps --recursive "${__RTFS:?}"/usr/lib/grub/i386-pc/.          "${__CDFS:?}"/boot/grub/i386-pc
-	[[ -e "${__RTFS:?}"/usr/share/syslinux/.            ]] && cp --preserve=timestamps --recursive "${__RTFS:?}"/usr/share/syslinux/.            "${__CDFS:?}"/isolinux
-	[[ -e "${__RTFS:?}"/usr/share/grub2/x86_64-efi/.    ]] && cp --preserve=timestamps --recursive "${__RTFS:?}"/usr/share/grub2/x86_64-efi/.    "${__CDFS:?}"/boot/grub/x86_64-efi
-	[[ -e "${__RTFS:?}"/usr/share/grub2/i386-pc/.       ]] && cp --preserve=timestamps --recursive "${__RTFS:?}"/usr/share/grub2/i386-pc/.       "${__CDFS:?}"/boot/grub/i386-pc
-	# --- security option -----------------------------------------------------
-	[[ -e "${__RTFS:?}"/usr/sbin/getenforce ]] && _SECU_OPTN="${_SECU_SLNX:-}"
-	[[ -e "${__RTFS:?}"/usr/bin/aa-enabled  ]] && _SECU_OPTN="${_SECU_APPA:-}"
-	readonly _SECU_OPTN
+	[[ -e "${__SPLS:?}"                                 ]] && cp --preserve=timestamps             "${__SPLS:?}"                                 "${__CDFS:?}${_DIRS_LIVE:+"/${_DIRS_LIVE}"}"
+	[[ -e "${__SQFS:?}"                                 ]] && cp --preserve=timestamps             "${__SQFS:?}"                                 "${__CDFS:?}${_DIRS_LIVE:+"/${_DIRS_LIVE}"}"
+	[[ -e "${__MNTP:?}/${__IRAM#/}"                     ]] && cp --preserve=timestamps             "${__MNTP:?}/${__IRAM#/}"                     "${__CDFS:?}${_DIRS_LIVE:+"/${_DIRS_LIVE}"}"
+	[[ -e "${__MNTP:?}/${__VLNZ#/}"                     ]] && cp --preserve=timestamps             "${__MNTP:?}/${__VLNZ#/}"                     "${__CDFS:?}${_DIRS_LIVE:+"/${_DIRS_LIVE}"}"
+	[[ -e "${__MNTP:?}/${__IRAM#/}"                     ]] && cp --preserve=timestamps             "${__MNTP:?}/${__IRAM#/}"                     "${__CDFS:?}${_DIRS_LIVE:+"/${_DIRS_LIVE}"}"/initrd.img
+	[[ -e "${__MNTP:?}/${__VLNZ#/}"                     ]] && cp --preserve=timestamps             "${__MNTP:?}/${__VLNZ#/}"                     "${__CDFS:?}${_DIRS_LIVE:+"/${_DIRS_LIVE}"}"/vmlinuz
+	[[ -e "${__MNTP:?}"/usr/lib/ISOLINUX/isolinux.bin   ]] && cp --preserve=timestamps             "${__MNTP:?}"/usr/lib/ISOLINUX/isolinux.bin   "${__CDFS:?}"/isolinux
+	[[ -e "${__MNTP:?}"/usr/lib/syslinux/mbr/gptmbr.bin ]] && cp --preserve=timestamps             "${__MNTP:?}"/usr/lib/syslinux/mbr/gptmbr.bin "${__CDFS:?}"/isolinux
+	[[ -e "${__MNTP:?}"/usr/lib/syslinux/modules/bios/. ]] && cp --preserve=timestamps --recursive "${__MNTP:?}"/usr/lib/syslinux/modules/bios/. "${__CDFS:?}"/isolinux
+	[[ -e "${__MNTP:?}"/usr/lib/grub/x86_64-efi/.       ]] && cp --preserve=timestamps --recursive "${__MNTP:?}"/usr/lib/grub/x86_64-efi/.       "${__CDFS:?}"/boot/grub/x86_64-efi
+	[[ -e "${__MNTP:?}"/usr/lib/grub/i386-pc/.          ]] && cp --preserve=timestamps --recursive "${__MNTP:?}"/usr/lib/grub/i386-pc/.          "${__CDFS:?}"/boot/grub/i386-pc
+	[[ -e "${__MNTP:?}"/usr/share/syslinux/.            ]] && cp --preserve=timestamps --recursive "${__MNTP:?}"/usr/share/syslinux/.            "${__CDFS:?}"/isolinux
+	[[ -e "${__MNTP:?}"/usr/share/grub2/x86_64-efi/.    ]] && cp --preserve=timestamps --recursive "${__MNTP:?}"/usr/share/grub2/x86_64-efi/.    "${__CDFS:?}"/boot/grub/x86_64-efi
+	[[ -e "${__MNTP:?}"/usr/share/grub2/i386-pc/.       ]] && cp --preserve=timestamps --recursive "${__MNTP:?}"/usr/share/grub2/i386-pc/.       "${__CDFS:?}"/boot/grub/i386-pc
 	# --- umount root image ---------------------------------------------------
-	umount "${__RTFS}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
-	losetup --detach "${__RTLP}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
-
-	unset __WORK __CONT __SIZE __STRT __PSEC __PATH __UEFI __MBRF __SQFS __CDFS __IRAM __VLNZ __RTFS __RTLP __RTIM
-
+	umount "${__MNTP}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
+	losetup --detach "${__LOOP}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
+	unset __LOOP
 	# -------------------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
@@ -2238,41 +2202,26 @@ _EOT_
 # -----------------------------------------------------------------------------
 # descript: make live cd-image (create grub)
 #   input :     $1     : output directory
-#   output:   stdout   : message
-#   return:            : unused
+#   input :     $2     : volume id
 function fnMake_live_cdimg_grub() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	declare -r    __TGET_OUTD="${1:?}"	# output directory
 	declare -r    __TGET_VLID="${2:?}"	# volume id
-	declare       __INPD=""				# input directory
-	declare       __OUTD=""				# output directory
-	declare       __CDFS=""				# cdfs image mount point
-	declare       __EGRU=""				# grub.cfg (/EFI/BOOT)
-	declare       __GRUB=""				# grub.cfg (/boot/grub)
-#	declare       __ICFG=""				# isolinux.cfg
-	declare       __MENU=""				# menu.cfg
-	declare       __THME=""				# theme.cfg
-	declare       __TITL=""				# title
-	declare       __VLNZ=""				# kernel
-	declare       __IRAM=""				# initramfs
-	declare       __WORK=""				# work
+	declare -r    __INPD="/boot/grub"						# input directory
+	declare -r    __OUTD="${__TGET_OUTD:?}/grub"			# output directory
+	declare -r    __STRG="${__TGET_OUTD:?}/strg"			# storage work
+	declare -r    __CDFS="${__TGET_OUTD:?}/${_DIRS_CDFS:?}"	# cdfs image mount point
+	declare -r    __EGRU="${__OUTD:?}/${_FILE_GCFG:?}.efi"	# grub.cfg (/EFI/BOOT)
+	declare -r    __GCFG="${__OUTD:?}/${_FILE_GCFG:?}"		# grub.cfg (/boot/grub)
+	declare -r    __MENU="${__OUTD:?}/${_FILE_MENU:?}"		# menu.cfg
+	declare -r    __THME="${__OUTD:?}/${_FILE_THME:?}"		# theme.cfg
+	declare -r    __TITL="Live system"						# title
+	declare -r    __VLNZ="${_PATH_VLNZ:+"${_DIRS_LIVE:+"/${_DIRS_LIVE}"}/${_PATH_VLNZ##*/}"}"		# kernel
+	declare -r    __IRAM="${_PATH_IRAM:+"${_DIRS_LIVE:+"/${_DIRS_LIVE}"}/${_PATH_IRAM##*/}"}"		# initramfs
 	# --- local ---------------------------------------------------------------
-	__INPD="/boot/grub"
-	__OUTD="${__TGET_OUTD:?}/grub"
-	__CDFS="${__TGET_OUTD:?}/${_DIRS_CDFS:?}"
 	mkdir -p "${__OUTD:?}"
-	__EGRU="${__OUTD:?}/${_FILE_GCFG:?}.efi"
-	__GRUB="${__OUTD:?}/${_FILE_GCFG:?}"
-#	__ICFG="${__OUTD:?}/${_FILE_ICFG:?}"
-	__MENU="${__OUTD:?}/${_FILE_MENU:?}"
-	__THME="${__OUTD:?}/${_FILE_THME:?}"
-	__TITL="Live system"
-	__WORK="$(fnFind_kernel "${__CDFS}/LiveOS")"
-	read -r __VLNZ __IRAM < <(echo "${__WORK:-}")
-	__VLNZ="/LiveOS/${__VLNZ:?}"
-	__IRAM="/LiveOS/${__IRAM:?}"
 	# --- /EFI/BOOT/grub.cfg --------------------------------------------------
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__EGRU:?}"
 		search --file --set=root /.disk/info
@@ -2280,8 +2229,8 @@ function fnMake_live_cdimg_grub() {
 		source \$prefix/grub.cfg
 	_EOT_
 	# --- create grub.cfg -----------------------------------------------------
-	fnGrub_conf  "${__GRUB:?}" "${__INPD:-}/${_FILE_MENU:?}" "${__INPD:-}/${_FILE_THME:?}" "${_MENU_TOUT:?}" "${_MENU_RESO:?}" "${_MENU_DPTH:?}"
-	fnGrub_theme "${__THME:?}" "${__TITL:?}" "/LiveOS/${_MENU_SPLS:?}"
+	fnGrub_conf  "${__GCFG:?}" "${__INPD:-}/${_FILE_MENU:?}" "${__INPD:-}/${_FILE_THME:?}" "${_MENU_TOUT:?}" "${_MENU_RESO:?}" "${_MENU_DPTH:?}"
+	fnGrub_theme "${__THME:?}" "${__TITL:?}" "${_DIRS_LIVE:+"/${_DIRS_LIVE}"}/${_MENU_SPLS:?}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__MENU:?}"
 		menuentry "${__TGET_VLID}" {
 		  set gfxpayload="keep"
@@ -2296,11 +2245,12 @@ function fnMake_live_cdimg_grub() {
 		}
 _EOT_
 	[[ -e "${__EGRU:?}" ]] && cp --preserve=timestamps "${__EGRU:?}" "${__CDFS:?}/EFI/BOOT/${_FILE_GCFG##*/}"
-	[[ -e "${__GRUB:?}" ]] && cp --preserve=timestamps "${__GRUB:?}" "${__CDFS:?}/${__INPD:?}"
+	[[ -e "${__GCFG:?}" ]] && cp --preserve=timestamps "${__GCFG:?}" "${__CDFS:?}/${__INPD:?}"
 	[[ -e "${__THME:?}" ]] && cp --preserve=timestamps "${__THME:?}" "${__CDFS:?}/${__INPD:?}"
 	[[ -e "${__MENU:?}" ]] && cp --preserve=timestamps "${__MENU:?}" "${__CDFS:?}/${__INPD:?}"
-
-	unset __WORK __IRAM __VLNZ __TITL __THME __MENU __ICFG __GRUB __EGRU __CDFS __OUTD __INPD
+#	unset 
+	# -------------------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
 # -----------------------------------------------------------------------------
@@ -2314,33 +2264,15 @@ function fnMake_live_cdimg_ilnx() {
 
 	declare -r    __TGET_OUTD="${1:?}"	# output directory
 	declare -r    __TGET_VLID="${2:?}"	# volume id
-	declare       __INPD=""				# input directory
-	declare       __OUTD=""				# output directory
-	declare       __CDFS=""				# cdfs image mount point
-#	declare       __EGRU=""				# grub.cfg (/EFI/BOOT)
-#	declare       __GRUB=""				# grub.cfg (/boot/grub)
-	declare       __ICFG=""				# isolinux.cfg
-	declare       __MENU=""				# menu.cfg
-	declare       __THME=""				# theme.cfg
-	declare       __TITL=""				# title
-#	declare       __VLNZ=""				# kernel
-#	declare       __IRAM=""				# initramfs
-#	declare       __WORK=""				# work
+	declare -r    __INPD="/isolinux"						# input directory
+	declare -r    __OUTD="${__TGET_OUTD:?}/isolinux"		# output directory
+	declare -r    __CDFS="${__TGET_OUTD:?}/${_DIRS_CDFS:?}"	# cdfs image mount point
+	declare -r    __ICFG="${__OUTD:?}/${_FILE_ICFG:?}"		# isolinux.cfg
+	declare -r    __MENU="${__OUTD:?}/${_FILE_MENU:?}"		# menu.cfg
+	declare -r    __THME="${__OUTD:?}/${_FILE_THME:?}"		# theme.cfg
+	declare -r    __TITL="Live system"						# title
 	# --- local ---------------------------------------------------------------
-	__INPD="/isolinux"
-	__OUTD="${__TGET_OUTD:?}/isolinux"
-	__CDFS="${__TGET_OUTD:?}/${_DIRS_CDFS:?}"
 	mkdir -p "${__OUTD:?}"
-#	__EGRU="${__OUTD:?}/${_FILE_GCFG:?}.efi"
-#	__GRUB="${__OUTD:?}/${_FILE_GCFG:?}"
-	__ICFG="${__OUTD:?}/${_FILE_ICFG:?}"
-	__MENU="${__OUTD:?}/${_FILE_MENU:?}"
-	__THME="${__OUTD:?}/${_FILE_THME:?}"
-	__TITL="Live system"
-#	__WORK="$(fnFind_kernel "${__CDFS}/LiveOS")"
-#	read -r __VLNZ __IRAM < <(echo "${__WORK:-}")
-#	__VLNZ="/LiveOS/${__VLNZ:?}"
-#	__IRAM="/LiveOS/${__IRAM:?}"
 	# --- create isolinux.cfg -------------------------------------------------
 	fnIlnx_conf  "${__ICFG:?}" "${__INPD:-}/${_FILE_MENU:?}" "${__INPD:-}/${_FILE_THME:?}" "${_MENU_TOUT:?}" "${_MENU_RESO:?}" "${_MENU_DPTH:?}"
 	fnIlnx_theme "${__THME:?}" "${__TITL:?}" "/LiveOS/${_MENU_SPLS:?}"
@@ -2352,18 +2284,19 @@ function fnMake_live_cdimg_ilnx() {
 		  initrd /LiveOS/initrd.img
 		  append root=live:CDLABEL=${__TGET_VLID} rd.live.image rd.live.overlay.overlayfs=1${_SECU_OPTN:+" ${_SECU_OPTN}"} --- quiet
 _EOT_
-#	[[ -e "${__EGRU:?}" ]] && cp --preserve=timestamps "${__EGRU:?}" "${__CDFS:?}/EFI/BOOT/${_FILE_GCFG##*/}"
 	[[ -e "${__ICFG:?}" ]] && cp --preserve=timestamps "${__ICFG:?}" "${__CDFS:?}/${__INPD:?}"
 	[[ -e "${__THME:?}" ]] && cp --preserve=timestamps "${__THME:?}" "${__CDFS:?}/${__INPD:?}"
 	[[ -e "${__MENU:?}" ]] && cp --preserve=timestamps "${__MENU:?}" "${__CDFS:?}/${__INPD:?}"
-
-	unset __WORK __IRAM __VLNZ __TITL __THME __MENU __ICFG __GRUB __EGRU __CDFS __OUTD __INPD
+#	unset 
+	# -------------------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 
 # -----------------------------------------------------------------------------
 # descript: make live cd-image
 #   input :     $1     : output directory
 #   input :     $2     : volume id
+#   input :     $3     : storage
 #   output:   stdout   : message
 #   return:            : unused
 function fnMake_live_cdimg() {
@@ -2373,6 +2306,7 @@ function fnMake_live_cdimg() {
 
 	declare -r    __TGET_OUTD="${1:?}"	# output directory
 	declare -r    __TGET_VLID="${2:?}"	# volume id
+	declare -r    __TGET_STRG="${3:-}"	# storage
 	declare       __CDFS=""				# cdfs image mount point
 	declare       __VLID=""				# volume id
 	declare       __ISOS=""				# output file name
@@ -2383,7 +2317,7 @@ function fnMake_live_cdimg() {
 	declare       __ETRI=""				# eltorito
 	declare       __BIOS=""				# bios or uefi imga file path
 	# --- create cd-image image -----------------------------------------------
-	fnMake_live_cdimg_cdfs "${__TGET_OUTD:?}" "${__TGET_VLID:?}"
+	fnMake_live_cdimg_cdfs "${__TGET_OUTD:?}" "${__TGET_VLID:?}" "${__TGET_STRG:?}"
 	fnMake_live_cdimg_grub "${__TGET_OUTD:?}" "${__TGET_VLID:?}"
 	fnMake_live_cdimg_ilnx "${__TGET_OUTD:?}" "${__TGET_VLID:?}"
 	# --- create iso image ----------------------------------------------------
@@ -2447,6 +2381,8 @@ function fnMake_live_build() {
 	declare -r    __TEMP="${_DIRS_TEMP:?}"	# local
 	declare -r    __RTMP="${_DIRS_RTMP:?}"	# remote
 	declare -a    __TGET=()				# target list
+	declare       __STRG=""				# storage
+	declare       __SPLS=""				# splash.png
 	declare       __WORK=""				# work
 	declare -a    __ARRY=()				# work
 	declare -i    I=0					# work
@@ -2501,9 +2437,18 @@ function fnMake_live_build() {
 		fnMake_live_mkosi "${__OPRT:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}" "${__WRKD:-}" "${__OUTD:-}"
 		case "${__OPRT:-}" in
 			build        )
-				fnMake_live_vmimg "${__OUTD:-}" "${__VLID:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}"
-				fnMake_live_qemu  "${__OUTD:-}" "${__VLID:-}"
-				fnMake_live_cdimg "${__OUTD:-}" "${__VLID:-}"
+				__STRG="${__OUTD:?}/vm_uefi_${__VLID,,}.raw"
+				__SPLS="${__OUTD:?}/${_MENU_SPLS:?}"
+				# --- splash.png ----------------------------------------------
+				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | xxd -p -r | gzip -d -k > "${__SPLS:?}"
+					1f8b0808462b8d69000373706c6173682e706e6700eb0cf073e7e592e262
+					6060e0f5f47009626060566060608ae060028a888a88aa3330b0767bba38
+					8654dc7a7b909117287868c177ff5c3ef3050ca360148c8251300ae8051a
+					c299ff4c6660bcb6edd00b10d7d3d5cf659d53421300e6198186c4050000
+_EOT_
+				fnMake_live_vmimg "${__OUTD:-}" "${__VLID:-}" "${__STRG:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}"
+				fnMake_live_qemu  "${__STRG:-}"
+				fnMake_live_cdimg "${__OUTD:-}" "${__VLID:-}" "${__STRG:-}"
 				;;
 			*            ) __OPTN=("help");;
 		esac
@@ -2511,8 +2456,7 @@ function fnMake_live_build() {
 		       "${__OUTD:?}"
 	done
 
-	unset __ARRY __WORK __TGET __SUBD __VLID __CODE __HOST __EDTN __OUTD __WRKD __VERS __DIST
-
+	unset I __ARRY __WORK __STRG __TGET __SUBD __VLID __CODE __HOST __EDTN __OUTD __WRKD __VERS __DIST
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }

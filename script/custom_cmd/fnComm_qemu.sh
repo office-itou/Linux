@@ -17,6 +17,7 @@ function fnMk_qemu() {
 	declare -i    __time_end=0
 	declare -i    __time_elapsed=0
 	declare       __COMD=""				# command
+	declare       __RTCD=""
 
 	__time_start=$(date +%s)
 	echo "execute qemu ..."
@@ -27,8 +28,10 @@ function fnMk_qemu() {
 		exit 1
 	fi
 	if ! nice -n 19 "${__COMD:?}" "${__OPTN[@]}"; then
+		__RTCD="$?"
 		printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [qemu]" "${__COMD} ${__OPTN[*]}" 1>&2
-		printf "%s\n" "${__COMD} ${__OPTN[*]}"
+		printf "%s\n" "${__COMD}: ${__RTCD:-}"
+		exit "${__RTCD:-}"
 	fi
 	__time_end=$(date +%s)
 	__time_elapsed=$((__time_end - __time_start))

@@ -65,6 +65,7 @@ function fnMk_xorrisofs() {
 	declare -i    __time_start=0
 	declare -i    __time_end=0
 	declare -i    __time_elapsed=0
+	declare       __RTCD=""
 
 	__time_start=$(date +%s)
 	echo "create iso image file ..."
@@ -73,11 +74,17 @@ function fnMk_xorrisofs() {
 	[[ -n "${__FILE_BIOS:-}" ]] && echo "eltorito mode"
 	pushd "${__DIRS_TGET:?}" > /dev/null || exit
 		if ! nice -n 19 xorrisofs "${__OPTN[@]}" -output "${__TEMP}" .; then
+			__RTCD="$?"
 			printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [xorriso]" "${__FILE_ISOS##*/}" 1>&2
-			printf "%s\n" "xorrisofs ${__OPTN[*]} -output ${__TEMP} ."
+			printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [xorriso]" "xorriso ${__OPTN[*]}" 1>&2
+			printf "%s\n" "xorriso: ${__RTCD:-}"
+			exit "${__RTCD:-}"
 		else
 			if ! cp --preserve=timestamps "${__TEMP}" "${__FILE_ISOS}"; then
+				__RTCD="$?"
 				printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [cp]" "${__FILE_ISOS##*/}" 1>&2
+				printf "%s\n" "cp: ${__RTCD:-}"
+				exit "${__RTCD:-}"
 			else
 				__REAL="$(realpath "${__FILE_ISOS}")"
 				__DIRS="$(fnDirname "${__FILE_ISOS}")"

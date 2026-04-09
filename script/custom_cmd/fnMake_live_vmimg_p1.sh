@@ -4,13 +4,12 @@
 # descript: make live vm-image partition1
 #   input :     $1     : device name
 #   input :     $2     : partition
-#   input :     $3     : uuid
-#   input :     $4     : distribution
-#   input :     $5     : volume id
-#   input :     $6     : output directory
-#   input :     $7     : root image mount point
-#   input :     $8     : kernel
-#   input :     $9     : initramfs
+#   input :     $3     : output directory
+#   input :     $4     : uuid
+#   input :     $5     : distribution
+#   input :     $6     : volume id
+#   input :     $7     : kernel
+#   input :     $8     : initramfs
 #   output:   stdout   : message
 #   return:            : unused
 #   g-var : _AUTO_INST : read
@@ -20,25 +19,35 @@ function fnMake_live_vmimg_p1() {
 
 	declare -r    __TGET_DEVS="${1:?}"	# device name
 	declare -r    __TGET_PART="${2:?}"	# partition
-	declare -r    __TGET_UUID="${3:?}"	# uuid
-	declare -r    __TGET_DIST="${4:?}"	# distribution
-	declare -r    __TGET_VLID="${5:?}"	# volume id
-	declare -r    __TGET_OUTD="${6:?}"	# output directory
-	declare -r    __TGET_RTMP="${7:?}"	# root image mount point
-	declare -r    __TGET_VLNZ="${8:?}"	# kernel
-	declare -r    __TGET_IRAM="${9:?}"	# initramfs
-	declare       __MNTP=""				# mount point
-	declare       __COMD=""				# command
-	declare       __PATH=""				# work
-	declare       __MENU=""				# main menu
-	declare       __THME=""				# theme file
-	declare       __TITL=""				# menu title
-	declare       __SECU=""				# security
-	declare       __SPLS=""				# splash.png
-
-	__MNTP="${__TGET_OUTD}/mnt1"
-	mkdir -p "${__MNTP}"
-	mount "${__TGET_DEVS}${__TGET_PART}" "${__MNTP}"
+	declare -r    __TGET_OUTD="${3:?}"	# output directory
+	declare -r    __TGET_UUID="${4:?}"	# uuid
+	declare -r    __TGET_DIST="${5:?}"	# distribution
+	declare -r    __TGET_VLID="${6:?}"	# volume id
+	declare -r    __INPD="/boot/grub"						# input directory
+	declare -r    __OUTD="${__TGET_OUTD:?}/strg"			# output directory
+	declare -r    __MNTP="${__TGET_OUTD:?}/mnt1"			# mount point
+#	declare -r    __CDFS="${__TGET_OUTD:?}/${_DIRS_CDFS:?}"	# cdfs image mount point
+#	declare -r    __EGRU="${__OUTD:?}/${_FILE_GCFG:?}.efi"	# grub.cfg (/EFI/BOOT)
+	declare -r    __GCFG="${__OUTD:?}/${_FILE_GCFG:?}"		# grub.cfg (/boot/grub)
+#	declare -r    __ICFG="${__OUTD:?}/${_FILE_ICFG:?}"		# isolinux.cfg
+	declare -r    __MENU="${__OUTD:?}/${_FILE_MENU:?}"		# menu.cfg
+	declare -r    __THME="${__OUTD:?}/${_FILE_THME:?}"		# theme.cfg
+	declare -r    __SPLS="${__TGET_OUTD:?}/${_MENU_SPLS:?}"	# splash.png
+	declare -r    __MBRF="${__OUTD:?}/${_FILE_MBRF:?}"		# mbr image
+	declare -r    __UEFI="${__OUTD:?}/${_FILE_UEFI:?}"		# uefi image
+	declare -r    __VLNZ="${_PATH_VLNZ:?}"					# kernel
+	declare -r    __IRAM="${_PATH_IRAM:?}"					# initramfs
+	declare -r    __TITL="Live system"						# title
+	declare       __COMD=""									# command
+	declare       __PSEC=""									# physical sector size
+	declare       __STRT=""									# partition start offset (in 512-byte sectors)
+	declare       __SIZE=""									# size of the device (bytes)
+	declare       __CONT=""									# partition sector size (in 512-byte sectors)
+	declare       __PATH=""									# work
+	declare       __WORK=""									# work
+	# --- local ---------------------------------------------------------------
+	mkdir -p "${__OUTD:?}"
+	mkdir -p "${__MNTP:?}"
 	# --- install grub module -------------------------------------------------
 	  if command -v grub-install  > /dev/null 2>&1; then __COMD="grub-install"
 	elif command -v grub2-install > /dev/null 2>&1; then __COMD="grub2-install"
@@ -46,6 +55,7 @@ function fnMake_live_vmimg_p1() {
 		fnMsgout "${_PROG_NAME:-}" "abnormal termination" "[${__FUNC_NAME}]"
 		exit 1
 	fi
+	mount "${__TGET_DEVS}${__TGET_PART}" "${__MNTP}" && _LIST_RMOV+=("${__MNTP}")
 	"${__COMD:?}" \
 		--target=x86_64-efi \
 		--efi-directory="${__MNTP}" \
@@ -56,29 +66,17 @@ function fnMake_live_vmimg_p1() {
 		--target=i386-pc \
 		--boot-directory="${__MNTP}/boot" \
 		"${__TGET_DEVS}"
-	# --- splash.png ----------------------------------------------------------
-	__SPLS="/boot/grub/${_MENU_SPLS:?}"
-	__SRCS="${__OUTD}/${__SPLS##*/}"
-	__DEST="${__MNTP}/${__SPLS#/}"
-	mkdir -p "${__SRCS%/*}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__SRCS:?}"
-		1f8b0808462b8d69000373706c6173682e706e6700eb0cf073e7e592e262
-		6060e0f5f47009626060566060608ae060028a888a88aa3330b0767bba38
-		8654dc7a7b909117287868c177ff5c3ef3050ca360148c8251300ae8051a
-		c299ff4c6660bcb6edd00b10d7d3d5cf659d53421300e6198186c4050000
-_EOT_
-	mkdir -p "${__DEST%/*}"
-	cp --preserve=timestamps "${__SRCS:?}" "${__DEST:?}"
+	umount "${__MNTP}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
+	# --- create uefi/bios image ----------------------------------------------
+	__WORK="$(lsblk -no-header --bytes --output=PATH,PHY-SEC,START,SIZE "${__TGET_DEVS:?}${__TGET_PART:?}")"
+	read -r __PATH __PSEC __STRT __SIZE < <(echo "${__WORK:?}")
+	__CONT="$(("${__SIZE:?}" / "${__PSEC:?}"))"
+	dd if="${__TGET_DEVS:?}" of="${__UEFI:?}" bs="${__PSEC:?}" skip="${__STRT:?}" count="${__CONT:?}"
+	dd if="${__TGET_DEVS:?}" of="${__MBRF:?}" bs=1 count=440
 	# --- create grub.cfg -----------------------------------------------------
-	__PATH="${__OUTD}/${_FILE_GCFG:?}"
-	__MENU="${__OUTD}/${_FILE_MENU:?}"
-	__THME="${__OUTD}/${_FILE_THME:?}"
-	__TITL="Live system"
-	__SECU=""
-	[[ -e "${__TGET_RTMP:?}"/usr/bin/aa-enabled  ]] && __SECU="security=apparmor apparmor=1"
-	[[ -e "${__TGET_RTMP:?}"/usr/sbin/getenforce ]] && __SECU="security=selinux selinux=1 enforcing=0"
-	fnGrub_conf "${__PATH:?}" "${__MENU:?}" "${__THME:?}" "${_MENU_TOUT:?}" "${_MENU_RESO:?}" "${_MENU_DPTH:?}"
-	fnGrub_theme "${__THME:?}" "${__TITL:?}" "${__SPLS:-}"
+	mount "${__TGET_DEVS}${__TGET_PART}" "${__MNTP}" && _LIST_RMOV+=("${__MNTP}")
+	fnGrub_conf  "${__GCFG:?}" "${__INPD}/${_FILE_MENU:?}" "${__INPD}/${_FILE_THME:?}" "${_MENU_TOUT:?}" "${_MENU_RESO:?}" "${_MENU_DPTH:?}"
+	fnGrub_theme "${__THME:?}" "${__TITL:?}" "${__INPD}/${_MENU_SPLS:?}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__MENU:?}"
 		menuentry "${__TGET_VLID}" {
 		  set gfxpayload="keep"
@@ -88,20 +86,24 @@ _EOT_
 		  echo root=\${root}
 		  set devs=/dev/sda2
 		  set ttys=console=ttyS0
-		  set options="\${ttys} root=\${devs} ${__SECU}"
+		  set options="\${ttys} root=\${devs}${_SECU_OPTN:+" ${_SECU_OPTN}"}"
 		# if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 		  echo 'Loading boot files ...'
 		  echo 'Loading vmlinuz ...'
-		  linux  ${__TGET_VLNZ:?} \${options} --- quiet
+		  linux  ${__VLNZ:?} \${options} --- quiet
 		  echo 'Loading initramfs ...'
-		  initrd ${__TGET_IRAM:?}
+		  initrd ${__IRAM:?}
 		}
 _EOT_
-	cp --preserve=timestamps "${__PATH:?}" "${__MNTP}"/boot/grub/
-	cp --preserve=timestamps "${__THME:?}" "${__MNTP}"/boot/grub/
-	cp --preserve=timestamps "${__MENU:?}" "${__MNTP}"/boot/grub/
+#	[[ -e "${__EGRU:?}" ]] && cp --preserve=timestamps "${__EGRU:?}" "${__MNTP:?}/EFI/BOOT/${_FILE_GCFG##*/}"
+	[[ -e "${__GCFG:?}" ]] && cp --preserve=timestamps "${__GCFG:?}" "${__MNTP:?}/${__INPD:?}"
+#	[[ -e "${__ICFG:?}" ]] && cp --preserve=timestamps "${__ICFG:?}" "${__MNTP:?}/${__INPD:?}"
+	[[ -e "${__THME:?}" ]] && cp --preserve=timestamps "${__THME:?}" "${__MNTP:?}/${__INPD:?}"
+	[[ -e "${__MENU:?}" ]] && cp --preserve=timestamps "${__MENU:?}" "${__MNTP:?}/${__INPD:?}"
+	[[ -e "${__SPLS:?}" ]] && cp --preserve=timestamps "${__SPLS:?}" "${__MNTP:?}/${__INPD:?}"
+	umount "${__MNTP}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
 	# -------------------------------------------------------------------------
-	umount "${__MNTP}"
+	unset __WORK __PATH __COMD
 	# -------------------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }

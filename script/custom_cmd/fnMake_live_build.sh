@@ -48,6 +48,8 @@ function fnMake_live_build() {
 	declare -r    __TEMP="${_DIRS_TEMP:?}"	# local
 	declare -r    __RTMP="${_DIRS_RTMP:?}"	# remote
 	declare -a    __TGET=()				# target list
+	declare       __STRG=""				# storage
+	declare       __SPLS=""				# splash.png
 	declare       __WORK=""				# work
 	declare -a    __ARRY=()				# work
 	declare -i    I=0					# work
@@ -102,9 +104,18 @@ function fnMake_live_build() {
 		fnMake_live_mkosi "${__OPRT:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}" "${__WRKD:-}" "${__OUTD:-}"
 		case "${__OPRT:-}" in
 			build        )
-				fnMake_live_vmimg "${__OUTD:-}" "${__VLID:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}"
-				fnMake_live_qemu  "${__OUTD:-}" "${__VLID:-}"
-				fnMake_live_cdimg "${__OUTD:-}" "${__VLID:-}"
+				__STRG="${__OUTD:?}/vm_uefi_${__VLID,,}.raw"
+				__SPLS="${__OUTD:?}/${_MENU_SPLS:?}"
+				# --- splash.png ----------------------------------------------
+				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | xxd -p -r | gzip -d -k > "${__SPLS:?}"
+					1f8b0808462b8d69000373706c6173682e706e6700eb0cf073e7e592e262
+					6060e0f5f47009626060566060608ae060028a888a88aa3330b0767bba38
+					8654dc7a7b909117287868c177ff5c3ef3050ca360148c8251300ae8051a
+					c299ff4c6660bcb6edd00b10d7d3d5cf659d53421300e6198186c4050000
+_EOT_
+				fnMake_live_vmimg "${__OUTD:-}" "${__VLID:-}" "${__STRG:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}"
+				fnMake_live_qemu  "${__STRG:-}"
+				fnMake_live_cdimg "${__OUTD:-}" "${__VLID:-}" "${__STRG:-}"
 				;;
 			*            ) __OPTN=("help");;
 		esac
@@ -112,8 +123,7 @@ function fnMake_live_build() {
 		       "${__OUTD:?}"
 	done
 
-	unset __ARRY __WORK __TGET __SUBD __VLID __CODE __HOST __EDTN __OUTD __WRKD __VERS __DIST
-
+	unset I __ARRY __WORK __STRG __TGET __SUBD __VLID __CODE __HOST __EDTN __OUTD __WRKD __VERS __DIST
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }

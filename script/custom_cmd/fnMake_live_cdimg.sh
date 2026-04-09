@@ -4,6 +4,7 @@
 # descript: make live cd-image
 #   input :     $1     : output directory
 #   input :     $2     : volume id
+#   input :     $3     : storage
 #   output:   stdout   : message
 #   return:            : unused
 #   g-var :  FUNCNAME  : read
@@ -16,6 +17,7 @@ function fnMake_live_cdimg() {
 
 	declare -r    __TGET_OUTD="${1:?}"	# output directory
 	declare -r    __TGET_VLID="${2:?}"	# volume id
+	declare -r    __TGET_STRG="${3:-}"	# storage
 	declare       __CDFS=""				# cdfs image mount point
 	declare       __VLID=""				# volume id
 	declare       __ISOS=""				# output file name
@@ -26,7 +28,7 @@ function fnMake_live_cdimg() {
 	declare       __ETRI=""				# eltorito
 	declare       __BIOS=""				# bios or uefi imga file path
 	# --- create cd-image image -----------------------------------------------
-	fnMake_live_cdimg_cdfs "${__TGET_OUTD:?}" "${__TGET_VLID:?}"
+	fnMake_live_cdimg_cdfs "${__TGET_OUTD:?}" "${__TGET_VLID:?}" "${__TGET_STRG:?}"
 	fnMake_live_cdimg_grub "${__TGET_OUTD:?}" "${__TGET_VLID:?}"
 	fnMake_live_cdimg_ilnx "${__TGET_OUTD:?}" "${__TGET_VLID:?}"
 	# --- create iso image ----------------------------------------------------

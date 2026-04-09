@@ -2,8 +2,7 @@
 
 # -----------------------------------------------------------------------------
 # descript: make live vm-image on qemu
-#   input :     $1     : output directory
-#   input :     $2     : volume id
+#   input :     $1     : storage
 #   output:   stdout   : message
 #   return:            : unused
 #   g-var : _AUTO_INST : read
@@ -11,11 +10,10 @@ function fnMake_live_qemu() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
-	declare -r    __TGET_OUTD="${1:-}"	# output directory
-	declare -r    __TGET_VLID="${2:-}"	# volume id
-	declare       __STRG=""				# storage
+	declare -r    __TGET_STRG="${1:-}"	# storage
 	# --- command -------------------------------------------------------------
-	__STRG="${__TGET_OUTD:?}/vm_uefi_${__TGET_VLID,,}.raw"
+	# /usr/share/novnc/utils/novnc_proxy
+	# http://sv-developer:6080/vnc.html
 	__OPTN=(
 		-cpu "host"
 		-machine "q35"
@@ -31,11 +29,11 @@ function fnMake_live_qemu() {
 		-device "ich9-intel-hda"
 		-vnc ":0"
 		-nographic
-		-drive "file=${__STRG},format=raw"
+		-drive "file=${__TGET_STRG:?},format=raw"
 	)
 	fnMk_qemu "${__OPTN[@]}"
 
-	unset __OPTN __HOST
+	unset __OPTN
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
