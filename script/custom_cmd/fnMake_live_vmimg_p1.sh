@@ -90,7 +90,7 @@ function fnMake_live_vmimg_p1() {
 		# if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 		  echo 'Loading boot files ...'
 		  echo 'Loading vmlinuz ...'
-		  linux  ${__VLNZ:?} \${options} --- quiet
+		  linux  ${__VLNZ:?} \${options} ---
 		  echo 'Loading initramfs ...'
 		  initrd ${__IRAM:?}
 		}

@@ -1881,7 +1881,7 @@ function fnMake_live_vmimg_p1() {
 		# if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 		  echo 'Loading boot files ...'
 		  echo 'Loading vmlinuz ...'
-		  linux  ${__VLNZ:?} \${options} --- quiet
+		  linux  ${__VLNZ:?} \${options} ---
 		  echo 'Loading initramfs ...'
 		  initrd ${__IRAM:?}
 		}
@@ -1956,9 +1956,9 @@ function fnMake_live_vmimg_p2() {
 	mkdir -p "${__SRCS%/*}"
 	mkdir -p "${__DEST%/*}"
 	{
-		printf "%-43s %-43s -s31s -31s -7s -s\n" "# <file system>"  "<mount point>" "<type>"           "<options>"                   "<dump>" "<pass>"
-		printf "%-43s %-43s -s31s -31s -7s -s\n" "UUID=${__UUID:?}" "/"             "ext4"             "defaults"                    "0"      "0"
-		printf "%-43s %-43s -s31s -31s -7s -s\n" ".host:/"          "/srv/hgfs"     "fuse.vmhgfs-fuse" "nofail,allow_other,defaults" "0"      "0"
+		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" "# <file system>"  "<mount point>" "<type>"           "<options>"                   "<dump>" "<pass>"
+		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" "UUID=${__UUID:?}" "/"             "ext4"             "defaults"                    "0"      "0"
+		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" ".host:/"          "/srv/hgfs"     "fuse.vmhgfs-fuse" "nofail,allow_other,defaults" "0"      "0"
 	} > "${__SRCS:?}"
 	[[ -e "${__SRCS:?}" ]] && cp --preserve=timestamps "${__SRCS:?}" "${__DEST:?}"
 	# --- run-once.sh ---------------------------------------------------------
@@ -1972,7 +1972,7 @@ function fnMake_live_vmimg_p2() {
 		#!/bin/bash
 		# touch /.autorelabel
 		systemctl disable ${__SRVC##*/}
-		sed -i "${__PATH:?}" '/^UUID=/d'
+		sed -i "${__PATH:?}" -e '/^UUID=/d'
 		rm -f "${__SRVC:?}"
 		rm -f "\${0:?}"
 		ls -lahZ / > /var/admin/autoinst/"\${0##*/}".success
