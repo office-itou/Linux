@@ -12,7 +12,7 @@ function fnMake_live_qemu() {
 
 	declare -r    __TGET_STRG="${1:-}"	# storage
 	# --- command -------------------------------------------------------------
-	# /usr/share/novnc/utils/novnc_proxy
+	# /usr/share/novnc/utils/novnc_proxy --listen [::]:6080
 	# http://sv-developer:6080/vnc.html
 	__OPTN=(
 		-cpu "host"

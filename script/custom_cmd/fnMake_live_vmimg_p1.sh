@@ -7,9 +7,7 @@
 #   input :     $3     : output directory
 #   input :     $4     : uuid
 #   input :     $5     : distribution
-#   input :     $6     : volume id
-#   input :     $7     : kernel
-#   input :     $8     : initramfs
+#   input :     $6     : menu entry
 #   output:   stdout   : message
 #   return:            : unused
 #   g-var : _AUTO_INST : read
@@ -22,7 +20,7 @@ function fnMake_live_vmimg_p1() {
 	declare -r    __TGET_OUTD="${3:?}"	# output directory
 	declare -r    __TGET_UUID="${4:?}"	# uuid
 	declare -r    __TGET_DIST="${5:?}"	# distribution
-	declare -r    __TGET_VLID="${6:?}"	# volume id
+	declare -r    __TGET_ENTR="${6:?}"	# menu entry
 	declare -r    __INPD="/boot/grub"						# input directory
 	declare -r    __OUTD="${__TGET_OUTD:?}/strg"			# output directory
 	declare -r    __MNTP="${__TGET_OUTD:?}/mnt1"			# mount point
@@ -78,7 +76,7 @@ function fnMake_live_vmimg_p1() {
 	fnGrub_conf  "${__GCFG:?}" "${__INPD}/${_FILE_MENU:?}" "${__INPD}/${_FILE_THME:?}" "${_MENU_TOUT:?}" "${_MENU_RESO:?}" "${_MENU_DPTH:?}"
 	fnGrub_theme "${__THME:?}" "${__TITL:?}" "${__INPD}/${_MENU_SPLS:?}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__MENU:?}"
-		menuentry "${__TGET_VLID}" {
+		menuentry "${__TGET_ENTR}" {
 		  set gfxpayload="keep"
 		  set background_color="black"
 		  set uuid="${__TGET_UUID:?}"

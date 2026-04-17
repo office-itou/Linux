@@ -4251,39 +4251,73 @@ function fnMk_xorrisofs() {
 	declare -r    __FILE_UEFI="${6:-}"	# uefi file name
 	declare -r    __FILE_BCAT="${7:-}"	# eltorito catalog file name
 	declare -r    __FILE_ETRI="${8:-}"	# eltorito boot file name
-	if [[ -n "${__FILE_HBRD:-}" ]]; then
-		declare -r -a __OPTN=(\
-			-quiet -rational-rock \
-			${__FILE_VLID:+-volid "${__FILE_VLID// /$'\x20'}"} \
-			-joliet -joliet-long \
-			-cache-inodes \
-			-isohybrid-mbr "${__FILE_HBRD}" \
-			${__FILE_ETRI:+-eltorito-boot "${__FILE_ETRI}"} \
-			${__FILE_BCAT:+-eltorito-catalog "${__FILE_BCAT}"} \
-			-no-emul-boot -boot-load-size 4 -boot-info-table \
-			-eltorito-alt-boot -e "${__FILE_UEFI}" -no-emul-boot \
-			-isohybrid-gpt-basdat -isohybrid-apm-hfsplus
-		)
-	else
-		declare -r -a __OPTN=(\
-			-quiet -rational-rock \
-			${__FILE_VLID:+-volid "${__FILE_VLID// /$'\x20'}"} \
-			-joliet -joliet-long \
-			-full-iso9660-filenames -iso-level 3 \
-			-partition_offset 16 \
-			--grub2-mbr "${__FILE_BIOS}" \
-			--mbr-force-bootable \
-			-append_partition 2 0xEF "${__FILE_UEFI}" \
-			-appended_part_as_gpt \
-			${__FILE_BCAT:+-eltorito-catalog "${__FILE_BCAT}"} \
-			${__FILE_ETRI:+-eltorito-boot "${__FILE_ETRI}"} \
-			-no-emul-boot -boot-load-size 4 -boot-info-table --grub2-boot-info \
-			-eltorito-alt-boot -e '--interval:appended_partition_2:all::' -no-emul-boot
-		)
-	fi
+	declare -a    __OPTN=()
 	declare       __TEMP=""				# temporary file
 	              __TEMP="$(mktemp -q "${_DIRS_TEMP:-/tmp}/${__FUNC_NAME}.XXXXXX")"
 	readonly      __TEMP
+#	-quiet								Run quietly
+#	-o FILE, -output FILE				Set output file name
+#	-R, -rock							Generate Rock Ridge directory information
+#	-J, -joliet							Generate Joliet directory information
+#	-V ID, -volid ID					Set Volume ID
+#	--grub2-mbr FILE					Set GRUB2 MBR for boot image address patching
+#	-partition_offset LBA				Make image mountable by first partition, too
+#	-appended_part_as_gpt				mark appended partitions in GPT instead of MBR.
+#	-append_partition NUMBER TYPE FILE	Append FILE after image. TYPE is hex: 0x.. or a GUID to be used if -appended_part_as_gpt.
+#	-iso_mbr_part_type					Set type byte or GUID of ISO partition in MBR or type GUID if a GPT ISO partition emerges.
+#	-c FILE, -eltorito-catalog FILE		Set El Torito boot catalog name
+#	--boot-catalog-hide					Hide boot catalog from ISO9660/RR and Joliet
+#	-b FILE, -eltorito-boot FILE		Set El Torito boot image name
+#	-no-emul-boot						Boot image is 'no emulation' image
+#	-boot-load-size #					Set numbers of load sectors
+#	-boot-info-table					Patch boot image with info table
+#	--grub2-boot-info					Patch boot image at byte 2548
+#	-eltorito-alt-boot					Start specifying alternative El Torito boot parameters
+#	-e FILE								Set EFI boot image name (more rawly)
+#	-graft-points						Allow to use graft points for filenames
+
+#	-isohybrid-mbr FILE										Set SYSLINUX mbr/isohdp[fp]x*.bin for isohybrid
+#	-isohybrid-gpt-basdat									Mark El Torito boot image as Basic Data in GPT
+#	-isohybrid-apm-hfsplus									Mark El Torito boot image as HFS+ in APM
+#	-part_like_isohybrid									Mark in MBR, GPT, APM without -isohybrid-mbr
+#	-efi-boot-part DISKFILE|--efi-boot-image				Set data source for EFI System Partition
+	__OPTN=()
+	__OPTN+=(
+		-quiet
+		-rock
+		-joliet
+		${__FILE_VLID:+-volid "${__FILE_VLID// /$'\x20'}"}
+	)
+	if [[ -n "${__FILE_HBRD:-}" ]]; then
+		__OPTN+=(
+			${__FILE_HBRD:+-isohybrid-mbr "${__FILE_HBRD}"}
+			-isohybrid-gpt-basdat -isohybrid-apm-hfsplus
+		)
+	else
+		__OPTN+=(
+			${__FILE_BIOS:+--grub2-mbr "${__FILE_BIOS}"}
+			-partition_offset 16
+			-appended_part_as_gpt
+			-append_partition 2 C12A7328-F81F-11D2-BA4B-00A0C93EC93B "${__FILE_UEFI}"
+			-iso_mbr_part_type EBD0A0A2-B9E5-4433-87C0-68B6B72699C7
+		)
+	fi
+	__OPTN+=(
+		${__FILE_BCAT:+-eltorito-catalog "${__FILE_BCAT}"}
+		--boot-catalog-hide
+		${__FILE_ETRI:+-eltorito-boot "${__FILE_ETRI}" -no-emul-boot}
+		-boot-load-size 4
+		-boot-info-table
+		-eltorito-alt-boot
+	)
+	if [[ -n "${__FILE_HBRD:-}" ]]; then __OPTN+=(-e "${__FILE_UEFI}" -no-emul-boot)
+	else                                 __OPTN+=(-e '--interval:appended_partition_2:all::' -no-emul-boot)
+	fi
+	__OPTN+=(
+		-output "${__TEMP}"
+		"${__DIRS_TGET:?}"
+	)
+	readonly      __OPTN
 	declare       __REAL=""
 	declare       __DIRS=""
 	declare       __OWNR=""
@@ -4297,12 +4331,12 @@ function fnMk_xorrisofs() {
 	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
 	[[ -n "${__FILE_HBRD:-}" ]] && echo "hybrid mode"
 	[[ -n "${__FILE_BIOS:-}" ]] && echo "eltorito mode"
-	pushd "${__DIRS_TGET:?}" > /dev/null || exit
-		if ! nice -n 19 xorrisofs "${__OPTN[@]}" -output "${__TEMP}" .; then
+#	pushd "${__DIRS_TGET:?}" > /dev/null || exit
+		if ! xorrisofs "${__OPTN[@]}"; then
 			__RTCD="$?"
-			printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [xorriso]" "${__FILE_ISOS##*/}" 1>&2
-			printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [xorriso]" "xorriso ${__OPTN[*]}" 1>&2
-			printf "%s\n" "xorriso: ${__RTCD:-}"
+			printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [xorrisofs]" "${__FILE_ISOS##*/}" 1>&2
+			printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [xorrisofs]" "xorrisofs ${__OPTN[*]}" 1>&2
+			printf "%s\n" "xorrisofs: ${__RTCD:-}"
 			exit "${__RTCD:-}"
 		else
 			if ! cp --preserve=timestamps "${__TEMP}" "${__FILE_ISOS}"; then
@@ -4321,7 +4355,7 @@ function fnMk_xorrisofs() {
 			fi
 		fi
 		rm -f "${__TEMP:?}"
-	popd > /dev/null || exit
+#	popd > /dev/null || exit
 	__time_end=$(date +%s)
 	__time_elapsed=$((__time_end - __time_start))
 	fnMsgout "${_PROG_NAME:-}" "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"

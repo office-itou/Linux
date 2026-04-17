@@ -81,6 +81,7 @@ function fnMake_live_mkosi() {
 #		help         ) __OPTN=("${__OPRT}");;
 		*            ) __OPTN=("help");;
 	esac
+#	__OPTN=("--debug" "${__OPTN[@]:-}")
 	fnMk_mkosi "${__OPTN[@]}"
 
 	unset __OPTN __HOST

@@ -7,10 +7,6 @@
 #   input :     $3     : output directory
 #   input :     $4     : root image mount point
 #   input :     $5     : uuid
-#   input :     $6     : distribution
-#   input :     $7     : volume id
-#   input :     $8     : kernel
-#   input :     $9     : initramfs
 #   output:   stdout   : message
 #   return:            : unused
 #   g-var : _AUTO_INST : read
@@ -23,10 +19,6 @@ function fnMake_live_vmimg_p2() {
 	declare -r    __TGET_OUTD="${3:?}"	# output directory
 	declare -r    __TGET_RTFS="${4:?}"	# root image mount point
 	declare -r    __TGET_UUID="${5:?}"	# uuid
-#	declare -r    __TGET_DIST="${6:?}"	# distribution
-#	declare -r    __TGET_VLID="${7:?}"	# volume id
-#	declare -r    __TGET_VLNZ="${8:?}"	# kernel
-#	declare -r    __TGET_IRAM="${9:?}"	# initramfs
 #	declare -r    __INPD="/boot/grub"						# input directory
 	declare -r    __OUTD="${__TGET_OUTD:?}/strg"			# output directory
 	declare -r    __MNTP="${__TGET_OUTD:?}/mnt2"			# mount point

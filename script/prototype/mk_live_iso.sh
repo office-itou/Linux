@@ -1006,7 +1006,7 @@ function fnMk_xorrisofs() {
 	printf "%-10.10s: [%s]\n" "__ETRI" "${__ETRI:-}"
 	printf "%-10.10s: [%s]\n" "__UEFI" "${__UEFI:-}"
 	printf "%-10.10s: [%s]\n" "__BCAT" "${__BCAT:-}"
-
+set -x
 	pushd "${__CDFS:?}" > /dev/null 2>&1
 	if ! xorrisofs "${__COMD[@]}"; then
 		__RTCD="$?"
@@ -1014,6 +1014,7 @@ function fnMk_xorrisofs() {
 		exit "${__RTCD}"
 	fi
 	popd > /dev/null 2>&1
+set +x
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
 

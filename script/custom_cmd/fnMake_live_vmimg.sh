@@ -4,10 +4,11 @@
 # descript: make live vm-image
 #   input :     $1     : output directory
 #   input :     $2     : volume id
-#   input :     $3     : storage
-#   input :     $4     : distribution
-#   input :     $5     : version
-#   input :     $6     : edition
+#   input :     $3     : menu entry
+#   input :     $4     : storage
+#   input :     $5     : distribution
+#   input :     $6     : version
+#   input :     $7     : edition
 #   output:   stdout   : message
 #   return:            : unused
 #   g-var :  FUNCNAME  : read
@@ -20,10 +21,11 @@ function fnMake_live_vmimg() {
 
 	declare -r    __TGET_OUTD="${1:-}"	# output directory
 	declare -r    __TGET_VLID="${2:-}"	# volume id
-	declare -r    __TGET_STRG="${3:-}"	# storage
-	declare -r    __TGET_DIST="${4:-}"	# distribution
-	declare -r    __TGET_VERS="${5:-}"	# version
-	declare -r    __TGET_EDTN="${6:-}"	# edition
+	declare -r    __TGET_ENTR="${3:?}"	# menu entry
+	declare -r    __TGET_STRG="${4:-}"	# storage
+	declare -r    __TGET_DIST="${5:-}"	# distribution
+	declare -r    __TGET_VERS="${6:-}"	# version
+	declare -r    __TGET_EDTN="${7:-}"	# edition
 	declare       __LOOP=""				# loop device name
 	declare       __UUID=""				# loopXp2 uuid device name
 	declare       __RTIM=""				# root image
@@ -65,14 +67,15 @@ _EOT_
 	read -r __VLNZ __IRAM < <(echo "${__WORK:-}")
 	__VLNZ="${__VLNZ##-}"
 	__IRAM="${__IRAM##-}"
-	readonly _PATH_VLNZ="${__VLNZ:+"/${__VLNZ}"}"
-	readonly _PATH_IRAM="${__IRAM:+"/${__IRAM}"}"
+	_PATH_VLNZ="${__VLNZ:+"/${__VLNZ}"}"
+	_PATH_IRAM="${__IRAM:+"/${__IRAM}"}"
 	# --- security option -----------------------------------------------------
+	[[ -e "${__RTFS:?}"/usr/bin/aa-enabled  ]] && _SECU_OPTN="${_SECU_APPA:-}"
+	[[ -e "${__RTFS:?}"/usr/sbin/getenforce ]] && _SECU_OPTN="${_SECU_SLNX:-}"
+	fnMake_live_vmimg_p1 "${__LOOP:?}" "p1" "${__TGET_OUTD:?}" "${__UUID:?}" "${__TGET_DIST:?}" "${__TGET_ENTR:?}"
+	fnMake_live_vmimg_p2 "${__LOOP:?}" "p2" "${__TGET_OUTD:?}" "${__RTFS:?}" "${__UUID:?}"
 	[[ -e "${__RTFS:?}"/usr/sbin/getenforce ]] && _SECU_OPTN="${_SECU_SLNX:-}"
 	[[ -e "${__RTFS:?}"/usr/bin/aa-enabled  ]] && _SECU_OPTN="${_SECU_APPA:-}"
-	readonly _SECU_OPTN
-	fnMake_live_vmimg_p1 "${__LOOP:?}" "p1" "${__TGET_OUTD:?}" "${__UUID:?}" "${__TGET_DIST:?}" "${__TGET_VLID:?}"
-	fnMake_live_vmimg_p2 "${__LOOP:?}" "p2" "${__TGET_OUTD:?}" "${__RTFS:?}" "${__UUID:?}"
 	umount "${__RTFS}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
 	# --- create uefi/bios image ----------------------------------------------
 	__MBRF="${__TGET_OUTD:?}/${_FILE_MBRF:?}"

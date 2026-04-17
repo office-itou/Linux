@@ -156,10 +156,10 @@ function fnMake_live_preconf() {
 					-e '}}'                                                \
 					-e '/^\[Content\]/,/^#*\[.\+\]/                     {' \
 					-e '/^Packages=/,/^#*\(\[.\+\]\|[[:alnum:]]\+=\)/   {' \
-					-e '/^# *-\+ desktop .*$/,/^# *-\+.*$/              {' \
-					-e '/^# *[[:alnum:]]\+/                      s/^#/ /g' \
+					-e '/^# \+-\+ desktop .*$/,/^# \+-\+.*$/            {' \
+					-e '/^# \+[@[:alnum:]]\+/                    s/^#/ /g' \
 					-e '}}}'                                               \
-				"${__SRVR}"                                              \
+				"${__SRVR}"                                                \
 				> "${__DTOP}"
 				case "${__DIST:?}.${__VERS:?}" in
 					debian.11.0.*)

@@ -796,39 +796,73 @@ function fnMk_xorrisofs() {
 	declare -r    __FILE_UEFI="${6:-}"	# uefi file name
 	declare -r    __FILE_BCAT="${7:-}"	# eltorito catalog file name
 	declare -r    __FILE_ETRI="${8:-}"	# eltorito boot file name
-	if [[ -n "${__FILE_HBRD:-}" ]]; then
-		declare -r -a __OPTN=(\
-			-quiet -rational-rock \
-			${__FILE_VLID:+-volid "${__FILE_VLID// /$'\x20'}"} \
-			-joliet -joliet-long \
-			-cache-inodes \
-			-isohybrid-mbr "${__FILE_HBRD}" \
-			${__FILE_ETRI:+-eltorito-boot "${__FILE_ETRI}"} \
-			${__FILE_BCAT:+-eltorito-catalog "${__FILE_BCAT}"} \
-			-no-emul-boot -boot-load-size 4 -boot-info-table \
-			-eltorito-alt-boot -e "${__FILE_UEFI}" -no-emul-boot \
-			-isohybrid-gpt-basdat -isohybrid-apm-hfsplus
-		)
-	else
-		declare -r -a __OPTN=(\
-			-quiet -rational-rock \
-			${__FILE_VLID:+-volid "${__FILE_VLID// /$'\x20'}"} \
-			-joliet -joliet-long \
-			-full-iso9660-filenames -iso-level 3 \
-			-partition_offset 16 \
-			--grub2-mbr "${__FILE_BIOS}" \
-			--mbr-force-bootable \
-			-append_partition 2 0xEF "${__FILE_UEFI}" \
-			-appended_part_as_gpt \
-			${__FILE_BCAT:+-eltorito-catalog "${__FILE_BCAT}"} \
-			${__FILE_ETRI:+-eltorito-boot "${__FILE_ETRI}"} \
-			-no-emul-boot -boot-load-size 4 -boot-info-table --grub2-boot-info \
-			-eltorito-alt-boot -e '--interval:appended_partition_2:all::' -no-emul-boot
-		)
-	fi
+	declare -a    __OPTN=()
 	declare       __TEMP=""				# temporary file
 	              __TEMP="$(mktemp -q "${_DIRS_TEMP:-/tmp}/${__FUNC_NAME}.XXXXXX")"
 	readonly      __TEMP
+#	-quiet								Run quietly
+#	-o FILE, -output FILE				Set output file name
+#	-R, -rock							Generate Rock Ridge directory information
+#	-J, -joliet							Generate Joliet directory information
+#	-V ID, -volid ID					Set Volume ID
+#	--grub2-mbr FILE					Set GRUB2 MBR for boot image address patching
+#	-partition_offset LBA				Make image mountable by first partition, too
+#	-appended_part_as_gpt				mark appended partitions in GPT instead of MBR.
+#	-append_partition NUMBER TYPE FILE	Append FILE after image. TYPE is hex: 0x.. or a GUID to be used if -appended_part_as_gpt.
+#	-iso_mbr_part_type					Set type byte or GUID of ISO partition in MBR or type GUID if a GPT ISO partition emerges.
+#	-c FILE, -eltorito-catalog FILE		Set El Torito boot catalog name
+#	--boot-catalog-hide					Hide boot catalog from ISO9660/RR and Joliet
+#	-b FILE, -eltorito-boot FILE		Set El Torito boot image name
+#	-no-emul-boot						Boot image is 'no emulation' image
+#	-boot-load-size #					Set numbers of load sectors
+#	-boot-info-table					Patch boot image with info table
+#	--grub2-boot-info					Patch boot image at byte 2548
+#	-eltorito-alt-boot					Start specifying alternative El Torito boot parameters
+#	-e FILE								Set EFI boot image name (more rawly)
+#	-graft-points						Allow to use graft points for filenames
+
+#	-isohybrid-mbr FILE										Set SYSLINUX mbr/isohdp[fp]x*.bin for isohybrid
+#	-isohybrid-gpt-basdat									Mark El Torito boot image as Basic Data in GPT
+#	-isohybrid-apm-hfsplus									Mark El Torito boot image as HFS+ in APM
+#	-part_like_isohybrid									Mark in MBR, GPT, APM without -isohybrid-mbr
+#	-efi-boot-part DISKFILE|--efi-boot-image				Set data source for EFI System Partition
+	__OPTN=()
+	__OPTN+=(
+		-quiet
+		-rock
+		-joliet
+		${__FILE_VLID:+-volid "${__FILE_VLID// /$'\x20'}"}
+	)
+	if [[ -n "${__FILE_HBRD:-}" ]]; then
+		__OPTN+=(
+			${__FILE_HBRD:+-isohybrid-mbr "${__FILE_HBRD}"}
+			-isohybrid-gpt-basdat -isohybrid-apm-hfsplus
+		)
+	else
+		__OPTN+=(
+			${__FILE_BIOS:+--grub2-mbr "${__FILE_BIOS}"}
+			-partition_offset 16
+			-appended_part_as_gpt
+			-append_partition 2 C12A7328-F81F-11D2-BA4B-00A0C93EC93B "${__FILE_UEFI}"
+			-iso_mbr_part_type EBD0A0A2-B9E5-4433-87C0-68B6B72699C7
+		)
+	fi
+	__OPTN+=(
+		${__FILE_BCAT:+-eltorito-catalog "${__FILE_BCAT}"}
+		--boot-catalog-hide
+		${__FILE_ETRI:+-eltorito-boot "${__FILE_ETRI}" -no-emul-boot}
+		-boot-load-size 4
+		-boot-info-table
+		-eltorito-alt-boot
+	)
+	if [[ -n "${__FILE_HBRD:-}" ]]; then __OPTN+=(-e "${__FILE_UEFI}" -no-emul-boot)
+	else                                 __OPTN+=(-e '--interval:appended_partition_2:all::' -no-emul-boot)
+	fi
+	__OPTN+=(
+		-output "${__TEMP}"
+		"${__DIRS_TGET:?}"
+	)
+	readonly      __OPTN
 	declare       __REAL=""
 	declare       __DIRS=""
 	declare       __OWNR=""
@@ -842,12 +876,12 @@ function fnMk_xorrisofs() {
 	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
 	[[ -n "${__FILE_HBRD:-}" ]] && echo "hybrid mode"
 	[[ -n "${__FILE_BIOS:-}" ]] && echo "eltorito mode"
-	pushd "${__DIRS_TGET:?}" > /dev/null || exit
-		if ! nice -n 19 xorrisofs "${__OPTN[@]}" -output "${__TEMP}" .; then
+#	pushd "${__DIRS_TGET:?}" > /dev/null || exit
+		if ! xorrisofs "${__OPTN[@]}"; then
 			__RTCD="$?"
-			printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [xorriso]" "${__FILE_ISOS##*/}" 1>&2
-			printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [xorriso]" "xorriso ${__OPTN[*]}" 1>&2
-			printf "%s\n" "xorriso: ${__RTCD:-}"
+			printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [xorrisofs]" "${__FILE_ISOS##*/}" 1>&2
+			printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [xorrisofs]" "xorrisofs ${__OPTN[*]}" 1>&2
+			printf "%s\n" "xorrisofs: ${__RTCD:-}"
 			exit "${__RTCD:-}"
 		else
 			if ! cp --preserve=timestamps "${__TEMP}" "${__FILE_ISOS}"; then
@@ -866,7 +900,7 @@ function fnMk_xorrisofs() {
 			fi
 		fi
 		rm -f "${__TEMP:?}"
-	popd > /dev/null || exit
+#	popd > /dev/null || exit
 	__time_end=$(date +%s)
 	__time_elapsed=$((__time_end - __time_start))
 	fnMsgout "${_PROG_NAME:-}" "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"
@@ -1069,6 +1103,9 @@ function fnFind_kernel() {
 #   input :     $@     : parameter
 #   output:   stdout   : message
 #   return:            : unused
+# memo    :
+#   https://github.com/systemd/mkosi
+
 function fnMk_mkosi() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
@@ -1130,6 +1167,7 @@ function fnMk_qemu() {
 	fi
 	if ! nice -n 19 "${__COMD:?}" "${__OPTN[@]}"; then
 		__RTCD="$?"
+#		echo -e "\x12\x1bc"
 		printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [qemu]" "${__COMD} ${__OPTN[*]}" 1>&2
 		printf "%s\n" "${__COMD}: ${__RTCD:-}"
 		exit "${__RTCD:-}"
@@ -1619,10 +1657,10 @@ function fnMake_live_preconf() {
 					-e '}}'                                                \
 					-e '/^\[Content\]/,/^#*\[.\+\]/                     {' \
 					-e '/^Packages=/,/^#*\(\[.\+\]\|[[:alnum:]]\+=\)/   {' \
-					-e '/^# *-\+ desktop .*$/,/^# *-\+.*$/              {' \
-					-e '/^# *[[:alnum:]]\+/                      s/^#/ /g' \
+					-e '/^# \+-\+ desktop .*$/,/^# \+-\+.*$/            {' \
+					-e '/^# \+[@[:alnum:]]\+/                    s/^#/ /g' \
 					-e '}}}'                                               \
-				"${__SRVR}"                                              \
+				"${__SRVR}"                                                \
 				> "${__DTOP}"
 				case "${__DIST:?}.${__VERS:?}" in
 					debian.11.0.*)
@@ -1784,6 +1822,7 @@ function fnMake_live_mkosi() {
 #		help         ) __OPTN=("${__OPRT}");;
 		*            ) __OPTN=("help");;
 	esac
+#	__OPTN=("--debug" "${__OPTN[@]:-}")
 	fnMk_mkosi "${__OPTN[@]}"
 
 	unset __OPTN __HOST
@@ -1799,9 +1838,7 @@ function fnMake_live_mkosi() {
 #   input :     $3     : output directory
 #   input :     $4     : uuid
 #   input :     $5     : distribution
-#   input :     $6     : volume id
-#   input :     $7     : kernel
-#   input :     $8     : initramfs
+#   input :     $6     : menu entry
 #   output:   stdout   : message
 #   return:            : unused
 function fnMake_live_vmimg_p1() {
@@ -1813,7 +1850,7 @@ function fnMake_live_vmimg_p1() {
 	declare -r    __TGET_OUTD="${3:?}"	# output directory
 	declare -r    __TGET_UUID="${4:?}"	# uuid
 	declare -r    __TGET_DIST="${5:?}"	# distribution
-	declare -r    __TGET_VLID="${6:?}"	# volume id
+	declare -r    __TGET_ENTR="${6:?}"	# menu entry
 	declare -r    __INPD="/boot/grub"						# input directory
 	declare -r    __OUTD="${__TGET_OUTD:?}/strg"			# output directory
 	declare -r    __MNTP="${__TGET_OUTD:?}/mnt1"			# mount point
@@ -1869,7 +1906,7 @@ function fnMake_live_vmimg_p1() {
 	fnGrub_conf  "${__GCFG:?}" "${__INPD}/${_FILE_MENU:?}" "${__INPD}/${_FILE_THME:?}" "${_MENU_TOUT:?}" "${_MENU_RESO:?}" "${_MENU_DPTH:?}"
 	fnGrub_theme "${__THME:?}" "${__TITL:?}" "${__INPD}/${_MENU_SPLS:?}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__MENU:?}"
-		menuentry "${__TGET_VLID}" {
+		menuentry "${__TGET_ENTR}" {
 		  set gfxpayload="keep"
 		  set background_color="black"
 		  set uuid="${__TGET_UUID:?}"
@@ -1906,10 +1943,6 @@ _EOT_
 #   input :     $3     : output directory
 #   input :     $4     : root image mount point
 #   input :     $5     : uuid
-#   input :     $6     : distribution
-#   input :     $7     : volume id
-#   input :     $8     : kernel
-#   input :     $9     : initramfs
 #   output:   stdout   : message
 #   return:            : unused
 function fnMake_live_vmimg_p2() {
@@ -1921,10 +1954,6 @@ function fnMake_live_vmimg_p2() {
 	declare -r    __TGET_OUTD="${3:?}"	# output directory
 	declare -r    __TGET_RTFS="${4:?}"	# root image mount point
 	declare -r    __TGET_UUID="${5:?}"	# uuid
-#	declare -r    __TGET_DIST="${6:?}"	# distribution
-#	declare -r    __TGET_VLID="${7:?}"	# volume id
-#	declare -r    __TGET_VLNZ="${8:?}"	# kernel
-#	declare -r    __TGET_IRAM="${9:?}"	# initramfs
 #	declare -r    __INPD="/boot/grub"						# input directory
 	declare -r    __OUTD="${__TGET_OUTD:?}/strg"			# output directory
 	declare -r    __MNTP="${__TGET_OUTD:?}/mnt2"			# mount point
@@ -2014,10 +2043,11 @@ _EOT_
 # descript: make live vm-image
 #   input :     $1     : output directory
 #   input :     $2     : volume id
-#   input :     $3     : storage
-#   input :     $4     : distribution
-#   input :     $5     : version
-#   input :     $6     : edition
+#   input :     $3     : menu entry
+#   input :     $4     : storage
+#   input :     $5     : distribution
+#   input :     $6     : version
+#   input :     $7     : edition
 #   output:   stdout   : message
 #   return:            : unused
 function fnMake_live_vmimg() {
@@ -2027,10 +2057,11 @@ function fnMake_live_vmimg() {
 
 	declare -r    __TGET_OUTD="${1:-}"	# output directory
 	declare -r    __TGET_VLID="${2:-}"	# volume id
-	declare -r    __TGET_STRG="${3:-}"	# storage
-	declare -r    __TGET_DIST="${4:-}"	# distribution
-	declare -r    __TGET_VERS="${5:-}"	# version
-	declare -r    __TGET_EDTN="${6:-}"	# edition
+	declare -r    __TGET_ENTR="${3:?}"	# menu entry
+	declare -r    __TGET_STRG="${4:-}"	# storage
+	declare -r    __TGET_DIST="${5:-}"	# distribution
+	declare -r    __TGET_VERS="${6:-}"	# version
+	declare -r    __TGET_EDTN="${7:-}"	# edition
 	declare       __LOOP=""				# loop device name
 	declare       __UUID=""				# loopXp2 uuid device name
 	declare       __RTIM=""				# root image
@@ -2072,14 +2103,15 @@ _EOT_
 	read -r __VLNZ __IRAM < <(echo "${__WORK:-}")
 	__VLNZ="${__VLNZ##-}"
 	__IRAM="${__IRAM##-}"
-	readonly _PATH_VLNZ="${__VLNZ:+"/${__VLNZ}"}"
-	readonly _PATH_IRAM="${__IRAM:+"/${__IRAM}"}"
+	_PATH_VLNZ="${__VLNZ:+"/${__VLNZ}"}"
+	_PATH_IRAM="${__IRAM:+"/${__IRAM}"}"
 	# --- security option -----------------------------------------------------
+	[[ -e "${__RTFS:?}"/usr/bin/aa-enabled  ]] && _SECU_OPTN="${_SECU_APPA:-}"
+	[[ -e "${__RTFS:?}"/usr/sbin/getenforce ]] && _SECU_OPTN="${_SECU_SLNX:-}"
+	fnMake_live_vmimg_p1 "${__LOOP:?}" "p1" "${__TGET_OUTD:?}" "${__UUID:?}" "${__TGET_DIST:?}" "${__TGET_ENTR:?}"
+	fnMake_live_vmimg_p2 "${__LOOP:?}" "p2" "${__TGET_OUTD:?}" "${__RTFS:?}" "${__UUID:?}"
 	[[ -e "${__RTFS:?}"/usr/sbin/getenforce ]] && _SECU_OPTN="${_SECU_SLNX:-}"
 	[[ -e "${__RTFS:?}"/usr/bin/aa-enabled  ]] && _SECU_OPTN="${_SECU_APPA:-}"
-	readonly _SECU_OPTN
-	fnMake_live_vmimg_p1 "${__LOOP:?}" "p1" "${__TGET_OUTD:?}" "${__UUID:?}" "${__TGET_DIST:?}" "${__TGET_VLID:?}"
-	fnMake_live_vmimg_p2 "${__LOOP:?}" "p2" "${__TGET_OUTD:?}" "${__RTFS:?}" "${__UUID:?}"
 	umount "${__RTFS}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
 	# --- create uefi/bios image ----------------------------------------------
 	__MBRF="${__TGET_OUTD:?}/${_FILE_MBRF:?}"
@@ -2113,7 +2145,7 @@ function fnMake_live_qemu() {
 
 	declare -r    __TGET_STRG="${1:-}"	# storage
 	# --- command -------------------------------------------------------------
-	# /usr/share/novnc/utils/novnc_proxy
+	# /usr/share/novnc/utils/novnc_proxy --listen [::]:6080
 	# http://sv-developer:6080/vnc.html
 	__OPTN=(
 		-cpu "host"
@@ -2203,12 +2235,14 @@ function fnMake_live_cdimg_cdfs() {
 # descript: make live cd-image (create grub)
 #   input :     $1     : output directory
 #   input :     $2     : volume id
+#   input :     $3     : menu entry
 function fnMake_live_cdimg_grub() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	declare -r    __TGET_OUTD="${1:?}"	# output directory
 	declare -r    __TGET_VLID="${2:?}"	# volume id
+	declare -r    __TGET_ENTR="${3:?}"	# menu entry
 	declare -r    __INPD="/boot/grub"						# input directory
 	declare -r    __OUTD="${__TGET_OUTD:?}/grub"			# output directory
 	declare -r    __STRG="${__TGET_OUTD:?}/strg"			# storage work
@@ -2232,7 +2266,7 @@ function fnMake_live_cdimg_grub() {
 	fnGrub_conf  "${__GCFG:?}" "${__INPD:-}/${_FILE_MENU:?}" "${__INPD:-}/${_FILE_THME:?}" "${_MENU_TOUT:?}" "${_MENU_RESO:?}" "${_MENU_DPTH:?}"
 	fnGrub_theme "${__THME:?}" "${__TITL:?}" "${_DIRS_LIVE:+"/${_DIRS_LIVE}"}/${_MENU_SPLS:?}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__MENU:?}"
-		menuentry "${__TGET_VLID}" {
+		menuentry "${__TGET_ENTR}" {
 		  set gfxpayload="keep"
 		  set background_color="black"
 		  set options="root=live:CDLABEL=${__TGET_VLID} rd.live.image rd.live.overlay.overlayfs=1${_SECU_OPTN:+" ${_SECU_OPTN}"}"
@@ -2256,6 +2290,8 @@ _EOT_
 # -----------------------------------------------------------------------------
 # descript: make live cd-image (create isolinux)
 #   input :     $1     : output directory
+#   input :     $2     : volume id
+#   input :     $3     : menu entry
 #   output:   stdout   : message
 #   return:            : unused
 function fnMake_live_cdimg_ilnx() {
@@ -2264,6 +2300,7 @@ function fnMake_live_cdimg_ilnx() {
 
 	declare -r    __TGET_OUTD="${1:?}"	# output directory
 	declare -r    __TGET_VLID="${2:?}"	# volume id
+	declare -r    __TGET_ENTR="${3:?}"	# menu entry
 	declare -r    __INPD="/isolinux"						# input directory
 	declare -r    __OUTD="${__TGET_OUTD:?}/isolinux"		# output directory
 	declare -r    __CDFS="${__TGET_OUTD:?}/${_DIRS_CDFS:?}"	# cdfs image mount point
@@ -2277,8 +2314,8 @@ function fnMake_live_cdimg_ilnx() {
 	fnIlnx_conf  "${__ICFG:?}" "${__INPD:-}/${_FILE_MENU:?}" "${__INPD:-}/${_FILE_THME:?}" "${_MENU_TOUT:?}" "${_MENU_RESO:?}" "${_MENU_DPTH:?}"
 	fnIlnx_theme "${__THME:?}" "${__TITL:?}" "/LiveOS/${_MENU_SPLS:?}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__MENU:?}"
-		label live-amd64
-		  menu label ^Live system (amd64)
+		label ${__TGET_ENTR// /-}
+		  menu label ^${__TGET_ENTR}
 		  menu default
 		  linux  /LiveOS/vmlinuz
 		  initrd /LiveOS/initrd.img
@@ -2306,7 +2343,9 @@ function fnMake_live_cdimg() {
 
 	declare -r    __TGET_OUTD="${1:?}"	# output directory
 	declare -r    __TGET_VLID="${2:?}"	# volume id
-	declare -r    __TGET_STRG="${3:-}"	# storage
+	declare -r    __TGET_ENTR="${3:?}"	# menu entry
+	declare -r    __TGET_STRG="${4:?}"	# storage
+	declare -r    __TGET_ISOS="${5:?}"	# output file name
 	declare       __CDFS=""				# cdfs image mount point
 	declare       __VLID=""				# volume id
 	declare       __ISOS=""				# output file name
@@ -2316,24 +2355,31 @@ function fnMake_live_cdimg() {
 	declare       __BCAT=""				# boot catalog
 	declare       __ETRI=""				# eltorito
 	declare       __BIOS=""				# bios or uefi imga file path
+	declare       __PATH=""				# work
 	# --- create cd-image image -----------------------------------------------
 	fnMake_live_cdimg_cdfs "${__TGET_OUTD:?}" "${__TGET_VLID:?}" "${__TGET_STRG:?}"
-	fnMake_live_cdimg_grub "${__TGET_OUTD:?}" "${__TGET_VLID:?}"
-	fnMake_live_cdimg_ilnx "${__TGET_OUTD:?}" "${__TGET_VLID:?}"
+	fnMake_live_cdimg_grub "${__TGET_OUTD:?}" "${__TGET_VLID:?}" "${__TGET_ENTR:?}"
+	fnMake_live_cdimg_ilnx "${__TGET_OUTD:?}" "${__TGET_VLID:?}" "${__TGET_ENTR:?}"
 	# --- create iso image ----------------------------------------------------
 	__CDFS="${__TGET_OUTD:?}/${_DIRS_CDFS:?}"
 	__VLID="${__TGET_VLID:?}"
-	__ISOS="${_DIRS_RMAK:?}/live-${__VLID,,}.iso"
+	__ISOS="${__TGET_ISOS:?}"
 #	__HBRD="/usr/lib/ISOLINUX/isohdpfx.bin"
-	__MBRF="${__TGET_OUTD:?}/${_FILE_MBRF:?}"
-	__UEFI="boot/grub/${_FILE_UEFI:?}"
-	__BCAT="isolinux/${_FILE_BCAT:?}"
-	           __ETRI="$(find "${__CDFS:?}"/isolinux -name 'eltorito.sys' -print -quit)"
+	__MBRF="${__TGET_OUTD:?}/${_FILE_MBRF:?}"				# bios.img
+	__UEFI="${__CDFS}/boot/grub/${_FILE_UEFI:?}"			# uefi.img
+	__BCAT="${_FILE_BCAT:?}"								# boot.cat
+	           __ETRI="$(find "${__CDFS:?}"/isolinux -name 'eltorito.img' -print -quit)"
 	__ETRI="${__ETRI:-"$(find "${__CDFS:?}"/isolinux -name 'isolinux.bin' -print -quit)"}"
 	           __BIOS="$(find "${__CDFS:?}"/isolinux -name 'gptmbr.bin'   -print -quit)"
-	__BIOS="${__BIOS:-"${__MBRF}"}"
+	if [[ -n "${__HBRD:-}" ]] && [[ -e "${__HBRD:-}" ]]; then cp --preserve=timestamps "${__HBRD}" "${__TGET_OUTD}"; __HBRD="${__TGET_OUTD:?}/${__HBRD##*/}"; else __HBRD=""; fi
+#	if [[ -n "${__MBRF:-}" ]] && [[ -e "${__MBRF:-}" ]]; then cp --preserve=timestamps "${__MBRF}" "${__TGET_OUTD}"; __MBRF="${__TGET_OUTD:?}/${__MBRF##*/}"; else __MBRF=""; fi
+	if [[ -n "${__UEFI:-}" ]] && [[ -e "${__UEFI:-}" ]]; then cp --preserve=timestamps "${__UEFI}" "${__TGET_OUTD}"; __UEFI="${__TGET_OUTD:?}/${__UEFI##*/}"; else __UEFI=""; fi
+#	if [[ -n "${__BCAT:-}" ]] && [[ -e "${__BCAT:-}" ]]; then cp --preserve=timestamps "${__BCAT}" "${__TGET_OUTD}"; __BCAT="${__TGET_OUTD:?}/${__BCAT##*/}"; else __BCAT=""; fi
+#	if [[ -n "${__ETRI:-}" ]] && [[ -e "${__ETRI:-}" ]]; then cp --preserve=timestamps "${__ETRI}" "${__TGET_OUTD}"; __ETRI="${__TGET_OUTD:?}/${__ETRI##*/}"; else __ETRI=""; fi
+#	if [[ -n "${__BIOS:-}" ]] && [[ -e "${__BIOS:-}" ]]; then cp --preserve=timestamps "${__BIOS}" "${__TGET_OUTD}"; __BIOS="${__TGET_OUTD:?}/${__BIOS##*/}"; else __BIOS=""; fi
+#	__BIOS="${__BIOS:-"${__MBRF}"}"
 	__ETRI="${__ETRI#"${__CDFS:-}/"}"
-	__BIOS="${__BIOS#"${__CDFS:?}/"}"
+#	__BIOS="${__BIOS#"${__CDFS:?}/"}"
 	fnMk_xorrisofs "${__CDFS:?}" "${__ISOS:?}" "${__VLID:-}" "${__HBRD:-}" "${__BIOS:-}" "${__UEFI:-}" "${__BCAT:-}" "${__ETRI:-}"
 	unset __BIOS __ETRI __BCAT __UEFI __MBRF __HBRD __ISOS __VLID __CDFS
 	# --- complete ------------------------------------------------------------
@@ -2377,6 +2423,8 @@ function fnMake_live_build() {
 	declare       __CODE=""				# code name
 #	declare       __ARCH=""				# architecture
 	declare       __VLID=""				# volume id
+	declare       __ENTR=""				# menu entry
+	declare       __ISOS=""				# output file name
 	declare       __SUBD=""				# sub directory
 	declare -r    __TEMP="${_DIRS_TEMP:?}"	# local
 	declare -r    __RTMP="${_DIRS_RTMP:?}"	# remote
@@ -2427,9 +2475,17 @@ function fnMake_live_build() {
 		__EDTN="${__EDTN,,}"								# --environment=EDITION=
 		__CODE="$(fnFind_codename "${__DIST}" "${__VERS}")"	# code name
 #		__ARCH="${_MKOS_ARCH//_/-}"							# architecture
-		__VLID="$(fnFind_distribution "${__DIST}")"			# volume id
-		__VLID="${__VLID}${__VERS:+" ${__VERS^}"}${__ARCH:+" ${__ARCH}"}${__EDTN:+" ${__EDTN^}"}"
+		__VLID="$(fnFind_distribution "${__DIST}")"			# volume id (<=16) Debian13.0x64s / AlmaLinux10x64s / openSUSE16.0x64s
+		__ENTR="${__VLID}${__VERS:+" ${__VERS^}"}${__ARCH:+" ${__ARCH//-/_}"}${__EDTN:+" ${__EDTN^}"}"
+		__ISOS="${__ENTR// /-}"
+		__ISOS="${_DIRS_RMAK:?}/live-${__ISOS,,}.iso"
+#		__VLID="${__VLID}${__VERS:+" ${__VERS^}"}${__ARCH:+" ${__ARCH}"}${__EDTN:+" ${__EDTN^}"}"
+		__VLID="${__VLID%%-*}"
+		__VLID="${__VLID}${__VERS::$((6+6-${#__VLID}))}${__ARCH//[0-9]*[_-]}${__EDTN::1}"
 		__VLID="${__VLID// /-}"
+		__VLID="${__VLID// /\x20}"
+		__VLID="${__VLID^^}"
+		__VLID="${__VLID::16}"
 		__SUBD="${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${__ARCH//_/-}"}${__EDTN+-"${__EDTN}"}"
 		__WRKD="${__TEMP:?}/${__SUBD:?}" # --workspace-directory=
 		__OUTD="${__RTMP:?}/${__SUBD:?}" # --output-directory=
@@ -2446,9 +2502,9 @@ function fnMake_live_build() {
 					8654dc7a7b909117287868c177ff5c3ef3050ca360148c8251300ae8051a
 					c299ff4c6660bcb6edd00b10d7d3d5cf659d53421300e6198186c4050000
 _EOT_
-				fnMake_live_vmimg "${__OUTD:-}" "${__VLID:-}" "${__STRG:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}"
+				fnMake_live_vmimg "${__OUTD:-}" "${__VLID:-}" "${__ENTR:-}" "${__STRG:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}"
 				fnMake_live_qemu  "${__STRG:-}"
-				fnMake_live_cdimg "${__OUTD:-}" "${__VLID:-}" "${__STRG:-}"
+				fnMake_live_cdimg "${__OUTD:-}" "${__VLID:-}" "${__ENTR:-}" "${__STRG:-}" "${__ISOS:-}"
 				;;
 			*            ) __OPTN=("help");;
 		esac
@@ -2456,7 +2512,7 @@ _EOT_
 		       "${__OUTD:?}"
 	done
 
-	unset I __ARRY __WORK __STRG __TGET __SUBD __VLID __CODE __HOST __EDTN __OUTD __WRKD __VERS __DIST
+	unset I __ARRY __WORK __STRG __TGET __SUBD __ISOS __VLID __CODE __HOST __EDTN __OUTD __WRKD __VERS __DIST
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }

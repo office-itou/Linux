@@ -4,6 +4,7 @@
 # descript: make live cd-image (create grub)
 #   input :     $1     : output directory
 #   input :     $2     : volume id
+#   input :     $3     : menu entry
 #   g-var :  FUNCNAME  : read
 #   g-var : _PROG_NAME : read
 #   g-var : _DIRS_CDFS : read
@@ -23,6 +24,7 @@ function fnMake_live_cdimg_grub() {
 
 	declare -r    __TGET_OUTD="${1:?}"	# output directory
 	declare -r    __TGET_VLID="${2:?}"	# volume id
+	declare -r    __TGET_ENTR="${3:?}"	# menu entry
 	declare -r    __INPD="/boot/grub"						# input directory
 	declare -r    __OUTD="${__TGET_OUTD:?}/grub"			# output directory
 	declare -r    __STRG="${__TGET_OUTD:?}/strg"			# storage work
@@ -46,7 +48,7 @@ function fnMake_live_cdimg_grub() {
 	fnGrub_conf  "${__GCFG:?}" "${__INPD:-}/${_FILE_MENU:?}" "${__INPD:-}/${_FILE_THME:?}" "${_MENU_TOUT:?}" "${_MENU_RESO:?}" "${_MENU_DPTH:?}"
 	fnGrub_theme "${__THME:?}" "${__TITL:?}" "${_DIRS_LIVE:+"/${_DIRS_LIVE}"}/${_MENU_SPLS:?}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__MENU:?}"
-		menuentry "${__TGET_VLID}" {
+		menuentry "${__TGET_ENTR}" {
 		  set gfxpayload="keep"
 		  set background_color="black"
 		  set options="root=live:CDLABEL=${__TGET_VLID} rd.live.image rd.live.overlay.overlayfs=1${_SECU_OPTN:+" ${_SECU_OPTN}"}"

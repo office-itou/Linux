@@ -7,6 +7,9 @@
 #   return:            : unused
 #   g-var :  FUNCNAME  : read
 #   g-var : _PROG_NAME : read
+# memo    :
+#   https://github.com/systemd/mkosi
+
 function fnMk_mkosi() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")

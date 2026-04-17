@@ -3,6 +3,8 @@
 # -----------------------------------------------------------------------------
 # descript: make live cd-image (create isolinux)
 #   input :     $1     : output directory
+#   input :     $2     : volume id
+#   input :     $3     : menu entry
 #   output:   stdout   : message
 #   return:            : unused
 #   g-var :  FUNCNAME  : read
@@ -22,6 +24,7 @@ function fnMake_live_cdimg_ilnx() {
 
 	declare -r    __TGET_OUTD="${1:?}"	# output directory
 	declare -r    __TGET_VLID="${2:?}"	# volume id
+	declare -r    __TGET_ENTR="${3:?}"	# menu entry
 	declare -r    __INPD="/isolinux"						# input directory
 	declare -r    __OUTD="${__TGET_OUTD:?}/isolinux"		# output directory
 	declare -r    __CDFS="${__TGET_OUTD:?}/${_DIRS_CDFS:?}"	# cdfs image mount point
@@ -35,8 +38,8 @@ function fnMake_live_cdimg_ilnx() {
 	fnIlnx_conf  "${__ICFG:?}" "${__INPD:-}/${_FILE_MENU:?}" "${__INPD:-}/${_FILE_THME:?}" "${_MENU_TOUT:?}" "${_MENU_RESO:?}" "${_MENU_DPTH:?}"
 	fnIlnx_theme "${__THME:?}" "${__TITL:?}" "/LiveOS/${_MENU_SPLS:?}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__MENU:?}"
-		label live-amd64
-		  menu label ^Live system (amd64)
+		label ${__TGET_ENTR// /-}
+		  menu label ^${__TGET_ENTR}
 		  menu default
 		  linux  /LiveOS/vmlinuz
 		  initrd /LiveOS/initrd.img

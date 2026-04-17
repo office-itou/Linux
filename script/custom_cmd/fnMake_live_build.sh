@@ -44,6 +44,8 @@ function fnMake_live_build() {
 	declare       __CODE=""				# code name
 #	declare       __ARCH=""				# architecture
 	declare       __VLID=""				# volume id
+	declare       __ENTR=""				# menu entry
+	declare       __ISOS=""				# output file name
 	declare       __SUBD=""				# sub directory
 	declare -r    __TEMP="${_DIRS_TEMP:?}"	# local
 	declare -r    __RTMP="${_DIRS_RTMP:?}"	# remote
@@ -94,14 +96,22 @@ function fnMake_live_build() {
 		__EDTN="${__EDTN,,}"								# --environment=EDITION=
 		__CODE="$(fnFind_codename "${__DIST}" "${__VERS}")"	# code name
 #		__ARCH="${_MKOS_ARCH//_/-}"							# architecture
-		__VLID="$(fnFind_distribution "${__DIST}")"			# volume id
-		__VLID="${__VLID}${__VERS:+" ${__VERS^}"}${__ARCH:+" ${__ARCH}"}${__EDTN:+" ${__EDTN^}"}"
+		__VLID="$(fnFind_distribution "${__DIST}")"			# volume id (<=16) Debian13.0x64s / AlmaLinux10x64s / openSUSE16.0x64s
+		__ENTR="${__VLID}${__VERS:+" ${__VERS^}"}${__ARCH:+" ${__ARCH//-/_}"}${__EDTN:+" ${__EDTN^}"}"
+		__ISOS="${__ENTR// /-}"
+		__ISOS="${_DIRS_RMAK:?}/live-${__ISOS,,}.iso"
+#		__VLID="${__VLID}${__VERS:+" ${__VERS^}"}${__ARCH:+" ${__ARCH}"}${__EDTN:+" ${__EDTN^}"}"
+		__VLID="${__VLID%%-*}"
+		__VLID="${__VLID}${__VERS::$((6+6-${#__VLID}))}${__ARCH//[0-9]*[_-]}${__EDTN::1}"
 		__VLID="${__VLID// /-}"
+		__VLID="${__VLID// /\x20}"
+		__VLID="${__VLID^^}"
+		__VLID="${__VLID::16}"
 		__SUBD="${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${__ARCH//_/-}"}${__EDTN+-"${__EDTN}"}"
 		__WRKD="${__TEMP:?}/${__SUBD:?}" # --workspace-directory=
 		__OUTD="${__RTMP:?}/${__SUBD:?}" # --output-directory=
 		# --- build -----------------------------------------------------------
-		fnMake_live_mkosi "${__OPRT:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}" "${__WRKD:-}" "${__OUTD:-}"
+		fnMake_live_mkosi "${__OPRT:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}" "${__WRKD:-}" "${__WRKD:-}"
 		case "${__OPRT:-}" in
 			build        )
 				__STRG="${__OUTD:?}/vm_uefi_${__VLID,,}.raw"
@@ -113,9 +123,10 @@ function fnMake_live_build() {
 					8654dc7a7b909117287868c177ff5c3ef3050ca360148c8251300ae8051a
 					c299ff4c6660bcb6edd00b10d7d3d5cf659d53421300e6198186c4050000
 _EOT_
-				fnMake_live_vmimg "${__OUTD:-}" "${__VLID:-}" "${__STRG:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}"
+				cp --archive "${__WRKD:?}/${__OUTP:?}" "${__OUTD:?}"/
+				fnMake_live_vmimg "${__OUTD:-}" "${__VLID:-}" "${__ENTR:-}" "${__STRG:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}"
 				fnMake_live_qemu  "${__STRG:-}"
-				fnMake_live_cdimg "${__OUTD:-}" "${__VLID:-}" "${__STRG:-}"
+				fnMake_live_cdimg "${__OUTD:-}" "${__VLID:-}" "${__ENTR:-}" "${__STRG:-}" "${__ISOS:-}"
 				;;
 			*            ) __OPTN=("help");;
 		esac
@@ -123,7 +134,7 @@ _EOT_
 		       "${__OUTD:?}"
 	done
 
-	unset I __ARRY __WORK __STRG __TGET __SUBD __VLID __CODE __HOST __EDTN __OUTD __WRKD __VERS __DIST
+	unset I __ARRY __WORK __STRG __TGET __SUBD __ISOS __VLID __CODE __HOST __EDTN __OUTD __WRKD __VERS __DIST
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
