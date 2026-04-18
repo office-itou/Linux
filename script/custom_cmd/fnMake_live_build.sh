@@ -116,6 +116,9 @@ function fnMake_live_build() {
 			build        )
 				__STRG="${__OUTD:?}/vm_uefi_${__VLID,,}.raw"
 				__SPLS="${__OUTD:?}/${_MENU_SPLS:?}"
+				# --- copy output ---------------------------------------------
+				mkdir -p "${__OUTD:?}"
+				cp --archive "${__WRKD:?}/${_FILE_RTIM:?}" "${__OUTD:?}"/
 				# --- splash.png ----------------------------------------------
 				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | xxd -p -r | gzip -d -k > "${__SPLS:?}"
 					1f8b0808462b8d69000373706c6173682e706e6700eb0cf073e7e592e262
@@ -123,13 +126,14 @@ function fnMake_live_build() {
 					8654dc7a7b909117287868c177ff5c3ef3050ca360148c8251300ae8051a
 					c299ff4c6660bcb6edd00b10d7d3d5cf659d53421300e6198186c4050000
 _EOT_
-				cp --archive "${__WRKD:?}/${__OUTP:?}" "${__OUTD:?}"/
+				# --- create iso image file -----------------------------------
 				fnMake_live_vmimg "${__OUTD:-}" "${__VLID:-}" "${__ENTR:-}" "${__STRG:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}"
 				fnMake_live_qemu  "${__STRG:-}"
 				fnMake_live_cdimg "${__OUTD:-}" "${__VLID:-}" "${__ENTR:-}" "${__STRG:-}" "${__ISOS:-}"
 				;;
 			*            ) __OPTN=("help");;
 		esac
+sleep 600
 		rm -rf "${__WRKD:?}" \
 		       "${__OUTD:?}"
 	done

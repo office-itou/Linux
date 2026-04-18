@@ -31,7 +31,7 @@ function fnMake_live_vmimg_p2() {
 #	declare -r    __SPLS="${__OUTD:?}/${_MENU_SPLS:?}"		# splash.png
 #	declare -r    __TITL="Live system"						# title
 #	declare       __COMD=""									# command
-	declare       __PATH=""									# work
+	declare       __FSTB=""									# work
 	declare       __SRCS=""									# work
 	declare       __DEST=""									# work
 	declare       __SRVC=""									# work
@@ -44,33 +44,67 @@ function fnMake_live_vmimg_p2() {
 	# --- root files ----------------------------------------------------------
 	cp --preserve=mode,ownership,timestamps,links --recursive "${__TGET_RTFS}"/. "${__MNTP}"
 	# --- /etc/fstab ----------------------------------------------------------
-	__PATH="/etc/fstab"
-	__SRCS="${__OUTD:?}/${__PATH##*/}"
-	__DEST="${__MNTP:?}/${__PATH#/}"
+	__FSTB="/etc/fstab"
+	__SRCS="${__OUTD:?}/${__FSTB##*/}"
+	__DEST="${__MNTP:?}/${__FSTB#/}"
 	mkdir -p "${__SRCS%/*}"
 	mkdir -p "${__DEST%/*}"
 	{
 		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" "# <file system>"  "<mount point>" "<type>"           "<options>"                   "<dump>" "<pass>"
 		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" "UUID=${__UUID:?}" "/"             "ext4"             "defaults"                    "0"      "0"
-		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" ".host:/"          "/srv/hgfs"     "fuse.vmhgfs-fuse" "nofail,allow_other,defaults" "0"      "0"
+		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" "#.host:/"         "/srv/hgfs"     "fuse.vmhgfs-fuse" "nofail,allow_other,defaults" "0"      "0"
 	} > "${__SRCS:?}"
 	[[ -e "${__SRCS:?}" ]] && cp --preserve=timestamps "${__SRCS:?}" "${__DEST:?}"
 	# --- run-once.sh ---------------------------------------------------------
 	__SRVC="/etc/systemd/system/run-once.service"
-	__TGET="/var/admin/autoinst/run-once.sh"
+	__ADMN="/var/admin/autoinst"
+	__TGET="${__ADMN:?}/run-once.sh"
 	__SRCS="${__OUTD:?}/${__TGET##*/}"
 	__DEST="${__MNTP:?}/${__TGET#/}"
 	mkdir -p "${__SRCS%/*}"
 	mkdir -p "${__DEST%/*}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__SRCS:?}"
 		#!/bin/bash
-		# touch /.autorelabel
-		systemctl disable ${__SRVC##*/}
-		sed -i "${__PATH:?}" -e '/^UUID=/d'
-		rm -f "${__SRVC:?}"
-		rm -f "\${0:?}"
-		ls -lahZ / > /var/admin/autoinst/"\${0##*/}".success
-		shutdown -h now
+		set -eu
+		declare -r    _PROG_PATH="\$0"
+		declare -r    _PROG_NAME="\${_PROG_PATH##*/}"
+		declare -r    __ADMN="${__ADMN:?}"
+		declare -r    __STAT="\${__ADMN:?}/\${_PROG_NAME}.success"
+		declare -r    __SRVC="${__SRVC:?}"
+		declare -r    __FSTB="${__FSTB:?}"
+		declare -r -a __LIST=(
+		 	"/usr/bin/thunderbird       thunderbird"
+		 	"/usr/bin/firefox           firefox"
+		 	"/usr/bin/chromium-browser  chromium"
+		)
+		declare       __PATH=""
+		declare       __PACK=""
+		declare -i    I=0
+		{
+		 	printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "start" "\$(date +"%Y/%m/%d %H:%M:%S" || true)"
+		#	touch /.autorelabel
+		 	if command -v /usr/bin/snap > /dev/null 2>&1; then
+		 		printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "start" "snap"
+		 		for I in "\${!__LIST[@]}"
+		 		do
+		 			read -r __PATH __PACK < <(echo "\${__LIST[I]}")
+		 			[[ ! -e "\${__PATH}" ]] && continue
+		 			echo "snap install \\"\${__PACK}\\""
+		 			snap install "\${__PACK}"
+		 		done
+		 		printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "complete" "snap"
+		 	fi
+		 	[[ -e "\${__FSTB:?}" ]] &&sed -i "\${__FSTB:?}" -e '/^UUID=/d'
+		 	ls -lahZ /
+		 	[[ -e "\${__SRVC:?}" ]] && systemctl disable "\${__SRVC##*/}"
+		 	mkdir -p "\${__ADMN:?}"
+		 	[[ -e "\${__SRVC:?}"     ]] && mv "\${__SRVC:?}" "\${__ADMN:?}"
+		#	[[ -e "\${_PROG_PATH:?}" ]] && mv "\${_PROG_PATH:?}" "\${__ADMN:?}"
+		 	touch "\${__STAT}"
+		 	shutdown -h now
+		 	printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "complete" "\$(date +"%Y/%m/%d %H:%M:%S" || true)"
+		} > /dev/console
+		exit 0
 _EOT_
 	[[ -e "${__SRCS:?}" ]] && cp --preserve=timestamps "${__SRCS:?}" "${__DEST:?}"
 	[[ -e "${__DEST:?}" ]] && chmod +x "${__DEST}"
@@ -99,7 +133,7 @@ _EOT_
 	chroot "${__MNTP:?}" bash -c "systemctl enable ${__SRVC##*/}"
 	# -------------------------------------------------------------------------
 	umount "${__MNTP}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
-	unset __TGET __SRVC __DEST __SRCS __PATH
+	unset __TGET __SRVC __DEST __SRCS __FSTB
 	# -------------------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }

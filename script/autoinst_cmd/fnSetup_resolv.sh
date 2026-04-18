@@ -31,30 +31,30 @@ _EOT_
 		fnFile_backup "${__PATH}" "init"	# backup initial file
 	else
 		fnMsgout "${_PROG_NAME:-}" "info" "[${__FUNC_NAME}] setup for systemd-resolved"
-		__CONF="${_DIRS_TGET:-}/run/systemd/resolve/stub-resolv.conf"
-		if mountpoint -q "${__CONF}"; then
-			fnMsgout "${_PROG_NAME:-}" "caution" "[${__FUNC_NAME}] is mount point [${__CONF}]"
-		else
-			fnFile_backup "${__CONF}"			# backup original file
-			mkdir -p "${__CONF%/*}"
-		fi
 		if mountpoint -q "${__PATH}"; then
 			fnMsgout "${_PROG_NAME:-}" "caution" "[${__FUNC_NAME}] is mount point [${__PATH}]"
 		else
 			fnFile_backup "${__PATH}"			# backup original file
 			mkdir -p "${__PATH%/*}"
 			__WORK="$(realpath "${__PATH}")"
-			if [  "${__WORK}" != "${__CONF}" ]; then
+			__CONF="${_DIRS_TGET:-}/run/systemd/resolve/stub-resolv.conf"
+#			if mountpoint -q "${__CONF}"; then
+#				fnMsgout "${_PROG_NAME:-}" "caution" "[${__FUNC_NAME}] is mount point [${__CONF}]"
+#			else
+#				fnFile_backup "${__CONF}"			# backup original file
+#				mkdir -p "${__CONF%/*}"
+#			fi
+			if [ "${__WORK}" != "${__CONF}" ]; then
 				fnMsgout "${_PROG_NAME:-}" "caution" "[${__FUNC_NAME}] is created [${__PATH}]"
 				__WORK="${__PATH}.orig"
 				[ ! -e "${__WORK}" ] && mv "${__PATH}" "${__WORK}"
 				rm -f "${__PATH:?}"
 				ln -s "../${__CONF#"${_DIRS_TGET:-}/"}" "${__PATH}"
 			fi
+			fnDbgdump "${__PATH}"				# debugout
+			fnFile_backup "${__PATH}" "init"	# backup initial file
+			fnFile_backup "${__CONF}" "init"	# backup initial file
 		fi
-		fnDbgdump "${__PATH}"				# debugout
-		fnFile_backup "${__PATH}" "init"	# backup initial file
-		fnFile_backup "${__CONF}" "init"	# backup initial file
 		# --- default.conf ----------------------------------------------------
 		__PATH="${_DIRS_TGET:-}/etc/systemd/resolved.conf.d/default.conf"
 		fnFile_backup "${__PATH}"			# backup original file

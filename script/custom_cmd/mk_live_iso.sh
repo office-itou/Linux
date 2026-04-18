@@ -1966,7 +1966,7 @@ function fnMake_live_vmimg_p2() {
 #	declare -r    __SPLS="${__OUTD:?}/${_MENU_SPLS:?}"		# splash.png
 #	declare -r    __TITL="Live system"						# title
 #	declare       __COMD=""									# command
-	declare       __PATH=""									# work
+	declare       __FSTB=""									# work
 	declare       __SRCS=""									# work
 	declare       __DEST=""									# work
 	declare       __SRVC=""									# work
@@ -1979,33 +1979,67 @@ function fnMake_live_vmimg_p2() {
 	# --- root files ----------------------------------------------------------
 	cp --preserve=mode,ownership,timestamps,links --recursive "${__TGET_RTFS}"/. "${__MNTP}"
 	# --- /etc/fstab ----------------------------------------------------------
-	__PATH="/etc/fstab"
-	__SRCS="${__OUTD:?}/${__PATH##*/}"
-	__DEST="${__MNTP:?}/${__PATH#/}"
+	__FSTB="/etc/fstab"
+	__SRCS="${__OUTD:?}/${__FSTB##*/}"
+	__DEST="${__MNTP:?}/${__FSTB#/}"
 	mkdir -p "${__SRCS%/*}"
 	mkdir -p "${__DEST%/*}"
 	{
 		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" "# <file system>"  "<mount point>" "<type>"           "<options>"                   "<dump>" "<pass>"
 		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" "UUID=${__UUID:?}" "/"             "ext4"             "defaults"                    "0"      "0"
-		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" ".host:/"          "/srv/hgfs"     "fuse.vmhgfs-fuse" "nofail,allow_other,defaults" "0"      "0"
+		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" "#.host:/"         "/srv/hgfs"     "fuse.vmhgfs-fuse" "nofail,allow_other,defaults" "0"      "0"
 	} > "${__SRCS:?}"
 	[[ -e "${__SRCS:?}" ]] && cp --preserve=timestamps "${__SRCS:?}" "${__DEST:?}"
 	# --- run-once.sh ---------------------------------------------------------
 	__SRVC="/etc/systemd/system/run-once.service"
-	__TGET="/var/admin/autoinst/run-once.sh"
+	__ADMN="/var/admin/autoinst"
+	__TGET="${__ADMN:?}/run-once.sh"
 	__SRCS="${__OUTD:?}/${__TGET##*/}"
 	__DEST="${__MNTP:?}/${__TGET#/}"
 	mkdir -p "${__SRCS%/*}"
 	mkdir -p "${__DEST%/*}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__SRCS:?}"
 		#!/bin/bash
-		# touch /.autorelabel
-		systemctl disable ${__SRVC##*/}
-		sed -i "${__PATH:?}" -e '/^UUID=/d'
-		rm -f "${__SRVC:?}"
-		rm -f "\${0:?}"
-		ls -lahZ / > /var/admin/autoinst/"\${0##*/}".success
-		shutdown -h now
+		set -eu
+		declare -r    _PROG_PATH="\$0"
+		declare -r    _PROG_NAME="\${_PROG_PATH##*/}"
+		declare -r    __ADMN="${__ADMN:?}"
+		declare -r    __STAT="\${__ADMN:?}/\${_PROG_NAME}.success"
+		declare -r    __SRVC="${__SRVC:?}"
+		declare -r    __FSTB="${__FSTB:?}"
+		declare -r -a __LIST=(
+		 	"/usr/bin/thunderbird       thunderbird"
+		 	"/usr/bin/firefox           firefox"
+		 	"/usr/bin/chromium-browser  chromium"
+		)
+		declare       __PATH=""
+		declare       __PACK=""
+		declare -i    I=0
+		{
+		 	printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "start" "\$(date +"%Y/%m/%d %H:%M:%S" || true)"
+		#	touch /.autorelabel
+		 	if command -v /usr/bin/snap > /dev/null 2>&1; then
+		 		printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "start" "snap"
+		 		for I in "\${!__LIST[@]}"
+		 		do
+		 			read -r __PATH __PACK < <(echo "\${__LIST[I]}")
+		 			[[ ! -e "\${__PATH}" ]] && continue
+		 			echo "snap install \\"\${__PACK}\\""
+		 			snap install "\${__PACK}"
+		 		done
+		 		printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "complete" "snap"
+		 	fi
+		 	[[ -e "\${__FSTB:?}" ]] &&sed -i "\${__FSTB:?}" -e '/^UUID=/d'
+		 	ls -lahZ /
+		 	[[ -e "\${__SRVC:?}" ]] && systemctl disable "\${__SRVC##*/}"
+		 	mkdir -p "\${__ADMN:?}"
+		 	[[ -e "\${__SRVC:?}"     ]] && mv "\${__SRVC:?}" "\${__ADMN:?}"
+		#	[[ -e "\${_PROG_PATH:?}" ]] && mv "\${_PROG_PATH:?}" "\${__ADMN:?}"
+		 	touch "\${__STAT}"
+		 	shutdown -h now
+		 	printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "complete" "\$(date +"%Y/%m/%d %H:%M:%S" || true)"
+		} > /dev/console
+		exit 0
 _EOT_
 	[[ -e "${__SRCS:?}" ]] && cp --preserve=timestamps "${__SRCS:?}" "${__DEST:?}"
 	[[ -e "${__DEST:?}" ]] && chmod +x "${__DEST}"
@@ -2034,7 +2068,7 @@ _EOT_
 	chroot "${__MNTP:?}" bash -c "systemctl enable ${__SRVC##*/}"
 	# -------------------------------------------------------------------------
 	umount "${__MNTP}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
-	unset __TGET __SRVC __DEST __SRCS __PATH
+	unset __TGET __SRVC __DEST __SRCS __FSTB
 	# -------------------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }
@@ -2107,11 +2141,17 @@ _EOT_
 	_PATH_IRAM="${__IRAM:+"/${__IRAM}"}"
 	# --- security option -----------------------------------------------------
 	[[ -e "${__RTFS:?}"/usr/bin/aa-enabled  ]] && _SECU_OPTN="${_SECU_APPA:-}"
+	[[ -e "${__RTFS:?}"/usr/bin/getenforce  ]] && _SECU_OPTN="${_SECU_SLNX:-}"
 	[[ -e "${__RTFS:?}"/usr/sbin/getenforce ]] && _SECU_OPTN="${_SECU_SLNX:-}"
+	fnMsgout "${_PROG_NAME:-}" "info" "security: [${_SECU_OPTN:-}]"
+	# --- create vm-image -----------------------------------------------------
 	fnMake_live_vmimg_p1 "${__LOOP:?}" "p1" "${__TGET_OUTD:?}" "${__UUID:?}" "${__TGET_DIST:?}" "${__TGET_ENTR:?}"
 	fnMake_live_vmimg_p2 "${__LOOP:?}" "p2" "${__TGET_OUTD:?}" "${__RTFS:?}" "${__UUID:?}"
+	# --- security option -----------------------------------------------------
 	[[ -e "${__RTFS:?}"/usr/sbin/getenforce ]] && _SECU_OPTN="${_SECU_SLNX:-}"
+	[[ -e "${__RTFS:?}"/usr/bin/getenforce  ]] && _SECU_OPTN="${_SECU_SLNX:-}"
 	[[ -e "${__RTFS:?}"/usr/bin/aa-enabled  ]] && _SECU_OPTN="${_SECU_APPA:-}"
+	fnMsgout "${_PROG_NAME:-}" "info" "security: [${_SECU_OPTN:-}]"
 	umount "${__RTFS}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
 	# --- create uefi/bios image ----------------------------------------------
 	__MBRF="${__TGET_OUTD:?}/${_FILE_MBRF:?}"
@@ -2490,11 +2530,14 @@ function fnMake_live_build() {
 		__WRKD="${__TEMP:?}/${__SUBD:?}" # --workspace-directory=
 		__OUTD="${__RTMP:?}/${__SUBD:?}" # --output-directory=
 		# --- build -----------------------------------------------------------
-		fnMake_live_mkosi "${__OPRT:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}" "${__WRKD:-}" "${__OUTD:-}"
+		fnMake_live_mkosi "${__OPRT:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}" "${__WRKD:-}" "${__WRKD:-}"
 		case "${__OPRT:-}" in
 			build        )
 				__STRG="${__OUTD:?}/vm_uefi_${__VLID,,}.raw"
 				__SPLS="${__OUTD:?}/${_MENU_SPLS:?}"
+				# --- copy output ---------------------------------------------
+				mkdir -p "${__OUTD:?}"
+				cp --archive "${__WRKD:?}/${_FILE_RTIM:?}" "${__OUTD:?}"/
 				# --- splash.png ----------------------------------------------
 				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | xxd -p -r | gzip -d -k > "${__SPLS:?}"
 					1f8b0808462b8d69000373706c6173682e706e6700eb0cf073e7e592e262
@@ -2502,12 +2545,14 @@ function fnMake_live_build() {
 					8654dc7a7b909117287868c177ff5c3ef3050ca360148c8251300ae8051a
 					c299ff4c6660bcb6edd00b10d7d3d5cf659d53421300e6198186c4050000
 _EOT_
+				# --- create iso image file -----------------------------------
 				fnMake_live_vmimg "${__OUTD:-}" "${__VLID:-}" "${__ENTR:-}" "${__STRG:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}"
 				fnMake_live_qemu  "${__STRG:-}"
 				fnMake_live_cdimg "${__OUTD:-}" "${__VLID:-}" "${__ENTR:-}" "${__STRG:-}" "${__ISOS:-}"
 				;;
 			*            ) __OPTN=("help");;
 		esac
+sleep 600
 		rm -rf "${__WRKD:?}" \
 		       "${__OUTD:?}"
 	done

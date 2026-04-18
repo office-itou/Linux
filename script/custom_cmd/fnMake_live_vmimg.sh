@@ -71,11 +71,17 @@ _EOT_
 	_PATH_IRAM="${__IRAM:+"/${__IRAM}"}"
 	# --- security option -----------------------------------------------------
 	[[ -e "${__RTFS:?}"/usr/bin/aa-enabled  ]] && _SECU_OPTN="${_SECU_APPA:-}"
+	[[ -e "${__RTFS:?}"/usr/bin/getenforce  ]] && _SECU_OPTN="${_SECU_SLNX:-}"
 	[[ -e "${__RTFS:?}"/usr/sbin/getenforce ]] && _SECU_OPTN="${_SECU_SLNX:-}"
+	fnMsgout "${_PROG_NAME:-}" "info" "security: [${_SECU_OPTN:-}]"
+	# --- create vm-image -----------------------------------------------------
 	fnMake_live_vmimg_p1 "${__LOOP:?}" "p1" "${__TGET_OUTD:?}" "${__UUID:?}" "${__TGET_DIST:?}" "${__TGET_ENTR:?}"
 	fnMake_live_vmimg_p2 "${__LOOP:?}" "p2" "${__TGET_OUTD:?}" "${__RTFS:?}" "${__UUID:?}"
+	# --- security option -----------------------------------------------------
 	[[ -e "${__RTFS:?}"/usr/sbin/getenforce ]] && _SECU_OPTN="${_SECU_SLNX:-}"
+	[[ -e "${__RTFS:?}"/usr/bin/getenforce  ]] && _SECU_OPTN="${_SECU_SLNX:-}"
 	[[ -e "${__RTFS:?}"/usr/bin/aa-enabled  ]] && _SECU_OPTN="${_SECU_APPA:-}"
+	fnMsgout "${_PROG_NAME:-}" "info" "security: [${_SECU_OPTN:-}]"
 	umount "${__RTFS}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
 	# --- create uefi/bios image ----------------------------------------------
 	__MBRF="${__TGET_OUTD:?}/${_FILE_MBRF:?}"
