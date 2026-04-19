@@ -17,6 +17,7 @@ fnSetup_service() {
 	for __LIST in \
 		chronyd.service \
 		avahi-daemon.service \
+		brltty.service \
 		nmb.service \
 		nmbd.service \
 		winbind.service \

@@ -20,7 +20,7 @@ function fnMk_squashfs() {
 		-quiet
 		-progress
 		-noappend
-		-no-xattrs
+		-xattrs
 		-e /.autorelabel /.cache /.viminfo
 	)
 

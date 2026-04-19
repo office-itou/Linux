@@ -42,7 +42,8 @@ function fnMake_live_vmimg_p2() {
 	mkdir -p "${__MNTP:?}"
 	mount "${__TGET_DEVS}${__TGET_PART}" "${__MNTP}" && _LIST_RMOV+=("${__MNTP}")
 	# --- root files ----------------------------------------------------------
-	cp --preserve=mode,ownership,timestamps,links --recursive "${__TGET_RTFS}"/. "${__MNTP}"
+#	cp --preserve=mode,ownership,timestamps,links,xattr --no-preserve --recursive "${__TGET_RTFS}"/. "${__MNTP}"
+	cp --no-dereference --recursive --preserve=all --no-preserve=context "${__TGET_RTFS}"/. "${__MNTP}"
 	# --- /etc/fstab ----------------------------------------------------------
 	__FSTB="/etc/fstab"
 	__SRCS="${__OUTD:?}/${__FSTB##*/}"
@@ -84,7 +85,7 @@ function fnMake_live_vmimg_p2() {
 		 	printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "start" "\$(date +"%Y/%m/%d %H:%M:%S" || true)"
 		#	touch /.autorelabel
 		 	if command -v /usr/bin/snap > /dev/null 2>&1; then
-		 		printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "start" "snap"
+		 		printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "start" "snap install"
 		 		for I in "\${!__LIST[@]}"
 		 		do
 		 			read -r __PATH __PACK < <(echo "\${__LIST[I]}")
@@ -92,7 +93,14 @@ function fnMake_live_vmimg_p2() {
 		 			echo "snap install \\"\${__PACK}\\""
 		 			snap install "\${__PACK}"
 		 		done
-		 		printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "complete" "snap"
+		 		printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "complete" "snap install"
+		 		printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "start" "snap capabilities"
+		 		getcap /usr/lib/snapd/snap-confine
+		 		getfattr --dump --match="^security\\." /usr/lib/snapd/snap-confine
+		#		setcap -q - /usr/lib/snapd/snap-confine < /usr/lib/snapd/snap-confine.caps
+		#		getcap /usr/lib/snapd/snap-confine
+		#		getfattr --dump --match="^security\\." /usr/lib/snapd/snap-confine
+		 		printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "complete" "snap capabilities"
 		 	fi
 		 	[[ -e "\${__FSTB:?}" ]] &&sed -i "\${__FSTB:?}" -e '/^UUID=/d'
 		 	ls -lahZ /
@@ -103,7 +111,7 @@ function fnMake_live_vmimg_p2() {
 		 	touch "\${__STAT}"
 		 	shutdown -h now
 		 	printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "complete" "\$(date +"%Y/%m/%d %H:%M:%S" || true)"
-		} > /dev/console
+		} > /dev/console 2>&1
 		exit 0
 _EOT_
 	[[ -e "${__SRCS:?}" ]] && cp --preserve=timestamps "${__SRCS:?}" "${__DEST:?}"
@@ -128,7 +136,7 @@ _EOT_
 		WantedBy=multi-user.target
 _EOT_
 	[[ -e "${__SRCS:?}" ]] && cp --preserve=timestamps "${__SRCS:?}" "${__DEST:?}"
-	[[ -e "${__DEST:?}" ]] && chmod +x "${__DEST}"
+#	[[ -e "${__DEST:?}" ]] && chmod +x "${__DEST}"
 	# --- setup ---------------------------------------------------------------
 	chroot "${__MNTP:?}" bash -c "systemctl enable ${__SRVC##*/}"
 	# -------------------------------------------------------------------------

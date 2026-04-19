@@ -30,11 +30,13 @@ function fnMk_xorrisofs() {
 	declare       __TEMP=""				# temporary file
 	              __TEMP="$(mktemp -q "${_DIRS_TEMP:-/tmp}/${__FUNC_NAME}.XXXXXX")"
 	readonly      __TEMP
+#	https://man.archlinux.org/man/xorrisofs.1.en
 #	-quiet								Run quietly
 #	-o FILE, -output FILE				Set output file name
 #	-R, -rock							Generate Rock Ridge directory information
 #	-J, -joliet							Generate Joliet directory information
 #	-V ID, -volid ID					Set Volume ID
+#	-iso-level number					Specify the ISO 9660 version which defines the limitations of file naming and data file size
 #	--grub2-mbr FILE					Set GRUB2 MBR for boot image address patching
 #	-partition_offset LBA				Make image mountable by first partition, too
 #	-appended_part_as_gpt				mark appended partitions in GPT instead of MBR.
@@ -62,6 +64,7 @@ function fnMk_xorrisofs() {
 		-rock
 		-joliet
 		${__FILE_VLID:+-volid "${__FILE_VLID// /$'\x20'}"}
+		-iso-level 3
 	)
 	if [[ -n "${__FILE_HBRD:-}" ]]; then
 		__OPTN+=(
