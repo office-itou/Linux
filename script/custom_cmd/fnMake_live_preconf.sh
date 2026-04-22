@@ -79,6 +79,20 @@ function fnMake_live_preconf() {
 							-e '/^ *systemd-resolved */                   s/^ /#/' \
 							-e '/^ *ubuntu-keyring */                     s/^ /#/' \
 							-e '/^ *util-linux-extra */                   s/^ /#/' \
+							-e '/^ *libpam-wtmpdb */                      s/^ /#/' \
+							-e '/^ *systemd-repart */                     s/^ /#/' \
+							-e '/^ *virtiofsd */                          s/^ /#/' \
+							-e '/^ *wtmpdb */                             s/^ /#/' \
+							-e '}}'
+						;;
+					debian.12.0.*)
+						sed -i "${__SRVR}"                                         \
+							-e '/^\[Content\]/,/^#*\[.\+\]/                     {' \
+							-e '/^Packages=/,/^#*\(\[.\+\]\|[[:alnum:]]\+=\)/   {' \
+							-e '/^ *libpam-wtmpdb */                      s/^ /#/' \
+							-e '/^ *systemd-repart */                     s/^ /#/' \
+							-e '/^ *virtiofsd */                          s/^ /#/' \
+							-e '/^ *wtmpdb */                             s/^ /#/' \
 							-e '}}'
 						;;
 					ubuntu.22.04.*)

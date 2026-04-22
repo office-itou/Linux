@@ -51,9 +51,9 @@ function fnMake_live_vmimg_p2() {
 	mkdir -p "${__SRCS%/*}"
 	mkdir -p "${__DEST%/*}"
 	{
-		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" "# <file system>"  "<mount point>" "<type>"           "<options>"                   "<dump>" "<pass>"
-		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" "UUID=${__UUID:?}" "/"             "ext4"             "defaults"                    "0"      "0"
-		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" "#.host:/"         "/srv/hgfs"     "fuse.vmhgfs-fuse" "nofail,allow_other,defaults" "0"      "0"
+		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" "# <file system>"  "<mount point>" "<type>"           "<options>"            "<dump>" "<pass>"
+		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" "UUID=${__UUID:?}" "/"             "ext4"             "defaults"             "0"      "0"
+		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" "#.host:/"         "/srv/hgfs"     "fuse.vmhgfs-fuse" "allow_other,defaults" "0"      "0"
 	} > "${__SRCS:?}"
 	[[ -e "${__SRCS:?}" ]] && cp --preserve=timestamps "${__SRCS:?}" "${__DEST:?}"
 	# --- run-once.sh ---------------------------------------------------------

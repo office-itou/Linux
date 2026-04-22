@@ -18,7 +18,6 @@ function fnMake_live_qemu() {
 		-cpu "host"
 		-machine "q35"
 		-enable-kvm
-		-device "intel-iommu"
 		-m "size=4G"
 		-boot "order=c"
 		-nic "bridge"
@@ -29,7 +28,9 @@ function fnMake_live_qemu() {
 		-device "ich9-intel-hda"
 		-vnc ":0"
 		-nographic
-		-drive "file=${__TGET_STRG:?},format=raw"
+		-drive "id=disk,file=${__TGET_STRG:?},format=raw,if=none"
+		-device "ich9-ahci,id=ahci"
+		-device "ide-hd,drive=disk,bus=ahci.0"
 	)
 	fnMk_qemu "${__OPTN[@]}"
 

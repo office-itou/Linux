@@ -21,7 +21,6 @@ function fnMk_squashfs() {
 		-progress
 		-noappend
 		-xattrs
-		-e /.autorelabel /.cache /.viminfo
 	)
 
 	declare -i    __time_start=0

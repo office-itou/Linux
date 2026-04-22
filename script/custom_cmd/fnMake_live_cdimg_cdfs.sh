@@ -42,7 +42,7 @@ function fnMake_live_cdimg_cdfs() {
 	partprobe "${__LOOP:?}"
 	mount -r "${__LOOP}"p2 "${__MNTP}" && _LIST_RMOV+=("${__MNTP}")
 	# --- create squashfs -----------------------------------------------------
-	fnMk_squashfs "${__MNTP:?}" "${__SQFS:?}"
+	fnMk_squashfs "${__MNTP:?}" "${__SQFS:?}" -e "${__MNTP:?}"/{.autorelabel,.cache,.viminfo}
 	# --- create cdfs image ---------------------------------------------------
 	mkdir -p "${__CDFS:?}"/{.disk,EFI/BOOT,boot/grub/{live-theme,x86_64-efi,i386-pc},isolinux,"${_DIRS_LIVE:?}"}
 	touch "${__CDFS}/.disk/info"

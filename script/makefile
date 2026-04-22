@@ -52,6 +52,8 @@ OBJS= \
 	./_common_sh/fnStrmsg.sh \
 	./_common_sh/fnIPv6FullAddr.sh \
 	./_common_sh/fnIPv6RevAddr.sh \
+	./_common_sh/fnIPv4Netmask_gawk.sh \
+	./_common_sh/fnIPv4Netmask_mawk.sh \
 	./_common_sh/fnIPv4Netmask.sh \
 	./autoinst_cmd/fnDbgout.sh \
 	./autoinst_cmd/fnDbgdump.sh \
@@ -88,6 +90,8 @@ OBJS= \
 	./_common_sh/fnStrmsg.sh \
 	./_common_sh/fnIPv6FullAddr.sh \
 	./_common_sh/fnIPv6RevAddr.sh \
+	./_common_sh/fnIPv4Netmask_gawk.sh \
+	./_common_sh/fnIPv4Netmask_mawk.sh \
 	./_common_sh/fnIPv4Netmask.sh \
 	./autoinst_cmd/fnDbgout.sh \
 	./autoinst_cmd/fnDbgdump.sh \
@@ -159,6 +163,8 @@ OBJS= \
 	./_common_sh/fnStrmsg.sh \
 	./_common_sh/fnIPv6FullAddr.sh \
 	./_common_sh/fnIPv6RevAddr.sh \
+	./_common_sh/fnIPv4Netmask_gawk.sh \
+	./_common_sh/fnIPv4Netmask_mawk.sh \
 	./_common_sh/fnIPv4Netmask.sh \
 	./autoinst_cmd/fnDbgout.sh \
 	./autoinst_cmd/fnDbgparam.sh \
@@ -168,7 +174,6 @@ OBJS= \
 	./autoinst_cmd/fnFile_backup.sh \
 	./autoinst_cmd/fnInitialize.sh \
 	./autoinst_cmd/fnCmdline.sh \
-	./autoinst_cmd/skel_autoinst_cmd_part.sh
 
 $(TGET): $(SRCS) $(OBJS)
 	@echo "start   : $@"
@@ -191,6 +196,8 @@ OBJS= \
 	./_common_sh/fnStrmsg.sh \
 	./_common_sh/fnIPv6FullAddr.sh \
 	./_common_sh/fnIPv6RevAddr.sh \
+	./_common_sh/fnIPv4Netmask_gawk.sh \
+	./_common_sh/fnIPv4Netmask_mawk.sh \
 	./_common_sh/fnIPv4Netmask.sh \
 	./autoinst_cmd/fnDbgout.sh \
 	./autoinst_cmd/fnDbgparam.sh \
@@ -230,6 +237,7 @@ OBJS= \
 	./custom_cmd/fnComm_dbgparameters.sh \
 	./custom_cmd/fnComm_dbgparameters_all.sh \
 	./custom_cmd/fnComm_find_command.sh \
+	./custom_cmd/fnComm_find_service.sh \
 	./custom_cmd/fnComm_system_param.sh \
 	./custom_cmd/fnComm_network_param.sh \
 	./custom_cmd/fnComm_trap.sh \
@@ -305,7 +313,7 @@ OBJS= \
 	./custom_cmd/fnComm_xinitrd.sh \
 	./custom_cmd/fnMake_boot_option_preseed.sh \
 	./custom_cmd/fnMake_boot_option_nocloud.sh \
-	./custom_cmd/fnMake_boot_option_kickstart.sh \
+	./custom_cmd/fnMake_boot_option_kickstart.sh  \
 	./custom_cmd/fnMake_boot_option_autoyast.sh \
 	./custom_cmd/fnMake_boot_option_agama.sh \
 	./custom_cmd/fnMake_boot_options.sh \
@@ -333,10 +341,10 @@ OBJS= \
 	./custom_cmd/fnMake_pxeboot_slnx.sh \
 	./custom_cmd/fnMake_pxeboot.sh \
 	./custom_cmd/fnMake_isofile_conf.sh \
-	./custom_cmd/fnMake_isofile_grub_autoinst.sh \
+	./custom_cmd/fnMake_isofile_grub_autoinst.sh  \
 	./custom_cmd/fnMake_isofile_grub_theme.sh \
 	./custom_cmd/fnMake_isofile_grub.sh \
-	./custom_cmd/fnMake_isofile_ilnx_autoinst.sh \
+	./custom_cmd/fnMake_isofile_ilnx_autoinst.sh  \
 	./custom_cmd/fnMake_isofile_ilnx_theme.sh \
 	./custom_cmd/fnMake_isofile_ilnx.sh \
 	./custom_cmd/fnComm_xorrisofs.sh \
@@ -362,19 +370,13 @@ OBJS= \
 	./custom_cmd/fnComm_global_variables.sh \
 	./custom_cmd/fnComm_global_common.sh \
 	./custom_cmd/fnMake_live_global_var.sh \
-	./_common_bash/fnTrim.sh \
 	./_common_bash/fnDirname.sh \
-	./_common_bash/fnBasename.sh \
-	./_common_bash/fnFilename.sh \
 	./_common_bash/fnMsgout.sh \
 	./_common_bash/fnString.sh \
 	./_common_bash/fnStrmsg.sh \
-	./_common_bash/fnGetWebinfo.sh \
-	./_common_bash/fnGetFileinfo.sh \
 	./custom_cmd/fnComm_dbgout.sh \
 	./custom_cmd/fnComm_dbgparameters.sh \
 	./custom_cmd/fnComm_dbgparameters_all.sh \
-	./custom_cmd/fnComm_find_command.sh \
 	./custom_cmd/fnComm_trap.sh \
 	./custom_cmd/fnMake_init_mk_live_iso.sh \
 	./custom_cmd/fnComm_list_conf_Get.sh \
@@ -386,7 +388,6 @@ OBJS= \
 	./custom_cmd/fnComm_mkosi.sh \
 	./custom_cmd/fnComm_qemu.sh \
 	./custom_cmd/fnComm_squashfs.sh \
-	./custom_cmd/fnComm_grub_module.sh \
 	./custom_cmd/fnComm_grub_conf.sh \
 	./custom_cmd/fnComm_grub_theme.sh \
 	./custom_cmd/fnComm_ilnx_conf.sh \
@@ -396,6 +397,7 @@ OBJS= \
 	./custom_cmd/fnMake_live_vmimg_p1.sh \
 	./custom_cmd/fnMake_live_vmimg_p2.sh \
 	./custom_cmd/fnMake_live_vmimg.sh \
+	./custom_cmd/fnMake_live_qemu.sh \
 	./custom_cmd/fnMake_live_cdimg_cdfs.sh \
 	./custom_cmd/fnMake_live_cdimg_grub.sh \
 	./custom_cmd/fnMake_live_cdimg_ilnx.sh \

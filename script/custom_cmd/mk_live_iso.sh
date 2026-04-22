@@ -1207,7 +1207,6 @@ function fnMk_squashfs() {
 		-progress
 		-noappend
 		-xattrs
-		-e /.autorelabel /.cache /.viminfo
 	)
 
 	declare -i    __time_start=0
@@ -1583,6 +1582,20 @@ function fnMake_live_preconf() {
 							-e '/^ *systemd-resolved */                   s/^ /#/' \
 							-e '/^ *ubuntu-keyring */                     s/^ /#/' \
 							-e '/^ *util-linux-extra */                   s/^ /#/' \
+							-e '/^ *libpam-wtmpdb */                      s/^ /#/' \
+							-e '/^ *systemd-repart */                     s/^ /#/' \
+							-e '/^ *virtiofsd */                          s/^ /#/' \
+							-e '/^ *wtmpdb */                             s/^ /#/' \
+							-e '}}'
+						;;
+					debian.12.0.*)
+						sed -i "${__SRVR}"                                         \
+							-e '/^\[Content\]/,/^#*\[.\+\]/                     {' \
+							-e '/^Packages=/,/^#*\(\[.\+\]\|[[:alnum:]]\+=\)/   {' \
+							-e '/^ *libpam-wtmpdb */                      s/^ /#/' \
+							-e '/^ *systemd-repart */                     s/^ /#/' \
+							-e '/^ *virtiofsd */                          s/^ /#/' \
+							-e '/^ *wtmpdb */                             s/^ /#/' \
 							-e '}}'
 						;;
 					ubuntu.22.04.*)
@@ -1989,9 +2002,9 @@ function fnMake_live_vmimg_p2() {
 	mkdir -p "${__SRCS%/*}"
 	mkdir -p "${__DEST%/*}"
 	{
-		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" "# <file system>"  "<mount point>" "<type>"           "<options>"                   "<dump>" "<pass>"
-		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" "UUID=${__UUID:?}" "/"             "ext4"             "defaults"                    "0"      "0"
-		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" "#.host:/"         "/srv/hgfs"     "fuse.vmhgfs-fuse" "nofail,allow_other,defaults" "0"      "0"
+		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" "# <file system>"  "<mount point>" "<type>"           "<options>"            "<dump>" "<pass>"
+		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" "UUID=${__UUID:?}" "/"             "ext4"             "defaults"             "0"      "0"
+		printf "%-43s %-43s %-31s %-31s %-7s %-s\n" "#.host:/"         "/srv/hgfs"     "fuse.vmhgfs-fuse" "allow_other,defaults" "0"      "0"
 	} > "${__SRCS:?}"
 	[[ -e "${__SRCS:?}" ]] && cp --preserve=timestamps "${__SRCS:?}" "${__DEST:?}"
 	# --- run-once.sh ---------------------------------------------------------
@@ -2087,12 +2100,13 @@ _EOT_
 # -----------------------------------------------------------------------------
 # descript: make live vm-image
 #   input :     $1     : output directory
-#   input :     $2     : volume id
-#   input :     $3     : menu entry
-#   input :     $4     : storage
-#   input :     $5     : distribution
-#   input :     $6     : version
-#   input :     $7     : edition
+#	input :     $2	   : workspace directory=
+#   input :     $3     : volume id
+#   input :     $4     : menu entry
+#   input :     $5     : storage
+#   input :     $6     : distribution
+#   input :     $7     : version
+#   input :     $8     : edition
 #   output:   stdout   : message
 #   return:            : unused
 function fnMake_live_vmimg() {
@@ -2101,12 +2115,13 @@ function fnMake_live_vmimg() {
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	declare -r    __TGET_OUTD="${1:-}"	# output directory
-	declare -r    __TGET_VLID="${2:-}"	# volume id
-	declare -r    __TGET_ENTR="${3:?}"	# menu entry
-	declare -r    __TGET_STRG="${4:-}"	# storage
-	declare -r    __TGET_DIST="${5:-}"	# distribution
-	declare -r    __TGET_VERS="${6:-}"	# version
-	declare -r    __TGET_EDTN="${7:-}"	# edition
+	declare -r    __TGET_WRKD="${2:-}" 	# workspace directory=
+	declare -r    __TGET_VLID="${3:-}"	# volume id
+	declare -r    __TGET_ENTR="${4:?}"	# menu entry
+	declare -r    __TGET_STRG="${5:-}"	# storage
+	declare -r    __TGET_DIST="${6:-}"	# distribution
+	declare -r    __TGET_VERS="${7:-}"	# version
+	declare -r    __TGET_EDTN="${8:-}"	# edition
 	declare       __LOOP=""				# loop device name
 	declare       __UUID=""				# loopXp2 uuid device name
 	declare       __RTIM=""				# root image
@@ -2137,12 +2152,33 @@ _EOT_
 	sleep 1
 	__UUID="$(lsblk --noheadings --output=UUID "${__LOOP}"p2)"
 	# --- file copy -----------------------------------------------------------
-	__RTIM="${__TGET_OUTD:?}/${_FILE_RTIM:?}"
-	__RTFS="${__TGET_OUTD:?}/${_DIRS_RTFS:?}"
-	__RTLP="$(losetup --find --show "${__RTIM}")" && _LIST_RMOV+=("${__RTLP}")
-	partprobe "${__RTLP:?}"
-	mkdir -p "${__RTFS:?}"
-	mount -r "${__RTLP}"p1 "${__RTFS}" && _LIST_RMOV+=("${__RTFS}")
+	case "${_MKOS_FMAT:-}" in
+		directory)
+			__RTIM="${__TGET_WRKD:?}/${_MKOS_OUTP:?}"
+			__RTFS="${__TGET_OUTD:?}/${_DIRS_RTFS:?}"
+			mkdir -p "${__RTFS:?}"
+			mount --bind "${__RTIM}" "${__RTFS}" && _LIST_RMOV+=("${__RTFS}")
+			;;
+		tar      ) ;;
+		cpio     ) ;;
+		disk     )
+			__RTIM="${__TGET_WRKD:?}/${_FILE_RTIM:?}"
+			__RTFS="${__TGET_OUTD:?}/${_DIRS_RTFS:?}"
+			__RTLP="$(losetup --find --show "${__RTIM}")" && _LIST_RMOV+=("${__RTLP}")
+			partprobe "${__RTLP:?}"
+			mkdir -p "${__RTFS:?}"
+			mount -r "${__RTLP}"p1 "${__RTFS}" && _LIST_RMOV+=("${__RTFS}")
+			;;
+		uki      ) ;;
+		esp      ) ;;
+		oci      ) ;;
+		sysext   ) ;;
+		confext  ) ;;
+		portable ) ;;
+		addon    ) ;;
+		none     ) ;;
+		*        ) ;;
+	esac
 	# --- kernel --------------------------------------------------------------
 	__WORK="$(fnFind_kernel "${__RTFS}")"
 	read -r __VLNZ __IRAM < <(echo "${__WORK:-}")
@@ -2163,7 +2199,26 @@ _EOT_
 	[[ -e "${__RTFS:?}"/usr/bin/getenforce  ]] && _SECU_OPTN="${_SECU_SLNX:-}"
 	[[ -e "${__RTFS:?}"/usr/bin/aa-enabled  ]] && _SECU_OPTN="${_SECU_APPA:-}"
 	fnMsgout "${_PROG_NAME:-}" "info" "security: [${_SECU_OPTN:-}]"
-	umount "${__RTFS}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
+	case "${_MKOS_FMAT:-}" in
+		directory)
+			umount "${__RTFS}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
+			;;
+		tar      ) ;;
+		cpio     ) ;;
+		disk     )
+			umount "${__RTFS}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
+			losetup --detach "${__RTLP}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
+			;;
+		uki      ) ;;
+		esp      ) ;;
+		oci      ) ;;
+		sysext   ) ;;
+		confext  ) ;;
+		portable ) ;;
+		addon    ) ;;
+		none     ) ;;
+		*        ) ;;
+	esac
 	# --- create uefi/bios image ----------------------------------------------
 	__MBRF="${__TGET_OUTD:?}/${_FILE_MBRF:?}"
 	__UEFI="${__TGET_OUTD:?}/${_FILE_UEFI:?}"
@@ -2173,7 +2228,6 @@ _EOT_
 	dd if="${__LOOP}" of="${__UEFI}" bs="${__PSEC}" skip="${__STRT}" count="${__CONT}"
 	dd if="${__LOOP}" of="${__MBRF}" bs=1 count=440
 	# -------------------------------------------------------------------------
-	losetup --detach "${__RTLP}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
 	losetup --detach "${__LOOP}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
 
 	unset __WORK __CONT __SIZE __STRT __PSEC __PATH __UEFI __MBRF __IRAM __VLNZ __RTFS __RTLP __RTIM __UUID __LOOP
@@ -2202,7 +2256,6 @@ function fnMake_live_qemu() {
 		-cpu "host"
 		-machine "q35"
 		-enable-kvm
-		-device "intel-iommu"
 		-m "size=4G"
 		-boot "order=c"
 		-nic "bridge"
@@ -2213,7 +2266,9 @@ function fnMake_live_qemu() {
 		-device "ich9-intel-hda"
 		-vnc ":0"
 		-nographic
-		-drive "file=${__TGET_STRG:?},format=raw"
+		-drive "id=disk,file=${__TGET_STRG:?},format=raw,if=none"
+		-device "ich9-ahci,id=ahci"
+		-device "ide-hd,drive=disk,bus=ahci.0"
 	)
 	fnMk_qemu "${__OPTN[@]}"
 
@@ -2255,7 +2310,7 @@ function fnMake_live_cdimg_cdfs() {
 	partprobe "${__LOOP:?}"
 	mount -r "${__LOOP}"p2 "${__MNTP}" && _LIST_RMOV+=("${__MNTP}")
 	# --- create squashfs -----------------------------------------------------
-	fnMk_squashfs "${__MNTP:?}" "${__SQFS:?}"
+	fnMk_squashfs "${__MNTP:?}" "${__SQFS:?}" -e "${__MNTP:?}"/{.autorelabel,.cache,.viminfo}
 	# --- create cdfs image ---------------------------------------------------
 	mkdir -p "${__CDFS:?}"/{.disk,EFI/BOOT,boot/grub/{live-theme,x86_64-efi,i386-pc},isolinux,"${_DIRS_LIVE:?}"}
 	touch "${__CDFS}/.disk/info"
@@ -2485,27 +2540,26 @@ function fnMake_live_build() {
 	declare       __WORK=""				# work
 	declare -a    __ARRY=()				# work
 	declare -i    I=0					# work
+	declare -i    __time_start=0
+	declare -i    __time_end=0
+	declare -i    __time_elapsed=0
 	# --- get options ---------------------------------------------------------
 	set -f -- "${@:-}"
 	set +f
 	__TGET=()
 	while [[ -n "${1:-}" ]]
 	do
-		IFS=':' read -r -a __ARRY < <(echo "${1:-}")
-		__OPRT="${__ARRY[0]:?}"								# operation
-		__DIST="${__ARRY[1]:?}"								# distribution
-		__VERS="${__ARRY[2]:-}"								# version
-		__EDTN="${__ARRY[3]:-}"								# edition
-		case "${__DIST,,}" in
+		IFS=':' read -r -a __ARRY < <(echo "${1,,}")
+		case "${__ARRY[1]}" in
 			-*      ) break;;
-			debian  ) __TGET+=("${1:-}");;
-			ubuntu  ) __TGET+=("${1:-}");;
-			fedora  ) __TGET+=("${1:-}");;
-			centos  ) __TGET+=("${1:-}");;
-			alma    ) __TGET+=("${1:-}");;
-			rocky   ) __TGET+=("${1:-}");;
-			opensuse) __TGET+=("${1:-}");;
-#			miracle ) __TGET+=("${1:-}");;
+			debian  ) __TGET+=("${__ARRY[*]}");;
+			ubuntu  ) __TGET+=("${__ARRY[*]}");;
+			fedora  ) __TGET+=("${__ARRY[*]}");;
+			centos  ) __TGET+=("${__ARRY[*]}");;
+			alma    ) __TGET+=("${__ARRY[*]}");;
+			rocky   ) __TGET+=("${__ARRY[*]}");;
+			opensuse) __TGET+=("${__ARRY[*]}");;
+#			miracle ) __TGET+=("${__ARRY[*]}");;
 			*       ) ;;
 		esac
 		shift
@@ -2515,41 +2569,39 @@ function fnMake_live_build() {
 	# -m build:debian:13.0:server build:ubuntu:26.04:desktop ...
 	for I in "${!__TGET[@]}"
 	do
-		IFS=':' read -r -a __ARRY < <(echo "${__TGET[I]:-}")
+		__time_start=$(date +%s)
+		fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
+		read -r -a __ARRY < <(echo "${__TGET[I]:-}")
 		__OPRT="${__ARRY[0]:?}"								# operation
-		__DIST="${__ARRY[1]:?}"								# distribution
-		__VERS="${__ARRY[2]:-}"								# version
-		__EDTN="${__ARRY[3]:-}"								# edition
-		__OPRT="${__OPRT,,}"								# operation
-		__DIST="${__DIST,,}"								# --distribution=
-		__VERS="${__VERS,,}"								# --release=
-		__EDTN="${__EDTN,,}"								# --environment=EDITION=
+		__DIST="${__ARRY[1]:?}"								# --distribution=distribution
+		__VERS="${__ARRY[2]:?}"								# --release=version
+		__EDTN="${__ARRY[3]:?}"								# --environment=EDITION=edition
 		__CODE="$(fnFind_codename "${__DIST}" "${__VERS}")"	# code name
 #		__ARCH="${_MKOS_ARCH//_/-}"							# architecture
+		# --- work directory --------------------------------------------------
+		__SUBD="${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${__ARCH//_/-}"}${__EDTN+-"${__EDTN}"}"
+		__WRKD="${__TEMP:?}/${__SUBD:?}" # --workspace-directory=
+		__OUTD="${__RTMP:?}/${__SUBD:?}" # --output-directory=
+		# --- iso file name ---------------------------------------------------
 		__VLID="$(fnFind_distribution "${__DIST}")"			# volume id (<=16) Debian13.0x64s / AlmaLinux10x64s / openSUSE16.0x64s
 		__ENTR="${__VLID}${__VERS:+" ${__VERS^}"}${__ARCH:+" ${__ARCH//-/_}"}${__EDTN:+" ${__EDTN^}"}"
 		__ISOS="${__ENTR// /-}"
 		__ISOS="${_DIRS_RMAK:?}/live-${__ISOS,,}.iso"
-#		__VLID="${__VLID}${__VERS:+" ${__VERS^}"}${__ARCH:+" ${__ARCH}"}${__EDTN:+" ${__EDTN^}"}"
+		# --- volume id -------------------------------------------------------
 		__VLID="${__VLID%%-*}"
 		__VLID="${__VLID}${__VERS::$((6+6-${#__VLID}))}${__ARCH//[0-9]*[_-]}${__EDTN::1}"
 		__VLID="${__VLID// /-}"
 		__VLID="${__VLID// /\x20}"
 		__VLID="${__VLID^^}"
 		__VLID="${__VLID::16}"
-		__SUBD="${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${__ARCH//_/-}"}${__EDTN+-"${__EDTN}"}"
-		__WRKD="${__TEMP:?}/${__SUBD:?}" # --workspace-directory=
-		__OUTD="${__RTMP:?}/${__SUBD:?}" # --output-directory=
 		# --- build -----------------------------------------------------------
 		fnMake_live_mkosi "${__OPRT:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}" "${__WRKD:-}" "${__WRKD:-}"
 		case "${__OPRT:-}" in
 			build        )
 				__STRG="${__OUTD:?}/vm_uefi_${__VLID,,}.raw"
 				__SPLS="${__OUTD:?}/${_MENU_SPLS:?}"
-				# --- copy output ---------------------------------------------
-				mkdir -p "${__OUTD:?}"
-				cp --archive "${__WRKD:?}/${_FILE_RTIM:?}" "${__OUTD:?}"/
 				# --- splash.png ----------------------------------------------
+				mkdir -p "${__OUTD:?}"
 				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | xxd -p -r | gzip -d -k > "${__SPLS:?}"
 					1f8b0808462b8d69000373706c6173682e706e6700eb0cf073e7e592e262
 					6060e0f5f47009626060566060608ae060028a888a88aa3330b0767bba38
@@ -2557,17 +2609,20 @@ function fnMake_live_build() {
 					c299ff4c6660bcb6edd00b10d7d3d5cf659d53421300e6198186c4050000
 _EOT_
 				# --- create iso image file -----------------------------------
-				fnMake_live_vmimg "${__OUTD:-}" "${__VLID:-}" "${__ENTR:-}" "${__STRG:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}"
+				fnMake_live_vmimg "${__OUTD:-}" "${__WRKD:?}" "${__VLID:-}" "${__ENTR:-}" "${__STRG:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}"
 				fnMake_live_qemu  "${__STRG:-}"
 				fnMake_live_cdimg "${__OUTD:-}" "${__VLID:-}" "${__ENTR:-}" "${__STRG:-}" "${__ISOS:-}"
 				;;
 			*            ) __OPTN=("help");;
 		esac
-sleep 600
 		rm -rf "${__WRKD:?}" \
 		       "${__OUTD:?}"
+		__time_end=$(date +%s)
+		__time_elapsed=$((__time_end - __time_start))
+		fnMsgout "${_PROG_NAME:-}" "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"
+		fnMsgout "${_PROG_NAME:-}" "elapsed" "$(printf "%dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60)) || true)"
 	done
-
+	unset __time_start __time_end __time_elapsed
 	unset I __ARRY __WORK __STRG __TGET __SUBD __ISOS __VLID __CODE __HOST __EDTN __OUTD __WRKD __VERS __DIST
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
