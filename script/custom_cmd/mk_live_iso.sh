@@ -2035,7 +2035,7 @@ function fnMake_live_vmimg_p2() {
 		{
 		 	printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "start" "\$(date +"%Y/%m/%d %H:%M:%S" || true)"
 		#	touch /.autorelabel
-		 	if command -v /usr/bin/snap > /dev/null 2>&1; then
+		 	if command -v snap > /dev/null 2>&1; then
 		 		printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "start" "snap install"
 		 		for I in "\${!__LIST[@]}"
 		 		do
@@ -2054,11 +2054,14 @@ function fnMake_live_vmimg_p2() {
 		 		printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "complete" "snap capabilities"
 		 	fi
 		 	[[ -e "\${__FSTB:?}" ]] &&sed -i "\${__FSTB:?}" -e '/^UUID=/d'
-		 	ls -lahZ /
 		 	[[ -e "\${__SRVC:?}" ]] && systemctl disable "\${__SRVC##*/}"
 		 	mkdir -p "\${__ADMN:?}"
 		 	[[ -e "\${__SRVC:?}"     ]] && mv "\${__SRVC:?}" "\${__ADMN:?}"
 		#	[[ -e "\${_PROG_PATH:?}" ]] && mv "\${_PROG_PATH:?}" "\${__ADMN:?}"
+		 	if command -v restorecon > /dev/null 2>&1; then
+		 		restorecon -R -v -e /run/rootfsbase/ -e /run/overlayfs/ -e /srv/hgfs/ /
+		 	fi
+		 	ls -lahZ /
 		 	touch "\${__STAT}"
 		 	shutdown -h now
 		 	printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "complete" "\$(date +"%Y/%m/%d %H:%M:%S" || true)"
