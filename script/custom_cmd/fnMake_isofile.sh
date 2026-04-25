@@ -155,7 +155,7 @@ function fnMk_isofile() {
 						aomei-backupper        ) continue;;
 						memtest86*             ) continue;;
 						*                      )
-							case "${__MDIA[$((_OSET_MDIA+27))]}" in
+							case "${__MDIA[$((_OSET_MDIA+28))]}" in
 								c) ;;
 								d)
 									__RETN="- - - -"
@@ -280,7 +280,7 @@ function fnMk_isofile() {
 			__MDIA=("${__MDIA[@]// /%20}")
 			J="${__MDIA[0]}"
 			_LIST_MDIA[J]="$(
-				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-47s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-11s \n" \
+				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-47s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-59s %-11s \n" \
 				"${__MDIA[@]:"${_OSET_MDIA}"}"
 			)"
 		done

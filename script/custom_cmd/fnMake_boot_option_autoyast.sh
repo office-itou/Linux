@@ -58,6 +58,9 @@ function fnMk_boot_option_autoyast() {
 			esac
 		fi
 	fi
+	if [[ -n "${__MDIA[$((_OSET_MDIA+27))]##*-}" ]]; then
+		__WORK="${__WORK:+"${__WORK} "}${__MDIA[$((_OSET_MDIA+27))]//%20/ }"
+	fi
 	__BOPT+=("${__WORK}")
 	# --- output --------------------------------------------------------------
 	printf "%s\n" "${__BOPT[@]}"

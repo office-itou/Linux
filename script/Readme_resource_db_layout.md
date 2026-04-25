@@ -50,7 +50,8 @@
   #   24: cfg_path    ( 87)   TEXT                        config    file path
   #   25: cfg_tstamp  ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
   #   26: lnk_path    ( 87)   TEXT                        symlink   directory or file path
-  #   27: create_flag ( 11)   TEXT                        create flag
+  #   27: options     ( 59)   TEXT                        boot options
+  #   28: create_flag ( 11)   TEXT                        create flag
   ```
 
 </details>

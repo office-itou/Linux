@@ -11,7 +11,7 @@
 #	history     :
 #	   data    version    developer    point
 #	---------- -------- -------------- ----------------------------------------
-#	2026/02/28 000.0000 J.Itou         first release
+#	2026/04/01 000.0000 J.Itou         first release
 #
 #	shell check : shellcheck -o all "filename"
 #	            : shellcheck -o all -e SC2154 *.sh
@@ -20,295 +20,263 @@
 
 # *** global section **********************************************************
 
-	if [[ "${container:-}" != "mkosi" ]] && command -v mkosi-chroot > /dev/null 2>&1; then
-		exec mkosi-chroot "${CHROOT_SCRIPT:?}" "$@"
-		exit "$?"
-	fi
-
-	cd "${SRCDIR:?}" || exit 1
-
 	# --- include -------------------------------------------------------------
-	export LANG=C
-	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
-#	trap 'exit 1' 1 2 3 15
-
-#	set -n								# Check for syntax errors
-#	set -x								# Show command and argument expansion
-	set -o ignoreeof					# Do not exit with Ctrl+D
-	set +m								# Disable job control
-	set -e								# End with status other than 0
-	set -u								# End with undefined variable reference
-	set -o pipefail						# End with in pipe error
-
-	# --- debug parameter -----------------------------------------------------
-	declare       _DBGS_FLAG=""			# debug flag (empty: normal, else: debug)
-	declare       _DBGS_PARM=""			# debug flag (empty: normal, else: debug out parameter)
-
-	# --- working directory ---------------------------------------------------
-	declare -r    _PROG_PATH="$0"
-	declare -a    _PROG_PARM=()
-	IFS= mapfile -d $'\n' -t _PROG_PARM < <(printf "%s\n" "${@:-}" || true)
-	readonly      _PROG_PARM
-	declare       _PROG_DIRS="${_PROG_PATH%/*}"
-	              _PROG_DIRS="$(realpath "${_PROG_DIRS%/}")"
-	readonly      _PROG_DIRS
-	declare -r    _PROG_NAME="${_PROG_PATH##*/}"
-#	declare -r    _PROG_PROC="${_PROG_NAME}.$$"
-
-	# --- temporary directory -------------------------------------------------
-	declare       _DIRS_TEMP="${TMPDIR:-"/tmp"}"
-	              _DIRS_TEMP="$(mktemp -qd "${_DIRS_TEMP}/${_PROG_NAME}.XXXXXX")"
-	readonly      _DIRS_TEMP
-
-	# --- trap list -----------------------------------------------------------
-	trap fnTrap EXIT
-
-	declare -a    _LIST_RMOV=()			# list remove directory / file
-	              _LIST_RMOV+=("${_DIRS_TEMP:?}")			# temporary
-
-	# --- target --------------------------------------------------------------
-	declare       _TGET_VIRT=""			# virtualization (ex. vmware)
-	declare       _TGET_CHRT=""			# is chgroot     (empty: none, else: chroot)
-	declare       _TGET_CNTR=""			# is container   (empty: none, else: container)
-	# --- set system parameter ------------------------------------------------
-#	declare       _DIST_NAME=""			# distribution name (ex. debian)
-#	declare       _DIST_VERS=""			# release version   (ex. 13)
-#	declare       _DIST_CODE=""			# code name         (ex. trixie)
-	declare       _ROWS_SIZE="25"		# screen size: rows
-	declare       _COLS_SIZE="80"		# screen size: columns
-	declare       _TEXT_SPCE=""			# space
-	declare       _TEXT_GAP1=""			# gap1
-	declare       _TEXT_GAP2=""			# gap2
-	declare       _COMD_BBOX=""			# busybox (empty: inactive, else: active )
-										# copy option
-	declare       _OPTN_COPY="--preserve=timestamps"
+	declare -r    _SHEL_PATH="${0:?}"
+	declare -r    _SHEL_TOPS="${_SHEL_PATH%/*}"/..
+	declare -r    _SHEL_COMN="${_SHEL_TOPS:-}/_common_bash"
+	declare -r    _SHEL_COMD="${_SHEL_TOPS:-}/custom_cmd"
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD:?}"/fnComm_system_common.sh		# global variables (for system)
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD:?}"/fnComm_global_variables.sh		# global variables (for basic)
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD:?}"/fnComm_global_common.sh		# global variables (for application)
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD:?}"/fnMake_live_global_var.sh		# global variables (for application)
 
 # *** function section (common functions) *************************************
 
-# -----------------------------------------------------------------------------
-# descript: message output
-#   input :     $1     : title (program name, etc)
-#   input :     $2     : section (start, complete, remove, umount, failed, ...)
-#   input :     $3     : message
-#   output:   stdout   : message
-#   return:            : unused
-function fnMsgout() {
-	case "${2:-}" in
-		start    | complete)
-			case "${3:-}" in
-				*/*/*) printf "\033[m${1:-}\033[m: \033[45m--- %-8.8s: %s ---\033[m\n" "${2:-}" "${3:-}";; # date
-				*    ) printf "\033[m${1:-}\033[m: \033[92m--- %-8.8s: %s ---\033[m\n" "${2:-}" "${3:-}";; # info
-			esac
-			;;
-		skip               ) printf "\033[m${1:-}\033[m: \033[92m--- %-8.8s: %s ---\033[m\n"    "${2:-}" "${3:-}";; # info
-		remove   | umount  ) printf "\033[m${1:-}\033[m:     \033[93m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # warn
-		archive            ) printf "\033[m${1:-}\033[m:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${2:-}" "${3:-}";; # warn
-		success            ) printf "\033[m${1:-}\033[m:     \033[92m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # info
-		failed             ) printf "\033[m${1:-}\033[m:     \033[41m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # alert
-		active             ) printf "\033[m${1:-}\033[m:     \033[92m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # info
-		inactive           ) printf "\033[m${1:-}\033[m:     \033[93m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # warn
-		caution            ) printf "\033[m${1:-}\033[m:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${2:-}" "${3:-}";; # warn
-		-*                 ) printf "\033[m${1:-}\033[m:     \033[36m%-8.8s: %s\033[m\n"        "${2#-}" "${3:-}";; # gap
-		info               ) printf "\033[m${1:-}\033[m: \033[92m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # info
-		warn               ) printf "\033[m${1:-}\033[m: \033[93m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # warn
-		alert              ) printf "\033[m${1:-}\033[m: \033[91m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # alert
-		*                  ) printf "\033[m${1:-}\033[m: \033[37m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # normal
-	esac
-}
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMN:?}"/fnTrim.sh						# ltrim/rtrim/trim
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMN:?}"/fnDirname.sh					# dirname
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMN:?}"/fnBasename.sh					# basename
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMN:?}"/fnFilename.sh					# filename
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMN:?}"/fnMsgout.sh					# message output
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMN:?}"/fnString.sh					# string output
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMN:?}"/fnStrmsg.sh					# string output with message
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMN:?}"/fnTargetsys.sh					# target system state
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMN:?}"/fnIPv6FullAddr.sh				# IPv6 full address
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMN:?}"/fnIPv6RevAddr.sh				# IPv6 reverse address
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMN:?}"/fnIPv4Netmask.sh				# IPv4 netmask conversion
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMN:?}"/fnGetWebinfo.sh				# get web information data
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMN:?}"/fnGetFileinfo.sh				# get file information data
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMN:?}"/fnWget.sh						# wget / curl
 
-# -----------------------------------------------------------------------------
-# descript: string output
-#   input :     $1     : count
-#   input :     $2     : character
-#   output:   stdout   : output
-#   return:            : unused
-function fnString() {
-	printf "%${1:-80}s" "" | tr ' ' "${2:- }"
-}
-
-# -----------------------------------------------------------------------------
-# descript: string output with message
-#   input :     $1     : gaps
-#   input :     $2     : message
-#   output:   stdout   : output
-#   return:            : unused
-function fnStrmsg() {
-	declare      ___TEXT="${1:-}"
-	declare      ___TXT1=""
-	declare      ___TXT2=""
-	___TXT1="$(echo "${___TEXT:-}" | cut -c -3)"
-	___TXT2="$(echo "${___TEXT:-}" | cut -c "$((${#___TXT1}+2+${#2}+1+${#_PROG_NAME}+16))"-)"
-	printf "%s %s %s" "${___TXT1}" "${2:-}" "${___TXT2}"
-	unset ___TEXT
-	unset ___TXT1
-	unset ___TXT2
-}
-
-# -----------------------------------------------------------------------------
-# descript: message output (debug out)
-#   input :     $1     : title
-#   input :     $@     : list
-#   output:   stdout   : message
-#   return:            : unused
-function fnDbgout() {
-	declare       ___STRT=""
-	declare       ___ENDS=""
-	___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${1:-}")"
-	___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${1:-}")"
-	shift
-	fnMsgout "\033[36m${_PROG_NAME:-}" "-debugout" "${___STRT}"
-	while [[ -n "${1:-}" ]]
-	do
-		if [[ "${1%%,*}" != "debug" ]] || [[ -n "${_DBGS_FLAG:-}" ]]; then
-			fnMsgout "\033[36m${_PROG_NAME:-}" "${1%%,*}" "${1#*,}"
-		fi
-		shift
-	done
-	fnMsgout "\033[36m${_PROG_NAME:-}" "-debugout" "${___ENDS}"
-	unset ___STRT
-	unset ___ENDS
-}
-
-# -----------------------------------------------------------------------------
-# descript: print out of internal variables
-#   input :            : unused
-#   output:   stdout   : message
-#   return:            : unused
-function fnDbgparameters() {
-	[[ -z "${_DBGS_PARM:-}" ]] && return
-	declare       __NAME=""				# variable name
-	declare       __VALU=""				# "        value
-	for __NAME in "${!__@}"
-	do
-		__NAME="${__NAME#\'}"
-		__NAME="${__NAME%\'}"
-		case "${__NAME}" in
-			''     | \
-			__NAME | \
-			__VALU ) continue;;
-			*) ;;
-		esac
-		__VALU="${!__NAME:-}"
-		printf "${FUNCNAME[1]}: %s=[%s]\n" "${__NAME}" "${__VALU/#\'\'/}"
-	done
-#	unset __NAME __VALU
-}
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD:?}"/fnComm_dbgout.sh				# message output (debug out)
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_dbgdump.sh				# dump output (debug out)
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_dbgparam.sh				# parameter debug output
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD:?}"/fnComm_dbgparameters.sh		# print out of internal variables
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_dbgparameters_all.sh	# Print all global variables (_[A..Z]*)
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_find_command.sh			# find command
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_find_service.sh			# find service
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_system_param.sh			# get system parameter
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_network_param.sh		# get network parameter
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_file_backup.sh			# file backup
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_download.sh				# wget / curl file download
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_rsync.sh				# rsync
 
 # *** function section (subroutine functions) *********************************
 
-# -----------------------------------------------------------------------------
-# descript: trap
-#   input :            : unused
-#   output:   stdout   : message
-#   return:            : unused
-# shellcheck disable=SC2329,SC2317
-function fnTrap() {
-	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
-	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD:?}"/fnComm_trap.sh					# trap
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD:?}"/fnMake_init_mkosi.finalize.sh	# initialize
 
-	declare       __PATH=""				# full path
-	declare       __MPNT=""				# mount point
-	declare -i    I=0
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_list_conf_Get.sh		# get auto-installation configuration file
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_list_conf_Put.sh		# put common configuration data
 
-	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
-	if [[ "${#_DBGS_FAIL[@]}" -gt 0 ]]; then
-		fnMsgout "${_PROG_NAME:-}" "failed" "${_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]}"
-		fnMsgout "${_PROG_NAME:-}" "failed" "Working files will be deleted when this shell exits."
-		read -r -p "Press enter key to exit..."
-	fi
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_list_mdia_Get.sh		# get media information data
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_list_mdia_Put.sh		# put media information data
 
-	_LIST_RMOV=("${_LIST_RMOV[@]}")
-	for I in $(printf "%s\n" "${!_LIST_RMOV[@]}" | sort -rV)
-	do
-		__PATH="${_LIST_RMOV[I]}"
-		if [[ ! -e "${__PATH}" ]]; then
-			continue
-		fi
-		if mountpoint --quiet "${__PATH}"; then
-			fnMsgout "${_PROG_NAME:-}" "umount" "${__PATH}"
-			umount --quiet         --recursive "${__PATH}" > /dev/null 2>&1 || \
-			umount --quiet --force --recursive "${__PATH}" > /dev/null 2>&1 || \
-			umount --quiet --lazy  --recursive "${__PATH}"
-		fi
-		case "${__PATH}" in
-			"${_DIRS_TEMP:?}")
-				fnMsgout "${_PROG_NAME:-}" "remove" "${__PATH}"
-				rm -rf "${__PATH:?}"
-				;;
-			*) ;;
-		esac
-	done
-	unset __PATH __MPNT I
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_symlink_dir.sh			# make directory
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_symlink.sh				# make symlink
 
-	# --- complete ------------------------------------------------------------
-	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
-	fnDbgparameters
-#	unset __FUNC_NAME
-}
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_preconf_preseed.sh		# make preseed.cfg
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_preconf_nocloud.sh		# make nocloud
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_preconf_kickstart.sh	# make kickstart.cfg
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_preconf_autoyast.sh		# make autoyast.xml
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_preconf_agama.sh		# make autoinst.json
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_preconf.sh				# make preconfiguration files
 
-# -----------------------------------------------------------------------------
-# descript: initialize
-#   input :            : unused
-#   output:   stdout   : message
-#   return:            : unused
-function fnMkosi_initialize() {
-	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
-	_DBGS_FAIL+=("${__FUNC_NAME:-}")
-	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_copy_iso.sh				# copy iso files
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_select_target.sh		# select target
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_print_list.sh			# print media list
 
-	# --- set system parameter ------------------------------------------------
-	if [[ -n "${TERM:-}" ]] \
-	&& command -v tput > /dev/null 2>&1; then
-		_ROWS_SIZE=$(tput lines || true)
-		_COLS_SIZE=$(tput cols  || true)
-	fi
-	[[ "${_ROWS_SIZE:-"0"}" -lt 25 ]] && _ROWS_SIZE=25
-	[[ "${_COLS_SIZE:-"0"}" -lt 80 ]] && _COLS_SIZE=80
-	readonly _ROWS_SIZE
-	readonly _COLS_SIZE
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_xinitrd.sh				# extract the initrd
 
-	_TEXT_SPCE="$(fnString "${_COLS_SIZE}" ' ')"
-	_TEXT_GAP1="$(fnString "${_COLS_SIZE}" '-')"
-	_TEXT_GAP2="$(fnString "${_COLS_SIZE}" '=')"
-	readonly _TEXT_SPCE
-	readonly _TEXT_GAP1
-	readonly _TEXT_GAP2
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_boot_option_preseed.sh	# make boot options for preseed
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_boot_option_nocloud.sh	# make boot options for nocloud
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_boot_option_kickstart.sh # make boot options for kickstart
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_boot_option_autoyast.sh	# make boot options for autoyast
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_boot_option_agama.sh	# make boot options for agama
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_boot_options.sh			# make boot options
 
-	if realpath "$(command -v cp 2> /dev/null || true)" | grep -q 'busybox'; then
-		fnMsgout "${_PROG_NAME:-}" "info" "busybox"
-		_COMD_BBOX="true"
-		_OPTN_COPY="-p"
-	fi
-	readonly _COMD_BBOX
-	readonly _OPTN_COPY
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_clear_menu.sh	# clear pxeboot menu
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_ipxe_hdrftr.sh	# make header and footer for ipxe menu
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_ipxe_windows.sh	# make Windows section for ipxe menu
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_ipxe_winpe.sh	# make WinPE section for ipxe menu
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_ipxe_aomei.sh	# make aomei backup section for ipxe menu
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_ipxe_m86p.sh	# make memtest86+ section for ipxe menu
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_ipxe_linux.sh	# make linux section for ipxe menu
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_ipxe.sh			# make ipxe menu
 
-	# --- target virtualization -----------------------------------------------
-	_TGET_VIRT=""						# virtualization (ex. vmware)
-	_TGET_CHRT=""						# is chgroot     (empty: none, else: chroot)
-	_TGET_CNTR=""						# is container   (empty: none, else: container)
-	if command -v systemd-detect-virt > /dev/null 2>&1; then
-		_TGET_VIRT="$(systemd-detect-virt --vm || true)"
-		systemd-detect-virt --quiet --chroot    && _TGET_CHRT="true"
-		systemd-detect-virt --quiet --container && _TGET_CNTR="true"
-	fi
-	if command -v ischroot > /dev/null 2>&1; then
-		ischroot --default-true && _TGET_CHRT="true"
-	fi
-	readonly _TGET_VIRT
-	readonly _TGET_CHRT
-	readonly _TGET_CNTR
-	fnDbgout "system parameter" \
-		"info,_TGET_VIRT=[${_TGET_VIRT:-}]" \
-		"info,_TGET_CHRT=[${_TGET_CHRT:-}]" \
-		"info,_TGET_CNTR=[${_TGET_CNTR:-}]"
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_grub_hdrftr.sh	# make header and footer for grub.cfg
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_grub_windows.sh	# make Windows section for grub.cfg
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_grub_winpe.sh	# make WinPE section for grub.cfg
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_grub_aomei.sh	# make aomei backup section for grub.cfg
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_grub_m86p.sh	# make memtest86+ section for grub.cfg
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_grub_linux.sh	# make linux section for grub.cfg
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_grub.sh			# make grub.cfg for pxeboot
 
-	# --- complete ------------------------------------------------------------
-	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
-	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
-	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
-	fnDbgparameters
-#	unset __FUNC_NAME
-}
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_slnx_hdrftr.sh	# make header and footer for syslinux
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_slnx_windows.sh	# make Windows section for syslinux
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_slnx_winpe.sh	# make WinPE section for syslinux
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_slnx_aomei.sh	# make aomei backup section for syslinux
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_slnx_m86p.sh	# make memtest86+ section for syslinux
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_slnx_linux.sh	# make linux section for syslinux
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_slnx.sh			# make syslinux for pxeboot
+
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot.sh				# make pxeboot files
+
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_isofile_conf.sh			# copy the configuration file
+
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_isofile_grub_autoinst.sh # make autoinst.cfg files for grub.cfg
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_isofile_grub_theme.sh	# make theme.txt files for grub.cfg
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_isofile_grub.sh			# make grub.cfg files
+
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_isofile_ilnx_autoinst.sh # make autoinst.cfg files for isolinux
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_isofile_ilnx_theme.sh	# make theme.txt files for isolinux
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_isofile_ilnx.sh			# make isolinux files
+
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_xorrisofs.sh			# make iso files
+
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_isofile.sh				# make iso files
+
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_find_codename.sh		# find code name
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_find_distribution.sh	# find distribution
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_find_kernel.sh			# find kernel
+
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_mkosi.sh				# make mkosi files
+
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_qemu.sh					# execute qemu
+
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_squashfs.sh				# make squashfs file
+
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_grub_module.sh			# grub module install
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_grub_conf.sh			# grub conf install
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_grub_theme.sh			# grub theme install
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_ilnx_conf.sh			# isolinux conf install
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnComm_ilnx_theme.sh			# isolinux theme install
+
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_live_preconf.sh			# make live preconfiguration files
+
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_live_mkosi.sh			# mkosi build live media
+
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_live_vmimg_p1.sh		# make live vm-image partition1
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_live_vmimg_p2.sh		# make live vm-image partition2
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_live_vmimg.sh			# make live vm-image
+
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_live_qemu.sh			# make live vm-image on qemu
+
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_live_cdimg_cdfs.sh		# make live cd-image (create cdfs)
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_live_cdimg_grub.sh		# make live cd-image (create grub)
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_live_cdimg_ilnx.sh		# make live cd-image (create isolinux)
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_live_cdimg.sh			# make live cd-image
+
+	# shellcheck source=/dev/null
+#	source "${_SHEL_COMD:?}"/fnMake_live_build.sh			# exec live build
+
+# *** main section ************************************************************
 
 # -----------------------------------------------------------------------------
 # descript: finalize user environment

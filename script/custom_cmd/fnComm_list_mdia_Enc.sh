@@ -55,7 +55,7 @@ function fnList_mdia_Enc() {
 		done
 		read -r -a __LIST < <(echo "${__LINE:-}")
 		_LIST_MDIA[I]="$(\
-			printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-11s \n" \
+			printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-47s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-59s %-11s \n", \
 				"${__LIST[@]}"
 		)"
 	done

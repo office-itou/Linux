@@ -166,7 +166,7 @@ function fnMk_print_list() {
 		# download: light blue
 		# create  : green
 		# error   : red
-		__MDIA[_OSET_MDIA+27]="-"				# create_flag
+		__MDIA[_OSET_MDIA+28]="-"				# create_flag
 		__WRK1="$(fnTrim "${__MDIA[$((_OSET_MDIA+9))]}"  "-")"
 		__WRK2="$(fnTrim "${__MDIA[$((_OSET_MDIA+14))]}" "-")"
 		if [[ -n "${__WRK1:-}" ]] \
@@ -176,32 +176,32 @@ function fnMk_print_list() {
 					__WRK1="$(fnTrim "${__MDIA[$((_OSET_MDIA+24))]}" "-")"
 					__WRK2="$(fnTrim "${__MDIA[$((_OSET_MDIA+18))]}" "-")"
 					if [[ ! -e "${__MDIA[$((_OSET_MDIA+14))]}" ]]; then
-						__MDIA[_OSET_MDIA+27]="d"	# create_flag (download: original file not found)
+						__MDIA[_OSET_MDIA+28]="d"	# create_flag (download: original file not found)
 					elif [[ "${__MDIA[$((_OSET_MDIA+10))]:-}" != "${__MDIA[$((_OSET_MDIA+15))]:-}" ]] \
 					||   [[ "${__MDIA[$((_OSET_MDIA+11))]:-}" != "${__MDIA[$((_OSET_MDIA+16))]:-}" ]]; then
-						__MDIA[_OSET_MDIA+27]="d"	# create_flag (download: timestamp or size differs)
+						__MDIA[_OSET_MDIA+28]="d"	# create_flag (download: timestamp or size differs)
 					elif [[ -n "${__WRK1:-}" ]] \
 					&&   [[ -n "${__WRK2:-}" ]]; then
 						__WRK1="${__MDIA[$((_OSET_MDIA+19))]:+"$(TZ=UTC date -d "${__MDIA[$((_OSET_MDIA+19))]//%20/ }" "+%s")"}"
 						__WRK2="${__MDIA[$((_OSET_MDIA+15))]:+"$(TZ=UTC date -d "${__MDIA[$((_OSET_MDIA+15))]//%20/ }" "+%s")"}"
 						__WRK3="${__MDIA[$((_OSET_MDIA+25))]:+"$(TZ=UTC date -d "${__MDIA[$((_OSET_MDIA+25))]//%20/ }" "+%s")"}"
 						if   [[ ! -e "${__MDIA[$((_OSET_MDIA+18))]}" ]]; then
-							__MDIA[_OSET_MDIA+27]="c"	# create_flag (create: remake file not found)
+							__MDIA[_OSET_MDIA+28]="c"	# create_flag (create: remake file not found)
 						elif [[ "${__WRK2:-"0"}" -gt "${__WRK1:-"0"}" ]] \
 						||   [[ "${__WRK3:-"0"}" -gt "${__WRK1:-"0"}" ]]; then
-							__MDIA[_OSET_MDIA+27]="c"	# create_flag (create: remake file is out of date)
+							__MDIA[_OSET_MDIA+28]="c"	# create_flag (create: remake file is out of date)
 						else
 							__WORK="$(find -L "${_DIRS_SHEL:?}" -newer "${__MDIA[$((_OSET_MDIA+18))]}" -name 'auto*sh')"
 							if [[ -n "${__WORK:-}" ]]; then
-								__MDIA[_OSET_MDIA+27]="c"	# create_flag (create: remake file is out of date)
+								__MDIA[_OSET_MDIA+28]="c"	# create_flag (create: remake file is out of date)
 							fi
 						fi
 					fi
 					;;
-				*) __MDIA[_OSET_MDIA+27]="e";;	# create_flag (error: communication failure)
+				*) __MDIA[_OSET_MDIA+28]="e";;	# create_flag (error: communication failure)
 			esac
 		fi
-		case "${__MDIA[$((_OSET_MDIA+27))]:-}" in
+		case "${__MDIA[$((_OSET_MDIA+28))]:-}" in
 			d) __COLR="96"; [[ -n "${__CASH:-}" ]] && __COLR="46";;	# download [light blue]
 			c) __COLR="92"; [[ -n "${__CASH:-}" ]] && __COLR="42";;	# create   [green]
 			e) __COLR="91"; [[ -n "${__CASH:-}" ]] && __COLR="41";;	# error    [red]
@@ -222,7 +222,7 @@ function fnMk_print_list() {
 		__LIST[I]="${__MDIA[*]}"
 #		J="${__MDIA[0]}"
 #		_LIST_MDIA[J]="$(
-#			printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-11s \n" \
+#			printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-47s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-59s %-11s \n" \
 #			"${__MDIA[@]:"${_OSET_MDIA}"}"
 #		)"
 	done

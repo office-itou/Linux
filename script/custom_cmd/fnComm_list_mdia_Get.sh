@@ -47,6 +47,9 @@ function fnList_mdia_Get() {
 				}
 				_ptrn=substr(_line, RSTART, RLENGTH)
 				_name="_"substr(_line, RSTART+2, RLENGTH-4)
+				if (length(_parm[_name]) <= 0) {
+					continue
+				}
 				gsub(_ptrn, _parm[_name], _line)
 			}
 			printf "%s\n", _line

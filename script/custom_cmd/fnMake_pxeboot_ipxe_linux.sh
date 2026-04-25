@@ -67,7 +67,7 @@ function fnMk_pxeboot_ipxe_linux() {
 			set autoinst ${__BOPT[0]:-}
 			set language ${__BOPT[1]:-}
 			set networks ${__BOPT[2]:-}
-			set otheropt ${__BOPT[@]:3}
+			set otheropt ${__BOPT[@]:3} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
 			form                                    Configure Autoinstall Options
 			item autoinst                           Auto install
 			item language                           Language
@@ -76,7 +76,7 @@ function fnMk_pxeboot_ipxe_linux() {
 			isset \${openmenu} && present ||
 			echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
 			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
-			set options \${autoinst} \${language} \${networks} \${otheropt} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
+			set options \${autoinst} \${language} \${networks} \${otheropt}
 			echo Loading boot files ...
 			kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} || goto error
 			initrd \${knladdr}/${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} || goto error
@@ -95,10 +95,10 @@ _EOT_
 			set autoinst ${__BOPT[0]:-}
 			set language ${__BOPT[1]:-}
 			set networks ${__BOPT[2]:-}
-			set otheropt ${__BOPT[@]:3}
+			set otheropt ${__BOPT[@]:3} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
 			echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
 			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
-			set options \${autoinst} \${language} \${networks} \${otheropt} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
+			set options \${autoinst} \${language} \${networks} \${otheropt}
 			echo Loading boot files ...
 			kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} || goto error
 			initrd \${knladdr}/${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} || goto error

@@ -1096,6 +1096,9 @@ function fnList_mdia_Get() {
 				}
 				_ptrn=substr(_line, RSTART, RLENGTH)
 				_name="_"substr(_line, RSTART+2, RLENGTH-4)
+				if (length(_parm[_name]) <= 0) {
+					continue
+				}
 				gsub(_ptrn, _parm[_name], _line)
 			}
 			printf "%s\n", _line
@@ -1153,6 +1156,9 @@ function fnList_mdia_Put() {
 				_valu=_parm[j]
 				sub(_name, "", _valu)
 				sub(/^=/, "", _valu)
+				if (length(_valu) <= 0) {
+					continue
+				}
 				_work=_name
 				sub(/^_/, "", _work)
 				gsub(_valu, ":_"_work"_:", _line)
@@ -1160,14 +1166,13 @@ function fnList_mdia_Put() {
 			split(_line, _arry, "\n")
 			for (i in _arry) {
 				split(_arry[i], _list, " ")
-				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-47s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-11s \n", \
+				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-47s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-59s %-11s \n", \
 					_list[1], _list[2], _list[3], _list[4], _list[5], _list[6], _list[7], _list[8], _list[9], _list[10], \
 					_list[11], _list[12], _list[13], _list[14], _list[15], _list[16], _list[17], _list[18], _list[19], _list[20], \
-					_list[21], _list[22], _list[23], _list[24], _list[25], _list[26], _list[27], _list[28]
+					_list[21], _list[22], _list[23], _list[24], _list[25], _list[26], _list[27], _list[28], _list[29]
 			}
 		}
 	' > "$1"
-
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
@@ -2074,7 +2079,7 @@ function fnMk_print_list() {
 		# download: light blue
 		# create  : green
 		# error   : red
-		__MDIA[_OSET_MDIA+27]="-"				# create_flag
+		__MDIA[_OSET_MDIA+28]="-"				# create_flag
 		__WRK1="$(fnTrim "${__MDIA[$((_OSET_MDIA+9))]}"  "-")"
 		__WRK2="$(fnTrim "${__MDIA[$((_OSET_MDIA+14))]}" "-")"
 		if [[ -n "${__WRK1:-}" ]] \
@@ -2084,32 +2089,32 @@ function fnMk_print_list() {
 					__WRK1="$(fnTrim "${__MDIA[$((_OSET_MDIA+24))]}" "-")"
 					__WRK2="$(fnTrim "${__MDIA[$((_OSET_MDIA+18))]}" "-")"
 					if [[ ! -e "${__MDIA[$((_OSET_MDIA+14))]}" ]]; then
-						__MDIA[_OSET_MDIA+27]="d"	# create_flag (download: original file not found)
+						__MDIA[_OSET_MDIA+28]="d"	# create_flag (download: original file not found)
 					elif [[ "${__MDIA[$((_OSET_MDIA+10))]:-}" != "${__MDIA[$((_OSET_MDIA+15))]:-}" ]] \
 					||   [[ "${__MDIA[$((_OSET_MDIA+11))]:-}" != "${__MDIA[$((_OSET_MDIA+16))]:-}" ]]; then
-						__MDIA[_OSET_MDIA+27]="d"	# create_flag (download: timestamp or size differs)
+						__MDIA[_OSET_MDIA+28]="d"	# create_flag (download: timestamp or size differs)
 					elif [[ -n "${__WRK1:-}" ]] \
 					&&   [[ -n "${__WRK2:-}" ]]; then
 						__WRK1="${__MDIA[$((_OSET_MDIA+19))]:+"$(TZ=UTC date -d "${__MDIA[$((_OSET_MDIA+19))]//%20/ }" "+%s")"}"
 						__WRK2="${__MDIA[$((_OSET_MDIA+15))]:+"$(TZ=UTC date -d "${__MDIA[$((_OSET_MDIA+15))]//%20/ }" "+%s")"}"
 						__WRK3="${__MDIA[$((_OSET_MDIA+25))]:+"$(TZ=UTC date -d "${__MDIA[$((_OSET_MDIA+25))]//%20/ }" "+%s")"}"
 						if   [[ ! -e "${__MDIA[$((_OSET_MDIA+18))]}" ]]; then
-							__MDIA[_OSET_MDIA+27]="c"	# create_flag (create: remake file not found)
+							__MDIA[_OSET_MDIA+28]="c"	# create_flag (create: remake file not found)
 						elif [[ "${__WRK2:-"0"}" -gt "${__WRK1:-"0"}" ]] \
 						||   [[ "${__WRK3:-"0"}" -gt "${__WRK1:-"0"}" ]]; then
-							__MDIA[_OSET_MDIA+27]="c"	# create_flag (create: remake file is out of date)
+							__MDIA[_OSET_MDIA+28]="c"	# create_flag (create: remake file is out of date)
 						else
 							__WORK="$(find -L "${_DIRS_SHEL:?}" -newer "${__MDIA[$((_OSET_MDIA+18))]}" -name 'auto*sh')"
 							if [[ -n "${__WORK:-}" ]]; then
-								__MDIA[_OSET_MDIA+27]="c"	# create_flag (create: remake file is out of date)
+								__MDIA[_OSET_MDIA+28]="c"	# create_flag (create: remake file is out of date)
 							fi
 						fi
 					fi
 					;;
-				*) __MDIA[_OSET_MDIA+27]="e";;	# create_flag (error: communication failure)
+				*) __MDIA[_OSET_MDIA+28]="e";;	# create_flag (error: communication failure)
 			esac
 		fi
-		case "${__MDIA[$((_OSET_MDIA+27))]:-}" in
+		case "${__MDIA[$((_OSET_MDIA+28))]:-}" in
 			d) __COLR="96"; [[ -n "${__CASH:-}" ]] && __COLR="46";;	# download [light blue]
 			c) __COLR="92"; [[ -n "${__CASH:-}" ]] && __COLR="42";;	# create   [green]
 			e) __COLR="91"; [[ -n "${__CASH:-}" ]] && __COLR="41";;	# error    [red]
@@ -2130,7 +2135,7 @@ function fnMk_print_list() {
 		__LIST[I]="${__MDIA[*]}"
 #		J="${__MDIA[0]}"
 #		_LIST_MDIA[J]="$(
-#			printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-11s \n" \
+#			printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-47s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-59s %-11s \n" \
 #			"${__MDIA[@]:"${_OSET_MDIA}"}"
 #		)"
 	done
@@ -2310,6 +2315,9 @@ function fnMk_boot_option_preseed() {
 			*                                   ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvraddr}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
 		esac
 	fi
+	if [[ -n "${__MDIA[$((_OSET_MDIA+27))]##*-}" ]]; then
+		__WORK="${__WORK:+"${__WORK} "}${__MDIA[$((_OSET_MDIA+27))]//%20/ }"
+	fi
 	__BOPT+=("${__WORK}")
 	# --- output --------------------------------------------------------------
 	printf "%s\n" "${__BOPT[@]}"
@@ -2377,6 +2385,9 @@ function fnMk_boot_option_nocloud() {
 			*                                   ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvraddr}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
 		esac
 	fi
+	if [[ -n "${__MDIA[$((_OSET_MDIA+27))]##*-}" ]]; then
+		__WORK="${__WORK:+"${__WORK} "}${__MDIA[$((_OSET_MDIA+27))]//%20/ }"
+	fi
 	__BOPT+=("${__WORK}")
 	# --- output --------------------------------------------------------------
 	printf "%s\n" "${__BOPT[@]}"
@@ -2436,6 +2447,9 @@ function fnMk_boot_option_kickstart() {
 		esac
 		__WORK="${__WORK:+"${__WORK} "}rd.live.image rd.live.overlay.overlayfs=1"
 	fi
+	if [[ -n "${__MDIA[$((_OSET_MDIA+27))]##*-}" ]]; then
+		__WORK="${__WORK:+"${__WORK} "}${__MDIA[$((_OSET_MDIA+27))]//%20/ }"
+	fi
 	__BOPT+=("${__WORK}")
 	# --- output --------------------------------------------------------------
 	printf "%s\n" "${__BOPT[@]}"
@@ -2492,6 +2506,9 @@ function fnMk_boot_option_autoyast() {
 				*                           ) __WORK="${__WORK:+"${__WORK} "}install=\${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]:?}";;
 			esac
 		fi
+	fi
+	if [[ -n "${__MDIA[$((_OSET_MDIA+27))]##*-}" ]]; then
+		__WORK="${__WORK:+"${__WORK} "}${__MDIA[$((_OSET_MDIA+27))]//%20/ }"
 	fi
 	__BOPT+=("${__WORK}")
 	# --- output --------------------------------------------------------------
@@ -2558,6 +2575,9 @@ function fnMk_boot_option_agama() {
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
 			__WORK="${__WORK:+"${__WORK} "}root=live:\${srvraddr}/${_DIRS_ISOS##*/}/${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"/}"
 		fi
+	fi
+	if [[ -n "${__MDIA[$((_OSET_MDIA+27))]##*-}" ]]; then
+		__WORK="${__WORK:+"${__WORK} "}${__MDIA[$((_OSET_MDIA+27))]//%20/ }"
 	fi
 	__BOPT+=("${__WORK}")
 	# --- output --------------------------------------------------------------
@@ -2843,7 +2863,7 @@ function fnMk_pxeboot_ipxe_linux() {
 			set autoinst ${__BOPT[0]:-}
 			set language ${__BOPT[1]:-}
 			set networks ${__BOPT[2]:-}
-			set otheropt ${__BOPT[@]:3}
+			set otheropt ${__BOPT[@]:3} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
 			form                                    Configure Autoinstall Options
 			item autoinst                           Auto install
 			item language                           Language
@@ -2852,7 +2872,7 @@ function fnMk_pxeboot_ipxe_linux() {
 			isset \${openmenu} && present ||
 			echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
 			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
-			set options \${autoinst} \${language} \${networks} \${otheropt} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
+			set options \${autoinst} \${language} \${networks} \${otheropt}
 			echo Loading boot files ...
 			kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} || goto error
 			initrd \${knladdr}/${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} || goto error
@@ -2871,10 +2891,10 @@ _EOT_
 			set autoinst ${__BOPT[0]:-}
 			set language ${__BOPT[1]:-}
 			set networks ${__BOPT[2]:-}
-			set otheropt ${__BOPT[@]:3}
+			set otheropt ${__BOPT[@]:3} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
 			echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
 			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
-			set options \${autoinst} \${language} \${networks} \${otheropt} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
+			set options \${autoinst} \${language} \${networks} \${otheropt}
 			echo Loading boot files ...
 			kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} || goto error
 			initrd \${knladdr}/${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} || goto error
@@ -3524,7 +3544,7 @@ function fnMk_pxeboot() {
 					[[ "${__TABS}" -lt 0 ]] && __TABS=0
 					;;
 				o)						# (output)
-					case "${__MDIA[$((_OSET_MDIA+27))]}" in
+					case "${__MDIA[$((_OSET_MDIA+28))]}" in
 						c) ;;
 						d)
 							__RETN="- - - -"
@@ -3567,7 +3587,7 @@ function fnMk_pxeboot() {
 			__MDIA=("${__MDIA[@]// /%20}")
 			J="${__MDIA[0]}"
 			_LIST_MDIA[J]="$(
-				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-47s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-11s \n" \
+				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-47s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-59s %-11s \n" \
 				"${__MDIA[@]:"${_OSET_MDIA}"}"
 			)"
 		done
@@ -4526,7 +4546,7 @@ function fnMk_isofile() {
 						aomei-backupper        ) continue;;
 						memtest86*             ) continue;;
 						*                      )
-							case "${__MDIA[$((_OSET_MDIA+27))]}" in
+							case "${__MDIA[$((_OSET_MDIA+28))]}" in
 								c) ;;
 								d)
 									__RETN="- - - -"
@@ -4651,7 +4671,7 @@ function fnMk_isofile() {
 			__MDIA=("${__MDIA[@]// /%20}")
 			J="${__MDIA[0]}"
 			_LIST_MDIA[J]="$(
-				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-47s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-11s \n" \
+				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-47s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-59s %-11s \n" \
 				"${__MDIA[@]:"${_OSET_MDIA}"}"
 			)"
 		done

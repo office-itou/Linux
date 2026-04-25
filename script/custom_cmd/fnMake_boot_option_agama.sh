@@ -67,6 +67,9 @@ function fnMk_boot_option_agama() {
 			__WORK="${__WORK:+"${__WORK} "}root=live:\${srvraddr}/${_DIRS_ISOS##*/}/${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"/}"
 		fi
 	fi
+	if [[ -n "${__MDIA[$((_OSET_MDIA+27))]##*-}" ]]; then
+		__WORK="${__WORK:+"${__WORK} "}${__MDIA[$((_OSET_MDIA+27))]//%20/ }"
+	fi
 	__BOPT+=("${__WORK}")
 	# --- output --------------------------------------------------------------
 	printf "%s\n" "${__BOPT[@]}"
