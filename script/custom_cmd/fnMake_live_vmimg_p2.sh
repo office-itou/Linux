@@ -79,11 +79,17 @@ function fnMake_live_vmimg_p2() {
 		 	"/usr/bin/chromium-browser  chromium"
 		)
 		declare       __PATH=""
+		declare       __CONF=""
 		declare       __PACK=""
 		declare -i    I=0
 		{
 		 	printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "start" "\$(date +"%Y/%m/%d %H:%M:%S" || true)"
 		#	touch /.autorelabel
+		 	if command -v resolvectl > /dev/null 2>&1; then
+		 		__PATH="/etc/resolv.conf"
+		 		__CONF="/run/systemd/resolve/stub-resolv.conf"
+		 		ln -sf "../\${__CONF#/}" "\${__PATH}" 
+		 	fi
 		 	if command -v snap > /dev/null 2>&1; then
 		 		printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "start" "snap install"
 		 		for I in "\${!__LIST[@]}"
@@ -102,7 +108,7 @@ function fnMake_live_vmimg_p2() {
 		#		getfattr --dump --match="^security\\." /usr/lib/snapd/snap-confine
 		 		printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "complete" "snap capabilities"
 		 	fi
-		 	[[ -e "\${__FSTB:?}" ]] &&sed -i "\${__FSTB:?}" -e '/^UUID=/d'
+		 	[[ -e "\${__FSTB:?}" ]] && sed -i "\${__FSTB:?}" -e '/^UUID=/d'
 		 	[[ -e "\${__SRVC:?}" ]] && systemctl disable "\${__SRVC##*/}"
 		 	mkdir -p "\${__ADMN:?}"
 		 	[[ -e "\${__SRVC:?}"     ]] && mv "\${__SRVC:?}" "\${__ADMN:?}"
