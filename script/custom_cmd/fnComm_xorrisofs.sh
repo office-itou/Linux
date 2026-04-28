@@ -26,6 +26,7 @@ function fnMk_xorrisofs() {
 	declare -r    __FILE_UEFI="${6:-}"	# uefi file name
 	declare -r    __FILE_BCAT="${7:-}"	# eltorito catalog file name
 	declare -r    __FILE_ETRI="${8:-}"	# eltorito boot file name
+	shift 8
 	declare -a    __OPTN=()
 	declare       __TEMP=""				# temporary file
 	              __TEMP="$(mktemp -q "${_DIRS_TEMP:-/tmp}/${__FUNC_NAME}.XXXXXX")"
@@ -59,8 +60,8 @@ function fnMk_xorrisofs() {
 #	-part_like_isohybrid									Mark in MBR, GPT, APM without -isohybrid-mbr
 #	-efi-boot-part DISKFILE|--efi-boot-image				Set data source for EFI System Partition
 	__OPTN=()
+	[[ -n "${*:-}" ]] && __OPTN+=("${@}")
 	__OPTN+=(
-		-quiet
 		-rock
 		-joliet
 		${__FILE_VLID:+-volid "${__FILE_VLID// /$'\x20'}"}
@@ -95,6 +96,7 @@ function fnMk_xorrisofs() {
 		-output "${__TEMP}"
 		"${__DIRS_TGET:?}"
 	)
+	__OPTN+=("${__OPTN[@]:-}")
 	readonly      __OPTN
 	declare       __REAL=""
 	declare       __DIRS=""

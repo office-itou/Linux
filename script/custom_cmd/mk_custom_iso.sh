@@ -4271,6 +4271,7 @@ function fnMk_xorrisofs() {
 	declare -r    __FILE_UEFI="${6:-}"	# uefi file name
 	declare -r    __FILE_BCAT="${7:-}"	# eltorito catalog file name
 	declare -r    __FILE_ETRI="${8:-}"	# eltorito boot file name
+	shift 8
 	declare -a    __OPTN=()
 	declare       __TEMP=""				# temporary file
 	              __TEMP="$(mktemp -q "${_DIRS_TEMP:-/tmp}/${__FUNC_NAME}.XXXXXX")"
@@ -4304,8 +4305,8 @@ function fnMk_xorrisofs() {
 #	-part_like_isohybrid									Mark in MBR, GPT, APM without -isohybrid-mbr
 #	-efi-boot-part DISKFILE|--efi-boot-image				Set data source for EFI System Partition
 	__OPTN=()
+	[[ -n "${*:-}" ]] && __OPTN+=("${@}")
 	__OPTN+=(
-		-quiet
 		-rock
 		-joliet
 		${__FILE_VLID:+-volid "${__FILE_VLID// /$'\x20'}"}
@@ -4340,6 +4341,7 @@ function fnMk_xorrisofs() {
 		-output "${__TEMP}"
 		"${__DIRS_TGET:?}"
 	)
+	__OPTN+=("${__OPTN[@]:-}")
 	readonly      __OPTN
 	declare       __REAL=""
 	declare       __DIRS=""
@@ -4651,7 +4653,7 @@ function fnMk_isofile() {
 							# -------------------------------------------------
 							__FCAT="$(find "${__DMRG}" \( -iname 'boot.cat'     -o -iname 'boot.catalog' \))"
 							__FBIN="$(find "${__DMRG}" \( -iname 'isolinux.bin' -o -iname 'eltorito.img' \))"
-							fnMk_xorrisofs "${__DMRG}" "${__MDIA[$((_OSET_MDIA+18))]}" "${__MDIA[$((_OSET_MDIA+17))]}" "${__HBRD:-}" "${__FMBR:-}" "${__FEFI:-}" "${__FCAT#"${__DMRG}/"}" "${__FBIN#"${__DMRG}/"}"
+							fnMk_xorrisofs "${__DMRG}" "${__MDIA[$((_OSET_MDIA+18))]}" "${__MDIA[$((_OSET_MDIA+17))]}" "${__HBRD:-}" "${__FMBR:-}" "${__FEFI:-}" "${__FCAT#"${__DMRG}/"}" "${__FBIN#"${__DMRG}/"}" "-quiet"
 							__RETN="$(fnGetFileinfo "${__MDIA[$((_OSET_MDIA+18))]}")"
 							read -r -a __ARRY < <(echo "${__RETN}")
 							__MDIA[_OSET_MDIA+19]="${__ARRY[1]:-}"	# rmk_tstamp

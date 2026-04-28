@@ -799,6 +799,7 @@ function fnMk_xorrisofs() {
 	declare -r    __FILE_UEFI="${6:-}"	# uefi file name
 	declare -r    __FILE_BCAT="${7:-}"	# eltorito catalog file name
 	declare -r    __FILE_ETRI="${8:-}"	# eltorito boot file name
+	shift 8
 	declare -a    __OPTN=()
 	declare       __TEMP=""				# temporary file
 	              __TEMP="$(mktemp -q "${_DIRS_TEMP:-/tmp}/${__FUNC_NAME}.XXXXXX")"
@@ -832,8 +833,8 @@ function fnMk_xorrisofs() {
 #	-part_like_isohybrid									Mark in MBR, GPT, APM without -isohybrid-mbr
 #	-efi-boot-part DISKFILE|--efi-boot-image				Set data source for EFI System Partition
 	__OPTN=()
+	[[ -n "${*:-}" ]] && __OPTN+=("${@}")
 	__OPTN+=(
-		-quiet
 		-rock
 		-joliet
 		${__FILE_VLID:+-volid "${__FILE_VLID// /$'\x20'}"}
@@ -868,6 +869,7 @@ function fnMk_xorrisofs() {
 		-output "${__TEMP}"
 		"${__DIRS_TGET:?}"
 	)
+	__OPTN+=("${__OPTN[@]:-}")
 	readonly      __OPTN
 	declare       __REAL=""
 	declare       __DIRS=""
@@ -1204,9 +1206,11 @@ function fnMk_squashfs() {
 
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __FILE_SQFS="${2:?}"	# output file name
+	shift 2
 	declare -r -a __OPTN=(
+		"${__DIRS_TGET:?}"
+		"${__FILE_SQFS:?}"
 		"${@:-}"
-		-quiet
 		-progress
 		-noappend
 		-xattrs
@@ -2322,7 +2326,7 @@ function fnMake_live_cdimg_cdfs() {
 	partprobe "${__LOOP:?}"
 	mount -r "${__LOOP}"p2 "${__MNTP}" && _LIST_RMOV+=("${__MNTP}")
 	# --- create squashfs -----------------------------------------------------
-	fnMk_squashfs "${__MNTP:?}" "${__SQFS:?}" -e "${__MNTP:?}"/{.autorelabel,.cache,.viminfo}
+	fnMk_squashfs "${__MNTP:?}" "${__SQFS:?}" -e "${__MNTP:?}"/{.autorelabel,.cache,.viminfo,var/log/clamav/*} "-quiet"
 	# --- create cdfs image ---------------------------------------------------
 	mkdir -p "${__CDFS:?}"/{.disk,EFI/BOOT,boot/grub/{live-theme,x86_64-efi,i386-pc},isolinux,"${_DIRS_LIVE:?}"}
 	touch "${__CDFS}/.disk/info"
@@ -2498,6 +2502,8 @@ function fnMake_live_cdimg() {
 #	__BIOS="${__BIOS:-"${__MBRF}"}"
 	__ETRI="${__ETRI#"${__CDFS:-}/"}"
 #	__BIOS="${__BIOS#"${__CDFS:?}/"}"
+	find "${__CDFS:?}" -type d -exec chmod +rx,-w {} \;		# directory: r-x
+	find "${__CDFS:?}" -type f -exec chmod +r,-w {} \;		# file     : r-?
 	fnMk_xorrisofs "${__CDFS:?}" "${__ISOS:?}" "${__VLID:-}" "${__HBRD:-}" "${__BIOS:-}" "${__UEFI:-}" "${__BCAT:-}" "${__ETRI:-}"
 	unset __BIOS __ETRI __BCAT __UEFI __MBRF __HBRD __ISOS __VLID __CDFS
 	# --- complete ------------------------------------------------------------
@@ -2602,7 +2608,7 @@ function fnMake_live_build() {
 		# --- volume id -------------------------------------------------------
 		__VLID="${__VLID%%-*}"
 		__VLID="${__VLID}${__VERS::$((6+6-${#__VLID}))}${__ARCH//[0-9]*[_-]}${__EDTN::1}"
-		__VLID="${__VLID// /-}"
+		__VLID="${__VLID//[ -!@#.]/_}"
 		__VLID="${__VLID// /\x20}"
 		__VLID="${__VLID^^}"
 		__VLID="${__VLID::16}"

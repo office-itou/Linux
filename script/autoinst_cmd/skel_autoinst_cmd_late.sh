@@ -122,7 +122,7 @@
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnSetup_resolv.sh						# resolv.conf
 	# shellcheck source=/dev/null
-	. "${_SHEL_COMD}"/fnSetup_clamav.sh						# clamav
+#	. "${_SHEL_COMD}"/fnSetup_clamav.sh						# clamav
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnSetup_apache.sh						# apache
 	# shellcheck source=/dev/null
@@ -204,7 +204,7 @@ fnMain() {
 	fnSetup_firewalld					# firewalld
 	fnSetup_dnsmasq						# dnsmasq
 	fnSetup_resolv						# resolv.conf
-	fnSetup_clamav						# clamav
+#	fnSetup_clamav						# clamav
 	fnSetup_apache						# apache
 	fnSetup_samba						# samba
 	fnSetup_timesyncd					# timesyncd

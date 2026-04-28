@@ -105,7 +105,7 @@ function fnMake_live_build() {
 		# --- volume id -------------------------------------------------------
 		__VLID="${__VLID%%-*}"
 		__VLID="${__VLID}${__VERS::$((6+6-${#__VLID}))}${__ARCH//[0-9]*[_-]}${__EDTN::1}"
-		__VLID="${__VLID// /-}"
+		__VLID="${__VLID//[ -!@#.]/_}"
 		__VLID="${__VLID// /\x20}"
 		__VLID="${__VLID^^}"
 		__VLID="${__VLID::16}"

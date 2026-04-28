@@ -15,9 +15,11 @@ function fnMk_squashfs() {
 
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __FILE_SQFS="${2:?}"	# output file name
+	shift 2
 	declare -r -a __OPTN=(
+		"${__DIRS_TGET:?}"
+		"${__FILE_SQFS:?}"
 		"${@:-}"
-		-quiet
 		-progress
 		-noappend
 		-xattrs

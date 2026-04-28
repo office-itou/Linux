@@ -461,177 +461,179 @@ function fnMkosi_finalize_dracut() {
 	#	dracut --list-modules --no-kernel
 	# __MODS[0]: order
 	# __MODS[1]: name
-	# __MODS[2]: Debian/ubuntu (+:add, -:omit, #:exclusion)
-	# __MODS[3]: Rhel
-	# __MODS[4]: openSUSE
-	# __MODS[5]: enabled?
-	# __MODS[6]: package
-	# __MODS[7]: summary
+	# __MODS[2]: enabled (o:add, x:omit, -:exclusion)
+	# __MODS[3]: Debian/ubuntu
+	# __MODS[4]: Rhel
+	# __MODS[5]: openSUSE
+	# __MODS[6]: enabled?
+	# __MODS[7]: package
+	# __MODS[8]: summary
 	# systemd: https://www.freedesktop.org/software/systemd/man/latest/
 	declare -r -a __MODS=(
-		"00 bash                            D+  R+  S+  when_required   bash                        bash_(bash_is_preferred_interpreter_if_there_more_of_them_available)                                    "
-		"00 dash                            D#  --  --  when_required   dash                        dash                                                                                                    "
-		"00 mksh                            D#  --  --  -               -                           -                                                                                                       "
-		"00 systemd                         D+  R+  S+  when_required   -                           Adds_systemd_as_early_init_initialization_system                                                        "
-		"00 systemd-network-management      D#  R#  S#  when_required   -                           Adds_network_management_for_systemd                                                                     "
-		"00 warpclock                       D#  R#  S#  when_required   -                           Sets_kernel's_timezone_and_reset_the_system_time_if_adjtime_is_set_to_LOCAL                             "
-		"01 fips                            D+  R+  --  when_required   -                           Enforces_FIPS_security_standard_regulations                                                             "
-		"01 fips-crypto-policies            --  R+  --  when_required   -                           -                                                                                                       "
-		"01 systemd-ac-power                D#  R#  S#  when_required   -                           Report_whether_we_are_connected_to_an_external_power_source                                             "
-		"01 systemd-ask-password            D+  R+  S+  when_required   -                           Query_the_user_for_a_system_password                                                                    "
-		"01 systemd-battery-check           --  R+  --  when_required   -                           Check_battery_level_whether_there's_enough_charge,_and_power_off_if_not                                 "
-		"01 systemd-bsod                    --  R#  --  when_required   -                           Displays_boot-time_emergency_log_message_in_full_screen                                                 "
-		"01 systemd-coredump                D#  R#  S#  when_required   -                           Acquire,_save_and_process_core_dumps                                                                    "
-		"01 systemd-creds                   --  R#  --  when_required   -                           Lists,_shows,_encrypts_and_decrypts_service_credentials                                                 "
-		"01 systemd-cryptsetup              --  R+  --  when_required   -                           Full_disk_decryption_logic                                                                              "
-		"01 systemd-hostnamed               D#  R#  S#  when_required   -                           Daemon_to_control_system_hostname_from_programs                                                         "
-		"01 systemd-initrd                  D+  R+  S+  when_required   -                           systemd-initrd                                                                                          "
-		"01 systemd-integritysetup          D#  R#  S#  when_required   -                           Disk_integrity_protection_logic                                                                         "
-		"01 systemd-journald                D+  R+  S+  when_required   -                           Journal_service                                                                                         "
-		"01 systemd-ldconfig                D#  R#  S#  when_required   -                           systemd-ldconfig                                                                                        "
-		"01 systemd-modules-load            D+  R+  S+  when_required   -                           Load_kernel_modules_at_boot                                                                             "
-		"01 systemd-networkd                D#  R#  S#  when_required   -                           Network_manager                                                                                         "
-		"01 systemd-pcrphase                D+  R+  S#  when_required   -                           Measure_boot_phases,_machine_ID,_product_UUID_and_file_system_identity_into_TPM_PCRs_and_NvPCRs         "
-		"01 systemd-portabled               D#  R#  S#  when_required   -                           Portable_service_manager                                                                                "
-		"01 systemd-pstore                  D#  R#  S#  when_required   -                           A_service_to_archive_contents_of_pstore                                                                 "
-		"01 systemd-repart                  D#  R#  S#  when_required   -                           Automatically_grow_and_add_partitions,_and_generate_disk_images_(DDIs)                                  "
-		"01 systemd-resolved                D#  R#  S#  when_required   -                           Network_Name_Resolution_manager                                                                         "
-		"01 systemd-rfkill                  D#  --  --  -               -                           Load_and_save_the_RF_kill_switch_state_at_boot_and_change                                               "
-		"01 systemd-sysctl                  D+  R+  S+  when_required   -                           Configure_kernel_parameters_at_boot                                                                     "
-		"01 systemd-sysext                  D#  R#  S#  when_required   -                           Activates_System_Extension_Images                                                                       "
-		"01 systemd-timedated               D#  R#  S#  when_required   -                           Time_and_date_bus_mechanism                                                                             "
-		"01 systemd-timesyncd               D#  R#  S#  when_required   -                           Network_Time_Synchronization                                                                            "
-		"01 systemd-tmpfiles                D+  R+  S+  when_required   -                           Create,_delete,_and_clean_up_files_and_directories                                                      "
-		"01 systemd-udevd                   D+  R+  S+  when_required   -                           Device_event_managing_daemon                                                                            "
-		"01 systemd-veritysetup             D#  R#  S#  when_required   -                           Disk_verity_protection_logic                                                                            "
-		"02 caps                            D#  --  --  when_required   -                           drop_capabilities_before_init                                                                           "
-		"03 modsign                         D+  R+  S+  when_required   -                           kernel_module_for_signing,_keyutils                                                                     "
-		"03 rescue                          D#  R#  S#  when_required   -                           utilities_for_rescue_mode_(such_as_ping,_ssh,_vi,_fsck.*)                                               "
-		"04 watchdog                        D#  R#  S#  when_required   -                           Includes_watchdog_devices_management;_works_only_if_systemd_not_in_use                                  "
-		"04 watchdog-modules                D#  R#  S#  when_required   -                           kernel_modules_for_watchdog_loaded_early_in_booting                                                     "
-		"05 nss-softokn                     --  R+  --  -               -                           -                                                                                                       "
-		"06 dbus-broker                     D+  R+  S+  when_required   dbus-broker                 dbus-broker                                                                                             "
-		"06 dbus-daemon                     D#  R#  S#  when_required   dbus                        dbus-daemon                                                                                             "
-		"06 rngd                            D#  R#  S#  when_required   -                           Starts_random_generator_serive_on_early_boot                                                            "
-		"09 console-setup                   D#  --  --  -               -                           console-setup                                                                                           "
-		"09 dbus                            D+  R+  S+  when_required   -                           Virtual_module_for_dbus-broker_or_dbus-daemon                                                           "
-		"10 i18n                            D+  R+  S+  always          -                           Includes_keymaps,_console_fonts,_etc.                                                                   "
-		"30 convertfs                       D+  R+  S+  when_required   -                           Merges_/_into_/usr_on_next_boot                                                                         "
-		"35 connman                         D#  R#  S#  when_required   connman                     connman                                                                                                 "
-		"35 network-legacy                  D#  --  S#  when_required   dhclient,iproute2,iputils   Includes_legacy_networking_tools_support                                                                "
-		"35 network-manager                 D+  R+  S+  when_required   networkmanager              network-manager                                                                                         "
-		"40 network                         D+  R+  S+  when_required   -                           Virtual_module_for_network_service_providers                                                            "
-		"45 drm                             D+  R+  S+  when_required   -                           kernel_modules_for_DRM_(complex_graphics_devices)                                                       "
-		"45 ifcfg                           D#  --  S#  -               -                           -                                                                                                       "
-		"45 net-lib                         --  R+  --  when_required   -                           -                                                                                                       "
-		"45 plymouth                        D+  R+  S+  when_required   plymouth                    show_splash_via_plymouth                                                                                "
-		"45 simpledrm                       --  R#  --  -               -                           -                                                                                                       "
-		"45 url-lib                         D+  R+  S+  when_required   -                           Includes_curl_and_SSL_certs                                                                             "
-		"60 systemd-sysusers                D+  R+  S+  when_required   -                           Allocate_system_users_and_groups                                                                        "
-		"62 bluetooth                       D#  R#  S#  when_required   bluez                       Includes_bluetooth_devices_support                                                                      "
-		"71 prefixdevname                   --  R+  --  -               -                           -                                                                                                       "
-		"71 prefixdevname-tools             --  R#  --  -               -                           -                                                                                                       "
-		"80 cms                             D#  --  --  when_required   -                           -                                                                                                       "
-		"80 lvmmerge                        D#  R#  S#  when_required   -                           Merges_lvm_snapshots                                                                                    "
-		"80 lvmthinpool-monitor             D#  R#  S#  when_required   -                           Monitor_LVM_thinpool_service                                                                            "
-		"81 cio_ignore                      D#  --  --  -               -                           cio_ignore                                                                                              "
-		"90 btrfs                           D+  R+  S+  always          btrfs-progs                 btrfs                                                                                                   "
-		"90 crypt                           D+  R+  S+  always          cryptsetup                  encrypted_LUKS_filesystems_and_cryptsetup                                                               "
-		"90 dm                              D+  R+  S+  when_required   -                           device-mapper                                                                                           "
-		"90 dmraid                          D#  R#  S#  always          dmraid,multipath-tools      DMRAID_arrays                                                                                           "
-		"90 dmsquash-live                   D+  R+  S+  when_required   -                           SquashFS_images                                                                                         "
-		"90 dmsquash-live-autooverlay       D#  R#  S#  when_required   -                           creates_a_partition_for_overlayfs_usage_in_the_free_space_on_the_root_filesystem's_parent_block_device  "
-		"90 dmsquash-live-ntfs              D#  R#  S#  when_required   fuse3,ntfs-3g               SquashFS_images_located_in_NTFS_filesystems                                                             "
-		"90 kernel-modules                  D+  R+  S+  always          -                           kernel_modules_for_root_filesystems_and_other_boot-time_devices                                         "
-		"90 kernel-modules-extra            D+  R+  S+  always          -                           extra_out-of-tree_kernel_modules                                                                        "
-		"90 kernel-network-modules          D+  R+  S+  when_required   -                           Includes_and_loads_kernel_modules_for_network_devices                                                   "
-		"90 livenet                         D+  R+  S+  when_required   -                           Fetch_live_updates_for_SquashFS_images                                                                  "
-		"90 lvm                             D+  R+  S+  always          lvm2                        LVM_devices                                                                                             "
-		"90 mdraid                          D+  R+  S+  always          mdadm                       kernel_module_for_md_raid_cluster,_mdadm                                                                "
-		"90 multipath                       D+  R+  S+  always          multipath-tools             multipath_devices                                                                                       "
-		"90 numlock                         --  R#  --  when_required   -                           -                                                                                                       "
-		"90 nvdimm                          D+  R+  S+  when_required   ndctl                       non-volatile_DIMM_devices                                                                               "
-		"90 overlay-root                    D#  R#  --  -               -                           overlay-root                                                                                            "
-		"90 overlayfs                       D+  R+  S+  when_required   -                           kernel_module_for_overlayfs                                                                             "
-		"90 ppcmac                          D#  R#  --  when_required   -                           thermal_for_PowerPC                                                                                     "
-		"90 qemu                            D+  R+  S+  when_required   -                           kernel_modules_to_boot_inside_qemu                                                                      "
-		"90 qemu-net                        D+  R+  S+  always          -                           Includes_network_kernel_modules_for_QEMU_environment                                                    "
-		"91 crypt-gpg                       D#  R#  S#  when_required   gnupg                       GPG_for_crypto_operations_and_SmartCards_(may_requires_GPG_keys)                                        "
-		"91 crypt-loop                      D#  R#  S#  when_required   -                           encrypted_loopback_devices_(symmetric_key)                                                              "
-		"91 fido2                           D+  R+  S+  when_required   -                           fido2                                                                                                   "
-		"91 pcsc                            D#  R#  S#  when_required   -                           Adds_support_for_PCSC_Smart_cards                                                                       "
-		"91 pkcs11                          D+  R+  S+  when_required   -                           Includes_PKCS#11_libraries                                                                              "
-		"91 tpm2-tss                        D+  R+  S+  when_required   tpm2-tools                  Adds_support_for_TPM2_devices                                                                           "
-		"91 zipl                            D#  --  --  when_required   -                           zipl                                                                                                    "
-		"95 cifs                            D+  R+  S+  always          cifs-utils                  CIFS,_cifs-utils                                                                                        "
-		"95 dasd                            D#  --  --  when_required   -                           dasd                                                                                                    "
-		"95 dasd_mod                        D#  --  --  when_required   -                           dasd_mod                                                                                                "
-		"95 dasd_rules                      D#  --  --  -               -                           -                                                                                                       "
-		"95 dcssblk                         D#  --  --  when_required   -                           dcssblk                                                                                                 "
-		"95 debug                           D#  R#  S#  when_required   -                           debug_features                                                                                          "
-		"95 fcoe                            D#  R#  S#  always          -                           Adds_support_for_Fibre_Channel_over_Ethernet_(FCoE)                                                     "
-		"95 fcoe-uefi                       D#  R#  S#  always          -                           Adds_support_for_Fibre_Channel_over_Ethernet_(FCoE)_in_EFI_mode                                         "
-		"95 fstab-sys                       D#  R#  S#  always          -                           Arranges_for_arbitrary_partitions_to_be_mounted_before_rootfs                                           "
-		"95 hwdb                            --  R+  --  when_required   -                           -                                                                                                       "
-		"95 iscsi                           D+  R+  S+  always          open-iscsi                  Adds_support_for_iSCSI_devices                                                                          "
-		"95 lunmask                         D+  R+  S+  always          -                           Masks_LUN_devices_to_select_only_ones_which_required_to_boot                                            "
-		"95 nbd                             D#  R#  S#  always          nbd                         kernel_module_for_Network_Block_Device,_nbd                                                             "
-		"95 nfs                             D+  R+  S+  always          nfs-utils                   kernel_module_for_NFS,_nfs-utils                                                                        "
-		"95 nvmf                            D+  R+  S+  always          nvme-cli,jq                 Adds_support_for_NVMe_over_Fabrics_devices                                                              "
-		"95 qeth_rules                      D#  --  --  -               -                           -                                                                                                       "
-		"95 resume                          D+  R+  S+  always          -                           resume_from_low-power_state                                                                             "
-		"95 rootfs-block                    D+  R+  S+  always          -                           mount_block_device_as_rootfs                                                                            "
-		"95 squash-erofs                    --  R#  --  when_required   -                           -                                                                                                       "
-		"95 squash-squashfs                 --  R#  --  when_required   -                           -                                                                                                       "
-		"95 ssh-client                      D#  R#  S#  when_required   openssh                     Includes_ssh_and_scp_clients                                                                            "
-		"95 suse-btrfs                      --  --  S#  -               -                           -                                                                                                       "
-		"95 suse-xfs                        --  --  S#  -               -                           -                                                                                                       "
-		"95 terminfo                        D+  R+  S+  always          -                           Includes_a_terminfo_file                                                                                "
-		"95 udev-rules                      D+  R+  S+  always          -                           Includes_udev_and_some_basic_rules                                                                      "
-		"95 virtfs                          D#  R#  S#  when_required   -                           virtual_filesystems_(9p)                                                                                "
-		"95 virtiofs                        D+  R+  S+  always          -                           virtiofs                                                                                                "
-		"95 zfcp                            D#  --  --  when_required   -                           -                                                                                                       "
-		"95 zfcp_rules                      D#  --  --  -               -                           -                                                                                                       "
-		"95 znet                            D#  --  --  when_required   -                           -                                                                                                       "
-		"96 securityfs                      D#  R#  --  when_required   -                           mount_securityfs_early                                                                                  "
-		"97 biosdevname                     D#  R#  S#  always          biosdevname                 BIOS_network_device_renaming                                                                            "
-		"97 masterkey                       D#  R#  --  when_required   -                           masterkey_that_can_be_used_to_decrypt_other_keys_and_keyutils                                           "
-		"97 systemd-emergency               --  R#  --  when_required   -                           -                                                                                                       "
-		"98 dracut-systemd                  D+  R+  S+  when_required   -                           Base_systemd_dracut_module                                                                              "
-		"98 ecryptfs                        D#  R#  S#  when_required   -                           kernel_module_for_ecryptfs_(stacked_cryptographic_filesystem)                                           "
-		"98 integrity                       D#  R#  --  when_required   -                           Extended_Verification_Module_and_ima-evm-utils                                                          "
-		"98 pollcdrom                       D+  R+  S+  when_required   -                           polls_CD-ROM                                                                                            "
-		"98 selinux                         D#  R#  S#  when_required   -                           selinux_policy                                                                                          "
-		"98 selinux-microos                 --  --  S#  -               -                           -                                                                                                       "
-		"98 syslog                          D#  R#  S#  when_required   rsyslog                     Includes_syslog_capabilites                                                                             "
-		"98 usrmount                        D+  R+  S+  always          -                           mounts_/usr                                                                                             "
-		"99 base                            D+  R+  S+  always          -                           Base_module_with_required_utilities                                                                     "
-		"99 busybox                         D#  R#  --  when_required   busybox                     busybox                                                                                                 "
-		"99 earlykdump                      --  R#  --  -               -                           -                                                                                                       "
-		"99 fs-lib                          D+  R+  S+  always          -                           filesystem_tools_(including_fsck.*_and_mount)                                                           "
-		"99 img-lib                         D+  R+  S+  when_required   -                           Includes_various_tools_for_decompressing_images                                                         "
-		"99 kdump                           --  --  S#  -               -                           -                                                                                                       "
-		"99 kdumpbase                       --  R#  --  -               -                           -                                                                                                       "
-		"99 memstrack                       D#  R+  S#  always          memstrack                   Includes_memstrack_for_memory_usage_monitoring                                                          "
-		"99 microcode_ctl-fw_dir_override   --  R+  --  -               -                           -                                                                                                       "
-		"99 openssl                         --  R+  --  -               -                           -                                                                                                       "
-		"99 shell-interpreter               --  R+  --  when_required   -                           -                                                                                                       "
-		"99 shutdown                        D+  R+  S+  always          -                           Sets_up_hooks_to_run_on_shutdown                                                                        "
-		"99 squash                          --  R#  S#  when_required   squashfs-tools              -                                                                                                       "
-		"99 squash-lib                      --  R#  --  when_required   -                           -                                                                                                       "
-		"99 suse                            --  --  S#  -               -                           -                                                                                                       "
-		"99 suse-initrd                     --  --  S#  -               -                           -                                                                                                       "
-		"99 uefi-lib                        D#  R#  S#  when_required   -                           Includes_UEFI_tools                                                                                     "
+		"00 bash                            o   Do  Ro  So  when_required   bash                        bash_(bash_is_preferred_interpreter_if_there_more_of_them_available)                                    "
+		"00 dash                            -   D-  --  --  when_required   dash                        dash                                                                                                    "
+		"00 mksh                            -   D-  --  --  -               -                           -                                                                                                       "
+		"00 systemd                         o   Do  Ro  So  when_required   -                           Adds_systemd_as_early_init_initialization_system                                                        "
+		"00 systemd-network-management      -   D-  R-  S-  when_required   -                           Adds_network_management_for_systemd                                                                     "
+		"00 warpclock                       -   D-  R-  S-  when_required   -                           Sets_kernel's_timezone_and_reset_the_system_time_if_adjtime_is_set_to_LOCAL                             "
+		"01 fips                            o   D-  R-  --  when_required   -                           Enforces_FIPS_security_standard_regulations                                                             "
+		"01 fips-crypto-policies            o   --  Ro  --  when_required   -                           -                                                                                                       "
+		"01 systemd-ac-power                -   D-  R-  S-  when_required   -                           Report_whether_we_are_connected_to_an_external_power_source                                             "
+		"01 systemd-ask-password            o   Do  Ro  So  when_required   -                           Query_the_user_for_a_system_password                                                                    "
+		"01 systemd-battery-check           o   --  Ro  --  when_required   -                           Check_battery_level_whether_there's_enough_charge,_and_power_off_if_not                                 "
+		"01 systemd-bsod                    -   --  R-  --  when_required   -                           Displays_boot-time_emergency_log_message_in_full_screen                                                 "
+		"01 systemd-coredump                -   D-  R-  S-  when_required   -                           Acquire,_save_and_process_core_dumps                                                                    "
+		"01 systemd-creds                   -   --  R-  --  when_required   -                           Lists,_shows,_encrypts_and_decrypts_service_credentials                                                 "
+		"01 systemd-cryptsetup              o   --  Ro  --  when_required   -                           Full_disk_decryption_logic                                                                              "
+		"01 systemd-hostnamed               -   D-  R-  S-  when_required   -                           Daemon_to_control_system_hostname_from_programs                                                         "
+		"01 systemd-initrd                  o   Do  Ro  So  when_required   -                           systemd-initrd                                                                                          "
+		"01 systemd-integritysetup          -   D-  R-  S-  when_required   -                           Disk_integrity_protection_logic                                                                         "
+		"01 systemd-journald                o   Do  Ro  So  when_required   -                           Journal_service                                                                                         "
+		"01 systemd-ldconfig                -   D-  R-  S-  when_required   -                           systemd-ldconfig                                                                                        "
+		"01 systemd-modules-load            o   Do  Ro  So  when_required   -                           Load_kernel_modules_at_boot                                                                             "
+		"01 systemd-networkd                -   D-  R-  S-  when_required   -                           Network_manager                                                                                         "
+		"01 systemd-pcrphase                o   Do  Ro  So  when_required   -                           Measure_boot_phases,_machine_ID,_product_UUID_and_file_system_identity_into_TPM_PCRs_and_NvPCRs         "
+		"01 systemd-portabled               -   D-  R-  S-  when_required   -                           Portable_service_manager                                                                                "
+		"01 systemd-pstore                  -   D-  R-  S-  when_required   -                           A_service_to_archive_contents_of_pstore                                                                 "
+		"01 systemd-repart                  -   D-  R-  S-  when_required   -                           Automatically_grow_and_add_partitions,_and_generate_disk_images_(DDIs)                                  "
+		"01 systemd-resolved                -   D-  R-  S-  when_required   -                           Network_Name_Resolution_manager                                                                         "
+		"01 systemd-rfkill                  -   D-  --  --  -               -                           Load_and_save_the_RF_kill_switch_state_at_boot_and_change                                               "
+		"01 systemd-sysctl                  o   Do  Ro  So  when_required   -                           Configure_kernel_parameters_at_boot                                                                     "
+		"01 systemd-sysext                  -   D-  R-  S-  when_required   -                           Activates_System_Extension_Images                                                                       "
+		"01 systemd-timedated               -   D-  R-  S-  when_required   -                           Time_and_date_bus_mechanism                                                                             "
+		"01 systemd-timesyncd               -   D-  R-  S-  when_required   -                           Network_Time_Synchronization                                                                            "
+		"01 systemd-tmpfiles                o   Do  Ro  So  when_required   -                           Create,_delete,_and_clean_up_files_and_directories                                                      "
+		"01 systemd-udevd                   o   Do  Ro  So  when_required   -                           Device_event_managing_daemon                                                                            "
+		"01 systemd-veritysetup             -   D-  R-  S-  when_required   -                           Disk_verity_protection_logic                                                                            "
+		"02 caps                            -   D-  --  --  when_required   -                           drop_capabilities_before_init                                                                           "
+		"03 modsign                         o   Do  Ro  So  when_required   -                           kernel_module_for_signing,_keyutils                                                                     "
+		"03 rescue                          -   D-  R-  S-  when_required   -                           utilities_for_rescue_mode_(such_as_ping,_ssh,_vi,_fsck.*)                                               "
+		"04 watchdog                        -   D-  R-  S-  when_required   -                           Includes_watchdog_devices_management;_works_only_if_systemd_not_in_use                                  "
+		"04 watchdog-modules                -   D-  R-  S-  when_required   -                           kernel_modules_for_watchdog_loaded_early_in_booting                                                     "
+		"05 nss-softokn                     o   --  Ro  --  -               -                           -                                                                                                       "
+		"06 dbus-broker                     o   Do  Ro  So  when_required   dbus-broker                 dbus-broker                                                                                             "
+		"06 dbus-daemon                     -   D-  R-  S-  when_required   dbus                        dbus-daemon                                                                                             "
+		"06 rngd                            -   D-  R-  S-  when_required   -                           Starts_random_generator_serive_on_early_boot                                                            "
+		"09 console-setup                   -   D-  --  --  -               -                           console-setup                                                                                           "
+		"09 dbus                            o   Do  Ro  So  when_required   -                           Virtual_module_for_dbus-broker_or_dbus-daemon                                                           "
+		"10 i18n                            o   Do  Ro  So  always          -                           Includes_keymaps,_console_fonts,_etc.                                                                   "
+		"30 convertfs                       o   Do  Ro  So  when_required   -                           Merges_/_into_/usr_on_next_boot                                                                         "
+		"35 connman                         -   D-  R-  S-  when_required   connman                     connman                                                                                                 "
+		"35 network-legacy                  -   D-  --  S-  when_required   dhclient,iproute2,iputils   Includes_legacy_networking_tools_support                                                                "
+		"35 network-manager                 o   Do  Ro  So  when_required   networkmanager              network-manager                                                                                         "
+		"40 network                         o   Do  Ro  So  when_required   -                           Virtual_module_for_network_service_providers                                                            "
+		"45 drm                             o   Do  Ro  So  when_required   -                           kernel_modules_for_DRM_(complex_graphics_devices)                                                       "
+		"45 ifcfg                           -   D-  --  S-  -               -                           -                                                                                                       "
+		"45 net-lib                         o   --  Ro  --  when_required   -                           -                                                                                                       "
+		"45 plymouth                        o   Do  Ro  So  when_required   plymouth                    show_splash_via_plymouth                                                                                "
+		"45 simpledrm                       -   --  R-  --  -               -                           -                                                                                                       "
+		"45 url-lib                         o   Do  Ro  So  when_required   -                           Includes_curl_and_SSL_certs                                                                             "
+		"60 systemd-sysusers                o   Do  Ro  So  when_required   -                           Allocate_system_users_and_groups                                                                        "
+		"62 bluetooth                       -   D-  R-  S-  when_required   bluez                       Includes_bluetooth_devices_support                                                                      "
+		"71 prefixdevname                   o   --  Ro  --  -               -                           -                                                                                                       "
+		"71 prefixdevname-tools             -   --  R-  --  -               -                           -                                                                                                       "
+		"80 cms                             -   D-  --  --  when_required   -                           -                                                                                                       "
+		"80 lvmmerge                        -   D-  R-  S-  when_required   -                           Merges_lvm_snapshots                                                                                    "
+		"80 lvmthinpool-monitor             -   D-  R-  S-  when_required   -                           Monitor_LVM_thinpool_service                                                                            "
+		"81 cio_ignore                      -   D-  --  --  -               -                           cio_ignore                                                                                              "
+		"90 btrfs                           o   Do  Ro  So  always          btrfs-progs                 btrfs                                                                                                   "
+		"90 crypt                           o   Do  Ro  So  always          cryptsetup                  encrypted_LUKS_filesystems_and_cryptsetup                                                               "
+		"90 dm                              o   Do  Ro  So  when_required   -                           device-mapper                                                                                           "
+		"90 dmraid                          -   D-  R-  S-  always          dmraid,multipath-tools      DMRAID_arrays                                                                                           "
+		"90 dmsquash-live                   o   Do  Ro  So  when_required   -                           SquashFS_images                                                                                         "
+		"90 dmsquash-live-autooverlay       -   D-  R-  S-  when_required   -                           creates_a_partition_for_overlayfs_usage_in_the_free_space_on_the_root_filesystem's_parent_block_device  "
+		"90 dmsquash-live-ntfs              -   D-  R-  S-  when_required   fuse3,ntfs-3g               SquashFS_images_located_in_NTFS_filesystems                                                             "
+		"90 kernel-modules                  o   Do  Ro  So  always          -                           kernel_modules_for_root_filesystems_and_other_boot-time_devices                                         "
+		"90 kernel-modules-extra            o   Do  Ro  So  always          -                           extra_out-of-tree_kernel_modules                                                                        "
+		"90 kernel-network-modules          o   Do  Ro  So  when_required   -                           Includes_and_loads_kernel_modules_for_network_devices                                                   "
+		"90 livenet                         o   Do  Ro  So  when_required   -                           Fetch_live_updates_for_SquashFS_images                                                                  "
+		"90 lvm                             o   Do  Ro  So  always          lvm2                        LVM_devices                                                                                             "
+		"90 mdraid                          o   Do  Ro  So  always          mdadm                       kernel_module_for_md_raid_cluster,_mdadm                                                                "
+		"90 multipath                       o   Do  Ro  So  always          multipath-tools             multipath_devices                                                                                       "
+		"90 numlock                         -   --  R-  --  when_required   -                           -                                                                                                       "
+		"90 nvdimm                          o   Do  Ro  So  when_required   ndctl                       non-volatile_DIMM_devices                                                                               "
+		"90 overlay-root                    -   D-  R-  --  -               -                           overlay-root                                                                                            "
+		"90 overlayfs                       o   Do  Ro  So  when_required   -                           kernel_module_for_overlayfs                                                                             "
+		"90 ppcmac                          -   D-  R-  --  when_required   -                           thermal_for_PowerPC                                                                                     "
+		"90 qemu                            o   Do  Ro  So  when_required   -                           kernel_modules_to_boot_inside_qemu                                                                      "
+		"90 qemu-net                        o   Do  Ro  So  always          -                           Includes_network_kernel_modules_for_QEMU_environment                                                    "
+		"91 crypt-gpg                       -   D-  R-  S-  when_required   gnupg                       GPG_for_crypto_operations_and_SmartCards_(may_requires_GPG_keys)                                        "
+		"91 crypt-loop                      -   D-  R-  S-  when_required   -                           encrypted_loopback_devices_(symmetric_key)                                                              "
+		"91 fido2                           o   Do  Ro  So  when_required   -                           fido2                                                                                                   "
+		"91 pcsc                            -   D-  R-  S-  when_required   -                           Adds_support_for_PCSC_Smart_cards                                                                       "
+		"91 pkcs11                          o   Do  Ro  So  when_required   -                           Includes_PKCS#11_libraries                                                                              "
+		"91 tpm2-tss                        o   Do  Ro  So  when_required   tpm2-tools                  Adds_support_for_TPM2_devices                                                                           "
+		"91 zipl                            -   D-  --  --  when_required   -                           zipl                                                                                                    "
+		"95 cifs                            o   Do  Ro  So  always          cifs-utils                  CIFS,_cifs-utils                                                                                        "
+		"95 dasd                            -   D-  --  --  when_required   -                           dasd                                                                                                    "
+		"95 dasd_mod                        -   D-  --  --  when_required   -                           dasd_mod                                                                                                "
+		"95 dasd_rules                      -   D-  --  --  -               -                           -                                                                                                       "
+		"95 dcssblk                         -   D-  --  --  when_required   -                           dcssblk                                                                                                 "
+		"95 debug                           -   D-  R-  S-  when_required   -                           debug_features                                                                                          "
+		"95 fcoe                            -   D-  R-  S-  always          -                           Adds_support_for_Fibre_Channel_over_Ethernet_(FCoE)                                                     "
+		"95 fcoe-uefi                       -   D-  R-  S-  always          -                           Adds_support_for_Fibre_Channel_over_Ethernet_(FCoE)_in_EFI_mode                                         "
+		"95 fstab-sys                       -   D-  R-  S-  always          -                           Arranges_for_arbitrary_partitions_to_be_mounted_before_rootfs                                           "
+		"95 hwdb                            o   --  Ro  --  when_required   -                           -                                                                                                       "
+		"95 iscsi                           o   Do  Ro  So  always          open-iscsi                  Adds_support_for_iSCSI_devices                                                                          "
+		"95 lunmask                         o   Do  Ro  So  always          -                           Masks_LUN_devices_to_select_only_ones_which_required_to_boot                                            "
+		"95 nbd                             -   D-  R-  S-  always          nbd                         kernel_module_for_Network_Block_Device,_nbd                                                             "
+		"95 nfs                             o   Do  Ro  So  always          nfs-utils                   kernel_module_for_NFS,_nfs-utils                                                                        "
+		"95 nvmf                            o   Do  Ro  So  always          nvme-cli,jq                 Adds_support_for_NVMe_over_Fabrics_devices                                                              "
+		"95 qeth_rules                      -   D-  --  --  -               -                           -                                                                                                       "
+		"95 resume                          o   Do  Ro  So  always          -                           resume_from_low-power_state                                                                             "
+		"95 rootfs-block                    o   Do  Ro  So  always          -                           mount_block_device_as_rootfs                                                                            "
+		"95 squash-erofs                    -   --  R-  --  when_required   -                           -                                                                                                       "
+		"95 squash-squashfs                 -   --  R-  --  when_required   -                           -                                                                                                       "
+		"95 ssh-client                      -   D-  R-  S-  when_required   openssh                     Includes_ssh_and_scp_clients                                                                            "
+		"95 suse-btrfs                      -   --  --  S-  -               -                           -                                                                                                       "
+		"95 suse-xfs                        -   --  --  S-  -               -                           -                                                                                                       "
+		"95 terminfo                        o   Do  Ro  So  always          -                           Includes_a_terminfo_file                                                                                "
+		"95 udev-rules                      o   Do  Ro  So  always          -                           Includes_udev_and_some_basic_rules                                                                      "
+		"95 virtfs                          -   D-  R-  S-  when_required   -                           virtual_filesystems_(9p)                                                                                "
+		"95 virtiofs                        o   Do  Ro  So  always          -                           virtiofs                                                                                                "
+		"95 zfcp                            -   D-  --  --  when_required   -                           -                                                                                                       "
+		"95 zfcp_rules                      -   D-  --  --  -               -                           -                                                                                                       "
+		"95 znet                            -   D-  --  --  when_required   -                           -                                                                                                       "
+		"96 securityfs                      -   D-  R-  --  when_required   -                           mount_securityfs_early                                                                                  "
+		"97 biosdevname                     -   D-  R-  S-  always          biosdevname                 BIOS_network_device_renaming                                                                            "
+		"97 masterkey                       -   D-  R-  --  when_required   -                           masterkey_that_can_be_used_to_decrypt_other_keys_and_keyutils                                           "
+		"97 systemd-emergency               -   --  R-  --  when_required   -                           -                                                                                                       "
+		"98 dracut-systemd                  o   Do  Ro  So  when_required   -                           Base_systemd_dracut_module                                                                              "
+		"98 ecryptfs                        -   D-  R-  S-  when_required   -                           kernel_module_for_ecryptfs_(stacked_cryptographic_filesystem)                                           "
+		"98 integrity                       -   D-  R-  --  when_required   -                           Extended_Verification_Module_and_ima-evm-utils                                                          "
+		"98 pollcdrom                       o   Do  Ro  So  when_required   -                           polls_CD-ROM                                                                                            "
+		"98 selinux                         -   D-  R-  S-  when_required   -                           selinux_policy                                                                                          "
+		"98 selinux-microos                 -   --  --  S-  -               -                           -                                                                                                       "
+		"98 syslog                          -   D-  R-  S-  when_required   rsyslog                     Includes_syslog_capabilites                                                                             "
+		"98 usrmount                        o   Do  Ro  So  always          -                           mounts_/usr                                                                                             "
+		"99 base                            -   D-  R-  S-  always          -                           Base_module_with_required_utilities                                                                     "
+		"99 busybox                         -   D-  R-  --  when_required   busybox                     busybox                                                                                                 "
+		"99 earlykdump                      -   --  R-  --  -               -                           -                                                                                                       "
+		"99 fs-lib                          o   Do  Ro  So  always          -                           filesystem_tools_(including_fsck.*_and_mount)                                                           "
+		"99 img-lib                         o   Do  Ro  So  when_required   -                           Includes_various_tools_for_decompressing_images                                                         "
+		"99 kdump                           -   --  --  S-  -               -                           -                                                                                                       "
+		"99 kdumpbase                       o   --  R-  --  -               -                           -                                                                                                       "
+		"99 memstrack                       o   D-  Ro  So  always          memstrack                   Includes_memstrack_for_memory_usage_monitoring                                                          "
+		"99 microcode_ctl-fw_dir_override   o   --  Ro  --  -               -                           -                                                                                                       "
+		"99 openssl                         o   --  Ro  --  -               -                           -                                                                                                       "
+		"99 shell-interpreter               o   --  Ro  --  when_required   -                           -                                                                                                       "
+		"99 shutdown                        o   Do  Ro  So  always          -                           Sets_up_hooks_to_run_on_shutdown                                                                        "
+		"99 squash                          -   --  R-  S-  when_required   squashfs-tools              -                                                                                                       "
+		"99 squash-lib                      -   --  R-  --  when_required   -                           -                                                                                                       "
+		"99 suse                            -   --  --  S-  -               -                           -                                                                                                       "
+		"99 suse-initrd                     -   --  --  S-  -               -                           -                                                                                                       "
+		"99 uefi-lib                        -   D-  R-  S-  when_required   -                           Includes_UEFI_tools                                                                                     "
 	)
 	if [[ -e /usr/lib/modules/. ]]; then
 		declare -r    __KDIR="/usr/lib/modules"
 	else
 		declare -r    __KDIR="/lib/modules"
 	fi
-	declare -r    __KRNL="$(ls "${__KDIR:?}")"
+	declare       __KRNL=""
+	              __KRNL="$(ls "${__KDIR:?}")"
+	readonly      __KRNL
 	declare -r    __ARCH="${__KRNL##*[-.]}"
 	declare -r    __VERS="${__KRNL%[-.]"${__ARCH}"}"
-	declare       __DIST=""				# D:debian/ubuntu, R:rhel/..., S:opensuse/suse
 	declare -a    __ADDS=()
 	declare -a    __OMIT=()
 	declare -a    __OPTN=()
@@ -639,44 +641,37 @@ function fnMkosi_finalize_dracut() {
 	declare -i    __RTCD=0				# return code
 	declare -i    I=0
 
-	__DIST=""
-	case "${DISTRIBUTION:-}" in
-		debian      | \
-		ubuntu      ) __DIST="D";;
-		fedora      | \
-		centos      | \
-		alma        | \
-		rocky       | \
-		miracle     ) __DIST="R";;
-		opensuse    ) __DIST="S";;
-#		kali        ) ;;
-#		arch        ) ;;
-#		mageia      ) ;;
-#		rhel-ubi    ) ;;
-#		rhel        ) ;;
-#		openmandriva) ;;
-#		azure       ) ;;
-#		custom      ) ;;
-		*           ) __DIST="";;
-	esac
-
 	__ADDS=()
 	__OMIT=()
 	for I in "${!__MODS[@]}"
 	do
 		read -r -a __LIST < <(echo "${__MODS[I]}")
+		if ! ls /usr/lib/dracut/modules.d/[0-9][0-9]"${__LIST[1]:?}"/. > /dev/null 2>&1; then
+			continue
+		fi
 		__WORK=""
-		case "${__DIST}" in
-			"${__LIST[2]:0:1}") __WORK="${__LIST[2]:1:1}";;
-			"${__LIST[3]:0:1}") __WORK="${__LIST[3]:1:1}";;
-			"${__LIST[4]:0:1}") __WORK="${__LIST[4]:1:1}";;
-			*                 ) continue;;
+		case "${DISTRIBUTION:-}" in
+			debian      | \
+			ubuntu      ) __WORK="${__LIST[3]:1:1}";;
+			fedora      | \
+			centos      | \
+			alma        | \
+			rocky       | \
+			miracle     ) __WORK="${__LIST[4]:1:1}";;
+			opensuse    ) __WORK="${__LIST[5]:1:1}";;
+#			kali        ) ;;
+#			arch        ) ;;
+#			mageia      ) ;;
+#			rhel-ubi    ) ;;
+#			rhel        ) ;;
+#			openmandriva) ;;
+#			azure       ) ;;
+#			custom      ) ;;
+			*           ) continue;;
 		esac
-		case "${__WORK:-}" in
-			"+") __ADDS+=("${__LIST[1]}");;	# common add
-			"-") __OMIT+=("${__LIST[1]}");;	# "      omit
-			*  ) ;;
-		esac
+		  if [[ "${__LIST[2]:-}" = "o" ]] && [[ "${__WORK}" = "o" ]]; then __ADDS+=("${__LIST[1]}"); \
+		elif [[ "${__LIST[2]:-}" = "x" ]] && [[ "${__WORK}" = "x" ]]; then __OMIT+=("${__LIST[1]}"); \
+		else continue; fi
 	done
 	readonly __ADDS
 	readonly __OMIT
@@ -723,6 +718,7 @@ function fnMkosi_finalize_dracut() {
 	if ! command -v dracut > /dev/null 2>&1; then
 		fnMsgout "${_PROG_NAME:-}" "caution" "not exist: dracut"
 	else
+#		fnMsgout "${_PROG_NAME:-}" "info" "dracut ${__OPTN[*]}"
 		if ! dracut "${__OPTN[@]}"; then
 			__RTCD="$?"
 			fnMsgout "${_PROG_NAME:-}" "failed" "dracut ${__OPTN[*]}"

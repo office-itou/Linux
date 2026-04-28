@@ -54,6 +54,8 @@ function fnMake_live_cdimg() {
 #	__BIOS="${__BIOS:-"${__MBRF}"}"
 	__ETRI="${__ETRI#"${__CDFS:-}/"}"
 #	__BIOS="${__BIOS#"${__CDFS:?}/"}"
+	find "${__CDFS:?}" -type d -exec chmod +rx,-w {} \;		# directory: r-x
+	find "${__CDFS:?}" -type f -exec chmod +r,-w {} \;		# file     : r-?
 	fnMk_xorrisofs "${__CDFS:?}" "${__ISOS:?}" "${__VLID:-}" "${__HBRD:-}" "${__BIOS:-}" "${__UEFI:-}" "${__BCAT:-}" "${__ETRI:-}"
 	unset __BIOS __ETRI __BCAT __UEFI __MBRF __HBRD __ISOS __VLID __CDFS
 	# --- complete ------------------------------------------------------------
