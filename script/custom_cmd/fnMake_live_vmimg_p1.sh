@@ -82,7 +82,8 @@ function fnMake_live_vmimg_p1() {
 		  set uuid="${__TGET_UUID:?}"
 		  search --no-floppy --fs-uuid --set=root \${uuid}
 		  echo root=\${root}
-		  set devs=/dev/sda2
+		# set devs=/dev/sda2
+		  set devs=UUID=\${uuid}
 		  set ttys=console=ttyS0
 		  set options="\${ttys} root=\${devs}${_SECU_OPTN:+" ${_SECU_OPTN}"}"
 		# if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi

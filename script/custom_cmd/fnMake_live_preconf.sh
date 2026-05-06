@@ -22,7 +22,7 @@ function fnMake_live_preconf() {
 	declare       __SRVR=""
 	declare       __DTOP=""
 
-	for __CONF in "${_DIRS_MKOS:?}"/_template/mkosi.*.conf
+	for __CONF in "${_DIRS_MKOS:?}"/_template/*.conf
 	do
 		sed -ne '/^\[Match\]/,/^#*\[.\+\]/ {' -e '/^#*Distribution=/{' -e 's/^.*[^[:alnum:]]//p}}' "${__CONF}" | while read -r __DIST
 		do
@@ -49,7 +49,7 @@ function fnMake_live_preconf() {
 					*           ) if [[ "${__DIST}" =  "fedora" ]]; then continue; fi; __VERS="${__CODE}"  ;;	# rhel, opensuse
 				esac
 				__EDTN=":__EDITION__:"
-				__PATH="${_DIRS_MKOS:?}/mkosi.conf.d/mkosi.${__DIST:?}.${__VERS:?}.${__EDTN:?}.conf"
+				__PATH="${_DIRS_MKOS:?}/mkosi.conf.d/mkosi-${__DIST:?}.${__VERS:?}.${__EDTN:?}.conf"
 				__SRVR="${__PATH//${__EDTN}/server}"
 				__DTOP="${__PATH//${__EDTN}/desktop}"
 				# --- server ------------------------------------------------------
@@ -170,8 +170,8 @@ function fnMake_live_preconf() {
 					-e '}}'                                                \
 					-e '/^\[Content\]/,/^#*\[.\+\]/                     {' \
 					-e '/^Packages=/,/^#*\(\[.\+\]\|[[:alnum:]]\+=\)/   {' \
-					-e '/^# \+-\+ desktop .*$/,/^# \+-\+.*$/            {' \
-					-e '/^# \+[@[:alnum:]]\+/                    s/^#/ /g' \
+					-e '/^ *# \+-\+ desktop .*$/,/^ *# \+-\+.*$/        {' \
+					-e '/^ *# \+[@[:alnum:]]\+/                  s/^#/ /g' \
 					-e '}}}'                                               \
 				"${__SRVR}"                                                \
 				> "${__DTOP}"

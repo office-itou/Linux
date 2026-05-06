@@ -29,12 +29,14 @@ clean:
 clbak:
 	@echo "start   : $@"
 	@if [ -e ./. ]; then \
+	   echo "target:"; \
 	   find ./ \( -iname '*.bak' -o -iname '*~' \) -print; \
 	   read -r -p "Are you sure ? [Y or else] " _INPT; \
-	   if [ "$${_INPT}" =  "Y" ]; then find ./ \( -iname '*.bak' -o -iname '*~' \) -exec rm {} \;; echo "deleted"; else echo "cancel"; fi; \
+	   if [ "$${_INPT}" =  "Y" ]; then sudo bash -c 'find ./ \( -iname '\''*.bak'\'' -o -iname '\''*~'\'' \) -exec rm {} \;'; echo "deleted"; else echo "cancel"; fi; \
 	   unset _INPT; \
 	 fi
 	@if [ -e /srv/user/share/conf/. ]; then \
+	   echo "target:"; \
 	   find /srv/user/share/conf/ \( -iname '*.bak' -o -iname '*~' \) -print; \
 	   read -r -p "Are you sure ? [Y or else] " _INPT; \
 	   if [ "$${_INPT}" =  "Y" ]; then sudo bash -c 'find /srv/user/share/conf/ \( -iname '\''*.bak'\'' -o -iname '\''*~'\'' \) -exec rm {} \;'; echo "deleted"; else echo "cancel"; fi; \

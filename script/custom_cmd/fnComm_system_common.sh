@@ -57,11 +57,12 @@
 	              _DIRS_TEMP="$(mktemp -qd "${_DIRS_WTOP}/${_PROG_NAME}.XXXXXX")"
 	readonly      _DIRS_TEMP
 	declare       _DIRS_RTMP=""			# remote
-#	              _DIRS_RTMP="$(mktemp -qd "${_DIRS_PVAT:?}/wrk/mkosi.XXXXXX")"
+#	              _DIRS_RTMP="$(mktemp -qd "${_DIRS_PVAT:?}/wrk/${_PROG_NAME}.XXXXXX")"
 #	readonly      _DIRS_RTMP
 
 	# --- trap list -----------------------------------------------------------
 	trap fnTrap EXIT
 
 	declare -a    _LIST_RMOV=()			# list remove directory / file
-	              _LIST_RMOV+=("${_DIRS_TEMP:?}")			# temporary
+	              _LIST_RMOV+=("${_DIRS_TEMP:?}")			# temporary (local)
+#	              _LIST_RMOV+=("${_DIRS_RTMP:?}")			# temporary (remote)

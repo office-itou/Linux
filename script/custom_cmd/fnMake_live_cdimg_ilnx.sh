@@ -32,6 +32,8 @@ function fnMake_live_cdimg_ilnx() {
 	declare -r    __MENU="${__OUTD:?}/${_FILE_MENU:?}"		# menu.cfg
 	declare -r    __THME="${__OUTD:?}/${_FILE_THME:?}"		# theme.cfg
 	declare -r    __TITL="Live system"						# title
+	declare -r    __VLNZ="${_DIRS_LIVE:+"/${_DIRS_LIVE}"}/vmlinuz"		# kernel
+	declare -r    __IRAM="${_DIRS_LIVE:+"/${_DIRS_LIVE}"}/initrd.img"	# initramfs
 	# --- local ---------------------------------------------------------------
 	mkdir -p "${__OUTD:?}"
 	# --- create isolinux.cfg -------------------------------------------------
@@ -41,9 +43,9 @@ function fnMake_live_cdimg_ilnx() {
 		label ${__TGET_ENTR// /-}
 		  menu label ^${__TGET_ENTR}
 		  menu default
-		  linux  /LiveOS/vmlinuz
-		  initrd /LiveOS/initrd.img
-		  append root=live:CDLABEL=${__TGET_VLID} rd.live.image rd.live.overlay.overlayfs=1${_SECU_OPTN:+" ${_SECU_OPTN}"} --- quiet
+		  linux  ${__VLNZ:?}
+		  initrd ${__IRAM:?}
+		  append root=live:CDLABEL=${__TGET_VLID}${_SECU_OPTN:+" ${_SECU_OPTN}"} --- quiet
 _EOT_
 	[[ -e "${__ICFG:?}" ]] && cp --preserve=timestamps "${__ICFG:?}" "${__CDFS:?}/${__INPD:?}"
 	[[ -e "${__THME:?}" ]] && cp --preserve=timestamps "${__THME:?}" "${__CDFS:?}/${__INPD:?}"

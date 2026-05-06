@@ -75,14 +75,15 @@
 	              _DIRS_TEMP="$(mktemp -qd "${_DIRS_WTOP}/${_PROG_NAME}.XXXXXX")"
 	readonly      _DIRS_TEMP
 	declare       _DIRS_RTMP=""			# remote
-#	              _DIRS_RTMP="$(mktemp -qd "${_DIRS_PVAT:?}/wrk/mkosi.XXXXXX")"
+#	              _DIRS_RTMP="$(mktemp -qd "${_DIRS_PVAT:?}/wrk/${_PROG_NAME}.XXXXXX")"
 #	readonly      _DIRS_RTMP
 
 	# --- trap list -----------------------------------------------------------
 	trap fnTrap EXIT
 
 	declare -a    _LIST_RMOV=()			# list remove directory / file
-	              _LIST_RMOV+=("${_DIRS_TEMP:?}")			# temporary
+	              _LIST_RMOV+=("${_DIRS_TEMP:?}")			# temporary (local)
+#	              _LIST_RMOV+=("${_DIRS_RTMP:?}")			# temporary (remote)
 
 	# --- command line parameter ----------------------------------------------
 	declare       _COMD_LINE=""			# command line parameter
@@ -973,6 +974,12 @@ function fnInitialize() {
 
 	# --- media information data ----------------------------------------------
 	fnList_mdia_Get "${_PATH_MDIA}"		# get media information data
+
+	# --- create temporary directory ------------------------------------------
+#	declare       _DIRS_RTMP=""			# remote
+	              _DIRS_RTMP="$(mktemp -qd "${_DIRS_PVAT:?}/wrk/${_PROG_NAME}.XXXXXX")"
+	readonly      _DIRS_RTMP
+	              _LIST_RMOV+=("${_DIRS_RTMP:?}")			# temporary
 
 	unset __PATH __DIRS __WORK
 
@@ -4305,7 +4312,8 @@ function fnMk_xorrisofs() {
 #	-part_like_isohybrid									Mark in MBR, GPT, APM without -isohybrid-mbr
 #	-efi-boot-part DISKFILE|--efi-boot-image				Set data source for EFI System Partition
 	__OPTN=()
-	[[ -n "${*:-}" ]] && __OPTN+=("${@}")
+#	[[ -n "${*:-}" ]] && __OPTN+=("${@}")
+	__OPTN+=("${@}")
 	__OPTN+=(
 		-rock
 		-joliet
@@ -4313,11 +4321,13 @@ function fnMk_xorrisofs() {
 		-iso-level 3
 	)
 	if [[ -n "${__FILE_HBRD:-}" ]]; then
+		fnMsgout "${_PROG_NAME:-}" "info" "isohybrid-mbr"
 		__OPTN+=(
 			${__FILE_HBRD:+-isohybrid-mbr "${__FILE_HBRD}"}
 			-isohybrid-gpt-basdat -isohybrid-apm-hfsplus
 		)
 	else
+		fnMsgout "${_PROG_NAME:-}" "info" "grub2-mbr"
 		__OPTN+=(
 			${__FILE_BIOS:+--grub2-mbr "${__FILE_BIOS}"}
 			-partition_offset 16
@@ -4341,7 +4351,7 @@ function fnMk_xorrisofs() {
 		-output "${__TEMP}"
 		"${__DIRS_TGET:?}"
 	)
-	__OPTN+=("${__OPTN[@]:-}")
+	__OPTN=("${__OPTN[@]:-}")
 	readonly      __OPTN
 	declare       __REAL=""
 	declare       __DIRS=""
@@ -4357,6 +4367,7 @@ function fnMk_xorrisofs() {
 	[[ -n "${__FILE_HBRD:-}" ]] && echo "hybrid mode"
 	[[ -n "${__FILE_BIOS:-}" ]] && echo "eltorito mode"
 #	pushd "${__DIRS_TGET:?}" > /dev/null || exit
+#		fnMsgout "${_PROG_NAME:-}" "info" "xorrisofs ${__OPTN[*]:-}"
 		if ! xorrisofs "${__OPTN[@]}"; then
 			__RTCD="$?"
 			printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [xorrisofs]" "${__FILE_ISOS##*/}" 1>&2

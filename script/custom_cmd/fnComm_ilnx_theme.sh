@@ -48,7 +48,7 @@ function fnIlnx_theme() {
 		menu rows                12
 		menu tabmsgrow           28
 		menu cmdlinerow          20
-		menu timeoutrow          26
+		menu timeoutrow          24
 		menu helpmsgrow          22
 		menu hekomsgendrow       38
 

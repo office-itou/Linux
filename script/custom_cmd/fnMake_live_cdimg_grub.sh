@@ -34,8 +34,10 @@ function fnMake_live_cdimg_grub() {
 	declare -r    __MENU="${__OUTD:?}/${_FILE_MENU:?}"		# menu.cfg
 	declare -r    __THME="${__OUTD:?}/${_FILE_THME:?}"		# theme.cfg
 	declare -r    __TITL="Live system"						# title
-	declare -r    __VLNZ="${_PATH_VLNZ:+"${_DIRS_LIVE:+"/${_DIRS_LIVE}"}/${_PATH_VLNZ##*/}"}"		# kernel
-	declare -r    __IRAM="${_PATH_IRAM:+"${_DIRS_LIVE:+"/${_DIRS_LIVE}"}/${_PATH_IRAM##*/}"}"		# initramfs
+#	declare -r    __VLNZ="${_PATH_VLNZ:+"${_DIRS_LIVE:+"/${_DIRS_LIVE}"}/${_PATH_VLNZ##*/}"}"		# kernel
+#	declare -r    __IRAM="${_PATH_IRAM:+"${_DIRS_LIVE:+"/${_DIRS_LIVE}"}/${_PATH_IRAM##*/}"}"		# initramfs
+	declare -r    __VLNZ="${_DIRS_LIVE:+"/${_DIRS_LIVE}"}/vmlinuz"		# kernel
+	declare -r    __IRAM="${_DIRS_LIVE:+"/${_DIRS_LIVE}"}/initrd.img"	# initramfs
 	# --- local ---------------------------------------------------------------
 	mkdir -p "${__OUTD:?}"
 	# --- /EFI/BOOT/grub.cfg --------------------------------------------------
@@ -51,7 +53,7 @@ function fnMake_live_cdimg_grub() {
 		menuentry "${__TGET_ENTR}" {
 		  set gfxpayload="keep"
 		  set background_color="black"
-		  set options="root=live:CDLABEL=${__TGET_VLID} rd.live.image rd.live.overlay.overlayfs=1${_SECU_OPTN:+" ${_SECU_OPTN}"}"
+		  set options="root=live:CDLABEL=${__TGET_VLID}${_SECU_OPTN:+" ${_SECU_OPTN}"}"
 		# if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 		  echo 'Loading boot files ...'
 		  echo 'Loading vmlinuz ...'

@@ -60,7 +60,8 @@ function fnMk_xorrisofs() {
 #	-part_like_isohybrid									Mark in MBR, GPT, APM without -isohybrid-mbr
 #	-efi-boot-part DISKFILE|--efi-boot-image				Set data source for EFI System Partition
 	__OPTN=()
-	[[ -n "${*:-}" ]] && __OPTN+=("${@}")
+#	[[ -n "${*:-}" ]] && __OPTN+=("${@}")
+	__OPTN+=("${@}")
 	__OPTN+=(
 		-rock
 		-joliet
@@ -68,11 +69,13 @@ function fnMk_xorrisofs() {
 		-iso-level 3
 	)
 	if [[ -n "${__FILE_HBRD:-}" ]]; then
+		fnMsgout "${_PROG_NAME:-}" "info" "isohybrid-mbr"
 		__OPTN+=(
 			${__FILE_HBRD:+-isohybrid-mbr "${__FILE_HBRD}"}
 			-isohybrid-gpt-basdat -isohybrid-apm-hfsplus
 		)
 	else
+		fnMsgout "${_PROG_NAME:-}" "info" "grub2-mbr"
 		__OPTN+=(
 			${__FILE_BIOS:+--grub2-mbr "${__FILE_BIOS}"}
 			-partition_offset 16
@@ -96,7 +99,7 @@ function fnMk_xorrisofs() {
 		-output "${__TEMP}"
 		"${__DIRS_TGET:?}"
 	)
-	__OPTN+=("${__OPTN[@]:-}")
+	__OPTN=("${__OPTN[@]:-}")
 	readonly      __OPTN
 	declare       __REAL=""
 	declare       __DIRS=""
@@ -112,6 +115,7 @@ function fnMk_xorrisofs() {
 	[[ -n "${__FILE_HBRD:-}" ]] && echo "hybrid mode"
 	[[ -n "${__FILE_BIOS:-}" ]] && echo "eltorito mode"
 #	pushd "${__DIRS_TGET:?}" > /dev/null || exit
+#		fnMsgout "${_PROG_NAME:-}" "info" "xorrisofs ${__OPTN[*]:-}"
 		if ! xorrisofs "${__OPTN[@]}"; then
 			__RTCD="$?"
 			printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [xorrisofs]" "${__FILE_ISOS##*/}" 1>&2

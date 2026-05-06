@@ -1,0 +1,7 @@
+[repo-non-oss]
+name=repo-non-oss (${releasever})
+enabled=1
+autorefresh=1
+baseurl=http://cdn.opensuse.org/distribution/leap/${releasever}/repo/non-oss/$basearch
+gpgkey=http://cdn.opensuse.org/distribution/leap/${releasever}/repo/non-oss/$basearch/repodata/repomd.xml.key
+#service=openSUSE

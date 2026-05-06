@@ -13,7 +13,6 @@
 function fnMake_live_vmimg_p2() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
-
 	declare -r    __TGET_DEVS="${1:?}"	# device name
 	declare -r    __TGET_PART="${2:?}"	# partition
 	declare -r    __TGET_OUTD="${3:?}"	# output directory
@@ -34,6 +33,7 @@ function fnMake_live_vmimg_p2() {
 	declare       __FSTB=""									# work
 	declare       __SRCS=""									# work
 	declare       __DEST=""									# work
+	declare       __PSET=""									# work
 	declare       __SRVC=""									# work
 	declare       __TGET=""									# work
 #	declare       __WORK=""									# work
@@ -57,6 +57,7 @@ function fnMake_live_vmimg_p2() {
 	} > "${__SRCS:?}"
 	[[ -e "${__SRCS:?}" ]] && cp --preserve=timestamps "${__SRCS:?}" "${__DEST:?}"
 	# --- run-once.sh ---------------------------------------------------------
+	__PSET="/etc/systemd/system-preset/00-user-run-once.preset"
 	__SRVC="/etc/systemd/system/run-once.service"
 	__ADMN="/var/admin/autoinst"
 	__TGET="${__ADMN:?}/run-once.sh"
@@ -66,11 +67,13 @@ function fnMake_live_vmimg_p2() {
 	mkdir -p "${__DEST%/*}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__SRCS:?}"
 		#!/bin/bash
+		exec > >(tee /dev/console 2>&1 || true)
 		set -eu
 		declare -r    _PROG_PATH="\$0"
 		declare -r    _PROG_NAME="\${_PROG_PATH##*/}"
 		declare -r    __ADMN="${__ADMN:?}"
 		declare -r    __STAT="\${__ADMN:?}/\${_PROG_NAME}.success"
+		declare -r    __PSET="${__PSET:?}"
 		declare -r    __SRVC="${__SRVC:?}"
 		declare -r    __FSTB="${__FSTB:?}"
 		declare -r -a __LIST=(
@@ -82,13 +85,15 @@ function fnMake_live_vmimg_p2() {
 		declare       __CONF=""
 		declare       __PACK=""
 		declare -i    I=0
-		{
+		#{
 		 	printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "start" "\$(date +"%Y/%m/%d %H:%M:%S" || true)"
 		#	touch /.autorelabel
 		 	if command -v resolvectl > /dev/null 2>&1; then
+		 		printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "start" "create resolv.conf symlink"
 		 		__PATH="/etc/resolv.conf"
 		 		__CONF="/run/systemd/resolve/stub-resolv.conf"
 		 		ln -sf "../\${__CONF#/}" "\${__PATH}" 
+		 		printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "complete" "create resolv.conf symlink"
 		 	fi
 		 	if command -v snap > /dev/null 2>&1; then
 		 		printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "start" "snap install"
@@ -101,8 +106,12 @@ function fnMake_live_vmimg_p2() {
 		 		done
 		 		printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "complete" "snap install"
 		 		printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "start" "snap capabilities"
-		 		getcap /usr/lib/snapd/snap-confine
-		 		getfattr --dump --match="^security\\." /usr/lib/snapd/snap-confine
+		 		if command -v getcap > /dev/null 2>&1; then
+		 			getcap /usr/lib/snapd/snap-confine
+		 		fi
+		 		if command -v getfattr > /dev/null 2>&1; then
+		 			getfattr --dump --match="^security\\." /usr/lib/snapd/snap-confine
+		 		fi
 		#		setcap -q - /usr/lib/snapd/snap-confine < /usr/lib/snapd/snap-confine.caps
 		#		getcap /usr/lib/snapd/snap-confine
 		#		getfattr --dump --match="^security\\." /usr/lib/snapd/snap-confine
@@ -111,6 +120,7 @@ function fnMake_live_vmimg_p2() {
 		 	[[ -e "\${__FSTB:?}" ]] && sed -i "\${__FSTB:?}" -e '/^UUID=/d'
 		 	[[ -e "\${__SRVC:?}" ]] && systemctl disable "\${__SRVC##*/}"
 		 	mkdir -p "\${__ADMN:?}"
+		 	[[ -e "\${__PSET:?}"     ]] && mv "\${__PSET:?}" "\${__ADMN:?}"
 		 	[[ -e "\${__SRVC:?}"     ]] && mv "\${__SRVC:?}" "\${__ADMN:?}"
 		#	[[ -e "\${_PROG_PATH:?}" ]] && mv "\${_PROG_PATH:?}" "\${__ADMN:?}"
 		 	if command -v restorecon > /dev/null 2>&1; then
@@ -120,7 +130,7 @@ function fnMake_live_vmimg_p2() {
 		 	touch "\${__STAT}"
 		 	shutdown -h now
 		 	printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "complete" "\$(date +"%Y/%m/%d %H:%M:%S" || true)"
-		} > /dev/console 2>&1
+		#} > /dev/console 2>&1
 		exit 0
 _EOT_
 	[[ -e "${__SRCS:?}" ]] && cp --preserve=timestamps "${__SRCS:?}" "${__DEST:?}"
@@ -148,9 +158,12 @@ _EOT_
 #	[[ -e "${__DEST:?}" ]] && chmod +x "${__DEST}"
 	# --- setup ---------------------------------------------------------------
 	chroot "${__MNTP:?}" bash -c "systemctl enable ${__SRVC##*/}"
+	chroot "${__MNTP:?}" bash -c "echo 'enable ${__SRVC##*/}' > ${__PSET}"
+#	[[ -e "${__MNTP:?}/${__SRVC#/}" ]] && cat "${__MNTP:?}/${__SRVC#/}"
+#	[[ -e "${__MNTP:?}/${__PSET#/}" ]] && cat "${__MNTP:?}/${__PSET#/}"
 	# -------------------------------------------------------------------------
 	umount "${__MNTP}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
-	unset __TGET __SRVC __DEST __SRCS __FSTB
+	unset __TGET __SRVC __PSET __DEST __SRCS __FSTB
 	# -------------------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
 }

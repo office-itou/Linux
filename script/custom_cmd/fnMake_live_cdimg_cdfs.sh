@@ -35,17 +35,24 @@ function fnMake_live_cdimg_cdfs() {
 	declare -r    __TITL="Live system"						# title
 	declare -r    __VLNZ="${_PATH_VLNZ:?}"					# kernel
 	declare -r    __IRAM="${_PATH_IRAM:?}"					# initramfs
+#	declare -r    __OUTP="${__TGET_OUTD:?}/${_MKOS_OUTP:?}"	# output
+#	declare -r    __VLNZ="${__OUTP:?}.vmlinuz"				# kernel
+#	declare -r    __IRAM="${__OUTP:?}.initrd"				# initramfs
 	declare       __LOOP=""									# loop device name
 	# --- mount root image ----------------------------------------------------
 	mkdir -p "${__MNTP:?}"
 	__LOOP="$(losetup --find --show "${__TGET_STRG:?}")" && _LIST_RMOV+=("${__LOOP}")
 	partprobe "${__LOOP:?}"
-	mount -r "${__LOOP}"p2 "${__MNTP}" && _LIST_RMOV+=("${__MNTP}")
+	mount "${__LOOP}"p2 "${__MNTP}" && _LIST_RMOV+=("${__MNTP}")
+	# --- clear log files -----------------------------------------------------
+	find "${__MNTP}"/var/log/ -type f -exec cp -f /dev/null {} \;
 	# --- create squashfs -----------------------------------------------------
 	fnMk_squashfs "${__MNTP:?}" "${__SQFS:?}" -e "${__MNTP:?}"/{.autorelabel,.cache,.viminfo,var/log/clamav/*} "-quiet"
 	# --- create cdfs image ---------------------------------------------------
 	mkdir -p "${__CDFS:?}"/{.disk,EFI/BOOT,boot/grub/{live-theme,x86_64-efi,i386-pc},isolinux,"${_DIRS_LIVE:?}"}
 	touch "${__CDFS}/.disk/info"
+#	[[ -e "${__IRAM:?}"                                 ]] && cp --preserve=timestamps             "${__IRAM:?}"                                 "${__CDFS:?}${_DIRS_LIVE:+"/${_DIRS_LIVE}"}"/initrd.img
+#	[[ -e "${__VLNZ:?}"                                 ]] && cp --preserve=timestamps             "${__VLNZ:?}"                                 "${__CDFS:?}${_DIRS_LIVE:+"/${_DIRS_LIVE}"}"/vmlinuz
 	[[ -e "${__UEFI:?}"                                 ]] && cp --preserve=timestamps             "${__UEFI:?}"                                 "${__CDFS:?}"/boot/grub
 	[[ -e "${__SPLS:?}"                                 ]] && cp --preserve=timestamps             "${__SPLS:?}"                                 "${__CDFS:?}${_DIRS_LIVE:+"/${_DIRS_LIVE}"}"
 	[[ -e "${__SQFS:?}"                                 ]] && cp --preserve=timestamps             "${__SQFS:?}"                                 "${__CDFS:?}${_DIRS_LIVE:+"/${_DIRS_LIVE}"}"
