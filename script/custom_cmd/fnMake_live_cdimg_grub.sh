@@ -57,7 +57,7 @@ function fnMake_live_cdimg_grub() {
 		# if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 		  echo 'Loading boot files ...'
 		  echo 'Loading vmlinuz ...'
-		  linux  ${__VLNZ:?} \${options} --- quiet
+		  linux  ${__VLNZ:?} \${options} --- quiet rd.live.ram=1 rd.live.overlay.size=4096 rd.live.overlay.reset=1 rd.live.overlay.overlayfs=1
 		  echo 'Loading initramfs ...'
 		  initrd ${__IRAM:?}
 		}

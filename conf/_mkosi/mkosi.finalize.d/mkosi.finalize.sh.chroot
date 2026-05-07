@@ -525,7 +525,7 @@ function fnMkosi_finalize_dracut() {
 		"35 connman                         -   D-? R-- S-- when_required   connman                     connman                                                                                                 "
 		"35 network-legacy                  -   D-? --- S-- when_required   dhclient,iproute2,iputils   Includes_legacy_networking_tools_support                                                                "
 		"35 network-manager                 o   Do? Roo Soo when_required   networkmanager              network-manager                                                                                         "
-		"40 network                         o   D-? R-o S-o when_required   -                           Virtual_module_for_network_service_providers                                                            "
+		"40 network                         o   D-? R-o Soo when_required   -                           Virtual_module_for_network_service_providers                                                            "
 		"45 drm                             o   D-? R-o S-o when_required   -                           kernel_modules_for_DRM_(complex_graphics_devices)                                                       "
 		"45 ifcfg                           -   D-? --- S-- -               -                           -                                                                                                       "
 		"45 net-lib                         o   --? R-o --- when_required   -                           -                                                                                                       "
