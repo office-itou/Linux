@@ -45,7 +45,7 @@ function fnMake_live_cdimg_ilnx() {
 		  menu default
 		  linux  ${__VLNZ:?}
 		  initrd ${__IRAM:?}
-		  append root=live:CDLABEL=${__TGET_VLID}${_SECU_OPTN:+" ${_SECU_OPTN}"} --- quiet rd.live.ram=1 rd.live.overlay.size=4096 rd.live.overlay.reset=1 rd.live.overlay.overlayfs=1
+		  append root=live:CDLABEL=${__TGET_VLID}${_SECU_OPTN:+" ${_SECU_OPTN}"} --- quiet
 _EOT_
 	[[ -e "${__ICFG:?}" ]] && cp --preserve=timestamps "${__ICFG:?}" "${__CDFS:?}/${__INPD:?}"
 	[[ -e "${__THME:?}" ]] && cp --preserve=timestamps "${__THME:?}" "${__CDFS:?}/${__INPD:?}"

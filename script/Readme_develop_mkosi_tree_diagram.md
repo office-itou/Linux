@@ -1,9 +1,9 @@
-# **tree diagram**
+# **mkosi: tree diagram**
 
-<details><summary>tree -a --charset C --dirsfirst /srv/user/share/conf/_mkosi/</summary>
+<details><summary>tree --charset C --filesfirst -n /srv/user/share/conf/_mkosi/</summary>
 
 ``` bash:
-$ tree -a --charset C --dirsfirst /srv/user/share/conf/_mkosi/
+$ tree --charset C --filesfirst -n /srv/user/share/conf/_mkosi/
 /srv/user/share/conf/_mkosi/
 |-- _template
 |   |-- mkosi-debian.conf
@@ -92,11 +92,67 @@ $ tree -a --charset C --dirsfirst /srv/user/share/conf/_mkosi/
 |   |-- ubuntu-plucky-backports.sources
 |   |-- ubuntu-questing-backports.sources
 |   `-- ubuntu-resolute-backports.sources
-`-- script
+`-- script -> (mount bind /srv/user/share/conf/script/)
     |-- autoinst_cmd_early.sh
     |-- autoinst_cmd_late.sh
     |-- autoinst_cmd_part.sh
     `-- autoinst_cmd_run.sh
+```
+
+</details>
+
+<details><summary>tree --charset C --filesfirst -n /usr/local/bin/</summary>
+
+``` bash:
+$ tree --charset C --filesfirst -n /usr/local/bin/
+/usr/local/bin/
+|-- mkosi -> /srv/user/private/src/git/mkosi/bin/mkosi
+|-- mkosi-addon -> /srv/user/private/src/git/mkosi/bin/mkosi-addon
+|-- mkosi-initrd -> /srv/user/private/src/git/mkosi/bin/mkosi-initrd
+`-- mkosi-sandbox -> /srv/user/private/src/git/mkosi/bin/mkosi-sandbox
+```
+
+</details>
+
+<details><summary>tree --charset C --filesfirst -n -L 1 /srv/user/private/src/git/mkosi/bin/</summary>
+
+``` bash:
+$ tree --charset C --filesfirst -n -L 1 /srv/user/private/src/git/mkosi/bin/
+/srv/user/private/src/git/mkosi/bin/
+|-- mkosi
+|-- mkosi-addon -> mkosi
+|-- mkosi-initrd -> mkosi
+`-- mkosi-sandbox -> mkosi
+```
+
+</details>
+
+<details><summary>tree --charset C --filesfirst -n -L 1 /srv/user/share/cache/</summary>
+
+``` bash:
+$ tree --charset C --filesfirst -n -L 1 /srv/user/share/cache/
+/srv/user/share/cache/
+|-- alma-10-x86-64
+|-- alma-9-x86-64
+|-- centos-10-x86-64
+|-- centos-9-x86-64
+|-- debian-bookworm-x86-64
+|-- debian-bullseye-x86-64
+|-- debian-forky-x86-64
+|-- debian-sid-x86-64
+|-- debian-testing-x86-64
+|-- debian-trixie-x86-64
+|-- fedora-43-x86-64
+|-- fedora-44-x86-64
+|-- opensuse-15.6-x86-64
+|-- opensuse-16.0-x86-64
+|-- rocky-10-x86-64
+|-- rocky-9-x86-64
+|-- ubuntu-jammy-x86-64
+|-- ubuntu-noble-x86-64
+|-- ubuntu-plucky-x86-64
+|-- ubuntu-questing-x86-64
+`-- ubuntu-resolute-x86-64
 ```
 
 </details>
