@@ -2091,6 +2091,7 @@ function fnMake_live_vmimg_p2() {
 		 		restorecon -R -v -e /run/rootfsbase/ -e /run/overlayfs/ -e /srv/hgfs/ /
 		 	fi
 		 	ls -lahZ /
+		 	sleep 3
 		 	touch "\${__STAT}"
 		 	shutdown -h now
 		 	printf "\\033[m%s\\033[m: \\033[92m--- %-8.8s: %s ---\\033[m\\n" "\${_PROG_NAME:-}" "complete" "\$(date +"%Y/%m/%d %H:%M:%S" || true)"

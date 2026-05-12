@@ -346,6 +346,8 @@ _EOT_
 			#o  manpages-ja                         # Japanese version of the manual pages (for users)
 			#o  manpages-ja-dev                     # Japanese version of the manual pages (for developers)
 			    nano                                # small, friendly text editor inspired by Pico
+			    nbd-client                          # Network Block Device protocol - client
+			#   nbd-server                          # Network Block Device protocol - server
 			#   netcat-traditional                  # TCP/IP swiss army knife
 			#o  nkf                                 # Network Kanji code conversion Filter
 			    ntfs-3g                             # read/write NTFS driver for FUSE
@@ -597,6 +599,8 @@ _EOT_
 			#   manpages-ja                         # Japanese version of the manual pages (for users)
 			#   manpages-ja-dev                     # Japanese version of the manual pages (for developers)
 			    nano                                # small, friendly text editor inspired by Pico
+			    nbd-client                          # Network Block Device protocol - client
+			#   nbd-server                          # Network Block Device protocol - server
 			#   netcat-traditional                  # TCP/IP swiss army knife
 			#   nkf                                 # Network Kanji code conversion Filter
 			    ntfs-3g                             # read/write NTFS driver for FUSE
@@ -781,6 +785,7 @@ _EOT_
 			    less                                # A text file browser similar to more, but better
 			#   login                               #
 			    nano                                # A small text editor
+			    nbd                                 # Network Block Device user-space tools (TCP version)
 			#   ntfs-3g                             # Linux NTFS userspace driver
 			#   ntfs-3g-libs                        # Runtime libraries for ntfs-3g
 			    ntfsprogs                           # NTFS filesystem libraries and utilities
