@@ -30,6 +30,11 @@
 	declare       _PATH_SLNX=":_DIRS_TFTP_:/:_FILE_SLNX_:"	# syslinux (bios)
 	declare       _PATH_EF64=":_DIRS_TFTP_:/:_FILE_EF64_:"	# syslinux (efi64)
 
+	# --- tftp / nbd ----------------------------------------------------------
+	declare       _FILE_NBDS="exports.conf"					# nbd exports
+	declare       _DIRS_NBDS="/etc/nbd-server/conf.d"		# nbd exports
+	declare       _PATH_NBDS=":_DIRS_TFTP_:/:_FILE_NBDS_:"	# nbd exports
+
 	# --- tftp / web server network parameter ---------------------------------
 	declare       _SRVR_HTTP="http"							# server connection protocol (http or https)
 	declare       _SRVR_PROT="http"							# server connection protocol (http or tftp)

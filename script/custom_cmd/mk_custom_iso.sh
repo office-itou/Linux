@@ -233,6 +233,11 @@
 	declare       _PATH_SLNX=":_DIRS_TFTP_:/:_FILE_SLNX_:"	# syslinux (bios)
 	declare       _PATH_EF64=":_DIRS_TFTP_:/:_FILE_EF64_:"	# syslinux (efi64)
 
+	# --- tftp / nbd ----------------------------------------------------------
+	declare       _FILE_NBDS="exports.conf"					# nbd exports
+	declare       _DIRS_NBDS="/etc/nbd-server/conf.d"		# nbd exports
+	declare       _PATH_NBDS=":_DIRS_TFTP_:/:_FILE_NBDS_:"	# nbd exports
+
 	# --- tftp / web server network parameter ---------------------------------
 	declare       _SRVR_HTTP="http"							# server connection protocol (http or https)
 	declare       _SRVR_PROT="http"							# server connection protocol (http or tftp)
@@ -2256,12 +2261,12 @@ function fnMk_boot_option_preseed() {
 	declare -a    __BOPT=()
 	declare       __WORK=""
 	# --- 0: server -----------------------------------------------------------
-#	__BOPT=("server=\${srvraddr}")
+#	__BOPT=("server=\${srvrhttp}")
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		__WORK="${__WORK:+"${__WORK} "}auto=true preseed/file=/cdrom${__MDIA[$((_OSET_MDIA+24))]#"${_DIRS_CONF%/*}"}"
-		[[ "${__TGET_TYPE:-}" = "pxeboot" ]] && __WORK="${__WORK/file=\/cdrom/url=\$\{srvraddr\}}"
+		[[ "${__TGET_TYPE:-}" = "pxeboot" ]] && __WORK="${__WORK/file=\/cdrom/url=\$\{srvrhttp\}}"
 		case "${__MDIA[$((_OSET_MDIA+2))]}" in
 			ubuntu-desktop-*|ubuntu-legacy-*) __WORK="${__WORK:+"${__WORK} "}automatic-ubiquity noprompt ${__WORK}";;
 			*-mini-*                        ) __WORK="${__WORK/\/cdrom/}";;
@@ -2312,14 +2317,14 @@ function fnMk_boot_option_preseed() {
 	if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
 		case "${__MDIA[$((_OSET_MDIA+2))]}" in
 #			debian-mini-*                       ) ;;
-			ubuntu-mini-*                       ) __WORK="${__WORK:+"${__WORK} "}initrd=\${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+22))]#"${_DIRS_LOAD}"} iso-url=\${srvraddr}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
+			ubuntu-mini-*                       ) __WORK="${__WORK:+"${__WORK} "}initrd=\${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+22))]#"${_DIRS_LOAD}"} iso-url=\${srvrhttp}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
 			ubuntu-desktop-18.*|ubuntu-live-18.*| \
 			ubuntu-desktop-20.*|ubuntu-live-20.*| \
 			ubuntu-desktop-22.*|ubuntu-live-22.*| \
-			ubuntu-server-*    |ubuntu-legacy-* ) __WORK="${__WORK:+"${__WORK} "}boot=casper url=\${srvraddr}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
-			ubuntu-*                            ) __WORK="${__WORK:+"${__WORK} "}boot=casper iso-url=\${srvraddr}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
-			live-*                              ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvraddr}/${_DIRS_RMAK##*/}/${__MDIA[$((_OSET_MDIA+14))]##*/}";;
-			*                                   ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvraddr}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
+			ubuntu-server-*    |ubuntu-legacy-* ) __WORK="${__WORK:+"${__WORK} "}boot=casper url=\${srvrhttp}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
+			ubuntu-*                            ) __WORK="${__WORK:+"${__WORK} "}boot=casper iso-url=\${srvrhttp}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
+			live-*                              ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvrhttp}/${_DIRS_RMAK##*/}/${__MDIA[$((_OSET_MDIA+14))]##*/}";;
+			*                                   ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvrhttp}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
 		esac
 	fi
 	if [[ -n "${__MDIA[$((_OSET_MDIA+27))]##*-}" ]]; then
@@ -2342,12 +2347,12 @@ function fnMk_boot_option_nocloud() {
 	declare -a    __BOPT=()
 	declare       __WORK=""
 	# --- 0: server -----------------------------------------------------------
-#	__BOPT=("server=\${srvraddr}")
+#	__BOPT=("server=\${srvrhttp}")
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		__WORK="${__WORK:+"${__WORK} "}automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom${__MDIA[$((_OSET_MDIA+24))]#"${_DIRS_CONF%/*}"}"
-		[[ "${__TGET_TYPE:-}" = "pxeboot" ]] && __WORK="${__WORK/\/cdrom/\$\{srvraddr\}}"
+		[[ "${__TGET_TYPE:-}" = "pxeboot" ]] && __WORK="${__WORK/\/cdrom/\$\{srvrhttp\}}"
 	fi
 	case "${__MDIA[$((_OSET_MDIA+0))]}" in
 		live) __WORK="boot=live";;
@@ -2382,14 +2387,14 @@ function fnMk_boot_option_nocloud() {
 	if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
 		case "${__MDIA[$((_OSET_MDIA+2))]}" in
 #			debian-mini-*                       ) ;;
-			ubuntu-mini-*                       ) __WORK="${__WORK:+"${__WORK} "}initrd=\${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+22))]#"${_DIRS_LOAD}"} iso-url=\${srvraddr}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
+			ubuntu-mini-*                       ) __WORK="${__WORK:+"${__WORK} "}initrd=\${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+22))]#"${_DIRS_LOAD}"} iso-url=\${srvrhttp}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
 			ubuntu-desktop-18.*|ubuntu-live-18.*| \
 			ubuntu-desktop-20.*|ubuntu-live-20.*| \
 			ubuntu-desktop-22.*|ubuntu-live-22.*| \
-			ubuntu-server-*    |ubuntu-legacy-* ) __WORK="${__WORK:+"${__WORK} "}boot=casper url=\${srvraddr}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
-			ubuntu-*                            ) __WORK="${__WORK:+"${__WORK} "}boot=casper iso-url=\${srvraddr}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
-			live-*                              ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvraddr}/${_DIRS_RMAK##*/}/${__MDIA[$((_OSET_MDIA+14))]##*/}";;
-			*                                   ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvraddr}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
+			ubuntu-server-*    |ubuntu-legacy-* ) __WORK="${__WORK:+"${__WORK} "}boot=casper url=\${srvrhttp}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
+			ubuntu-*                            ) __WORK="${__WORK:+"${__WORK} "}boot=casper iso-url=\${srvrhttp}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
+			live-*                              ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvrhttp}/${_DIRS_RMAK##*/}/${__MDIA[$((_OSET_MDIA+14))]##*/}";;
+			*                                   ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvrhttp}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
 		esac
 	fi
 	if [[ -n "${__MDIA[$((_OSET_MDIA+27))]##*-}" ]]; then
@@ -2412,13 +2417,13 @@ function fnMk_boot_option_kickstart() {
 	declare -a    __BOPT=()
 	declare       __WORK=""
 	# --- 0: server -----------------------------------------------------------
-#	__BOPT=("server=\${srvraddr}")
+#	__BOPT=("server=\${srvrhttp}")
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		__WORK="${__WORK:+"${__WORK} "}inst.ks=hd:sr0:${__MDIA[$((_OSET_MDIA+24))]#"${_DIRS_CONF%/*}"}"
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			__WORK="${__WORK/hd:sr0:/\$\{srvraddr\}}"
+			__WORK="${__WORK/hd:sr0:/\$\{srvrhttp\}}"
 			__WORK="${__WORK/_dvd/_web}"
 		fi
 	fi
@@ -2442,16 +2447,17 @@ function fnMk_boot_option_kickstart() {
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			__WORK="${__WORK:+"${__WORK} "}inst.repo=\${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}"
+			__WORK="${__WORK:+"${__WORK} "}inst.repo=\${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}"
 		else
 			__WORK="${__WORK:+"${__WORK} "}inst.stage2=hd:LABEL=${__MDIA[$((_OSET_MDIA+17))]}"
 		fi
 	else
 #		case "${2}" in
-		case "${__MDIA[$((_OSET_MDIA+0))]}" in
-			clive) __WORK="${__WORK:+"${__WORK} "}root=live:\${srvraddr}/${_DIRS_RMAK##*/}/${__MDIA[$((_OSET_MDIA+14))]##*/}";;
-			*    ) __WORK="${__WORK:+"${__WORK} "}root=live:\${srvraddr}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
-		esac
+#		case "${__MDIA[$((_OSET_MDIA+0))]}" in
+#			clive) __WORK="${__WORK:+"${__WORK} "}root=live:\${srvrhttp}/${_DIRS_RMAK##*/}/${__MDIA[$((_OSET_MDIA+14))]##*/}";;
+#			*    ) __WORK="${__WORK:+"${__WORK} "}root=live:\${srvrhttp}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
+#		esac
+		__WORK="${__WORK:+"${__WORK} "}root=live:/dev/nbd0 netroot=nbd:\${srvraddr}:${__MDIA[$((_OSET_MDIA+2))]:-}"
 		__WORK="${__WORK:+"${__WORK} "}rd.live.image rd.live.overlay.overlayfs=1"
 	fi
 	if [[ -n "${__MDIA[$((_OSET_MDIA+27))]##*-}" ]]; then
@@ -2475,13 +2481,13 @@ function fnMk_boot_option_autoyast() {
 	declare       __VERS=""
 	declare       __WORK=""
 	# --- 0: server -----------------------------------------------------------
-#	__BOPT=("server=\${srvraddr}")
+#	__BOPT=("server=\${srvrhttp}")
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		__WORK="${__WORK:+"${__WORK} "}autoyast=cd:${__MDIA[$((_OSET_MDIA+24))]#"${_DIRS_CONF%/*}"}"
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			__WORK="${__WORK/cd:/\$\{srvraddr\}}"
+			__WORK="${__WORK/cd:/\$\{srvrhttp\}}"
 			__WORK="${__WORK/_dvd/_web}"
 		fi
 	fi
@@ -2510,7 +2516,7 @@ function fnMk_boot_option_autoyast() {
 			case "${__MDIA[$((_OSET_MDIA+2))]}" in
 				opensuse-leap*netinst*      ) __WORK="${__WORK:+"${__WORK} "}install=https://download.opensuse.org/distribution/leap/${__VERS:?}/repo/oss/";;
 				opensuse-tumbleweed*netinst*) __WORK="${__WORK:+"${__WORK} "}install=https://download.opensuse.org/tumbleweed/repo/oss/";;
-				*                           ) __WORK="${__WORK:+"${__WORK} "}install=\${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]:?}";;
+				*                           ) __WORK="${__WORK:+"${__WORK} "}install=\${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]:?}";;
 			esac
 		fi
 	fi
@@ -2536,13 +2542,13 @@ function fnMk_boot_option_agama() {
 #	declare       __VERS=""
 	declare       __WORK=""
 	# --- 0: server -----------------------------------------------------------
-#	__BOPT=("server=\${srvraddr}")
+#	__BOPT=("server=\${srvrhttp}")
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		__WORK="${__WORK:+"${__WORK} "}live.password=install inst.auto=dvd:${__MDIA[$((_OSET_MDIA+24))]#"${_DIRS_CONF%/*}"}"
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			__WORK="${__WORK/dvd:/\$\{srvraddr\}}"
+			__WORK="${__WORK/dvd:/\$\{srvrhttp\}}"
 			__WORK="${__WORK/_dvd/_web}"
 		else
 			__WORK="${__WORK:+"${__WORK}?devices=sr0"}"
@@ -2580,7 +2586,7 @@ function fnMk_boot_option_agama() {
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			__WORK="${__WORK:+"${__WORK} "}root=live:\${srvraddr}/${_DIRS_ISOS##*/}/${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"/}"
+			__WORK="${__WORK:+"${__WORK} "}root=live:\${srvrhttp}/${_DIRS_ISOS##*/}/${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"/}"
 		fi
 	fi
 	if [[ -n "${__MDIA[$((_OSET_MDIA+27))]##*-}" ]]; then
@@ -2670,8 +2676,9 @@ function fnMk_pxeboot_ipxe_hdrftr() {
 		cpuid --ext 29 && set arch x86_64 || set arch i386
 
 		dhcp
-		isset \${66} && set srvraddr ${_SRVR_PROT:?}://\${66} || set srvraddr ${_SRVR_PROT:?}://${_SRVR_ADDR:?}
+		isset \${66} && set srvraddr \${66} || set srvraddr ${_SRVR_ADDR:?}
 
+		set srvrhttp ${_SRVR_PROT:?}://\${srvraddr}
 		set optn-timeout 1000
 		set menu-timeout 0
 		isset \${menu-default} || set menu-default exit
@@ -2723,10 +2730,10 @@ function fnMk_pxeboot_ipxe_windows() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		:${__MDIA[$((_OSET_MDIA+2))]}
 		echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
-		#set srvraddr ${_SRVR_PROT:?}://\${66}
-		set ipxaddr \${srvraddr}/${_DIRS_TFTP##*/}/ipxe
-		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
-		set cfgaddr \${srvraddr}/${_DIRS_CONF##*/}/windows
+		#set srvrhttp ${_SRVR_PROT:?}://\${66}
+		set ipxaddr \${srvrhttp}/${_DIRS_TFTP##*/}/ipxe
+		set knladdr \${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
+		set cfgaddr \${srvrhttp}/${_DIRS_CONF##*/}/windows
 		echo Loading boot files ...
 		kernel \${ipxaddr}/wimboot
 		initrd -n install.cmd \${cfgaddr}/inst_w${__MDIA[$((_OSET_MDIA+2))]##*-}.cmd  install.cmd  || goto error
@@ -2752,10 +2759,10 @@ function fnMk_pxeboot_ipxe_winpe() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		:${__MDIA[$((_OSET_MDIA+2))]}
 		echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
-		#set srvraddr ${_SRVR_PROT:?}://\${66}
-		set ipxaddr \${srvraddr}/${_DIRS_TFTP##*/}/ipxe
-		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
-		set cfgaddr \${srvraddr}/${_DIRS_CONF##*/}/windows
+		#set srvrhttp ${_SRVR_PROT:?}://\${66}
+		set ipxaddr \${srvrhttp}/${_DIRS_TFTP##*/}/ipxe
+		set knladdr \${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
+		set cfgaddr \${srvrhttp}/${_DIRS_CONF##*/}/windows
 		echo Loading boot files ...
 		kernel \${ipxaddr}/wimboot
 		initrd \${knladdr}/bootmgr                      bootmgr      || goto error
@@ -2777,10 +2784,10 @@ function fnMk_pxeboot_ipxe_aomei() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		:${__MDIA[$((_OSET_MDIA+2))]}
 		echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
-		#set srvraddr ${_SRVR_PROT:?}://\${66}
-		set ipxaddr \${srvraddr}/${_DIRS_TFTP##*/}/ipxe
-		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
-		set cfgaddr \${srvraddr}/${_DIRS_CONF##*/}/windows
+		#set srvrhttp ${_SRVR_PROT:?}://\${66}
+		set ipxaddr \${srvrhttp}/${_DIRS_TFTP##*/}/ipxe
+		set knladdr \${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
+		set cfgaddr \${srvrhttp}/${_DIRS_CONF##*/}/windows
 		echo Loading boot files ...
 		kernel \${ipxaddr}/wimboot
 		initrd \${knladdr}/bootmgr                      bootmgr      || goto error
@@ -2802,8 +2809,8 @@ function fnMk_pxeboot_ipxe_m86p() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		:${__MDIA[$((_OSET_MDIA+2))]}
 		echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
-		#set srvraddr ${_SRVR_PROT:?}://\${66}
-		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
+		#set srvrhttp ${_SRVR_PROT:?}://\${66}
+		set knladdr \${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
 		iseq \${platform} efi && set knlfile \${knladdr}/${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} || set knlfile \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/}
 		echo Loading boot files ...
 		kernel \${knlfile} || goto error
@@ -2866,7 +2873,7 @@ function fnMk_pxeboot_ipxe_linux() {
 			item ipv4gway                           IPv4 gateway
 			item ipv4nsvr                           IPv4 nameservers
 			isset \${openmenu} && present ||
-			#set srvraddr ${_SRVR_PROT:?}://\${66}
+			#set srvrhttp ${_SRVR_PROT:?}://\${66}
 			set autoinst ${__BOPT[0]:-}
 			set language ${__BOPT[1]:-}
 			set networks ${__BOPT[2]:-}
@@ -2878,7 +2885,7 @@ function fnMk_pxeboot_ipxe_linux() {
 			item otheropt                           Other options
 			isset \${openmenu} && present ||
 			echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
-			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
+			set knladdr \${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
 			set options \${autoinst} \${language} \${networks} \${otheropt}
 			echo Loading boot files ...
 			kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} || goto error
@@ -2894,13 +2901,13 @@ _EOT_
 			set ipv4addr ${_IPV4_ADDR:-}/${_IPV4_CIDR:-}
 			set ipv4gway ${_IPV4_GWAY:-}
 			set ipv4nsvr ${_IPV4_NSVR:-}
-			#set srvraddr ${_SRVR_PROT:?}://\${66}
+			#set srvrhttp ${_SRVR_PROT:?}://\${66}
 			set autoinst ${__BOPT[0]:-}
 			set language ${__BOPT[1]:-}
 			set networks ${__BOPT[2]:-}
 			set otheropt ${__BOPT[@]:3} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
 			echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
-			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
+			set knladdr \${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
 			set options \${autoinst} \${language} \${networks} \${otheropt}
 			echo Loading boot files ...
 			kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} || goto error
@@ -2913,7 +2920,7 @@ _EOT_
 }
 
 # -----------------------------------------------------------------------------
-# descript: make make ipxe menu
+# descript: make ipxe menu
 #   input :     $1     : file name
 #   input :     $2     : tab count
 #   input :   $3..$@   : media info data
@@ -3472,6 +3479,32 @@ function fnMk_pxeboot_slnx() {
 }
 
 # -----------------------------------------------------------------------------
+# descript: make nbd exports.conf
+#   input :     $1     : file name
+#   input :     $2     : tab count
+#   input :   $3..$@   : media info data
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_pxeboot_nbds() {
+	declare -r    __TGET_PATH="${1:?}"
+	declare -r    __CONT_TABS="${2:?}"
+	declare -r -a __LIST_MDIA=("${@:3}")
+
+	case "${__LIST_MDIA[$((_OSET_MDIA+1))]:?}" in
+		m) return;;				# (menu)
+		o) ;;					# (output)
+		*) return;;				# (hidden)
+	esac
+
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__TGET_PATH:?}" || true
+		[${__LIST_MDIA[$((_OSET_MDIA+2))]:?}]
+		exportname = ${__LIST_MDIA[$((_OSET_MDIA+14))]:?}
+		copyonwrite = false
+
+_EOT_
+}
+
+# -----------------------------------------------------------------------------
 # descript: make pxeboot files
 #   n-ref :     $1     : return value : serialized target data
 #   input :     $@     : option parameter
@@ -3536,6 +3569,7 @@ function fnMk_pxeboot() {
 	fnMk_pxeboot_clear_menu "${_PATH_GRUB:?}"				# grub
 	fnMk_pxeboot_clear_menu "${_PATH_SLNX:?}"				# syslinux (bios)
 	fnMk_pxeboot_clear_menu "${_PATH_EF64:?}"				# syslinux (efi64)
+	fnMk_pxeboot_clear_menu "${_PATH_NBDS:?}"				# nbd exports
 	for __TYPE in "${_LIST_TYPE[@]}"
 	do
 		[[ -z "${__PTRN["${__TYPE:-}"]:-}" ]] && continue
@@ -3579,6 +3613,7 @@ function fnMk_pxeboot() {
 			fnMk_pxeboot_grub "${_PATH_GRUB:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# grub
 			fnMk_pxeboot_slnx "${_PATH_SLNX:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# syslinux (bios)
 			fnMk_pxeboot_slnx "${_PATH_EF64:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# syslinux (efi64)
+			fnMk_pxeboot_nbds "${_PATH_NBDS:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# nbd exports
 			# --- tab ---------------------------------------------------------
 			case "${__MDIA[$((_OSET_MDIA+1))]}" in
 				m)						# (menu)

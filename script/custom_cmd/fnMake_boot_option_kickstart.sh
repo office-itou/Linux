@@ -18,13 +18,13 @@ function fnMk_boot_option_kickstart() {
 	declare -a    __BOPT=()
 	declare       __WORK=""
 	# --- 0: server -----------------------------------------------------------
-#	__BOPT=("server=\${srvraddr}")
+#	__BOPT=("server=\${srvrhttp}")
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		__WORK="${__WORK:+"${__WORK} "}inst.ks=hd:sr0:${__MDIA[$((_OSET_MDIA+24))]#"${_DIRS_CONF%/*}"}"
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			__WORK="${__WORK/hd:sr0:/\$\{srvraddr\}}"
+			__WORK="${__WORK/hd:sr0:/\$\{srvrhttp\}}"
 			__WORK="${__WORK/_dvd/_web}"
 		fi
 	fi
@@ -48,16 +48,17 @@ function fnMk_boot_option_kickstart() {
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			__WORK="${__WORK:+"${__WORK} "}inst.repo=\${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}"
+			__WORK="${__WORK:+"${__WORK} "}inst.repo=\${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}"
 		else
 			__WORK="${__WORK:+"${__WORK} "}inst.stage2=hd:LABEL=${__MDIA[$((_OSET_MDIA+17))]}"
 		fi
 	else
 #		case "${2}" in
-		case "${__MDIA[$((_OSET_MDIA+0))]}" in
-			clive) __WORK="${__WORK:+"${__WORK} "}root=live:\${srvraddr}/${_DIRS_RMAK##*/}/${__MDIA[$((_OSET_MDIA+14))]##*/}";;
-			*    ) __WORK="${__WORK:+"${__WORK} "}root=live:\${srvraddr}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
-		esac
+#		case "${__MDIA[$((_OSET_MDIA+0))]}" in
+#			clive) __WORK="${__WORK:+"${__WORK} "}root=live:\${srvrhttp}/${_DIRS_RMAK##*/}/${__MDIA[$((_OSET_MDIA+14))]##*/}";;
+#			*    ) __WORK="${__WORK:+"${__WORK} "}root=live:\${srvrhttp}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
+#		esac
+		__WORK="${__WORK:+"${__WORK} "}root=live:/dev/nbd0 netroot=nbd:\${srvraddr}:${__MDIA[$((_OSET_MDIA+2))]:-}"
 		__WORK="${__WORK:+"${__WORK} "}rd.live.image rd.live.overlay.overlayfs=1"
 	fi
 	if [[ -n "${__MDIA[$((_OSET_MDIA+27))]##*-}" ]]; then

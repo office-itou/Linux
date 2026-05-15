@@ -19,13 +19,13 @@ function fnMk_boot_option_autoyast() {
 	declare       __VERS=""
 	declare       __WORK=""
 	# --- 0: server -----------------------------------------------------------
-#	__BOPT=("server=\${srvraddr}")
+#	__BOPT=("server=\${srvrhttp}")
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		__WORK="${__WORK:+"${__WORK} "}autoyast=cd:${__MDIA[$((_OSET_MDIA+24))]#"${_DIRS_CONF%/*}"}"
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			__WORK="${__WORK/cd:/\$\{srvraddr\}}"
+			__WORK="${__WORK/cd:/\$\{srvrhttp\}}"
 			__WORK="${__WORK/_dvd/_web}"
 		fi
 	fi
@@ -54,7 +54,7 @@ function fnMk_boot_option_autoyast() {
 			case "${__MDIA[$((_OSET_MDIA+2))]}" in
 				opensuse-leap*netinst*      ) __WORK="${__WORK:+"${__WORK} "}install=https://download.opensuse.org/distribution/leap/${__VERS:?}/repo/oss/";;
 				opensuse-tumbleweed*netinst*) __WORK="${__WORK:+"${__WORK} "}install=https://download.opensuse.org/tumbleweed/repo/oss/";;
-				*                           ) __WORK="${__WORK:+"${__WORK} "}install=\${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]:?}";;
+				*                           ) __WORK="${__WORK:+"${__WORK} "}install=\${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]:?}";;
 			esac
 		fi
 	fi

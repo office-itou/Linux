@@ -63,7 +63,7 @@ function fnMk_pxeboot_ipxe_linux() {
 			item ipv4gway                           IPv4 gateway
 			item ipv4nsvr                           IPv4 nameservers
 			isset \${openmenu} && present ||
-			#set srvraddr ${_SRVR_PROT:?}://\${66}
+			#set srvrhttp ${_SRVR_PROT:?}://\${66}
 			set autoinst ${__BOPT[0]:-}
 			set language ${__BOPT[1]:-}
 			set networks ${__BOPT[2]:-}
@@ -75,7 +75,7 @@ function fnMk_pxeboot_ipxe_linux() {
 			item otheropt                           Other options
 			isset \${openmenu} && present ||
 			echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
-			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
+			set knladdr \${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
 			set options \${autoinst} \${language} \${networks} \${otheropt}
 			echo Loading boot files ...
 			kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} || goto error
@@ -91,13 +91,13 @@ _EOT_
 			set ipv4addr ${_IPV4_ADDR:-}/${_IPV4_CIDR:-}
 			set ipv4gway ${_IPV4_GWAY:-}
 			set ipv4nsvr ${_IPV4_NSVR:-}
-			#set srvraddr ${_SRVR_PROT:?}://\${66}
+			#set srvrhttp ${_SRVR_PROT:?}://\${66}
 			set autoinst ${__BOPT[0]:-}
 			set language ${__BOPT[1]:-}
 			set networks ${__BOPT[2]:-}
 			set otheropt ${__BOPT[@]:3} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
 			echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
-			set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
+			set knladdr \${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
 			set options \${autoinst} \${language} \${networks} \${otheropt}
 			echo Loading boot files ...
 			kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} || goto error

@@ -15,10 +15,10 @@ function fnMk_pxeboot_ipxe_winpe() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		:${__MDIA[$((_OSET_MDIA+2))]}
 		echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
-		#set srvraddr ${_SRVR_PROT:?}://\${66}
-		set ipxaddr \${srvraddr}/${_DIRS_TFTP##*/}/ipxe
-		set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
-		set cfgaddr \${srvraddr}/${_DIRS_CONF##*/}/windows
+		#set srvrhttp ${_SRVR_PROT:?}://\${66}
+		set ipxaddr \${srvrhttp}/${_DIRS_TFTP##*/}/ipxe
+		set knladdr \${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
+		set cfgaddr \${srvrhttp}/${_DIRS_CONF##*/}/windows
 		echo Loading boot files ...
 		kernel \${ipxaddr}/wimboot
 		initrd \${knladdr}/bootmgr                      bootmgr      || goto error

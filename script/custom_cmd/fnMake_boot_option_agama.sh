@@ -20,13 +20,13 @@ function fnMk_boot_option_agama() {
 #	declare       __VERS=""
 	declare       __WORK=""
 	# --- 0: server -----------------------------------------------------------
-#	__BOPT=("server=\${srvraddr}")
+#	__BOPT=("server=\${srvrhttp}")
 	# --- 1: autoinst ---------------------------------------------------------
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		__WORK="${__WORK:+"${__WORK} "}live.password=install inst.auto=dvd:${__MDIA[$((_OSET_MDIA+24))]#"${_DIRS_CONF%/*}"}"
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			__WORK="${__WORK/dvd:/\$\{srvraddr\}}"
+			__WORK="${__WORK/dvd:/\$\{srvrhttp\}}"
 			__WORK="${__WORK/_dvd/_web}"
 		else
 			__WORK="${__WORK:+"${__WORK}?devices=sr0"}"
@@ -64,7 +64,7 @@ function fnMk_boot_option_agama() {
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			__WORK="${__WORK:+"${__WORK} "}root=live:\${srvraddr}/${_DIRS_ISOS##*/}/${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"/}"
+			__WORK="${__WORK:+"${__WORK} "}root=live:\${srvrhttp}/${_DIRS_ISOS##*/}/${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"/}"
 		fi
 	fi
 	if [[ -n "${__MDIA[$((_OSET_MDIA+27))]##*-}" ]]; then

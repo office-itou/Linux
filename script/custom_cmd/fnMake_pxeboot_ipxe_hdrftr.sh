@@ -16,8 +16,9 @@ function fnMk_pxeboot_ipxe_hdrftr() {
 		cpuid --ext 29 && set arch x86_64 || set arch i386
 
 		dhcp
-		isset \${66} && set srvraddr ${_SRVR_PROT:?}://\${66} || set srvraddr ${_SRVR_PROT:?}://${_SRVR_ADDR:?}
+		isset \${66} && set srvraddr \${66} || set srvraddr ${_SRVR_ADDR:?}
 
+		set srvrhttp ${_SRVR_PROT:?}://\${srvraddr}
 		set optn-timeout 1000
 		set menu-timeout 0
 		isset \${menu-default} || set menu-default exit

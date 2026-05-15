@@ -346,8 +346,6 @@ _EOT_
 			#o  manpages-ja                         # Japanese version of the manual pages (for users)
 			#o  manpages-ja-dev                     # Japanese version of the manual pages (for developers)
 			    nano                                # small, friendly text editor inspired by Pico
-			    nbd-client                          # Network Block Device protocol - client
-			#   nbd-server                          # Network Block Device protocol - server
 			#   netcat-traditional                  # TCP/IP swiss army knife
 			#o  nkf                                 # Network Kanji code conversion Filter
 			    ntfs-3g                             # read/write NTFS driver for FUSE
@@ -370,6 +368,27 @@ _EOT_
 			    whiptail                            # Displays user-friendly dialog boxes from shell scripts
 			#   wtmpdb                              # utility to display login/logout/reboot information
 			#o  xfonts-unifont                      # PCF (bitmap) version of GNU Unifont
+			    # --- nfs -----------------------------------------------------------------
+			    nfs-common                          # NFS support files common to client and server
+			#   nfs-kernel-server                   # support for NFS kernel server
+			    # --- nbd -----------------------------------------------------------------
+			    nbd-client                          # Network Block Device protocol - client
+			#-  nbd-server                          # Network Block Device protocol - server
+			#   nbdkit                              # toolkit for creating NBD servers
+			#-  nbdkit-plugin-dev                   # development files for nbdkit
+			#   nbdkit-plugin-guestfs               # libguestfs plugin for nbdkit
+			#   nbdkit-plugin-libvirt               # libvirt plugin for nbdkit
+			#-  nbdkit-plugin-lua                   # Lua plugin for nbdkit
+			#   nbdkit-plugin-perl                  # Perl plugin for nbdkit
+			#   nbdkit-plugin-python                # Python plugin for nbdkit
+			#-  nbdkit-plugin-tcl                   # TCL plugin for nbdkit
+			#-  nbdkit-plugin-vddk                  # vddk plugin for nbdkit
+			    # --- iscsi ---------------------------------------------------------------
+			#   istgt                               # iSCSI userspace target daemon for Unix-like operating systems
+			    tgt                                 # Linux SCSI target user-space daemon and tools
+			    lsscsi                              # list all SCSI devices (or hosts) currently on system
+			    open-iscsi                          # iSCSI initiator tools
+			#   targetcli-fb                        # Command shell for managing the Linux LIO kernel target
 			    # -------------------------------------------------------------------------
 _EOT_
 	)"
@@ -599,8 +618,6 @@ _EOT_
 			#   manpages-ja                         # Japanese version of the manual pages (for users)
 			#   manpages-ja-dev                     # Japanese version of the manual pages (for developers)
 			    nano                                # small, friendly text editor inspired by Pico
-			    nbd-client                          # Network Block Device protocol - client
-			#   nbd-server                          # Network Block Device protocol - server
 			#   netcat-traditional                  # TCP/IP swiss army knife
 			#   nkf                                 # Network Kanji code conversion Filter
 			    ntfs-3g                             # read/write NTFS driver for FUSE
@@ -623,6 +640,27 @@ _EOT_
 			    whiptail                            # Displays user-friendly dialog boxes from shell scripts
 			#   wtmpdb                              # utility to display login/logout/reboot information
 			#   xfonts-unifont                      # PCF (bitmap) version of GNU Unifont
+			    # --- nfs -----------------------------------------------------------------
+			    nfs-common                          # NFS support files common to client and server
+			#   nfs-kernel-server                   # support for NFS kernel server
+			    # --- nbd -----------------------------------------------------------------
+			    nbd-client                          # Network Block Device protocol - client
+			#-  nbd-server                          # Network Block Device protocol - server
+			#   nbdkit                              # toolkit for creating NBD servers
+			#-  nbdkit-plugin-dev                   # development files for nbdkit
+			#   nbdkit-plugin-guestfs               # libguestfs plugin for nbdkit
+			#   nbdkit-plugin-libvirt               # libvirt plugin for nbdkit
+			#-  nbdkit-plugin-lua                   # Lua plugin for nbdkit
+			#   nbdkit-plugin-perl                  # Perl plugin for nbdkit
+			#   nbdkit-plugin-python                # Python plugin for nbdkit
+			#-  nbdkit-plugin-tcl                   # TCL plugin for nbdkit
+			#-  nbdkit-plugin-vddk                  # vddk plugin for nbdkit
+			    # --- iscsi ---------------------------------------------------------------
+			#   istgt                               # iSCSI userspace target daemon for Unix-like operating systems
+			    tgt                                 # Linux SCSI target user-space daemon and tools
+			    lsscsi                              # list all SCSI devices (or hosts) currently on system
+			    open-iscsi                          # iSCSI initiator tools
+			#   targetcli-fb                        # Command shell for managing the Linux LIO kernel target
 			    # -------------------------------------------------------------------------
 _EOT_
 	)"
@@ -785,7 +823,6 @@ _EOT_
 			    less                                # A text file browser similar to more, but better
 			#   login                               #
 			    nano                                # A small text editor
-			    nbd                                 # Network Block Device user-space tools (TCP version)
 			#   ntfs-3g                             # Linux NTFS userspace driver
 			#   ntfs-3g-libs                        # Runtime libraries for ntfs-3g
 			    ntfsprogs                           # NTFS filesystem libraries and utilities
@@ -793,6 +830,40 @@ _EOT_
 			    openssl                             # Utilities from the general purpose cryptography library with TLS implementation
 			    parted                              # 
 			#   whiptail                            # not found
+			    # --- nfs -----------------------------------------------------------------
+			#   nfs-common                          # 
+			#   nfs-kernel-server                   # 
+			    nfs-utils                           # NFS utilities and supporting clients and daemons for the kernel NFS server
+			    # --- nbd -----------------------------------------------------------------
+			    nbd                                 # Network Block Device user-space tools (TCP version)
+			#   nbd-client                          # 
+			#   nbd-server                          # 
+			#   nbdfuse                             # FUSE support for libnbd
+			#   nbdkit                              # NBD server
+			#   nbdkit-bash-completion              # Bash tab-completion for nbdkit
+			#   nbdkit-basic-filters                # Basic filters for nbdkit
+			#   nbdkit-basic-plugins                # Basic plugins for nbdkit
+			#   nbdkit-curl-plugin                  # HTTP/FTP (cURL) plugin for nbdkit
+			#   nbdkit-devel                        # Development files and documentation for nbdkit
+			#   nbdkit-example-plugins              # Example plugins for nbdkit
+			#   nbdkit-linuxdisk-plugin             # Virtual Linux disk plugin for nbdkit
+			#   nbdkit-nbd-plugin                   # NBD proxy / forward plugin for nbdkit
+			#   nbdkit-python-plugin                # Python 3 plugin for nbdkit
+			#   nbdkit-selinux                      # nbdkit SELinux policy
+			#   nbdkit-server                       # The nbdkit server
+			#   nbdkit-srpm-macros                  # RPM Provides rules for nbdkit plugins and filters
+			#   nbdkit-ssh-plugin                   # SSH plugin for nbdkit
+			#   nbdkit-tar-filter                   # Tar archive filter for nbdkit
+			#   nbdkit-tmpdisk-plugin               # Remote temporary filesystem disk plugin for nbdkit
+			#   nbdkit-vddk-plugin                  # VMware VDDK plugin for nbdkit
+			#   nbdkit-xz-filter                    # XZ and lzip filters for nbdkit
+			    # --- iscsi ---------------------------------------------------------------
+			#   istgt                               # 
+			#   tgt                                 # 
+			    lsscsi                              # List SCSI devices (or hosts) and associated information
+			#   open-iscsi                          # 
+			    iscsi-initiator-utils               # iSCSI daemon and utility programs
+			#   targetcli-fb                        # 
 			    # -------------------------------------------------------------------------
 _EOT_
 	)"
@@ -883,10 +954,13 @@ _EOT_
 			    patterns-glibc-hwcaps-x86_64_v3     # Install x86-64-v3 optimized libraries
 			    sudo                                # Execute some commands as root
 			    firewalld                           # A firewall daemon with D-Bus interface providing a dynamic firewall
+			    firewalld-lang                      # Translations for package firewalld
 			    traceroute                          # Packet route path tracing utility
 			    NetworkManager                      # Standard Linux network configuration tool suite
+			    NetworkManager-lang                 # Translations for package NetworkManager
 			    bash-completion                     # Programmable Completion for Bash
 			    wget                                # A Tool for Mirroring FTP and HTTP Servers
+			    wget-lang                           # Translations for package wget
 			    curl                                # A Tool for Transferring Data from URLs
 			    vim                                 # Vi IMproved
 			    bc                                  # GNU Command Line Calculatorr
@@ -898,7 +972,8 @@ _EOT_
 			    jq                                  # A lightweight and flexible command-line JSON processor
 			    clamav                              # Antivirus Toolkit
 			    openssh-server                      # SSH (Secure Shell) server
-			#x  systemd-network                     # 
+			    systemd-lang                        # Translations for package systemd
+			#x  systemd-network                     #
 			    systemd-resolved                    # Systemd Network Name Resolution Manager
 			    dnsmasq                             # DNS Forwarder and DHCP Server
 			    tftp                                # Trivial File Transfer Protocol (TFTP)
@@ -918,6 +993,8 @@ _EOT_
 			    which                               # Displays where a particular program in your path is located
 			    zypper                              # Command line software manager using libzypp
 			    # --- desktop (from the preconfiguration file) ----------------------------
+			#   patterns-fonts-fonts                # Fonts
+			#   patterns-fonts-fonts_opt            # Fonts
 			#o  NetworkManager                      # Standard Linux network configuration tool suite
 			#-  NetworkManager-applet-openconnect   # NetworkManager VPN support for OpenConnect
 			#-  NetworkManager-applet-openvpn       # NetworkManager VPN support for OpenVPN
@@ -950,11 +1027,14 @@ _EOT_
 			#   gnome-session                       # Session Tools for the GNOME Desktop
 			#   gnome-software                      # GNOME Software Store
 			#   gnome-system-monitor                # A process monitor for the GNOME desktop
+			#   gnome-terminal-lang                 # Translations for package gnome-terminal
 			#   gnome-text-editor                   # GNOME Text Editor
 			#   gnome-tweaks                        # A tool to customize advanced GNOME 3 options
 			#   gnome-user-docs                     # GNOME Desktop Documentation
 			#   gnome-user-share                    # GNOME user file sharing
 			#   google-noto-sans-cjk-fonts          # Noto Sans CJK Font
+			#   google-noto-sans-jp-mono-fonts      # Noto Sans Japanese Font - Monospace
+			#   google-noto-sans-mono-fonts         # Noto Mono Sans Serif Font
 			#   gpgme                               # Programmatic library interface to GnuPG
 			#   gsettings-backend-dconf             # GSettings integration of the dconf key-based configuration system
 			#   gutenprint                          # Printer drivers for CUPS from the Gutenprint project
@@ -1002,6 +1082,7 @@ _EOT_
 			    fuse3                               # Reference implementation of the "Filesystem in Userspace"
 			#   glibc                               # Standard Shared Libraries (from the GNU C Library)
 			#   glibc-i18ndata                      # Database Sources for 'locale'
+			#   glibc-lang                          # Translations for package glibc
 			#   glibc-locale                        # Locale Data for Localized Programs
 			#   initramfs-tools-bin                 #
 			#   iputils-ping                        #
@@ -1012,7 +1093,9 @@ _EOT_
 			#   login                               #
 			#   multipath-tools                     # Tools to Manage Multipathed Devices with the device-mapper
 			    nano                                # Pico editor clone with enhancements
+			    nano-lang                           # Translations for package nano
 			#   notification-daemon                 # Notification Daemon
+			#   notification-daemon-lang            # Translations for package notification-daemon
 			    ntfs-3g                             # NTFS Support in Userspace
 			#   ntfs-3g-libs                        #
 			    ntfsprogs                           # NTFS Utilities
@@ -1020,7 +1103,9 @@ _EOT_
 			    openssl                             # Secure Sockets and Transport Layer Security
 			#   ovpn-dco-kmp-default                # OpenVPN Data Channel Offload in the Linux kernel
 			    parted                              # GNU partitioner
+			    parted-lang                         # Translations for package parted
 			#   policycoreutils                     # SELinux policy core utilities
+			#   policycoreutils-lang                # Translations for package policycoreutils
 			#   selinux-policy                      # SELinux policy configuration
 			#   selinux-policy-targeted             # SELinux targeted base policy
 			    sudo-policy-wheel-auth-self         # Users in the wheel group can authenticate as admin
@@ -1030,6 +1115,40 @@ _EOT_
 			#   util-linux-systemd                  # A collection of basic system utilities (systemd dependent part)
 			#   whiptail                            #
 			    zypper                              # Command line software manager using libzypp
+			    # --- nfs -----------------------------------------------------------------
+			#   nfs-common                          #
+			    nfs-client                          # Support Utilities for NFS
+			#   nfs-kernel-server                   # Support Utilities for Kernel nfsd
+			    # --- nbd -----------------------------------------------------------------
+			    nbd                                 # Network Block Device Server and Client Utilities
+			#   nbd-client                          #
+			#   nbd-server                          #
+			#   nbdfuse                             # FUSE support for libnbd
+			#   nbdkit                              # Network Block Device server
+			#   nbdkit-bash-completion              # Bash tab-completion for nbdkit
+			#   nbdkit-basic-filters                # Basic filters for nbdkit
+			#   nbdkit-basic-plugins                # Basic plugins for nbdkit
+			#   nbdkit-bzip2-filter                 # BZip2 filter for nbdkit
+			#   nbdkit-curl-plugin                  # HTTP/FTP (cURL) plugin for nbdkit
+			#   nbdkit-devel                        # Development files and documentation for nbdkit
+			#   nbdkit-example-plugins              # Example plugins for nbdkit
+			#   nbdkit-gcs-plugin                   # Gooogle Cloud Storage plugin nbdkit
+			#   nbdkit-linuxdisk-plugin             # Virtual Linux disk plugin for nbdkit
+			#   nbdkit-nbd-plugin                   # NBD proxy / forward plugin for nbdkit
+			#   nbdkit-python-plugin                # Python 3 plugin for nbdkit
+			#   nbdkit-server                       # Network Block Device server
+			#   nbdkit-ssh-plugin                   # SSH plugin for nbdkit
+			#   nbdkit-stats-filter                 # Statistics filter for nbdkit
+			#   nbdkit-tar-filter                   # Tar archive filter for nbdkit
+			#   nbdkit-tmpdisk-plugin               # Remote temporary filesystem disk plugin for nbdkit
+			#   nbdkit-vddk-plugin                  # VMware VDDK plugin for nbdkit
+			#   nbdkit-xz-filter                    # XZ and lzip filters for nbdkit
+			    # --- iscsi ---------------------------------------------------------------
+			#   istgt                               #
+			#   tgt                                 #
+			    lsscsi                              # List all SCSI devices in the system
+			    open-iscsi                          # Linux iSCSI Software Initiator
+			    targetcli-fb-common                 # Common targetcli-fb subpackage for either flavor of Python
 			    # -------------------------------------------------------------------------
 			#   patterns-base-32bit                     # 32-Bit Runtime Environment
 			#   patterns-base-apparmor                  # AppArmor

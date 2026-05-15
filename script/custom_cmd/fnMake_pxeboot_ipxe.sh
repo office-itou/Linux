@@ -1,7 +1,7 @@
 # shellcheck disable=SC2148
 
 # -----------------------------------------------------------------------------
-# descript: make make ipxe menu
+# descript: make ipxe menu
 #   input :     $1     : file name
 #   input :     $2     : tab count
 #   input :   $3..$@   : media info data

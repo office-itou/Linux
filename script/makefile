@@ -334,6 +334,7 @@ OBJS= \
 	./custom_cmd/fnMake_pxeboot_grub_m86p.sh \
 	./custom_cmd/fnMake_pxeboot_grub_linux.sh \
 	./custom_cmd/fnMake_pxeboot_grub.sh \
+	./custom_cmd/fnMake_pxeboot_nbds.sh \
 	./custom_cmd/fnMake_pxeboot_slnx_hdrftr.sh \
 	./custom_cmd/fnMake_pxeboot_slnx_windows.sh \
 	./custom_cmd/fnMake_pxeboot_slnx_winpe.sh \
