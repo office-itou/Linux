@@ -33,8 +33,9 @@ _EOT_
 		__FSYS="vmhgfs"
 	fi
 	# --- fstab ---------------------------------------------------------------
-#	__FSTB="$(printf "%-15s %-15s %-7s %-15s %-7s %s" ".host:/" "${_DIRS_HGFS:?}" "${__FSYS}" "nofail,allow_other,defaults" "0" "0")"
-	__FSTB=".host:/                 /srv/hgfs       fuse.vmhgfs-fuse    nofail,allow_other,defaults     0       0"
+	__TITL="$(printf "%-15s %-15s %-19s %-31s %-7s %s" ".# <file system>" "<mount point>"   "<type>"    "<options>"                   "<dump>" "<pass>")"
+	__FSTB="$(printf "%-15s %-15s %-19s %-31s %-7s %s" ".host:/"          "${_DIRS_HGFS:?}" "${__FSYS}" "nofail,allow_other,defaults" "0"      "0"      )"
+#	__FSTB=".host:/         /srv/hgfs       fuse.vmhgfs-fuse    nofail,allow_other,defaults     0       0"
 	if ! vmware-hgfsclient > /dev/null 2>&1; then
 		__FSTB="#${__FSTB}"
 	fi
@@ -43,7 +44,7 @@ _EOT_
 	mkdir -p "${__PATH%/*}"
 	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
-		# <file system>         <mount point>   <type>              <options>                       <dump>  <pass>
+		${__TITL}
 		${__FSTB}
 _EOT_
 	# --- check mount ---------------------------------------------------------
@@ -60,7 +61,7 @@ _EOT_
 	fi
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
-	unset __PATH __FSYS __FSTB
+	unset __PATH __FSYS __TITL __FSTB
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 

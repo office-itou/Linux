@@ -554,7 +554,7 @@ function fnGetWebinfo() {
 				sub("[ \t]+$", "", _line)
 				switch (tolower(_line)) {
 					case /^http\/[0-9]+.[0-9]+/:
-						sub("[^ \t]+[ \t]+", "", _line)
+						sub("^[^ \t]+[ \t]+", "", _line)
 						sub("[^0-9]+$", "", _line)
 						_code=_line
 						break
@@ -2415,6 +2415,7 @@ function fnMk_boot_option_kickstart() {
 	declare -r    __TGET_TYPE="${1:?}"
 	shift
 	declare -a    __BOPT=()
+	declare       __FNAM=""
 	declare       __WORK=""
 	# --- 0: server -----------------------------------------------------------
 #	__BOPT=("server=\${srvrhttp}")
@@ -2457,7 +2458,12 @@ function fnMk_boot_option_kickstart() {
 #			clive) __WORK="${__WORK:+"${__WORK} "}root=live:\${srvrhttp}/${_DIRS_RMAK##*/}/${__MDIA[$((_OSET_MDIA+14))]##*/}";;
 #			*    ) __WORK="${__WORK:+"${__WORK} "}root=live:\${srvrhttp}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
 #		esac
-		__WORK="${__WORK:+"${__WORK} "}root=live:/dev/nbd0 netroot=nbd:\${srvraddr}:${__MDIA[$((_OSET_MDIA+2))]:-}"
+#		__WORK="${__WORK:+"${__WORK} "}root=live:/dev/nbd0 netroot=nbd:\${srvraddr}:${__MDIA[$((_OSET_MDIA+2))]:-}"
+		__FNAM="${__MDIA[$((_OSET_MDIA+18))]##*/}"
+		__FNAM="${__FNAM##-}"
+		__FNAM="${__FNAM:-"${__MDIA[$((_OSET_MDIA+14))]##*/}"}"
+		__FNAM="${__FNAM##-}"
+		__WORK="${__WORK:+"${__WORK} "}root=live:/dev/nbd0 netroot=nbd:\${srvraddr}:${__FNAM:-}"
 		__WORK="${__WORK:+"${__WORK} "}rd.live.image rd.live.overlay.overlayfs=1"
 	fi
 	if [[ -n "${__MDIA[$((_OSET_MDIA+27))]##*-}" ]]; then
@@ -3479,32 +3485,6 @@ function fnMk_pxeboot_slnx() {
 }
 
 # -----------------------------------------------------------------------------
-# descript: make nbd exports.conf
-#   input :     $1     : file name
-#   input :     $2     : tab count
-#   input :   $3..$@   : media info data
-#   output:   stdout   : output
-#   return:            : unused
-function fnMk_pxeboot_nbds() {
-	declare -r    __TGET_PATH="${1:?}"
-	declare -r    __CONT_TABS="${2:?}"
-	declare -r -a __LIST_MDIA=("${@:3}")
-
-	case "${__LIST_MDIA[$((_OSET_MDIA+1))]:?}" in
-		m) return;;				# (menu)
-		o) ;;					# (output)
-		*) return;;				# (hidden)
-	esac
-
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__TGET_PATH:?}" || true
-		[${__LIST_MDIA[$((_OSET_MDIA+2))]:?}]
-		exportname = ${__LIST_MDIA[$((_OSET_MDIA+14))]:?}
-		copyonwrite = false
-
-_EOT_
-}
-
-# -----------------------------------------------------------------------------
 # descript: make pxeboot files
 #   n-ref :     $1     : return value : serialized target data
 #   input :     $@     : option parameter
@@ -3569,7 +3549,7 @@ function fnMk_pxeboot() {
 	fnMk_pxeboot_clear_menu "${_PATH_GRUB:?}"				# grub
 	fnMk_pxeboot_clear_menu "${_PATH_SLNX:?}"				# syslinux (bios)
 	fnMk_pxeboot_clear_menu "${_PATH_EF64:?}"				# syslinux (efi64)
-	fnMk_pxeboot_clear_menu "${_PATH_NBDS:?}"				# nbd exports
+#	fnMk_pxeboot_clear_menu "${_PATH_NBDS:?}"				# nbd exports
 	for __TYPE in "${_LIST_TYPE[@]}"
 	do
 		[[ -z "${__PTRN["${__TYPE:-}"]:-}" ]] && continue
@@ -3613,7 +3593,7 @@ function fnMk_pxeboot() {
 			fnMk_pxeboot_grub "${_PATH_GRUB:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# grub
 			fnMk_pxeboot_slnx "${_PATH_SLNX:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# syslinux (bios)
 			fnMk_pxeboot_slnx "${_PATH_EF64:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# syslinux (efi64)
-			fnMk_pxeboot_nbds "${_PATH_NBDS:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# nbd exports
+#			fnMk_pxeboot_nbds "${_PATH_NBDS:?}" "${__TABS:-"0"}" "${__MDIA[@]:-}"	# nbd exports
 			# --- tab ---------------------------------------------------------
 			case "${__MDIA[$((_OSET_MDIA+1))]}" in
 				m)						# (menu)

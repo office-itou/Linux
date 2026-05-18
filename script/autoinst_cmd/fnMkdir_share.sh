@@ -28,6 +28,11 @@
 #   g-var : _SAMB_USER : read
 #   g-var : _SAMB_GRUP : read
 #   g-var : _DIRS_SAMB : read
+#   g-var : _DIRS_CACH : read
+#   g-var : _DIRS_CTNR : read
+#   g-var : _DIRS_CHRT : read
+#   g-var : _DIRS_EXPO : read
+#   g-var : _DIRS_NBDS : read
 # shellcheck disable=SC2148,SC2317,SC2329
 fnMkdir_share(){
 	__FUNC_NAME="fnMkdir_share"
@@ -40,85 +45,95 @@ fnMkdir_share(){
 		useradd --system --shell "${_SHEL_NLIN}" --groups "${_SAMB_GRUP}" "${_SAMB_USER}"
 	fi
 	# --- create directory ----------------------------------------------------
-	mkdir -p "${_DIRS_TOPS:?}"
-	mkdir -p "${_DIRS_HGFS:?}"
-	mkdir -p "${_DIRS_HTML:?}"
-	mkdir -p "${_DIRS_SAMB:?}"/adm/commands
-	mkdir -p "${_DIRS_SAMB:?}"/adm/profiles
-	mkdir -p "${_DIRS_SAMB:?}"/pub/_license
-	mkdir -p "${_DIRS_SAMB:?}"/pub/contents/disc
-	mkdir -p "${_DIRS_SAMB:?}"/pub/contents/dlna/movies
-	mkdir -p "${_DIRS_SAMB:?}"/pub/contents/dlna/others
-	mkdir -p "${_DIRS_SAMB:?}"/pub/contents/dlna/photos
-	mkdir -p "${_DIRS_SAMB:?}"/pub/contents/dlna/sounds
-	mkdir -p "${_DIRS_SAMB:?}"/pub/hardware
-	mkdir -p "${_DIRS_SAMB:?}"/pub/software
-	mkdir -p "${_DIRS_SAMB:?}"/pub/resource/git
-	mkdir -p "${_DIRS_SAMB:?}"/usr
-	mkdir -p "${_DIRS_TFTP:?}"/boot/grub/fonts
-	mkdir -p "${_DIRS_TFTP:?}"/boot/grub/locale
-	mkdir -p "${_DIRS_TFTP:?}"/boot/grub/i386-pc
-	mkdir -p "${_DIRS_TFTP:?}"/boot/grub/i386-efi
-	mkdir -p "${_DIRS_TFTP:?}"/boot/grub/x86_64-efi
-	mkdir -p "${_DIRS_TFTP:?}"/ipxe
-	mkdir -p "${_DIRS_TFTP:?}"/menu-bios/pxelinux.cfg
-	mkdir -p "${_DIRS_TFTP:?}"/menu-efi64/pxelinux.cfg
-	mkdir -p "${_DIRS_USER:?}"/private
-	mkdir -p "${_DIRS_SHAR:?}"
-	mkdir -p "${_DIRS_CONF:?}"/_data
-	mkdir -p "${_DIRS_CONF:?}"/_keyring
-	mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.build.d
-	mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.clean.d
-	mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.conf.d
-	mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.extra
-	mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.finalize.d
-	mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.postinst.d
-	mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.postoutput.d
-	mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.prepare.d
-	mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.repart
-	mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.sync.d
-	mkdir -p "${_DIRS_CONF:?}"/_repository/opensuse
-	mkdir -p "${_DIRS_CONF:?}"/_template
-	mkdir -p "${_DIRS_CONF:?}"/agama
-	mkdir -p "${_DIRS_CONF:?}"/autoyast
-	mkdir -p "${_DIRS_CONF:?}"/kickstart
-	mkdir -p "${_DIRS_CONF:?}"/nocloud/ubuntu_desktop
-	mkdir -p "${_DIRS_CONF:?}"/nocloud/ubuntu_server
-	mkdir -p "${_DIRS_CONF:?}"/preseed
-	mkdir -p "${_DIRS_CONF:?}"/script
-	mkdir -p "${_DIRS_CONF:?}"/windows
-	mkdir -p "${_DIRS_IMGS:?}"
-	mkdir -p "${_DIRS_ISOS:?}"/linux
-	mkdir -p "${_DIRS_ISOS:?}"/linux/debian
-	mkdir -p "${_DIRS_ISOS:?}"/linux/ubuntu
-	mkdir -p "${_DIRS_ISOS:?}"/linux/fedora
-	mkdir -p "${_DIRS_ISOS:?}"/linux/centos
-	mkdir -p "${_DIRS_ISOS:?}"/linux/almalinux
-	mkdir -p "${_DIRS_ISOS:?}"/linux/rockylinux
-	mkdir -p "${_DIRS_ISOS:?}"/linux/miraclelinux
-	mkdir -p "${_DIRS_ISOS:?}"/linux/opensuse
-	mkdir -p "${_DIRS_ISOS:?}"/linux/memtest86plus
-	mkdir -p "${_DIRS_ISOS:?}"/windows
-	mkdir -p "${_DIRS_ISOS:?}"/windows/windows-10
-	mkdir -p "${_DIRS_ISOS:?}"/windows/windows-11
-	mkdir -p "${_DIRS_ISOS:?}"/windows/winpe
-	mkdir -p "${_DIRS_ISOS:?}"/windows/ati
-	mkdir -p "${_DIRS_ISOS:?}"/windows/aomei
-	mkdir -p "${_DIRS_LOAD:?}"
-	mkdir -p "${_DIRS_RMAK:?}"
-	mkdir -p "${_DIRS_CACH:?}"
-	mkdir -p "${_DIRS_CTNR:?}"
-	mkdir -p "${_DIRS_CHRT:?}"
+	[ -n "${_DIRS_TOPS:-}" ] && mkdir -p "${_DIRS_TOPS:?}"
+	[ -n "${_DIRS_HGFS:-}" ] && mkdir -p "${_DIRS_HGFS:?}"
+	[ -n "${_DIRS_HTML:-}" ] && mkdir -p "${_DIRS_HTML:?}"
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/adm/commands
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/adm/profiles
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/_license
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/contents/disc
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/contents/dlna/movies
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/contents/dlna/others
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/contents/dlna/photos
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/contents/dlna/sounds
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/hardware
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/software
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/git
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/usr
+	[ -n "${_DIRS_TFTP:-}" ] && mkdir -p "${_DIRS_TFTP:?}"/boot/grub/fonts
+	[ -n "${_DIRS_TFTP:-}" ] && mkdir -p "${_DIRS_TFTP:?}"/boot/grub/locale
+	[ -n "${_DIRS_TFTP:-}" ] && mkdir -p "${_DIRS_TFTP:?}"/boot/grub/i386-pc
+	[ -n "${_DIRS_TFTP:-}" ] && mkdir -p "${_DIRS_TFTP:?}"/boot/grub/i386-efi
+	[ -n "${_DIRS_TFTP:-}" ] && mkdir -p "${_DIRS_TFTP:?}"/boot/grub/x86_64-efi
+	[ -n "${_DIRS_TFTP:-}" ] && mkdir -p "${_DIRS_TFTP:?}"/ipxe
+	[ -n "${_DIRS_TFTP:-}" ] && mkdir -p "${_DIRS_TFTP:?}"/menu-bios/pxelinux.cfg
+	[ -n "${_DIRS_TFTP:-}" ] && mkdir -p "${_DIRS_TFTP:?}"/menu-efi64/pxelinux.cfg
+	[ -n "${_DIRS_USER:-}" ] && mkdir -p "${_DIRS_USER:?}"/private
+	[ -n "${_DIRS_SHAR:-}" ] && mkdir -p "${_DIRS_SHAR:?}"
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_data
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_keyring
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.build.d
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.clean.d
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.conf.d
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.extra
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.finalize.d
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.postinst.d
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.postoutput.d
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.prepare.d
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.repart
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.sync.d
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_repository/opensuse
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_template
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/agama
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/autoyast
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/kickstart
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/nocloud/ubuntu_desktop
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/nocloud/ubuntu_server
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/preseed
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/script
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/windows
+	[ -n "${_DIRS_IMGS:-}" ] && mkdir -p "${_DIRS_IMGS:?}"
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/linux
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/linux/debian
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/linux/ubuntu
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/linux/fedora
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/linux/centos
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/linux/almalinux
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/linux/rockylinux
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/linux/miraclelinux
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/linux/opensuse
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/linux/memtest86plus
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/windows
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/windows/windows-10
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/windows/windows-11
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/windows/winpe
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/windows/ati
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/windows/aomei
+	[ -n "${_DIRS_LOAD:-}" ] && mkdir -p "${_DIRS_LOAD:?}"
+	[ -n "${_DIRS_RMAK:-}" ] && mkdir -p "${_DIRS_RMAK:?}"
+	[ -n "${_DIRS_CACH:-}" ] && mkdir -p "${_DIRS_CACH:?}"
+	[ -n "${_DIRS_CTNR:-}" ] && mkdir -p "${_DIRS_CTNR:?}"
+	[ -n "${_DIRS_CHRT:-}" ] && mkdir -p "${_DIRS_CHRT:?}"
+	[ -n "${_DIRS_EXPO:-}" ] && mkdir -p "${_DIRS_EXPO:?}"
+	[ -n "${_DIRS_NBDS:-}" ] && mkdir -p "${_DIRS_NBDS:?}"
 
 	# --- change file mode ----------------------------------------------------
-	chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_SAMB}/"
-	chmod -R 2770 "${_DIRS_SAMB}/"
-	chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_CONF}/"
-	chmod -R 2775 "${_DIRS_CONF}/"
-	chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_ISOS}/"
-	chmod -R 2775 "${_DIRS_ISOS}/"
-	chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_RMAK}/"
-	chmod -R 2775 "${_DIRS_RMAK}/"
+	if [ -n "${_DIRS_SAMB:-}" ] && [ -e "${_DIRS_SAMB:?}/." ]; then
+		chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_SAMB}/"
+		chmod -R 2770 "${_DIRS_SAMB}/"
+	fi
+	if [ -n "${_DIRS_CONF:-}" ] && [ -e "${_DIRS_CONF:?}/." ]; then
+		chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_CONF}/"
+		chmod -R 2775 "${_DIRS_CONF}/"
+	fi
+	if [ -n "${_DIRS_ISOS:-}" ] && [ -e "${_DIRS_ISOS:?}/." ]; then
+		chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_ISOS}/"
+		chmod -R 2775 "${_DIRS_ISOS}/"
+	fi
+	if [ -n "${_DIRS_RMAK:-}" ] && [ -e "${_DIRS_RMAK:?}/." ]; then
+		chown -R "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_RMAK}/"
+		chmod -R 2775 "${_DIRS_RMAK}/"
+	fi
 
 	# --- create symbolic link ------------------------------------------------
 	[ ! -h "${_DIRS_HTML:?}/${_DIRS_CONF##*/}"               ] && ln -s "${_DIRS_CONF#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"

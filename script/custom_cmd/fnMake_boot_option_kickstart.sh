@@ -16,6 +16,7 @@ function fnMk_boot_option_kickstart() {
 	declare -r    __TGET_TYPE="${1:?}"
 	shift
 	declare -a    __BOPT=()
+	declare       __FNAM=""
 	declare       __WORK=""
 	# --- 0: server -----------------------------------------------------------
 #	__BOPT=("server=\${srvrhttp}")
@@ -58,7 +59,12 @@ function fnMk_boot_option_kickstart() {
 #			clive) __WORK="${__WORK:+"${__WORK} "}root=live:\${srvrhttp}/${_DIRS_RMAK##*/}/${__MDIA[$((_OSET_MDIA+14))]##*/}";;
 #			*    ) __WORK="${__WORK:+"${__WORK} "}root=live:\${srvrhttp}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
 #		esac
-		__WORK="${__WORK:+"${__WORK} "}root=live:/dev/nbd0 netroot=nbd:\${srvraddr}:${__MDIA[$((_OSET_MDIA+2))]:-}"
+#		__WORK="${__WORK:+"${__WORK} "}root=live:/dev/nbd0 netroot=nbd:\${srvraddr}:${__MDIA[$((_OSET_MDIA+2))]:-}"
+		__FNAM="${__MDIA[$((_OSET_MDIA+18))]##*/}"
+		__FNAM="${__FNAM##-}"
+		__FNAM="${__FNAM:-"${__MDIA[$((_OSET_MDIA+14))]##*/}"}"
+		__FNAM="${__FNAM##-}"
+		__WORK="${__WORK:+"${__WORK} "}root=live:/dev/nbd0 netroot=nbd:\${srvraddr}:${__FNAM:-}"
 		__WORK="${__WORK:+"${__WORK} "}rd.live.image rd.live.overlay.overlayfs=1"
 	fi
 	if [[ -n "${__MDIA[$((_OSET_MDIA+27))]##*-}" ]]; then

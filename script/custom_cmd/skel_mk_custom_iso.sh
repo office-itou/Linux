@@ -194,7 +194,7 @@
 	source "${_SHEL_COMD:?}"/fnMake_pxeboot_slnx.sh			# make syslinux for pxeboot
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD:?}"/fnMake_pxeboot_nbds.sh			# make nbd exports.conf
+#	source "${_SHEL_COMD:?}"/fnMake_pxeboot_nbds.sh			# make nbd exports.conf
 
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD:?}"/fnMake_pxeboot.sh				# make pxeboot files

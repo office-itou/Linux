@@ -132,6 +132,8 @@
 	_DIRS_CACH=""						# cache file
 	_DIRS_CTNR=""						# container file
 	_DIRS_CHRT=""						# container file (chroot)
+	_DIRS_EXPO=""						# exports
+	_DIRS_NBDS=""						# exports (network block device)
 	# --- working directory parameter -----------------------------------------
 	readonly _DIRS_VADM="/var/admin"	# top of admin working directory
 	_DIRS_ACMD=""						# auto-command working directory
