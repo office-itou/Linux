@@ -22,7 +22,7 @@ function fnMk_squashfs() {
 		"${@:-}"
 		-progress
 		-noappend
-		-xattrs
+		-no-xattrs
 	)
 
 	declare -i    __time_start=0

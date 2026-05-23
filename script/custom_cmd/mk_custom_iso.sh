@@ -776,6 +776,7 @@ function fnDownload() {
 			fi
 			;;
 	esac
+	mkdir -p "${__TGET_PATH%/*}"
 	if ! cp --preserve=timestamps "${__TEMP}" "${__TGET_PATH}"; then
 		printf "\033[m\033[41mfailed  : %s\033[m\n" "${__TGET_PATH}"
 		return
@@ -865,6 +866,7 @@ function fnTrap() {
 			umount --quiet --lazy  --recursive "${__PATH}"
 		fi
 		case "${__PATH}" in
+			/tmp/*            | \
 			"${_DIRS_TEMP:?}" | \
 			"${_DIRS_RTMP:?}"  )
 				fnMsgout "${_PROG_NAME:-}" "remove" "${__PATH}"

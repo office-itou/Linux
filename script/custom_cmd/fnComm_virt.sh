@@ -1,16 +1,13 @@
 # shellcheck disable=SC2148
 
 # -----------------------------------------------------------------------------
-# descript: make mkosi files
+# descript: execute virt
 #   input :     $@     : parameter
 #   output:   stdout   : message
 #   return:            : unused
 #   g-var :  FUNCNAME  : read
 #   g-var : _PROG_NAME : read
-# memo    :
-#   https://github.com/systemd/mkosi
-
-function fnMk_mkosi() {
+function fnMk_virt() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
@@ -19,17 +16,26 @@ function fnMk_mkosi() {
 	declare -i    __time_start=0
 	declare -i    __time_end=0
 	declare -i    __time_elapsed=0
+	declare       __COMD=""
 	declare       __RTCD=""
 
 	__time_start=$(date +%s)
-	echo "create mkosi file ..."
+	echo "execute virt ..."
 	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
-	if ! nice -n 19 /usr/local/bin/mkosi "${__OPTN[@]}"; then
+	  if command -v virt-install > /dev/null 2>&1; then __COMD="virt-install"
+	else
+		fnMsgout "${_PROG_NAME:-}" "abnormal termination" "[${__FUNC_NAME}]"
+		exit 1
+	fi
+	if ! "${__COMD:?}" "${__OPTN[@]}"; then
 		__RTCD="$?"
-		printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [mkosi]" "mkosi ${__OPTN[*]}" 1>&2
-		printf "%s\n" "mkosi: ${__RTCD:-}"
+#		echo -e "\x12\x1bc"
+		printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [virt]" "${__COMD} ${__OPTN[*]}" 1>&2
+		printf "%s\n" "${__COMD}: ${__RTCD:-}"
 		exit "${__RTCD:-}"
 	fi
+	virsh destroy mkosi-vpc || true
+	virsh undefine mkosi-vpc --managed-save || true
 	__time_end=$(date +%s)
 	__time_elapsed=$((__time_end - __time_start))
 	fnMsgout "${_PROG_NAME:-}" "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"

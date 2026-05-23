@@ -391,6 +391,7 @@ OBJS= \
 	./custom_cmd/fnComm_find_kernel.sh \
 	./custom_cmd/fnComm_mkosi.sh \
 	./custom_cmd/fnComm_qemu.sh \
+	./custom_cmd/fnComm_virt.sh \
 	./custom_cmd/fnComm_squashfs.sh \
 	./custom_cmd/fnComm_grub_conf.sh \
 	./custom_cmd/fnComm_grub_theme.sh \

@@ -1,0 +1,11 @@
+[epel]
+name=Extra Packages for Enterprise Linux $releasever - $basearch
+#baseurl=https://download.example/pub/epel/$releasever${releasever_minor:+z}/Everything/$basearch/
+metalink=https://mirrors.fedoraproject.org/metalink?repo=epel${releasever_minor:+-z}-$releasever&arch=$basearch
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-$releasever_major
+gpgcheck=1
+repo_gpgcheck=0
+metadata_expire=24h
+countme=1
+enabled=1
+

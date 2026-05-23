@@ -97,6 +97,7 @@ fnInitialize() {
 		break
 	done
 	readonly _DIRS_TGET
+	fnDbgout "target dir" "info,_DIRS_TGET=[${_DIRS_TGET:-}]"
 
 	# --- system parameter ----------------------------------------------------
 	fnSystem_param

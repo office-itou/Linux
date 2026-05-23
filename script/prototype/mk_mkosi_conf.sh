@@ -816,7 +816,7 @@ _EOT_
 			    exfatprogs                          # Userspace utilities for exFAT filesystems
 			#   fdisk                               #
 			    file                                # Utility for determining file types
-			    fuse3                               # File System in Userspace (FUSE) v3 utilities
+			#o  fuse3                               # File System in Userspace (FUSE) v3 utilities
 			#   initramfs-tools-bin                 #
 			#   iputils-ping                        #
 			#   iscsi-initiator-utils               # iSCSI daemon and utility programs
@@ -828,8 +828,8 @@ _EOT_
 			    ntfsprogs                           # NTFS filesystem libraries and utilities
 			#   nvme-cli                            # NVMe management command line interface
 			    openssl                             # Utilities from the general purpose cryptography library with TLS implementation
-			    parted                              # 
-			#   whiptail                            # not found
+			    parted                              # The GNU disk partition manipulation program
+			    rsyslog                             # Enhanced system logging and kernel message trapping daemon
 			    # --- nfs -----------------------------------------------------------------
 			#   nfs-common                          # 
 			#   nfs-kernel-server                   # 

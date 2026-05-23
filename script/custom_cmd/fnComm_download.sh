@@ -43,6 +43,7 @@ function fnDownload() {
 			fi
 			;;
 	esac
+	mkdir -p "${__TGET_PATH%/*}"
 	if ! cp --preserve=timestamps "${__TEMP}" "${__TGET_PATH}"; then
 		printf "\033[m\033[41mfailed  : %s\033[m\n" "${__TGET_PATH}"
 		return

@@ -521,6 +521,7 @@ function fnTrap() {
 			umount --quiet --lazy  --recursive "${__PATH}"
 		fi
 		case "${__PATH}" in
+			/tmp/*            | \
 			"${_DIRS_TEMP:?}" | \
 			"${_DIRS_RTMP:?}"  )
 				fnMsgout "${_PROG_NAME:-}" "remove" "${__PATH}"
@@ -1138,7 +1139,7 @@ function fnMk_mkosi() {
 	__time_start=$(date +%s)
 	echo "create mkosi file ..."
 	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
-	if ! nice -n 19 mkosi "${__OPTN[@]}"; then
+	if ! nice -n 19 /usr/local/bin/mkosi "${__OPTN[@]}"; then
 		__RTCD="$?"
 		printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [mkosi]" "mkosi ${__OPTN[*]}" 1>&2
 		printf "%s\n" "mkosi: ${__RTCD:-}"
@@ -1183,13 +1184,61 @@ function fnMk_qemu() {
 		fnMsgout "${_PROG_NAME:-}" "abnormal termination" "[${__FUNC_NAME}]"
 		exit 1
 	fi
-	if ! nice -n 19 "${__COMD:?}" "${__OPTN[@]}"; then
+	if ! "${__COMD:?}" "${__OPTN[@]}"; then
 		__RTCD="$?"
 #		echo -e "\x12\x1bc"
 		printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [qemu]" "${__COMD} ${__OPTN[*]}" 1>&2
 		printf "%s\n" "${__COMD}: ${__RTCD:-}"
 		exit "${__RTCD:-}"
 	fi
+	__time_end=$(date +%s)
+	__time_elapsed=$((__time_end - __time_start))
+	fnMsgout "${_PROG_NAME:-}" "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"
+	fnMsgout "${_PROG_NAME:-}" "elapsed" "$(printf "%dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60)) || true)"
+	unset __time_start __time_end __time_elapsed
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset '_DBGS_FAIL[${#_DBGS_FAIL[@]}-1]'
+	_DBGS_FAIL=("${_DBGS_FAIL[@]}")
+	fnDbgparameters
+#	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: execute virt
+#   input :     $@     : parameter
+#   output:   stdout   : message
+#   return:            : unused
+function fnMk_virt() {
+	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
+	_DBGS_FAIL+=("${__FUNC_NAME:-}")
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	declare -r -a __OPTN=("${@:-}")
+	declare -i    __time_start=0
+	declare -i    __time_end=0
+	declare -i    __time_elapsed=0
+	declare       __COMD=""
+	declare       __RTCD=""
+
+	__time_start=$(date +%s)
+	echo "execute virt ..."
+	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
+	  if command -v virt-install > /dev/null 2>&1; then __COMD="virt-install"
+	else
+		fnMsgout "${_PROG_NAME:-}" "abnormal termination" "[${__FUNC_NAME}]"
+		exit 1
+	fi
+	if ! "${__COMD:?}" "${__OPTN[@]}"; then
+		__RTCD="$?"
+#		echo -e "\x12\x1bc"
+		printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [virt]" "${__COMD} ${__OPTN[*]}" 1>&2
+		printf "%s\n" "${__COMD}: ${__RTCD:-}"
+		exit "${__RTCD:-}"
+	fi
+	virsh destroy mkosi-vpc || true
+	virsh undefine mkosi-vpc --managed-save || true
 	__time_end=$(date +%s)
 	__time_elapsed=$((__time_end - __time_start))
 	fnMsgout "${_PROG_NAME:-}" "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"
@@ -1223,7 +1272,7 @@ function fnMk_squashfs() {
 		"${@:-}"
 		-progress
 		-noappend
-		-xattrs
+		-no-xattrs
 	)
 
 	declare -i    __time_start=0
@@ -1884,7 +1933,7 @@ function fnMake_live_vmimg_p1() {
 	declare -r    __TGET_UUID="${4:?}"	# uuid
 	declare -r    __TGET_DIST="${5:?}"	# distribution
 	declare -r    __TGET_ENTR="${6:?}"	# menu entry
-	declare -r    __INPD="/boot/grub"						# input directory
+	declare       __INPD="/boot/grub"						# input directory
 	declare -r    __OUTD="${__TGET_OUTD:?}/strg"			# output directory
 	declare -r    __MNTP="${__TGET_OUTD:?}/mnt1"			# mount point
 #	declare -r    __CDFS="${__TGET_OUTD:?}/${_DIRS_CDFS:?}"	# cdfs image mount point
@@ -1918,12 +1967,14 @@ function fnMake_live_vmimg_p1() {
 	fi
 	mount "${__TGET_DEVS}${__TGET_PART}" "${__MNTP}" && _LIST_RMOV+=("${__MNTP}")
 	"${__COMD:?}" \
+		--force \
 		--target=x86_64-efi \
 		--efi-directory="${__MNTP}" \
 		--boot-directory="${__MNTP}/boot" \
 		--bootloader-id="${__TGET_DIST,,}" \
 		--removable
 	"${__COMD:?}" \
+		--force \
 		--target=i386-pc \
 		--boot-directory="${__MNTP}/boot" \
 		"${__TGET_DEVS}"
@@ -1936,6 +1987,9 @@ function fnMake_live_vmimg_p1() {
 	dd if="${__TGET_DEVS:?}" of="${__MBRF:?}" bs=1 count=440
 	# --- create grub.cfg -----------------------------------------------------
 	mount "${__TGET_DEVS}${__TGET_PART}" "${__MNTP}" && _LIST_RMOV+=("${__MNTP}")
+	[[ -e "${__MNTP:?}/boot/grub2/." ]] && __INPD="/boot/grub2"
+	readonly __INPD						# input directory
+	fnMsgout "${_PROG_NAME:-}" "info" "grub: [${__INPD:-}]"
 	fnGrub_conf  "${__GCFG:?}" "${__INPD}/${_FILE_MENU:?}" "${__INPD}/${_FILE_THME:?}" "${_MENU_TOUT:?}" "${_MENU_RESO:?}" "${_MENU_DPTH:?}"
 	fnGrub_theme "${__THME:?}" "${__TITL:?}" "${__INPD}/${_MENU_SPLS:?}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__MENU:?}"
@@ -2283,6 +2337,8 @@ _EOT_
 # -----------------------------------------------------------------------------
 # descript: make live vm-image on qemu
 #   input :     $1     : storage
+#   input :     $2     : distribution
+#   input :     $3     : version
 #   output:   stdout   : message
 #   return:            : unused
 function fnMake_live_qemu() {
@@ -2290,29 +2346,78 @@ function fnMake_live_qemu() {
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
 
 	declare -r    __TGET_STRG="${1:-}"	# storage
+	declare -r    __TGET_DIST="${2:-}"	# distribution
+	declare -r    __TGET_VERS="${3:-}"	# version
+	declare -r    __TGET_CODE="${4:-}"	# code
+	declare -a    __OPTN=()
+	declare       __DIST=""
+	declare       __TEMP=""
+	              __TEMP="$(mktemp -qd "/tmp/${_PROG_NAME}.XXXXXX")"
+	readonly      __TEMP
+	              _LIST_RMOV+=("${__TEMP:?}")
+	declare       __MNTP="${__TEMP:?}/mntp"
+	mkdir -p "${__MNTP:?}"
 	# --- command -------------------------------------------------------------
 	# /usr/share/novnc/utils/novnc_proxy --listen [::]:6080
 	# http://sv-developer:6080/vnc.html
-	__OPTN=(
-		-cpu "host"
-		-machine "q35"
-		-enable-kvm
-		-m "size=4G"
-		-boot "order=c"
-		-nic "bridge"
-		-vga "std"
-		-full-screen
-		-display "curses,charset=CP932"
-		-k "ja"
-		-device "ich9-intel-hda"
-		-vnc ":0"
-		-nographic
-		-drive "id=disk,file=${__TGET_STRG:?},format=raw,if=none"
-		-device "ich9-ahci,id=ahci"
-		-device "ide-hd,drive=disk,bus=ahci.0"
-	)
-	fnMk_qemu "${__OPTN[@]}"
-
+	  if command -v qemu-system-x86_64 > /dev/null 2>&1; then
+		__OPTN=(
+			-cpu "host"
+			-machine "q35"
+			-enable-kvm
+			-m "size=4G"
+			-boot "order=c"
+			-nic "bridge"
+			-vga "std"
+			-full-screen
+			-display "curses,charset=CP932"
+			-k "ja"
+			-device "ich9-intel-hda"
+			-vnc ":0"
+			-nographic
+			-drive "id=disk,file=${__TGET_STRG:?},format=raw,if=none"
+			-device "ich9-ahci,id=ahci"
+			-device "ide-hd,drive=disk,bus=ahci.0"
+		)
+		fnMk_qemu "${__OPTN[@]}"
+	elif command -v virt-install > /dev/null 2>&1; then
+		case "${__TGET_DIST}" in
+			debian      ) __DIST="debian13";;
+			ubuntu      ) __DIST="ubuntu25.10";;
+			fedora      ) __DIST="fedora42";;
+			centos      ) __DIST="centos-stream10";;
+			alma        ) __DIST="almalinux10";;
+			rocky       ) __DIST="rocky9";;
+			opensuse    ) __DIST="opensuse15.6";;
+			miraclelinux) __DIST="miraclelinux9.0";;
+			*           ) echo "not supported: ${__TGET_DIST}-${__TGET_VERS}"; exit 1;;
+		esac
+		__OPTN=(
+			--name "mkosi-vpc"
+			--memory "4096"
+			--vcpus "2"
+			--disk "${__MNTP:?}/${__TGET_STRG##*/},device=disk,format=raw"
+			--import
+			--os-variant "${__DIST:?}"
+			--network "bridge=br0"
+			--graphics "vnc"
+		)
+		chmod +rx "${__TEMP:?}"
+		mount --bind "${__TGET_STRG%/*}" "${__MNTP}" && _LIST_RMOV+=("${__MNTP}")
+		fnMk_virt "${__OPTN[@]}"
+		umount "${__MNTP}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
+		# --os-variant
+		# almalinux8 almalinux9 almalinux10
+		# centos-stream8 centos-stream9 centos-stream10
+		# debian12 debian13 debiantesting debianunstable
+		# fedora42
+		# miraclelinux8.4 miraclelinux9.0
+		# opensuse15.6 opensusetumbleweed
+		# rocky8 rocky9
+		# ubuntu22.04 ubuntu22.10 ubuntu23.04 ubuntu23.10 ubuntu24.10 ubuntu25.10
+		# win10 win11
+	fi
+	rm -rf "${__TEMP:?}" && unset '_LIST_RMOV[${#_LIST_RMOV[@]}-1]' && _LIST_RMOV=("${_LIST_RMOV[@]}")
 	unset __OPTN
 
 	# --- complete ------------------------------------------------------------
@@ -2668,7 +2773,7 @@ function fnMake_live_build() {
 _EOT_
 				# --- create iso image file -----------------------------------
 				fnMake_live_vmimg "${__OUTD:-}" "${__WRKD:?}" "${__VLID:-}" "${__ENTR:-}" "${__STRG:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}"
-				fnMake_live_qemu  "${__STRG:-}"
+				fnMake_live_qemu  "${__STRG:-}" "${__DIST:-}" "${__VERS:-}" "${__CODE:-}"
 				fnMake_live_cdimg "${__OUTD:-}" "${__VLID:-}" "${__ENTR:-}" "${__STRG:-}" "${__ISOS:-}"
 				;;
 			*            ) __OPTN=("help");;

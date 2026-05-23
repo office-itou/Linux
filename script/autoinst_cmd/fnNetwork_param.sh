@@ -11,6 +11,8 @@
 #   g-var : _DIST_CODE : write
 # shellcheck disable=SC2148,SC2317,SC2329
 fnNetwork_param() {
+	___FUNC_NAME="fnNetwork_param"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${___FUNC_NAME}]"
 	_NICS_STAT=""
 	_NICS_NAME="${_NICS_NAME:-"ens160"}"
 	___DIRS="${_DIRS_TGET:-}/sys/devices"
@@ -18,14 +20,14 @@ fnNetwork_param() {
 		fnMsgout "caution" "not exist: [${___DIRS}]"
 	else
 		  if [ -z "${_NICS_NAME:-}" ]; then
-			_NICS_NAME="$(ip -4 -oneline address show up | awk '$2!="lo" {print $2; exit;}')"
+			_NICS_NAME="$(ip -4 -oneline address show | awk '$2!="lo" {print $2; exit;}')"
 		elif [ -z "${_NICS_NAME#*"*"}" ]; then
 			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME:?}" | sort -V | head -n 1)"
 		fi
-		__WORK="$(ip -4 -oneline address show up dev "${_NICS_NAME}" 2> /dev/null)"
-		[ -z "${__WORK:-}" ] && _NICS_NAME="$(ip -4 -oneline address show up | awk '$2!="lo" {print $2; exit;}')"
+		__WORK="$(ip -4 -oneline address show dev "${_NICS_NAME}" 2> /dev/null || true)"
+		[ -z "${__WORK:-}" ] && _NICS_NAME="$(ip -4 -oneline address show | awk '$2!="lo" {print $2; exit;}')"
 		_NICS_NAME="${_NICS_NAME:-"ens160"}"
-		if ! ip -0 -oneline address show up dev "${_NICS_NAME}" > /dev/null 2>&1; then
+		if ! ip -0 -oneline address show dev "${_NICS_NAME}" > /dev/null 2>&1; then
 			fnMsgout "failed" "not exist: [${_NICS_NAME}]"
 		else
 			_NICS_STAT="true"
@@ -56,6 +58,15 @@ fnNetwork_param() {
 			_LINK_ADDR="$(ip -6 -oneline address show primary dev "${_NICS_NAME}" 2> /dev/null | awk '$2!="lo" && $6=="link"   {print $4;}')"
 		fi
 	fi
+	fnDbgout "${___FUNC_NAME:-}" \
+		"info,_NICS_NAME=[${_NICS_NAME:-}]" \
+		"info,_NICS_MADR=[${_NICS_MADR:-}]" \
+		"info,_NICS_AUTO=[${_NICS_AUTO:-}]" \
+		"info,_NICS_IPV4=[${_NICS_IPV4:-}]" \
+		"info,_NICS_IPV4=[${_NICS_DNS4:-}]" \
+		"info,_NICS_IPV4=[${_NICS_WGRP:-}]" \
+		"info,_NICS_IPV4=[${_IPV6_ADDR:-}]" \
+		"info,_NICS_IPV4=[${_LINK_ADDR:-}]"
 	# --- ipv4 ----------------------------------------------------------------
 	if [ -z "${_NICS_IPV4:-}" ]; then
 		_NICS_AUTO="dhcp"
@@ -141,4 +152,6 @@ fnNetwork_param() {
 	readonly _LINK_LADR
 	readonly _LINK_RADR
 	unset ___DIRS ___PATH ___WORK
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${___FUNC_NAME}]"
+	unset ___FUNC_NAME
 }

@@ -21,7 +21,7 @@ function fnMake_live_vmimg_p1() {
 	declare -r    __TGET_UUID="${4:?}"	# uuid
 	declare -r    __TGET_DIST="${5:?}"	# distribution
 	declare -r    __TGET_ENTR="${6:?}"	# menu entry
-	declare -r    __INPD="/boot/grub"						# input directory
+	declare       __INPD="/boot/grub"						# input directory
 	declare -r    __OUTD="${__TGET_OUTD:?}/strg"			# output directory
 	declare -r    __MNTP="${__TGET_OUTD:?}/mnt1"			# mount point
 #	declare -r    __CDFS="${__TGET_OUTD:?}/${_DIRS_CDFS:?}"	# cdfs image mount point
@@ -55,12 +55,14 @@ function fnMake_live_vmimg_p1() {
 	fi
 	mount "${__TGET_DEVS}${__TGET_PART}" "${__MNTP}" && _LIST_RMOV+=("${__MNTP}")
 	"${__COMD:?}" \
+		--force \
 		--target=x86_64-efi \
 		--efi-directory="${__MNTP}" \
 		--boot-directory="${__MNTP}/boot" \
 		--bootloader-id="${__TGET_DIST,,}" \
 		--removable
 	"${__COMD:?}" \
+		--force \
 		--target=i386-pc \
 		--boot-directory="${__MNTP}/boot" \
 		"${__TGET_DEVS}"
@@ -73,6 +75,9 @@ function fnMake_live_vmimg_p1() {
 	dd if="${__TGET_DEVS:?}" of="${__MBRF:?}" bs=1 count=440
 	# --- create grub.cfg -----------------------------------------------------
 	mount "${__TGET_DEVS}${__TGET_PART}" "${__MNTP}" && _LIST_RMOV+=("${__MNTP}")
+	[[ -e "${__MNTP:?}/boot/grub2/." ]] && __INPD="/boot/grub2"
+	readonly __INPD						# input directory
+	fnMsgout "${_PROG_NAME:-}" "info" "grub: [${__INPD:-}]"
 	fnGrub_conf  "${__GCFG:?}" "${__INPD}/${_FILE_MENU:?}" "${__INPD}/${_FILE_THME:?}" "${_MENU_TOUT:?}" "${_MENU_RESO:?}" "${_MENU_DPTH:?}"
 	fnGrub_theme "${__THME:?}" "${__TITL:?}" "${__INPD}/${_MENU_SPLS:?}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__MENU:?}"

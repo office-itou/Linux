@@ -129,7 +129,7 @@ function fnMake_live_build() {
 _EOT_
 				# --- create iso image file -----------------------------------
 				fnMake_live_vmimg "${__OUTD:-}" "${__WRKD:?}" "${__VLID:-}" "${__ENTR:-}" "${__STRG:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}"
-				fnMake_live_qemu  "${__STRG:-}"
+				fnMake_live_qemu  "${__STRG:-}" "${__DIST:-}" "${__VERS:-}" "${__CODE:-}"
 				fnMake_live_cdimg "${__OUTD:-}" "${__VLID:-}" "${__ENTR:-}" "${__STRG:-}" "${__ISOS:-}"
 				;;
 			*            ) __OPTN=("help");;

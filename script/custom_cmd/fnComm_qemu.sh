@@ -27,7 +27,7 @@ function fnMk_qemu() {
 		fnMsgout "${_PROG_NAME:-}" "abnormal termination" "[${__FUNC_NAME}]"
 		exit 1
 	fi
-	if ! nice -n 19 "${__COMD:?}" "${__OPTN[@]}"; then
+	if ! "${__COMD:?}" "${__OPTN[@]}"; then
 		__RTCD="$?"
 #		echo -e "\x12\x1bc"
 		printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [qemu]" "${__COMD} ${__OPTN[*]}" 1>&2

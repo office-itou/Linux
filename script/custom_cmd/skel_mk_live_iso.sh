@@ -235,6 +235,9 @@
 	source "${_SHEL_COMD:?}"/fnComm_qemu.sh					# execute qemu
 
 	# shellcheck source=/dev/null
+	source "${_SHEL_COMD:?}"/fnComm_virt.sh					# execute virt
+
+	# shellcheck source=/dev/null
 	source "${_SHEL_COMD:?}"/fnComm_squashfs.sh				# make squashfs file
 
 	# shellcheck source=/dev/null

@@ -611,7 +611,7 @@ function fnMkosi_finalize_dracut() {
 		"98 pollcdrom                       o   Do? Roo Soo when_required   -                           polls_CD-ROM                                                                                            "
 		"98 selinux                         -   D-? R-- S-- when_required   -                           selinux_policy                                                                                          "
 		"98 selinux-microos                 o   --? --- S-o -               -                           -                                                                                                       "
-		"98 syslog                          -   D-? R-- S-- when_required   rsyslog                     Includes_syslog_capabilites                                                                             "
+		"98 syslog                          o   Do? Ro- So- when_required   rsyslog                     Includes_syslog_capabilites                                                                             "
 		"98 usrmount                        o   D-? R-o S-o always          -                           mounts_/usr                                                                                             "
 		"99 base                            o   Do? Roo Soo always          -                           Base_module_with_required_utilities                                                                     "
 		"99 busybox                         -   D-? R-- --- when_required   busybox                     busybox                                                                                                 "
