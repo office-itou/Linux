@@ -15,32 +15,36 @@ function fnMake_mkosi_conf_create() {
 		# === Match ===================================================================
 		[Match]
 		${__TGET_DIST:-"#Distribution="}
-		Environment=!EDITION=desktop
 		${__TGET_RELS:-"#Release=general"}
+		Architecture=x86-64
+		Environment=!EDITION=desktop
 
 		# === Distribution ============================================================
 		[Distribution]
-		${__TGET_REPO:-"#Repositories="}
 		RepositoryKeyCheck=no
 		RepositoryKeyFetch=yes
-
-		# === Build ===================================================================
-		[Build]
-		WithNetwork=yes
-		WorkspaceDirectory=\$SUDO_HOME/.workdirs/mkosi/%d-%r-%a-\$EDITION/workdir/
-		PackageCacheDirectory=/srv/user/share/cache/%d-%r-%a
-		${__TGET_SAND:-"#SandboxTrees="}
-		#CacheDirectory=/srv/user/share/cache/
-		#CacheKey=%d-%r-%a
-		#BuildSources=\$SUDO_HOME/.workdirs/mkosi/%d-%r-%a/sources/
-		#BuildKey=%d-%r-%a
+		${__TGET_REPO:-"#Repositories="}
 
 		# === Output ==================================================================
 		[Output]
-		#Format=disk
-		#Format=directory
 		Output=rootfs
 		OutputDirectory=\$SUDO_HOME/.workdirs/mkosi/%d-%r-%a-\$EDITION/outputs/
+		#Format=disk
+		#Format=directory
+		#CompressOutput=zstd
+
+		# === Build ===================================================================
+		[Build]
+		WorkspaceDirectory=\$SUDO_HOME/.workdirs/mkosi/%d-%r-%a-\$EDITION/workdir/
+		PackageCacheDirectory=/srv/user/share/cache/%d-%r-%a
+		ToolsTree=yes
+		WithNetwork=yes
+		${__TGET_SAND:-"#SandboxTrees="}
+		#CacheDirectory=/srv/user/share/cache/
+		#CacheKey=%d-%r-%a
+		#BuildSources=\$SUDO_HOME/.workdirs/mkosi/%d-%r-%a-\$EDITION/sources/
+		#BuildSources=\$SUDO_HOME/.workdirs/mkosi/%d-%r-%a/sources/
+		#BuildKey=%d-%r-%a
 
 		# === Runtime =================================================================
 		[Runtime]

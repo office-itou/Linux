@@ -23,45 +23,75 @@ function fnMake_live_mkosi() {
 	declare -r    __TGET_OUTD="${6:-}"	# --output-directory=
 	declare       __HOST=""				# --hostname=
 	declare -a    __OPTN=()				# command
-	declare -r    __BOOT="${_MKOS_BOOT:-}"
-	declare -r    __OUTP="${_MKOS_OUTP:-}"
-	declare -r    __FMAT="${_MKOS_FMAT:-}"
-	declare -r    __NWRK="${_MKOS_NWRK:-}"
-	declare -r    __RECM="${_MKOS_RECM:-}"
-	declare -r    __ARCH="${_MKOS_ARCH:-}"
-	declare -r    __MKOS="${_DIRS_MKOS:-}"
-	declare -r    __DIST="${__TGET_DIST:-}"
-	declare -r    __VERS="${__TGET_VERS:-}"
-	declare -r    __EDTN="${__TGET_EDTN:-}"
-	declare -r    __WRKD="${__TGET_WRKD:-}"
-	declare -r    __OUTD="${__TGET_OUTD:-}"
-	declare -r    __CACH=""
+	declare -r    __MKOS="${_DIRS_MKOS:-}"					# --directory
+#	declare -r    __WIPE=""									# --wipe-build-dir
+	declare -r    __DIST="${__TGET_DIST:-}"					# --distribution, --tools-tree-distribution
+	declare -r    __VERS="${__TGET_VERS:-}"					# --release, --tools-tree-release
+	declare -r    __ARCH="${_MKOS_ARCH:-}"					# --architecture
+	declare -r    __RCHK=""									# --repository-key-check
+	declare -r    __RKEY=""									# --repository-key-fetch
+	declare -r    __REPO=""									# --repositories
+	declare -r    __FMAT="${_MKOS_FMAT:-}"					# --format
+	declare -r    __OUTP="${_MKOS_OUTP:-}"					# --output
+	declare -r    __COMP=""									# --compress-output
+	declare -r    __OUTD="${__TGET_OUTD:-}"					# --output-directory
+	declare -r    __PKGS=""									# --package
+	declare -r    __RECM="${_MKOS_RECM:-}"					# --with-recommends
+	declare -r    __BOOT="${_MKOS_BOOT:-}"					# --bootable
+	declare -r    __TOOL=""									# --tools-tree
+	declare -r    __WRKD="${__TGET_WRKD:-}"					# --workspace-directory
+	declare -r    __CACH=""									# --package-cache-dir
+	declare -r    __BSRC=""									# --build-sources
+	declare -r    __NWRK="${_MKOS_NWRK:-}"					# --with-network
+	declare -r    __EDTN="${__TGET_EDTN:-}"					# --environment=EDITION
+	declare -r    __LANG=""									# --locale, --locale-messages
+	declare -r    __KMAP=""									# --keymap
+	declare -r    __TZON=""									# --timezone
+	declare       __HOST=""									# --hostname
+	declare -r    __RTPW=""									# --root-password
+
 	# --- --hostname= ---------------------------------------------------------
 	__HOST="$(fnFind_distribution "${__DIST}")"
 	__HOST="${__HOST:+"sv-${__HOST}.workgroup"}"
 	__HOST="${__HOST,,}"
+	readonly __HOST
 	# --- command -------------------------------------------------------------
 	__OPTN=(
-		${__BOOT:+--bootable="${__BOOT}"}
-		${__OUTP:+--output="${__OUTP}"}
-		${__FMAT:+--format="${__FMAT}"}
-		${__NWRK:+--with-network="${__NWRK}"}
-		${__RECM:+--with-recommends="${__RECM}"}
+		--force
+		${__MKOS:+--directory="${__MKOS}"}
 		${__DIST:+--distribution="${__DIST}"}
 		${__VERS:+--release="${__VERS}"}
 		${__ARCH:+--architecture="${__ARCH//_/-}"}
-		${__MKOS:+--directory="${__MKOS}"}
+		${__RCHK:+--repository-key-check="${__RCHK}"}
+		${__RKEY:+--repository-key-fetch="${__RKEY}"}
+		${__REPO:+--repositories="${__REPO}"}
+		${__FMAT:+--format="${__FMAT}"}
+		${__OUTP:+--output="${__OUTP}"}
+		${__COMP:+--compress-output="${__COMP}"}
+		${__OUTD:+--output-directory="${__OUTD}"}
+		${__PKGS:+--package="${__PKGS}"}
+		${__RECM:+--with-recommends="${__RECM}"}
+		${__BOOT:+--bootable="${__BOOT}"}
+		${__TOOL:+--tools-tree="${__TOOL}"}
+		${__DIST:+--tools-tree-distribution="${__DIST}"}
+		${__VERS:+--tools-tree-release="${__VERS}"}
 		${__WRKD:+--workspace-directory="${__WRKD}"}
 		${__CACH:+--package-cache-dir="${__CACH}"}
-		${__OUTD:+--output-directory="${__OUTD}"}
+		${__BSRC:+--build-sources="${__BSRC}"}
+		${__NWRK:+--with-network="${__NWRK}"}
 		${__EDTN:+--environment=EDITION="${__EDTN}"}
+		${__LANG:+--locale="${__LANG}"}
+		${__LANG:+--locale-messages="${__LANG}"}
+		${__KMAP:+--keymap="{__KMAP}"}
+		${__TZON:+--timezone="${__TZON}"}
 		${__HOST:+--hostname="${__HOST}"}
+		${__RTPW:+--root-password="${__RTPW}"}
 	)
 	case "${__OPRT:-}" in
 #		init         ) __OPTN=("${__OPRT}");;
 		summary      ) __OPTN+=(--no-pager summary);;
 #		cat-config   ) __OPTN=("${__OPRT}");;
-		build        ) __OPTN+=(--force --wipe-build-dir build);;
+		build        ) __OPTN+=(--wipe-build-dir build);;
 #		shell        ) __OPTN=("${__OPRT}");;
 #		boot         ) __OPTN=("${__OPRT}");;
 #		vm           ) __OPTN=("${__OPRT}");;
@@ -82,9 +112,14 @@ function fnMake_live_mkosi() {
 		*            ) __OPTN=("help");;
 	esac
 #	__OPTN=("--debug" "${__OPTN[@]:-}")
-	fnMk_mkosi "${__OPTN[@]}"
+	readonly __OPTN
 
-	unset __OPTN __HOST
+#	mkdir -p "${__WRKD:?}" "${__BSRC:?}"
+#	pushd "${__WRKD:?}" > /dev/null || exit 1
+	fnMk_mkosi "${__OPTN[@]}"
+#	popd > /dev/null || exit 1
+
+#	unset __OPTN __HOST
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
