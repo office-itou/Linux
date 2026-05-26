@@ -1844,7 +1844,6 @@ function fnMake_live_mkosi() {
 	declare -r    __TGET_EDTN="${4:-}"	# edition
 	declare -r    __TGET_WRKD="${5:-}"	# --workspace-directory=
 	declare -r    __TGET_OUTD="${6:-}"	# --output-directory=
-	declare -r    __TGET_BSRC="${7:-}"	# --build-sources
 	declare       __HOST=""				# --hostname=
 	declare -a    __OPTN=()				# command
 	declare -r    __MKOS="${_DIRS_MKOS:-}"					# --directory
@@ -1865,7 +1864,7 @@ function fnMake_live_mkosi() {
 	declare -r    __TOOL=""									# --tools-tree
 	declare -r    __WRKD="${__TGET_WRKD:-}"					# --workspace-directory
 	declare -r    __CACH=""									# --package-cache-dir
-	declare -r    __BSRC="${__TGET_BSRC:-}"					# --build-sources
+	declare -r    __BSRC=""									# --build-sources
 	declare -r    __NWRK="${_MKOS_NWRK:-}"					# --with-network
 	declare -r    __EDTN="${__TGET_EDTN:-}"					# --environment=EDITION
 	declare -r    __LANG=""									# --locale, --locale-messages
@@ -1938,10 +1937,10 @@ function fnMake_live_mkosi() {
 #	__OPTN=("--debug" "${__OPTN[@]:-}")
 	readonly __OPTN
 
-	mkdir -p "${__WRKD:?}" "${__BSRC:?}"
-	pushd "${__WRKD:?}" > /dev/null || exit 1
+#	mkdir -p "${__WRKD:?}" "${__BSRC:?}"
+#	pushd "${__WRKD:?}" > /dev/null || exit 1
 	fnMk_mkosi "${__OPTN[@]}"
-	popd > /dev/null || exit 1
+#	popd > /dev/null || exit 1
 
 #	unset __OPTN __HOST
 
@@ -2037,7 +2036,7 @@ function fnMake_live_vmimg_p1() {
 		  echo root=\${root}
 		# set devs=/dev/sda2
 		  set devs=UUID=\${uuid}
-		  set ttys=console=ttyS0
+		  set ttys="console=ttyS0,115200 console=tty0"
 		  set options="\${ttys} root=\${devs}${_SECU_OPTN:+" ${_SECU_OPTN}"}"
 		# if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 		  echo 'Loading boot files ...'
@@ -2779,7 +2778,7 @@ function fnMake_live_build() {
 		__SUBD="${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${__ARCH//_/-}"}${__EDTN+-"${__EDTN}"}"
 		__WRKD="${__TEMP:?}/${__SUBD:?}/workdir"			# --workspace-directory=
 		__OUTD="${__RTMP:?}/${__SUBD:?}" 					# --output-directory=
-		__BSRC="${__TEMP:?}/${__SUBD:?}/sources"			# --build-sources
+#		__BSRC="${__TEMP:?}/${__SUBD:?}/sources"			# --build-sources
 		# --- iso file name ---------------------------------------------------
 		__VLID="$(fnFind_distribution "${__DIST}")"			# volume id (<=16) Debian13.0x64s / AlmaLinux10x64s / openSUSE16.0x64s
 		__ENTR="${__VLID}${__VERS:+" ${__VERS^}"}${__ARCH:+" ${__ARCH//-/_}"}${__EDTN:+" ${__EDTN^}"}"
@@ -2793,7 +2792,7 @@ function fnMake_live_build() {
 		__VLID="${__VLID^^}"
 		__VLID="${__VLID::16}"
 		# --- build -----------------------------------------------------------
-		fnMake_live_mkosi "${__OPRT:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}" "${__WRKD:-}" "${__OUTD:-}" "${__BSRC:-}"
+		fnMake_live_mkosi "${__OPRT:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}" "${__WRKD:-}" "${__OUTD:-}"
 		case "${__OPRT:-}" in
 			build        )
 				mkdir -p "${__OUTD:?}"
