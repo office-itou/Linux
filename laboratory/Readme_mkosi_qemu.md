@@ -14,6 +14,7 @@ mkosi、qemu、novncを利用し作成した環境の起動確認をする。
     |-- initrd -> initrd.cpio.zst
     |-- initrd.cpio.zst
     |-- mkosi.conf
+    |-- mkosi.finalize.chroot
     |-- mkosi.tools
     |-- mkosi.tools.manifest
     |-- repository
@@ -375,6 +376,106 @@ mkosi、qemu、novncを利用し作成した環境の起動確認をする。
         # -------------------------------------------------------------------------
 
     # === eof =====================================================================
+    ```
+
+    </details>
+  * <details><summary>mkosi.finalize.chroot</summary>
+
+    ``` bash
+    #!/bin/bash
+
+    set -eu
+
+    if [ "${container:-}" != "mkosi" ]; then
+    	exec mkosi-chroot "$CHROOT_SCRIPT" "$@"
+    fi
+
+    systemctl disable systemd-networkd.service
+
+    sed -i /etc/nsswitch.conf \
+        -e '/^hosts:[ \t]\+/ {' \
+        -e 's/^/#/' \
+        -e 'a hosts:          files wins mdns_minimal mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns mdns6 mdns4' \
+        -e '}'
+
+    firewall-offline-cmd \
+    --add-service=dhcp \
+    --add-service=dhcpv6 \
+    --add-service=dhcpv6-client \
+    --add-service=dns \
+    --add-service=http \
+    --add-service=https \
+    --add-service=mdns \
+    --add-service=nfs \
+    --add-service=proxy-dhcp \
+    --add-service=samba \
+    --add-service=samba-client \
+    --add-service=ssh \
+    --add-service=tftp \
+    --zone=public
+
+    cat <<- _EOT_ > /etc/NetworkManager/conf.d/dns.conf
+    [main]
+    dns=systemd-resolved
+    _EOT_
+
+    cat <<- _EOT_ > /etc/NetworkManager/conf.d/mdns.conf
+    [connection]
+    connection.mdns=2
+    _EOT_
+
+    mkdir -p /etc/systemd/resolved.conf.d
+    cat <<- _EOT_ > /etc/systemd/resolved.conf.d/default.conf
+    [Resolve]
+    DNS=127.0.0.1
+    #FallbackDNS=
+    Domains=workgroup
+    #DNSSEC=no
+    #DNSOverTLS=no
+    MulticastDNS=yes
+    LLMNR=yes
+    #Cache=yes
+    #CacheFromLocalhost=no
+    #DNSStubListener=yes
+    #DNSStubListenerExtra=
+    ReadEtcHosts=no
+    #ResolveUnicastSingleLabel=no
+    #StaleRetentionSec=0
+    _EOT_
+
+    mkdir -p /etc/dnsmasq.d
+    cat <<- _EOT_ > /etc/dnsmasq.d/default.conf
+    #bogus-priv                              # do not perform reverse lookup of private ip address on upstream server
+    #domain-needed                           # do not forward plain names
+    #domain=workgroup                        # local domain name
+    #expand-hosts                            # add domain name to host
+    #interface=enp0s2                        # listen to interface
+    #listen-address=127.0.0.1                # listen to ip address
+    #server=192.168.1.254                    # directly specify upstream server
+    #no-hosts                                # don't read the hostnames in /etc/hosts
+    #no-poll                                 # don't poll /etc/resolv.conf for changes
+    #no-resolv                               # don't read /etc/resolv.conf
+    bind-dynamic                            # enable bind-interfaces and the default hybrid network mode
+    #dhcp-range=192.168.1.0,proxy,24         # proxy dhcp
+    #dhcp-no-override                        # disable re-use of the dhcp servername and filename fields as extra option space
+    #dhcp-reply-delay=1                      #
+    _EOT_
+
+    __USER="master"                     # user id
+    __PAWD="master"                     # password
+    __SUDO="$(awk -F ':' '$1~/sudo|wheel/ {print $1;}' /etc/group)"
+    __CRYP="$(openssl passwd -6 "${__PAWD}")"
+    __OPTN=(
+    	--create-home
+    	--user-group
+    	${__CRYP:+--password "${__CRYP}"}
+    	${__SUDO:+--groups "${__SUDO}"}
+    	${__SHEL:+--shell "${__SHEL}"}
+    	"${__USER:?}"
+    )
+    useradd "${__OPTN[@]}"
+
+    unset __OPTN __CRYP __SUDO __PAWD __USER
     ```
 
     </details>
