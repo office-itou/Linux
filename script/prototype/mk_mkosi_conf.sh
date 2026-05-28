@@ -9,7 +9,8 @@ function fnMake_mkosi_conf_create() {
 	declare -r    __TGET_RELS="${3:-}"	# release
 	declare -r    __TGET_REPO="${4:-}"	# repository
 	declare -r    __TGET_SAND="${5:-}"	# sandbox
-	declare -r    __TGET_PACK="${6:-}"	# package
+	declare -r    __TGET_TOOL="${6:-}"	# tools tree
+	declare -r    __TGET_PACK="${7:-}"	# package
 
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__TGET_PATH:?}" || true
 		# === Match ===================================================================
@@ -27,17 +28,17 @@ function fnMake_mkosi_conf_create() {
 
 		# === Output ==================================================================
 		[Output]
-		Output=rootfs
-		OutputDirectory=\$SUDO_HOME/.workdirs/mkosi/%d-%r-%a-\$EDITION/outputs/
+		#Output=rootfs
+		#OutputDirectory=\$SUDO_HOME/.workdirs/mkosi/%d-%r-%a-\$EDITION/outputs/
 		#Format=disk
 		#Format=directory
 		#CompressOutput=zstd
 
 		# === Build ===================================================================
 		[Build]
-		WorkspaceDirectory=\$SUDO_HOME/.workdirs/mkosi/%d-%r-%a-\$EDITION/workdir/
+		${__TGET_TOOL:-"#ToolsTree=yes\n#ToolsTreeDistribution=%d\n#ToolsTreeRelease=%r"}
+		#WorkspaceDirectory=\$SUDO_HOME/.workdirs/mkosi/%d-%r-%a-\$EDITION/workdir/
 		PackageCacheDirectory=/srv/user/share/cache/%d-%r-%a
-		ToolsTree=yes
 		WithNetwork=yes
 		${__TGET_SAND:-"#SandboxTrees="}
 		#CacheDirectory=/srv/user/share/cache/
@@ -89,6 +90,7 @@ function fnMake_mkosi_conf_template() {
 	declare       __RELS=""				# release
 	declare       __REPO=""				# repository
 	declare       __SAND=""				# sandbox
+	declare       __TOOL=""				# tools tree
 	declare       __PACK=""				# package
 
 	__DIST="distribution"
@@ -99,6 +101,13 @@ _EOT_
 	__REPO=""
 	__SAND="$(
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+_EOT_
+	)"
+	__TOOL="$(
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+		ToolsTree=yes
+		ToolsTreeDistribution=%d
+		ToolsTreeRelease=%r
 _EOT_
 	)"
 	__PACK="$(
@@ -118,7 +127,7 @@ _EOT_
 			    # -------------------------------------------------------------------------
 _EOT_
 	)"
-	fnMake_mkosi_conf_create "${__TGET_PATH:?}" "${__DIST:-}" "${__RELS:-}" "${__REPO:-}" "${__SAND:-}" "${__PACK:-}"
+	fnMake_mkosi_conf_create "${__TGET_PATH:?}" "${__DIST:-}" "${__RELS:-}" "${__REPO:-}" "${__SAND:-}" "${__TOOL:-}" "${__PACK:-}"
 }
 
 # -----------------------------------------------------------------------------
@@ -128,6 +137,7 @@ function fnMake_mkosi_conf_debian() {
 	declare       __RELS=""				# release
 	declare       __REPO=""				# repository
 	declare       __SAND=""				# sandbox
+	declare       __TOOL=""				# tools tree
 	declare       __PACK=""				# package
 
 	# o 11.0  bullseye
@@ -158,13 +168,21 @@ _EOT_
 			SandboxTrees=repository/%d-%r-backports.sources:/etc/apt/sources.list.d/%d-%r-backports.sources
 _EOT_
 	)"
+	__TOOL="$(
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+		ToolsTree=yes
+		ToolsTreeDistribution=%d
+		ToolsTreeRelease=%r
+_EOT_
+	)"
 	__PACK="$(
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 			Packages=
 			    # --- mkosi ---------------------------------------------------------------
 			#-  mkosi                               # build Bespoke OS Images
-			    debian-archive-keyring              # OpenPGP archive certificates of the Debian archive
-			    debian-keyring                      # OpenPGP certificates of Debian Developers and Maintainers
+			#   debian-archive-keyring              # OpenPGP archive certificates of the Debian archive
+			#   debian-keyring                      # OpenPGP certificates of Debian Developers and Maintainers
+			    distribution-gpg-keys               # Archive keyrings for RPM-based Linux distributions
 			    dnf                                 # Dandified Yum package manager
 			    dosfstools                          # utilities for making and checking MS-DOS FAT filesystems
 			#o  gawk                                # GNU awk, a pattern scanning and processing language
@@ -178,8 +196,8 @@ _EOT_
 			    systemd-repart                      # Provides the systemd-repart and systemd-sbsign utilities
 			#-  task-english                        # General English environment
 			    task-japanese                       # Japanese environment
-			    ubuntu-archive-keyring              # GnuPG keys of the Ubuntu archive - transition package
-			    ubuntu-keyring                      # GnuPG keys used by Ubuntu Project
+			#   ubuntu-archive-keyring              # GnuPG keys of the Ubuntu archive - transition package
+			#   ubuntu-keyring                      # GnuPG keys used by Ubuntu Project
 			#o  xorriso                             # command line ISO-9660 and Rock Ridge manipulation tool
 			#o  xxd                                 # tool to make (or reverse) a hex dump
 			    zypper                              # command line software manager using libzypp
@@ -396,7 +414,7 @@ _EOT_
 			    # -------------------------------------------------------------------------
 _EOT_
 	)"
-	fnMake_mkosi_conf_create "${__TGET_PATH:?}" "${__DIST:-}" "${__RELS:-}" "${__REPO:-}" "${__SAND:-}" "${__PACK:-}"
+	fnMake_mkosi_conf_create "${__TGET_PATH:?}" "${__DIST:-}" "${__RELS:-}" "${__REPO:-}" "${__SAND:-}" "${__TOOL:-}" "${__PACK:-}"
 }
 
 # -----------------------------------------------------------------------------
@@ -406,6 +424,7 @@ function fnMake_mkosi_conf_ubuntu() {
 	declare       __RELS=""				# release
 	declare       __REPO=""				# repository
 	declare       __SAND=""				# sandbox
+	declare       __TOOL=""				# tools tree
 	declare       __PACK=""				# package
 
 	# x 14.04 trusty
@@ -435,13 +454,21 @@ _EOT_
 			SandboxTrees=repository/%d-%r-backports.sources:/etc/apt/sources.list.d/%d-%r-backports.sources
 _EOT_
 	)"
+	__TOOL="$(
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+		ToolsTree=yes
+		ToolsTreeDistribution=%d
+		ToolsTreeRelease=%r
+_EOT_
+	)"
 	__PACK="$(
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 			Packages=
 			    # --- mkosi ---------------------------------------------------------------
 			#-  mkosi                               # build Bespoke OS Images
 			    debian-archive-keyring              # OpenPGP archive certificates of the Debian archive
-			    debian-keyring                      # OpenPGP certificates of Debian Developers and Maintainers
+			#   debian-keyring                      # OpenPGP certificates of Debian Developers and Maintainers
+			    distribution-gpg-keys               # Archive keyrings for RPM-based Linux distributions
 			    dnf                                 # Dandified Yum package manager
 			    dosfstools                          # utilities for making and checking MS-DOS FAT filesystems
 			#o  gawk                                # GNU awk, a pattern scanning and processing language
@@ -456,7 +483,7 @@ _EOT_
 			#x  task-english                        #
 			#x  task-japanese                       #
 			#x  ubuntu-archive-keyring              #
-			    ubuntu-keyring                      # GnuPG keys of the Ubuntu archive
+			#   ubuntu-keyring                      # GnuPG keys of the Ubuntu archive
 			#o  xorriso                             # command line ISO-9660 and Rock Ridge manipulation tool
 			#o  xxd                                 # tool to make (or reverse) a hex dump
 			    zypper                              # command line software manager using libzypp
@@ -668,7 +695,7 @@ _EOT_
 			    # -------------------------------------------------------------------------
 _EOT_
 	)"
-		fnMake_mkosi_conf_create "${__TGET_PATH:?}" "${__DIST:-}" "${__RELS:-}" "${__REPO:-}" "${__SAND:-}" "${__PACK:-}"
+	fnMake_mkosi_conf_create "${__TGET_PATH:?}" "${__DIST:-}" "${__RELS:-}" "${__REPO:-}" "${__SAND:-}" "${__TOOL:-}" "${__PACK:-}"
 }
 
 # -----------------------------------------------------------------------------
@@ -678,6 +705,7 @@ function fnMake_mkosi_conf_rhel_series() {
 	declare       __RELS=""				# release
 	declare       __REPO=""				# repository
 	declare       __SAND=""				# sandbox
+	declare       __TOOL=""				# tools tree
 	declare       __PACK=""				# package
 
 	__DIST="$(
@@ -702,6 +730,13 @@ _EOT_
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 _EOT_
 	)"
+	__TOOL="$(
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+		ToolsTree=yes
+		ToolsTreeDistribution=%d
+		ToolsTreeRelease=%r
+_EOT_
+	)"
 	__PACK="$(
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 			Packages=
@@ -711,8 +746,9 @@ _EOT_
 			    mtools                              # Programs for accessing MS-DOS disks without mounting the disks
 			    python3-pefile                      # Python module for working with Portable Executable files
 			    squashfs-tools                      # Utility for the creation of squashfs filesystems
-			    debian-keyring                      # GnuPG archive keys of the Debian archive
-			    ubu-keyring                         # GnuPG keys of the Ubuntu archive
+			    distribution-gpg-keys               # GPG keys of various Linux distributions
+			#   debian-keyring                      # GnuPG archive keys of the Debian archive
+			#   ubu-keyring                         # GnuPG keys of the Ubuntu archive
 			    apt                                 # Command-line package manager for Debian packages
 			    # --- kernel --------------------------------------------------------------
 			    kernel                              # The Linux kernel
@@ -871,7 +907,7 @@ _EOT_
 			    # -------------------------------------------------------------------------
 _EOT_
 	)"
-		fnMake_mkosi_conf_create "${__TGET_PATH:?}" "${__DIST:-}" "${__RELS:-}" "${__REPO:-}" "${__SAND:-}" "${__PACK:-}"
+	fnMake_mkosi_conf_create "${__TGET_PATH:?}" "${__DIST:-}" "${__RELS:-}" "${__REPO:-}" "${__SAND:-}" "${__TOOL:-}" "${__PACK:-}"
 }
 
 # -----------------------------------------------------------------------------
@@ -881,6 +917,7 @@ function fnMake_mkosi_conf_opensuse() {
 	declare       __RELS=""				# release
 	declare       __REPO=""				# repository
 	declare       __SAND=""				# sandbox
+	declare       __TOOL=""				# tools tree
 	declare       __PACK=""				# package
 
 	__DIST="Distribution=opensuse"
@@ -899,6 +936,13 @@ _EOT_
 			SandboxTrees=repository/%d-%r-sle.repo:/etc/zypp/repos.d/%d-%r-sle.repo
 _EOT_
 	)"
+	__TOOL="$(
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+		ToolsTree=no
+		ToolsTreeDistribution=%d
+		ToolsTreeRelease=%r
+_EOT_
+	)"
 	__PACK="$(
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 			Packages=
@@ -906,10 +950,11 @@ _EOT_
 			#-  mkosi                               # Build bespoke OS Images
 			    systemd-container                   # Systemd tools for container management
 			    mtools                              # Tools to access MS-DOS filesystems without kernel drivers
+			    distribution-gpg-keys               # GPG keys of various Linux distributions
 			    # --- kernel --------------------------------------------------------------
 			    kernel-default                      # The Standard Kernel
-			    kernel-default-extra                # The Standard Kernel - Unsupported kernel modules
-			    kernel-default-optional             # The Standard Kernel - Optional kernel modules
+			#   kernel-default-extra                # The Standard Kernel - Unsupported kernel modules
+			#   kernel-default-optional             # The Standard Kernel - Optional kernel modules
 			    kernel-firmware-all                 # Compatibility metapackage for kernel firmware files
 			#   compat-usrmerge-tools               # UsrMerge tools
 			    # --- microcode -----------------------------------------------------------
@@ -1113,12 +1158,15 @@ _EOT_
 			#   selinux-policy                      # SELinux policy configuration
 			#   selinux-policy-targeted             # SELinux targeted base policy
 			    sudo-policy-wheel-auth-self         # Users in the wheel group can authenticate as admin
+			    systemd                             # A System and Session Manager
 			#   systemd-boot                        # A simple UEFI boot manager
+			    timezone                            # Time Zone Descriptions
+			    udev                                # A rule-based device node and kernel event manager
 			#   util-linux                          # A collection of basic system utilities (core part)
 			#   util-linux-lang                     # Translations for package util-linux
 			#   util-linux-systemd                  # A collection of basic system utilities (systemd dependent part)
 			#   whiptail                            #
-			    zypper                              # Command line software manager using libzypp
+			#   zypper                              # Command line software manager using libzypp
 			    # --- nfs -----------------------------------------------------------------
 			#   nfs-common                          #
 			    nfs-client                          # Support Utilities for NFS
@@ -1277,7 +1325,7 @@ _EOT_
 			    # -------------------------------------------------------------------------
 _EOT_
 	)"
-		fnMake_mkosi_conf_create "${__TGET_PATH:?}" "${__DIST:-}" "${__RELS:-}" "${__REPO:-}" "${__SAND:-}" "${__PACK:-}"
+	fnMake_mkosi_conf_create "${__TGET_PATH:?}" "${__DIST:-}" "${__RELS:-}" "${__REPO:-}" "${__SAND:-}" "${__TOOL:-}" "${__PACK:-}"
 }
 
 # -----------------------------------------------------------------------------

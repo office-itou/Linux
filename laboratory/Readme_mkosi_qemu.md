@@ -143,6 +143,7 @@ mkosi、qemu、novncを利用し作成した環境の起動確認をする。
     #-  mkosi                               # build Bespoke OS Images
         debian-archive-keyring              # OpenPGP archive certificates of the Debian archive
         debian-keyring                      # OpenPGP certificates of Debian Developers and Maintainers
+        distribution-gpg-keys               # Archive keyrings for RPM-based Linux distributions
         dnf                                 # Dandified Yum package manager
         dosfstools                          # utilities for making and checking MS-DOS FAT filesystems
     #o  gawk                                # GNU awk, a pattern scanning and processing language

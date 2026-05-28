@@ -97,8 +97,10 @@ function fnMake_live_build() {
 #		__ARCH="${_MKOS_ARCH//_/-}"							# architecture
 		# --- work directory --------------------------------------------------
 		__SUBD="${__DIST}-${__CODE:-"${__VERS}"}${__ARCH:+-"${__ARCH//_/-}"}${__EDTN+-"${__EDTN}"}"
-		__WRKD="${__TEMP:?}/${__SUBD:?}/workdir"			# --workspace-directory=
-		__OUTD="${__RTMP:?}/${__SUBD:?}" 					# --output-directory=
+		__WRKD="${__TEMP:?}/${__SUBD:?}"					# local work directory
+		__OUTD="${__RTMP:?}/${__SUBD:?}" 					# remote work directory
+#		__WRKD="${__TEMP:?}/${__SUBD:?}/workdir"			# --workspace-directory=
+#		__OUTD="${__RTMP:?}/${__SUBD:?}" 					# --output-directory=
 #		__BSRC="${__TEMP:?}/${__SUBD:?}/sources"			# --build-sources
 		# --- iso file name ---------------------------------------------------
 		__VLID="$(fnFind_distribution "${__DIST}")"			# volume id (<=16) Debian13.0x64s / AlmaLinux10x64s / openSUSE16.0x64s
@@ -113,7 +115,7 @@ function fnMake_live_build() {
 		__VLID="${__VLID^^}"
 		__VLID="${__VLID::16}"
 		# --- build -----------------------------------------------------------
-		fnMake_live_mkosi "${__OPRT:-}" "${__DIST:-}" "${__CODE:-"${__VERS:-}"}" "${__EDTN:-}" "${__WRKD:-}" "${__OUTD:-}"
+		fnMake_live_mkosi "${__OPRT:-}" "${__DIST:-}" "${__VERS:-}" "${__CODE:-}" "${__EDTN:-}" "${__WRKD:?}"
 		case "${__OPRT:-}" in
 			build        )
 				mkdir -p "${__OUTD:?}"

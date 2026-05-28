@@ -5,9 +5,10 @@
 #   input :     $1     : operation
 #   input :     $2     : distribution
 #   input :     $3     : version
-#   input :     $4     : edition
-#   input :     $5     : workspace directory
-#   input :     $6     : output directory
+#   input :     $4     : code
+#   input :     $5     : edition
+#   input :     $6     : workspace directory
+#   input :     $7     : output directory
 #   output:   stdout   : message
 #   return:            : unused
 #   g-var : _AUTO_INST : read
@@ -18,37 +19,41 @@ function fnMake_live_mkosi() {
 	declare -r    __TGET_OPRT="${1:-}"	# operation
 	declare -r    __TGET_DIST="${2:-}"	# distribution
 	declare -r    __TGET_VERS="${3:-}"	# version
-	declare -r    __TGET_EDTN="${4:-}"	# edition
-	declare -r    __TGET_WRKD="${5:-}"	# --workspace-directory=
-	declare -r    __TGET_OUTD="${6:-}"	# --output-directory=
+	declare -r    __TGET_CODE="${4:-}"	# version
+	declare -r    __TGET_EDTN="${5:-}"	# edition
+	declare -r    __TGET_WRKD="${6:-}"	# local work directory
+#	declare -r    __TGET_WRKD="${6:-}"	# --workspace-directory=
+#	declare -r    __TGET_OUTD="${7:-}"	# --output-directory=
 	declare       __HOST=""				# --hostname=
 	declare -a    __OPTN=()				# command
-	declare -r    __MKOS="${_DIRS_MKOS:-}"					# --directory
-#	declare -r    __WIPE=""									# --wipe-build-dir
-	declare -r    __DIST="${__TGET_DIST:-}"					# --distribution, --tools-tree-distribution
-	declare -r    __VERS="${__TGET_VERS:-}"					# --release, --tools-tree-release
-	declare -r    __ARCH="${_MKOS_ARCH:-}"					# --architecture
-	declare -r    __RCHK=""									# --repository-key-check
-	declare -r    __RKEY=""									# --repository-key-fetch
-	declare -r    __REPO=""									# --repositories
-	declare -r    __FMAT="${_MKOS_FMAT:-}"					# --format
-	declare -r    __OUTP="${_MKOS_OUTP:-}"					# --output
-	declare -r    __COMP=""									# --compress-output
-	declare -r    __OUTD="${__TGET_OUTD:-}"					# --output-directory
-	declare -r    __PKGS=""									# --package
-	declare -r    __RECM="${_MKOS_RECM:-}"					# --with-recommends
-	declare -r    __BOOT="${_MKOS_BOOT:-}"					# --bootable
-	declare -r    __TOOL=""									# --tools-tree
-	declare -r    __WRKD="${__TGET_WRKD:-}"					# --workspace-directory
-	declare -r    __CACH=""									# --package-cache-dir
-	declare -r    __BSRC=""									# --build-sources
-	declare -r    __NWRK="${_MKOS_NWRK:-}"					# --with-network
-	declare -r    __EDTN="${__TGET_EDTN:-}"					# --environment=EDITION
-	declare -r    __LANG=""									# --locale, --locale-messages
-	declare -r    __KMAP=""									# --keymap
-	declare -r    __TZON=""									# --timezone
-	declare       __HOST=""									# --hostname
-	declare -r    __RTPW=""									# --root-password
+#	declare -r    __MKOS="${_DIRS_MKOS:?}"						# --directory
+	declare -r    __MKOS="${__TGET_WRKD:_}/mkosi-directory"		# --directory
+#	declare -r    __WIPE=""										# --wipe-build-dir
+	declare -r    __DIST="${__TGET_DIST:-}"						# --distribution, --tools-tree-distribution
+	declare -r    __RELS="${__TGET_CODE:-"${__TGET_VERS:-}"}"	# --release, --tools-tree-release
+	declare -r    __ARCH="${_MKOS_ARCH:-}"						# --architecture
+	declare -r    __RCHK=""										# --repository-key-check
+	declare -r    __RKEY=""										# --repository-key-fetch
+	declare -r    __REPO=""										# --repositories
+	declare -r    __FMAT="${_MKOS_FMAT:-}"						# --format
+	declare -r    __OUTP="${_MKOS_OUTP:-}"						# --output
+	declare -r    __COMP=""										# --compress-output
+#	declare -r    __OUTD="${__TGET_OUTD:-}"						# --output-directory
+	declare -r    __OUTD="${__TGET_WRKD:-}"						# --output-directory
+	declare -r    __PKGS=""										# --package
+	declare -r    __RECM="${_MKOS_RECM:-}"						# --with-recommends
+	declare -r    __BOOT="${_MKOS_BOOT:-}"						# --bootable
+#	declare -r    __TOOL="yes"										# --tools-tree
+	declare -r    __WRKD="${__TGET_WRKD:-}"						# --workspace-directory
+	declare -r    __CACH=""										# --package-cache-dir
+	declare -r    __BSRC=""										# --build-sources
+	declare -r    __NWRK="${_MKOS_NWRK:-}"						# --with-network
+	declare -r    __EDTN="${__TGET_EDTN:-}"						# --environment=EDITION
+	declare -r    __LANG=""										# --locale, --locale-messages
+	declare -r    __KMAP=""										# --keymap
+	declare -r    __TZON=""										# --timezone
+	declare       __HOST=""										# --hostname
+	declare -r    __RTPW=""										# --root-password
 
 	# --- --hostname= ---------------------------------------------------------
 	__HOST="$(fnFind_distribution "${__DIST}")"
@@ -60,7 +65,7 @@ function fnMake_live_mkosi() {
 		--force
 		${__MKOS:+--directory="${__MKOS}"}
 		${__DIST:+--distribution="${__DIST}"}
-		${__VERS:+--release="${__VERS}"}
+		${__RELS:+--release="${__RELS}"}
 		${__ARCH:+--architecture="${__ARCH//_/-}"}
 		${__RCHK:+--repository-key-check="${__RCHK}"}
 		${__RKEY:+--repository-key-fetch="${__RKEY}"}
@@ -72,9 +77,6 @@ function fnMake_live_mkosi() {
 		${__PKGS:+--package="${__PKGS}"}
 		${__RECM:+--with-recommends="${__RECM}"}
 		${__BOOT:+--bootable="${__BOOT}"}
-		${__TOOL:+--tools-tree="${__TOOL}"}
-		${__DIST:+--tools-tree-distribution="${__DIST}"}
-		${__VERS:+--tools-tree-release="${__VERS}"}
 		${__WRKD:+--workspace-directory="${__WRKD}"}
 		${__CACH:+--package-cache-dir="${__CACH}"}
 		${__BSRC:+--build-sources="${__BSRC}"}
@@ -87,6 +89,9 @@ function fnMake_live_mkosi() {
 		${__HOST:+--hostname="${__HOST}"}
 		${__RTPW:+--root-password="${__RTPW}"}
 	)
+#		${__TOOL:+--tools-tree="${__TOOL}"}
+#		${__DIST:+--tools-tree-distribution="${__DIST}"}
+#		${__RELS:+--tools-tree-release="${__RELS}"}
 	case "${__OPRT:-}" in
 #		init         ) __OPTN=("${__OPRT}");;
 		summary      ) __OPTN+=(--no-pager summary);;
@@ -116,7 +121,13 @@ function fnMake_live_mkosi() {
 
 #	mkdir -p "${__WRKD:?}" "${__BSRC:?}"
 #	pushd "${__WRKD:?}" > /dev/null || exit 1
+	mkdir -p "${__MKOS:?}"/{repository,script}
+	cp --preserve=timestamps "${_DIRS_MKOS:?}/mkosi.conf.d/mkosi-${__DIST:?}.${__VERS:?}.${__CODE:+"${__CODE}."}${__EDTN:?}.conf" "${__MKOS:?}/mkosi.conf"
+	cp --preserve=timestamps "${_DIRS_MKOS:?}/mkosi.finalize.d/mkosi.finalize.sh.chroot" "${__MKOS:?}/mkosi.finalize.chroot"
+	cp --preserve=timestamps "${_DIRS_MKOS:?}/repository"/* "${__MKOS:?}"/repository/
+	cp --preserve=timestamps "${_DIRS_MKOS:?}/script"/* "${__MKOS:?}"/script
 	fnMk_mkosi "${__OPTN[@]}"
+#	rm -rf "${__MKOS:?}"
 #	popd > /dev/null || exit 1
 
 #	unset __OPTN __HOST
