@@ -159,6 +159,12 @@
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD:?}"/fnMake_pxeboot_ipxe_m86p.sh	# make memtest86+ section for ipxe menu
 	# shellcheck source=/dev/null
+	source "${_SHEL_COMD:?}"/fnMake_pxeboot_ipxe_linux_default.sh	# make linux default section for ipxe menu
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD:?}"/fnMake_pxeboot_ipxe_linux_live.sh		# make linux live section for ipxe menu
+	# shellcheck source=/dev/null
+	source "${_SHEL_COMD:?}"/fnMake_pxeboot_ipxe_linux_clive.sh		# make linux clive section for ipxe menu
+	# shellcheck source=/dev/null
 	source "${_SHEL_COMD:?}"/fnMake_pxeboot_ipxe_linux.sh	# make linux section for ipxe menu
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD:?}"/fnMake_pxeboot_ipxe.sh			# make ipxe menu

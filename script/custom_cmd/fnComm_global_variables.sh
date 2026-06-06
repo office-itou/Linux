@@ -92,6 +92,8 @@
 	declare       _DIRS_CACH=""			# cache file
 	declare       _DIRS_CTNR=""			# container file
 	declare       _DIRS_CHRT=""			# container file (chroot)
+	declare       _DIRS_EXPO=""			# exports
+	declare       _DIRS_XNBD=""			# exports (network block device)
 	# --- working directory parameter -----------------------------------------
 	declare -r    _DIRS_VADM="/var/admin"	# top of admin working directory
 	declare       _DIRS_INST=""			# auto-install working directory

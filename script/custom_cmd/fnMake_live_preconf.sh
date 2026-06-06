@@ -54,14 +54,25 @@ function fnMake_live_preconf() {
 				__DTOP="${__PATH//${__EDTN}/desktop}"
 				# --- server ------------------------------------------------------
 				echo "create: ${__SRVR}"
+#				sed -e '/^\[Match\]/,/^#*\[.\+\]/                       {' \
+#					-e '/^Distribution=/                           s/^/#/' \
+#					-e '/^#*Distribution=|*'"${__DIST}"'/          s/^#//' \
+#					-e '/^Release=/                                s/^/#/' \
+#					-e '/^#*Release=|*'"${__CODE}"'/               s/^#//' \
+#					-e '/^Environment=/                                 {' \
+#					-e 's/!\(EDITION=desktop\)/\1/                       ' \
+#					-e 's/\(EDITION=desktop\)/!\1/                       ' \
+#					-e '}}'                                                \
+#				"${__CONF}"                                                \
+#				> "${__SRVR}"
 				sed -e '/^\[Match\]/,/^#*\[.\+\]/                       {' \
 					-e '/^Distribution=/                           s/^/#/' \
 					-e '/^#*Distribution=|*'"${__DIST}"'/          s/^#//' \
 					-e '/^Release=/                                s/^/#/' \
 					-e '/^#*Release=|*'"${__CODE}"'/               s/^#//' \
-					-e '/^Environment=/                                 {' \
-					-e 's/!\(EDITION=desktop\)/\1/                       ' \
-					-e 's/\(EDITION=desktop\)/!\1/                       ' \
+					-e '/\(\|#\)Environment=.*$/                        {' \
+					-e '/^[^#]/                                   s/^/#/g' \
+					-e '/EDITION=server/                          s/^#//g' \
 					-e '}}'                                                \
 				"${__CONF}"                                                \
 				> "${__SRVR}"
@@ -164,9 +175,21 @@ function fnMake_live_preconf() {
 				esac
 				# --- desktop -----------------------------------------------------
 				echo "create: ${__DTOP}"
+#				sed -e '/^\[Match\]/,/^#*\[.\+\]/                       {' \
+#					-e '/^Environment=/                                 {' \
+#					-e 's/!\(EDITION=desktop\)/\1/                       ' \
+#					-e '}}'                                                \
+#					-e '/^\[Content\]/,/^#*\[.\+\]/                     {' \
+#					-e '/^Packages=/,/^#*\(\[.\+\]\|[[:alnum:]]\+=\)/   {' \
+#					-e '/^ *# \+-\+ desktop .*$/,/^ *# \+-\+.*$/        {' \
+#					-e '/^ *# \+[@[:alnum:]]\+/                  s/^#/ /g' \
+#					-e '}}}'                                               \
+#				"${__SRVR}"                                                \
+#				> "${__DTOP}"
 				sed -e '/^\[Match\]/,/^#*\[.\+\]/                       {' \
-					-e '/^Environment=/                                 {' \
-					-e 's/!\(EDITION=desktop\)/\1/                       ' \
+					-e '/\(\|#\)Environment=.*$/                        {' \
+					-e '/^[^#]/                                   s/^/#/g' \
+					-e '/EDITION=desktop/                         s/^#//g' \
 					-e '}}'                                                \
 					-e '/^\[Content\]/,/^#*\[.\+\]/                     {' \
 					-e '/^Packages=/,/^#*\(\[.\+\]\|[[:alnum:]]\+=\)/   {' \

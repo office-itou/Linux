@@ -83,26 +83,28 @@ function fnMk_pxeboot() {
 					[[ "${__TABS}" -lt 0 ]] && __TABS=0
 					;;
 				o)						# (output)
-					case "${__MDIA[$((_OSET_MDIA+28))]}" in
-						c) ;;
-						d)
-							__RETN="- - - -"
-							__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+14))]}" "-")"
-							if [[ -n "${__WORK:-}" ]]; then
-								fnDownload "${__MDIA[$((_OSET_MDIA+9))]}" "${__MDIA[$((_OSET_MDIA+14))]}" "${__MDIA[$((_OSET_MDIA+11))]}"
-								__RETN="$(fnGetFileinfo "${__MDIA[$((_OSET_MDIA+14))]}")"
-							fi
-							read -r -a __ARRY < <(echo "${__RETN}")
-							__MDIA[_OSET_MDIA+15]="${__ARRY[1]:-}"	# iso_tstamp
-							__MDIA[_OSET_MDIA+16]="${__ARRY[2]:-}"	# iso_size
-							__MDIA[_OSET_MDIA+17]="${__ARRY[3]:-}"	# iso_volume
-							;;
-						*) ;;
-					esac
-					__INFO="$(printf "%s %s : %s" "${__MDIA[$((_OSET_MDIA+0))]}" "${__MDIA[1]}" "${__MDIA[$((_OSET_MDIA+14))]##*/}")"
-					printf "\033[m\033[44m%-8s: %s\033[m\n" "start" "${__INFO}"
-					# --- rsync -----------------------------------------------
-					fnRsync "${__MDIA[$((_OSET_MDIA+14))]}" "${_DIRS_IMGS}/${__MDIA[$((_OSET_MDIA+2))]}"
+					if [[ ! -L "${__MDIA[$((_OSET_MDIA+14))]}" ]]; then
+						case "${__MDIA[$((_OSET_MDIA+28))]}" in
+							c) ;;
+							d)
+								__RETN="- - - -"
+								__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+14))]}" "-")"
+								if [[ -n "${__WORK:-}" ]]; then
+									fnDownload "${__MDIA[$((_OSET_MDIA+9))]}" "${__MDIA[$((_OSET_MDIA+14))]}" "${__MDIA[$((_OSET_MDIA+11))]}"
+									__RETN="$(fnGetFileinfo "${__MDIA[$((_OSET_MDIA+14))]}")"
+								fi
+								read -r -a __ARRY < <(echo "${__RETN}")
+								__MDIA[_OSET_MDIA+15]="${__ARRY[1]:-}"	# iso_tstamp
+								__MDIA[_OSET_MDIA+16]="${__ARRY[2]:-}"	# iso_size
+								__MDIA[_OSET_MDIA+17]="${__ARRY[3]:-}"	# iso_volume
+								;;
+							*) ;;
+						esac
+						__INFO="$(printf "%s %s : %s" "${__MDIA[$((_OSET_MDIA+0))]}" "${__MDIA[1]}" "${__MDIA[$((_OSET_MDIA+14))]##*/}")"
+						printf "\033[m\033[44m%-8s: %s\033[m\n" "start" "${__INFO}"
+						# --- rsync -------------------------------------------
+						fnRsync "${__MDIA[$((_OSET_MDIA+14))]}" "${_DIRS_IMGS}/${__MDIA[$((_OSET_MDIA+2))]}"
+					fi
 					;;
 				*) ;;					# (hidden)
 			esac

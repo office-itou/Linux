@@ -18,7 +18,8 @@ function fnMake_mkosi_conf_create() {
 		${__TGET_DIST:-"#Distribution="}
 		${__TGET_RELS:-"#Release=general"}
 		Architecture=x86-64
-		Environment=!EDITION=desktop
+		Environment=EDITION=server
+		#Environment=EDITION=desktop
 
 		# === Distribution ============================================================
 		[Distribution]
@@ -350,7 +351,9 @@ _EOT_
 			    initramfs-tools-bin                 # generic modular initramfs generator (binary tools)
 			#x  initramfs-tools-core                # generic modular initramfs generator (core tools)
 			#   installation-report                 # system installation report
+			    iproute2                            # networking and traffic control tools
 			    iputils-ping                        # Tools to test the reachability of network hosts
+			    kexec-tools                         # tools to support fast kexec reboots
 			#   klibc-utils                         # small utilities built with klibc for early boot
 			    less                                # pager program similar to more
 			#o  libc-l10n                           # GNU C Library: localization files
@@ -381,6 +384,8 @@ _EOT_
 			#   python3-debianbts                   # Python interface to Debian's Bug Tracking System
 			#   python3-reportbug                   # Python modules for interacting with bug tracking systems
 			#   reportbug                           # reports bugs in the Debian distribution
+			    rsyslog                             # reliable system and kernel logging daemon
+			    systemd-boot-efi                    # simple UEFI boot manager - EFI binaries
 			#o  task-japanese                       # Japanese environment
 			#o  unifont                             # font with a glyph for each visible Unicode Plane 0 character
 			#   usbutils                            # Linux USB utilities
@@ -631,7 +636,9 @@ _EOT_
 			    initramfs-tools-bin                 # generic modular initramfs generator (binary tools)
 			#x  initramfs-tools-core                # generic modular initramfs generator (core tools)
 			#x  installation-report                 #
+			    iproute2                            # networking and traffic control tools
 			    iputils-ping                        # Tools to test the reachability of network hosts
+			    kexec-tools                         # tools to support fast kexec reboots
 			#   klibc-utils                         # small utilities built with klibc for early boot
 			    less                                # pager program similar to more
 			#   libc-l10n                           # 
@@ -662,6 +669,8 @@ _EOT_
 			#   python3-debianbts                   # Python interface to Debian's Bug Tracking System
 			#   python3-reportbug                   # Python modules for interacting with bug tracking systems
 			#   reportbug                           # reports bugs in the Debian distribution
+			    rsyslog                             # reliable system and kernel logging daemon
+			    systemd-boot-efi                    # simple UEFI boot manager - EFI binaries
 			#o  task-japanese                       # Japanese environment
 			#   unifont                             # font with a glyph for each visible Unicode Plane 0 character
 			#   usbutils                            # Linux USB utilities
@@ -1061,26 +1070,47 @@ _EOT_
 			#   gdm                                 # The GNOME Display Manager
 			#   gnome-backgrounds                   # GNOME Backgrounds
 			#   gnome-bluetooth                     # GNOME Bluetooth graphical utilities
+			#   gnome-bluetooth-lang                # Translations for package gnome-bluetooth
 			#   gnome-calculator                    # A GNOME Calculator Application
+			#   gnome-calculator-lang               # Translations for package gnome-calculator
 			#   gnome-characters                    # Character Map
+			#   gnome-characters-lang               # Translations for package gnome-characters
 			#   gnome-clocks                        # Clock application designed for GNOME 3
+			#   gnome-clocks-lang                   # Translations for package gnome-clocks
 			#   gnome-console                       # A minimal terminal for GNOME
+			#   gnome-console-lang                  # Translations for package gnome-console
 			#   gnome-contacts                      # Contacts Manager for GNOME
+			#   gnome-contacts-lang                 # Translations for package gnome-contacts
 			#   gnome-control-center-color          # Configuration panel for color management
 			#   gnome-control-center-goa            # Configuration panel for online accounts
+			#   gnome-control-center-lang           # Translations for package gnome-control-center
 			#   gnome-disk-utility                  # Disks application for dealing with storage devices
+			#   gnome-disk-utility-lang             # Translations for package gnome-disk-utility
 			#   gnome-extensions                    # Extensions app for GNOME Shell
 			#   gnome-initial-setup                 # GNOME Initial Setup Assistant
+			#   gnome-initial-setup-lang            # Translations for package gnome-initial-setup
 			#   gnome-keyring-pam                   # GNOME Keyring - PAM module
+			#   gnome-keyring-lang                  # Translations for package gnome-keyring
 			#   gnome-remote-desktop                # GNOME Remote Desktop screen sharing service
+			#   gnome-remote-desktop-lang           # Translations for package gnome-remote-desktop
 			#   gnome-session                       # Session Tools for the GNOME Desktop
+			#   gnome-session-lang                  # Translations for package gnome-session
+			#   gnome-shell                         # GNOME Shell
+			#   gnome-shell-lang                    # Translations for package gnome-shell
 			#   gnome-software                      # GNOME Software Store
+			#   gnome-software-lang                 # Translations for package gnome-software
 			#   gnome-system-monitor                # A process monitor for the GNOME desktop
+			#   gnome-system-monitor-lang           # Translations for package gnome-system-monitor
+			#   gnome-terminal                      # GNOME Terminal
 			#   gnome-terminal-lang                 # Translations for package gnome-terminal
 			#   gnome-text-editor                   # GNOME Text Editor
+			#   gnome-text-editor-lang              # Translations for package gnome-text-editor
 			#   gnome-tweaks                        # A tool to customize advanced GNOME 3 options
+			#   gnome-tweaks-lang                   # Translations for package gnome-tweaks
 			#   gnome-user-docs                     # GNOME Desktop Documentation
+			#   gnome-user-docs-lang                # Translations for package gnome-user-docs
 			#   gnome-user-share                    # GNOME user file sharing
+			#   gnome-user-share-lang               # Translations for package gnome-user-share
 			#   google-noto-sans-cjk-fonts          # Noto Sans CJK Font
 			#   google-noto-sans-jp-mono-fonts      # Noto Sans Japanese Font - Monospace
 			#   google-noto-sans-mono-fonts         # Noto Mono Sans Serif Font
@@ -1090,8 +1120,11 @@ _EOT_
 			#   libgnomesu                          # GNOME su Library
 			#   malcontent-control                  # Parental Control Application
 			#   nautilus                            # File Manager for the GNOME Desktop
+			#   nautilus-lang                       # Translations for package nautilus
 			#   nautilus-sendto                     # Integrate Nautilus and E-Mail clients
+			#   nautilus-sendto-lang                # Translations for package nautilus-sendto
 			#   nautilus-share                      # Nautilus plugin for sharing directories over SMB
+			#   nautilus-share-lang                 # Translations for package nautilus-share
 			#   orca                                # Screen reader for GNOME
 			#   pinentry-gnome3                     # Simple PIN or Passphrase Entry Dialog for GNOME
 			#   pipewire                            # A Multimedia Framework designed to be an audio and video server and more
@@ -1111,13 +1144,18 @@ _EOT_
 			#   MozillaThunderbird                  # An integrated email, news feeds, chat, and newsgroups client
 			#   adwaita-icon-theme                  # GNOME Icon Theme
 			#   bluez                               # Bluetooth Stack for Linux
+			#   blueman                             # GTK Bluetooth Manager
+			#   blueman-lang                        # Translations for package blueman
 			#   chromium                            # Google's open source browser project
-			#   gnome-initial-setup-lang            # Translations for package gnome-initial-setup
-			#   gnome-shell                         # GNOME Shell
-			#   gnome-terminal                      # GNOME Terminal
 			#   google-noto-sans-jp-fonts           # Noto Sans Japanese Font
 			#   google-noto-serif-jp-fonts          # Noto Serif Japanese Font
 			#   gstreamer-plugins-libav             # A ffmpeg/libav plugin for GStreamer
+			#   bitstream-vera-fonts                # Bitstream Vera(tm) Truetype fonts
+			#   ipa-gothic-fonts                    # "Gothic" Japanese TrueType Font Made by IPA
+			#   ipa-mincho-fonts                    # "Mincho" Japanese TrueType Font Made by IPA
+			#   ipa-pgothic-fonts                   # "Proportional Gothic" Japanese TrueType Font Made by IPA
+			#   ipa-pmincho-fonts                   # "Proportional Mincho" Japanese TrueType Font Made by IPA
+			#-  libyui-qt16                         # Libyui - Qt (graphical) user interface
 			#   rhythmbox                           # GNOME Music Management Application
 			    # --- installation environment --------------------------------------------
 			    attr                                # Commands for Manipulating Extended Attributes
@@ -1128,6 +1166,7 @@ _EOT_
 			    exfatprogs                          # Utilities for exFAT file system maintenance
 			#   fdisk                               #
 			    file                                # A Tool to Determine File Types
+			    filesystem                          # Basic Directory Layout
 			    fuse3                               # Reference implementation of the "Filesystem in Userspace"
 			#   glibc                               # Standard Shared Libraries (from the GNU C Library)
 			#   glibc-i18ndata                      # Database Sources for 'locale'
@@ -1136,9 +1175,10 @@ _EOT_
 			#   initramfs-tools-bin                 #
 			#   iputils-ping                        #
 			#   iscsi-initiator-utils               #
-			    less                                # Text File Browser and Pager Similar to more
+			#   less                                # Text File Browser and Pager Similar to more
 			#   libcap2                             # Library for Capabilities (linux-privs) Support
 			#   libsemanage2                        # SELinux policy management library
+			    libz1                               # Library implementing the DEFLATE compression algorithm
 			#   login                               #
 			#   multipath-tools                     # Tools to Manage Multipathed Devices with the device-mapper
 			    nano                                # Pico editor clone with enhancements
@@ -1148,13 +1188,14 @@ _EOT_
 			    ntfs-3g                             # NTFS Support in Userspace
 			#   ntfs-3g-libs                        #
 			    ntfsprogs                           # NTFS Utilities
-			#   nvme-cli                            # NVM Express user space tools
+			    nvme-cli                            # NVM Express user space tools
 			    openssl                             # Secure Sockets and Transport Layer Security
 			#   ovpn-dco-kmp-default                # OpenVPN Data Channel Offload in the Linux kernel
 			    parted                              # GNU partitioner
 			    parted-lang                         # Translations for package parted
 			#   policycoreutils                     # SELinux policy core utilities
 			#   policycoreutils-lang                # Translations for package policycoreutils
+			    rsyslog                             # 
 			#   selinux-policy                      # SELinux policy configuration
 			#   selinux-policy-targeted             # SELinux targeted base policy
 			    sudo-policy-wheel-auth-self         # Users in the wheel group can authenticate as admin
@@ -1166,6 +1207,8 @@ _EOT_
 			#   util-linux-lang                     # Translations for package util-linux
 			#   util-linux-systemd                  # A collection of basic system utilities (systemd dependent part)
 			#   whiptail                            #
+			    yast2                               # YaST2 Main Package
+			    yast2-trans-ja                      # YaST2 - Japanese Translations
 			#   zypper                              # Command line software manager using libzypp
 			    # --- nfs -----------------------------------------------------------------
 			#   nfs-common                          #

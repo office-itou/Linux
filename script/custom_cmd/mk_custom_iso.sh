@@ -177,6 +177,8 @@
 	declare       _DIRS_CACH=""			# cache file
 	declare       _DIRS_CTNR=""			# container file
 	declare       _DIRS_CHRT=""			# container file (chroot)
+	declare       _DIRS_EXPO=""			# exports
+	declare       _DIRS_XNBD=""			# exports (network block device)
 	# --- working directory parameter -----------------------------------------
 	declare -r    _DIRS_VADM="/var/admin"	# top of admin working directory
 	declare       _DIRS_INST=""			# auto-install working directory
@@ -2046,7 +2048,7 @@ function fnMk_print_list() {
 		# --- iso file ----------------------------------------------------
 		__RETN="- - - -"
 		__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+14))]}" "-")"
-		if [[ -n "${__WORK:-}" ]]; then
+		if [[ -n "${__WORK:-}" ]] && [[ ! -L "${__WORK}" ]]; then
 			__RETN="$(fnGetFileinfo "${__MDIA[$((_OSET_MDIA+14))]}")"
 		fi
 		read -r -a __ARRY < <(echo "${__RETN}")
@@ -2082,7 +2084,7 @@ function fnMk_print_list() {
 		fi
 		__RETN="- - - -"
 		__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+18))]}" "-")"
-		if [[ -n "${__WORK:-}" ]]; then
+		if [[ -n "${__WORK:-}" ]] && [[ ! -L "${__WORK}" ]]; then
 			__RETN="$(fnGetFileinfo "${__MDIA[$((_OSET_MDIA+18))]}")"
 		fi
 		read -r -a __ARRY < <(echo "${__RETN}")
@@ -2097,7 +2099,7 @@ function fnMk_print_list() {
 		__WRK1="$(fnTrim "${__MDIA[$((_OSET_MDIA+9))]}"  "-")"
 		__WRK2="$(fnTrim "${__MDIA[$((_OSET_MDIA+14))]}" "-")"
 		if [[ -n "${__WRK1:-}" ]] \
-		&& [[ -n "${__WRK2:-}" ]]; then
+		&& [[ -n "${__WRK2:-}" ]] && [[ ! -L "${__WRK2}" ]]; then
 			case "${__MDIA[$((_OSET_MDIA+13))]}" in
 				2[0-9][0-9])
 					__WRK1="$(fnTrim "${__MDIA[$((_OSET_MDIA+24))]}" "-")"
@@ -2828,32 +2830,19 @@ _EOT_
 }
 
 # -----------------------------------------------------------------------------
-# descript: make linux section for ipxe menu
+# descript: make linux default section for ipxe menu
 #   input :     $@     : media info data
 #   output:   stdout   : output
 #   return:            : unused
-function fnMk_pxeboot_ipxe_linux() {
+function fnMk_pxeboot_ipxe_linux_default() {
 	declare -a    __MDIA=("${@:-}")
 	declare -a    __BOPT=()
-	declare       __ENTR=""
 	declare       __NICS=""
 	declare       __HOST=""
 	declare       __CIDR=""
 	declare       __WORK=""
 	__WORK="$(fnMk_boot_options "pxeboot" "${@}")"
 	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
-	case "${__MDIA[$((_OSET_MDIA+0))]}" in
-#		mini    ) ;;
-#		netinst ) ;;
-#		dvd     ) ;;
-#		liveinst) ;;
-		live    ) __ENTR="live-";;		# original media live mode
-#		tool    ) ;;					# tools
-#		clive   ) ;;					# custom media live mode
-#		cnetinst) ;;					# custom media install mode
-#		system  ) ;;					# system command
-		*       ) __ENTR="";;			# original media install mode
-	esac
 	__HOST="${__MDIA[$((_OSET_MDIA+2))]%%-*}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
 	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__HOST:-"localhost.localdomain"}"}"
 	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
@@ -2864,67 +2853,203 @@ function fnMk_pxeboot_ipxe_linux() {
 		ubuntu*) __CIDR="";;
 		*      ) __CIDR="/${_IPV4_CIDR:-}";;
 	esac
-	if [[ -z "${__ENTR:-}" ]]; then
-		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
-			:${__MDIA[$((_OSET_MDIA+2))]}
-			prompt --key e --timeout \${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
-			set hostname ${__HOST:-}
-			set ethrname ${__NICS:-}
-			set ipv4addr ${_IPV4_ADDR:-}${__CIDR:-}
-			set ipv4mask ${_IPV4_MASK:-}
-			set ipv4gway ${_IPV4_GWAY:-}
-			set ipv4nsvr ${_IPV4_NSVR:-}
-			form                                    Configure Network Options
-			item hostname                           Hostname
-			item ethrname                           Interface
-			item ipv4addr                           IPv4 address/netmask
-			item ipv4gway                           IPv4 gateway
-			item ipv4nsvr                           IPv4 nameservers
-			isset \${openmenu} && present ||
-			#set srvrhttp ${_SRVR_PROT:?}://\${66}
-			set autoinst ${__BOPT[0]:-}
-			set language ${__BOPT[1]:-}
-			set networks ${__BOPT[2]:-}
-			set otheropt ${__BOPT[@]:3} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
-			form                                    Configure Autoinstall Options
-			item autoinst                           Auto install
-			item language                           Language
-			item networks                           Network
-			item otheropt                           Other options
-			isset \${openmenu} && present ||
-			echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
-			set knladdr \${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
-			set options \${autoinst} \${language} \${networks} \${otheropt}
-			echo Loading boot files ...
-			kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} || goto error
-			initrd \${knladdr}/${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} || goto error
-			boot || goto error
-			exit
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+		:${__MDIA[$((_OSET_MDIA+2))]}
+		prompt --key e --timeout \${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
+		set hostname ${__HOST:-}
+		set ethrname ${__NICS:-}
+		set ipv4addr ${_IPV4_ADDR:-}${__CIDR:-}
+		set ipv4mask ${_IPV4_MASK:-}
+		set ipv4gway ${_IPV4_GWAY:-}
+		set ipv4nsvr ${_IPV4_NSVR:-}
+		form                                    Configure Network Options
+		item hostname                           Hostname
+		item ethrname                           Interface
+		item ipv4addr                           IPv4 address/netmask
+		item ipv4gway                           IPv4 gateway
+		item ipv4nsvr                           IPv4 nameservers
+		isset \${openmenu} && present ||
+		#set srvrhttp ${_SRVR_PROT:?}://\${66}
+		set autoinst ${__BOPT[0]:-}
+		set language ${__BOPT[1]:-}
+		set networks ${__BOPT[2]:-}
+		set otheropt ${__BOPT[@]:3} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
+		set consoles !console=tty0 !console=ttyS0,9600
+		set sulogins !SYSTEMD_SULOGIN_FORCE=1 !init=/sbin/sulogin
+		set debugopt \${consoles} \${sulogins}
+		form                                    Configure Autoinstall Options
+		item autoinst                           Auto install
+		item language                           Language
+		item networks                           Network
+		item otheropt                           Other options
+		item debugopt                           Debug options
+		isset \${openmenu} && present ||
+		echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
+		set knladdr \${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
+		set options \${autoinst} \${language} \${networks} \${otheropt} \${debugopt}
+		echo Loading boot files ...
+		kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} || goto error
+		initrd \${knladdr}/${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} || goto error
+		boot || goto error
+		exit
 _EOT_
-	else
-		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
-			:${__ENTR:-}${__MDIA[$((_OSET_MDIA+2))]}
-			set hostname ${__HOST:-}
-			set ethrname ${__NICS:-}
-			set ipv4addr ${_IPV4_ADDR:-}/${_IPV4_CIDR:-}
-			set ipv4gway ${_IPV4_GWAY:-}
-			set ipv4nsvr ${_IPV4_NSVR:-}
-			#set srvrhttp ${_SRVR_PROT:?}://\${66}
-			set autoinst ${__BOPT[0]:-}
-			set language ${__BOPT[1]:-}
-			set networks ${__BOPT[2]:-}
-			set otheropt ${__BOPT[@]:3} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
-			echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
-			set knladdr \${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
-			set options \${autoinst} \${language} \${networks} \${otheropt}
-			echo Loading boot files ...
-			kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} || goto error
-			initrd \${knladdr}/${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} || goto error
-			boot || goto error
-			exit
+	unset __MDIA __BOPT __NICS __HOST __CIDR __WORK
+}
+
+# -----------------------------------------------------------------------------
+# descript: make linux live section for ipxe menu
+#   input :     $@     : media info data
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_pxeboot_ipxe_linux_live() {
+	declare -a    __MDIA=("${@:-}")
+	declare -a    __BOPT=()
+	declare       __NICS=""
+	declare       __HOST=""
+	declare       __CIDR=""
+	declare       __WORK=""
+	__WORK="$(fnMk_boot_options "pxeboot" "${@}")"
+	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
+	__HOST="${__MDIA[$((_OSET_MDIA+2))]%%-*}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
+	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__HOST:-"localhost.localdomain"}"}"
+	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
+		opensuse-*-15.*) __NICS="eth0";;
+		*              ) __NICS="${_NICS_NAME:-"ens160"}";;
+	esac
+	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
+		ubuntu*) __CIDR="";;
+		*      ) __CIDR="/${_IPV4_CIDR:-}";;
+	esac
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+		:live-${__MDIA[$((_OSET_MDIA+2))]}
+		prompt --key e --timeout \${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
+		set hostname ${__HOST:-}
+		set ethrname ${__NICS:-}
+		set ipv4addr ${_IPV4_ADDR:-}${__CIDR:-}
+		set ipv4mask ${_IPV4_MASK:-}
+		set ipv4gway ${_IPV4_GWAY:-}
+		set ipv4nsvr ${_IPV4_NSVR:-}
+		#form                                    Configure Network Options
+		#item hostname                           Hostname
+		#item ethrname                           Interface
+		#item ipv4addr                           IPv4 address/netmask
+		#item ipv4gway                           IPv4 gateway
+		#item ipv4nsvr                           IPv4 nameservers
+		#isset \${openmenu} && present ||
+		#set srvrhttp ${_SRVR_PROT:?}://\${66}
+		set autoinst ${__BOPT[0]:-}
+		set language ${__BOPT[1]:-}
+		set networks ${__BOPT[2]:-}
+		set otheropt ${__BOPT[@]:3} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
+		set consoles !console=tty0 !console=ttyS0,9600
+		set sulogins !SYSTEMD_SULOGIN_FORCE=1 !init=/sbin/sulogin
+		set debugopt \${consoles} \${sulogins}
+		form                                    Configure Autoinstall Options
+		item autoinst                           Auto install
+		item language                           Language
+		item networks                           Network
+		item otheropt                           Other options
+		item debugopt                           Debug options
+		isset \${openmenu} && present ||
+		echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
+		set knladdr \${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
+		set options \${autoinst} \${language} \${networks} \${otheropt} \${debugopt}
+		echo Loading boot files ...
+		kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} || goto error
+		initrd \${knladdr}/${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} || goto error
+		boot || goto error
+		exit
 _EOT_
-	fi
-	unset __BOPT= __ENTR __CIDR __WORK
+	unset __MDIA __BOPT __NICS __HOST __CIDR __WORK
+}
+
+# -----------------------------------------------------------------------------
+# descript: make linux clive section for ipxe menu
+#   input :     $@     : media info data
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_pxeboot_ipxe_linux_clive() {
+	declare -a    __MDIA=("${@:-}")
+	declare -a    __BOPT=()
+	declare       __NICS=""
+	declare       __HOST=""
+	declare       __CIDR=""
+	declare       __WORK=""
+	__WORK="$(fnMk_boot_options "pxeboot" "${@}")"
+	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
+	__HOST="${__MDIA[$((_OSET_MDIA+2))]%%-*}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
+	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__HOST:-"localhost.localdomain"}"}"
+	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
+		opensuse-*-15.*) __NICS="eth0";;
+		*              ) __NICS="${_NICS_NAME:-"ens160"}";;
+	esac
+	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
+		ubuntu*) __CIDR="";;
+		*      ) __CIDR="/${_IPV4_CIDR:-}";;
+	esac
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
+		:${__MDIA[$((_OSET_MDIA+2))]}
+		prompt --key e --timeout \${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
+		set hostname ${__HOST:-}
+		set ethrname ${__NICS:-}
+		set ipv4addr ${_IPV4_ADDR:-}${__CIDR:-}
+		set ipv4mask ${_IPV4_MASK:-}
+		set ipv4gway ${_IPV4_GWAY:-}
+		set ipv4nsvr ${_IPV4_NSVR:-}
+		#form                                    Configure Network Options
+		#item hostname                           Hostname
+		#item ethrname                           Interface
+		#item ipv4addr                           IPv4 address/netmask
+		#item ipv4gway                           IPv4 gateway
+		#item ipv4nsvr                           IPv4 nameservers
+		#isset \${openmenu} && present ||
+		#set srvrhttp ${_SRVR_PROT:?}://\${66}
+		set autoinst ${__BOPT[0]:-}
+		set language ${__BOPT[1]:-}
+		set networks ${__BOPT[2]:-}
+		set otheropt ${__BOPT[@]:3} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
+		set consoles !console=tty0 !console=ttyS0,9600
+		set sulogins !SYSTEMD_SULOGIN_FORCE=1 !init=/sbin/sulogin
+		set debugopt \${consoles} \${sulogins}
+		form                                    Configure Autoinstall Options
+		item autoinst                           Auto install
+		item language                           Language
+		item networks                           Network
+		item otheropt                           Other options
+		item debugopt                           Debug options
+		isset \${openmenu} && present ||
+		echo Loading ${__MDIA[$((_OSET_MDIA+3))]//%20/ } ...
+		set knladdr \${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}
+		set options \${autoinst} \${language} \${networks} \${otheropt} \${debugopt}
+		echo Loading boot files ...
+		kernel \${knladdr}/${__MDIA[$((_OSET_MDIA+23))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} \${options} || goto error
+		initrd \${knladdr}/${__MDIA[$((_OSET_MDIA+22))]#*/"${__MDIA[$((_OSET_MDIA+2))]}"/} || goto error
+		boot || goto error
+		exit
+_EOT_
+	unset __MDIA __BOPT __NICS __HOST __CIDR __WORK
+}
+
+# -----------------------------------------------------------------------------
+# descript: make linux section for ipxe menu
+#   input :     $@     : media info data
+#   output:   stdout   : output
+#   return:            : unused
+function fnMk_pxeboot_ipxe_linux() {
+	declare -a    __MDIA=("${@:-}")
+	case "${__MDIA[$((_OSET_MDIA+0))]}" in
+#		mini    ) ;;
+#		netinst ) ;;
+#		dvd     ) ;;
+#		liveinst) ;;
+		live    ) fnMk_pxeboot_ipxe_linux_live "${__MDIA[@]}";;		# original media live mode
+#		tool    ) ;;												# tools
+		clive   ) fnMk_pxeboot_ipxe_linux_clive "${__MDIA[@]}";;	# custom media live mode
+#		cnetinst) ;;												# custom media install mode
+#		system  ) ;;												# system command
+		*       ) fnMk_pxeboot_ipxe_linux_default "${__MDIA[@]}";;	# original media install mode
+	esac
+	unset __MDIA
 }
 
 # -----------------------------------------------------------------------------
@@ -3567,26 +3692,28 @@ function fnMk_pxeboot() {
 					[[ "${__TABS}" -lt 0 ]] && __TABS=0
 					;;
 				o)						# (output)
-					case "${__MDIA[$((_OSET_MDIA+28))]}" in
-						c) ;;
-						d)
-							__RETN="- - - -"
-							__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+14))]}" "-")"
-							if [[ -n "${__WORK:-}" ]]; then
-								fnDownload "${__MDIA[$((_OSET_MDIA+9))]}" "${__MDIA[$((_OSET_MDIA+14))]}" "${__MDIA[$((_OSET_MDIA+11))]}"
-								__RETN="$(fnGetFileinfo "${__MDIA[$((_OSET_MDIA+14))]}")"
-							fi
-							read -r -a __ARRY < <(echo "${__RETN}")
-							__MDIA[_OSET_MDIA+15]="${__ARRY[1]:-}"	# iso_tstamp
-							__MDIA[_OSET_MDIA+16]="${__ARRY[2]:-}"	# iso_size
-							__MDIA[_OSET_MDIA+17]="${__ARRY[3]:-}"	# iso_volume
-							;;
-						*) ;;
-					esac
-					__INFO="$(printf "%s %s : %s" "${__MDIA[$((_OSET_MDIA+0))]}" "${__MDIA[1]}" "${__MDIA[$((_OSET_MDIA+14))]##*/}")"
-					printf "\033[m\033[44m%-8s: %s\033[m\n" "start" "${__INFO}"
-					# --- rsync -----------------------------------------------
-					fnRsync "${__MDIA[$((_OSET_MDIA+14))]}" "${_DIRS_IMGS}/${__MDIA[$((_OSET_MDIA+2))]}"
+					if [[ ! -L "${__MDIA[$((_OSET_MDIA+14))]}" ]]; then
+						case "${__MDIA[$((_OSET_MDIA+28))]}" in
+							c) ;;
+							d)
+								__RETN="- - - -"
+								__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+14))]}" "-")"
+								if [[ -n "${__WORK:-}" ]]; then
+									fnDownload "${__MDIA[$((_OSET_MDIA+9))]}" "${__MDIA[$((_OSET_MDIA+14))]}" "${__MDIA[$((_OSET_MDIA+11))]}"
+									__RETN="$(fnGetFileinfo "${__MDIA[$((_OSET_MDIA+14))]}")"
+								fi
+								read -r -a __ARRY < <(echo "${__RETN}")
+								__MDIA[_OSET_MDIA+15]="${__ARRY[1]:-}"	# iso_tstamp
+								__MDIA[_OSET_MDIA+16]="${__ARRY[2]:-}"	# iso_size
+								__MDIA[_OSET_MDIA+17]="${__ARRY[3]:-}"	# iso_volume
+								;;
+							*) ;;
+						esac
+						__INFO="$(printf "%s %s : %s" "${__MDIA[$((_OSET_MDIA+0))]}" "${__MDIA[1]}" "${__MDIA[$((_OSET_MDIA+14))]##*/}")"
+						printf "\033[m\033[44m%-8s: %s\033[m\n" "start" "${__INFO}"
+						# --- rsync -------------------------------------------
+						fnRsync "${__MDIA[$((_OSET_MDIA+14))]}" "${_DIRS_IMGS}/${__MDIA[$((_OSET_MDIA+2))]}"
+					fi
 					;;
 				*) ;;					# (hidden)
 			esac

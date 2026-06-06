@@ -119,7 +119,7 @@ function fnMk_print_list() {
 		# --- iso file ----------------------------------------------------
 		__RETN="- - - -"
 		__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+14))]}" "-")"
-		if [[ -n "${__WORK:-}" ]]; then
+		if [[ -n "${__WORK:-}" ]] && [[ ! -L "${__WORK}" ]]; then
 			__RETN="$(fnGetFileinfo "${__MDIA[$((_OSET_MDIA+14))]}")"
 		fi
 		read -r -a __ARRY < <(echo "${__RETN}")
@@ -155,7 +155,7 @@ function fnMk_print_list() {
 		fi
 		__RETN="- - - -"
 		__WORK="$(fnTrim "${__MDIA[$((_OSET_MDIA+18))]}" "-")"
-		if [[ -n "${__WORK:-}" ]]; then
+		if [[ -n "${__WORK:-}" ]] && [[ ! -L "${__WORK}" ]]; then
 			__RETN="$(fnGetFileinfo "${__MDIA[$((_OSET_MDIA+18))]}")"
 		fi
 		read -r -a __ARRY < <(echo "${__RETN}")
@@ -170,7 +170,7 @@ function fnMk_print_list() {
 		__WRK1="$(fnTrim "${__MDIA[$((_OSET_MDIA+9))]}"  "-")"
 		__WRK2="$(fnTrim "${__MDIA[$((_OSET_MDIA+14))]}" "-")"
 		if [[ -n "${__WRK1:-}" ]] \
-		&& [[ -n "${__WRK2:-}" ]]; then
+		&& [[ -n "${__WRK2:-}" ]] && [[ ! -L "${__WRK2}" ]]; then
 			case "${__MDIA[$((_OSET_MDIA+13))]}" in
 				2[0-9][0-9])
 					__WRK1="$(fnTrim "${__MDIA[$((_OSET_MDIA+24))]}" "-")"

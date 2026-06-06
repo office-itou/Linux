@@ -802,7 +802,8 @@ function fnMkosi_finalize_service() {
 		"enable  apache2.service" \
 		"enable  httpd.service" \
 		"enable  smb.service" \
-		"enable  smbd.service"
+		"enable  smbd.service" \
+		"enable  bluetooth.service"
 	do
 		read -r -a __LIST < <(echo "${__LINE}")
 		if [[ ! -e "/lib/systemd/system/${__LIST[1]}"     ]] \
