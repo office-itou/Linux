@@ -18,6 +18,10 @@ fnSetup_dnsmasq() {
 	fi
 	# --- dnsmasq.service -----------------------------------------------------
 	__SRVC="$(fnFind_serivce 'dnsmasq.service' | sort -V | head -n 1)"
+	if [ -z "${__SRVC:-}" ]; then
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}] no service"
+		return
+	fi
 	fnFile_backup "${__SRVC}"			# backup original file
 	mkdir -p "${__SRVC%/*}"
 	cp --preserve=timestamps "${_DIRS_ORIG}/${__SRVC#*"${_DIRS_TGET:-}/"}" "${__SRVC}"

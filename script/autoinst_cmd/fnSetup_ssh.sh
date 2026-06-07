@@ -18,6 +18,17 @@ fnSetup_ssh() {
 		return
 	fi
 	# --- default.conf --------------------------------------------------------
+	__LGIN="$(
+		awk -F ':' 'BEGIN {ret="yes"}
+		{
+			if (($7 !~ /nologin|false/) && ($1 != "root") && ($4 >= 1000) && ($4 < "65534")) {
+				ret="no"
+				exit
+			}
+		}
+		END {print ret}' "${_DIRS_TGET:-}/etc/passwd"
+	)"
+	fnMsgout "${_PROG_NAME:-}" "info" "root login ${__LGIN:-"no"}"
 	__PATH="${_DIRS_TGET:-}/etc/ssh/sshd_config.d/default.conf"
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
@@ -36,7 +47,7 @@ fnSetup_ssh() {
 		Protocol 2
 
 		# whether to allow root login
-		PermitRootLogin no
+		PermitRootLogin ${__LGIN:-"no"}
 
 		# configuring public key authentication
 		#PubkeyAuthentication no
@@ -71,7 +82,7 @@ _EOT_
 			fi
 		fi
 	fi
-	unset __SRVC __PATH
+	unset __SRVC __PATH __LGIN
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
