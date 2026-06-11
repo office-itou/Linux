@@ -25,7 +25,8 @@ function fnMk_boot_option_kickstart() {
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		__WORK="${__WORK:+"${__WORK} "}inst.ks=hd:sr0:${__MDIA[$((_OSET_MDIA+24))]#"${_DIRS_CONF%/*}"}"
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			__WORK="${__WORK/hd:sr0:/\$\{srvrhttp\}}"
+			__WORK="${__WORK/hd:sr0:/\$\{srvrhttp\}}"						# http
+#			__WORK="${__WORK/hd:sr0:/nfs:\$\{srvraddr\}:${_DIRS_XNFS:-}}"	# nfs
 			__WORK="${__WORK/_dvd/_web}"
 		fi
 	fi
@@ -49,7 +50,8 @@ function fnMk_boot_option_kickstart() {
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			__WORK="${__WORK:+"${__WORK} "}inst.repo=\${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}"
+#			__WORK="${__WORK:+"${__WORK} "}inst.repo=\${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}"
+			__WORK="${__WORK:+"${__WORK} "}inst.repo=nfs:\$\{srvraddr\}:${_DIRS_XNFS:-}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}"
 		else
 			__WORK="${__WORK:+"${__WORK} "}inst.stage2=hd:LABEL=${__MDIA[$((_OSET_MDIA+17))]}"
 		fi

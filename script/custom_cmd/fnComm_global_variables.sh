@@ -71,6 +71,7 @@
 	declare       _SHEL_NLIN=""				# login shell (disallow system login to samba user)
 	# --- shared directory parameter ------------------------------------------
 	declare       _DIRS_TOPS=""			# top of shared directory
+	declare       _DIRS_EXPO=""			# exports
 	declare       _DIRS_HGFS=""			# vmware shared
 	declare       _DIRS_HTML=""			# html contents#
 	declare       _DIRS_SAMB=""			# samba shared
@@ -92,8 +93,8 @@
 	declare       _DIRS_CACH=""			# cache file
 	declare       _DIRS_CTNR=""			# container file
 	declare       _DIRS_CHRT=""			# container file (chroot)
-	declare       _DIRS_EXPO=""			# exports
 	declare       _DIRS_XNBD=""			# exports (network block device)
+	declare       _DIRS_XNFS=""			# exports (network file system)
 	# --- working directory parameter -----------------------------------------
 	declare -r    _DIRS_VADM="/var/admin"	# top of admin working directory
 	declare       _DIRS_INST=""			# auto-install working directory

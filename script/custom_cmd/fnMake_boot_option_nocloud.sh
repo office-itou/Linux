@@ -67,6 +67,7 @@ function fnMk_boot_option_nocloud() {
 			live-*                              ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvrhttp}/${_DIRS_RMAK##*/}/${__MDIA[$((_OSET_MDIA+14))]##*/}";;
 			*                                   ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvrhttp}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
 		esac
+		__WORK="netboot=nfs nfsroot=\${srvraddr}:${_DIRS_XNFS}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]:?} network-config=disabled"
 	fi
 	if [[ -n "${__MDIA[$((_OSET_MDIA+27))]##*-}" ]]; then
 		__WORK="${__WORK:+"${__WORK} "}${__MDIA[$((_OSET_MDIA+27))]//%20/ }"

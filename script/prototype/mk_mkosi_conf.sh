@@ -270,6 +270,12 @@ _EOT_
 			    cifs-utils                          # Common Internet File System utilities
 			    libnss-winbind                      # Samba nameservice integration plugins
 			    lvm2                                # Linux Logical Volume Manager
+			    nfs-common                          # NFS support files common to client and server
+			    nfs-kernel-server                   # support for NFS kernel server
+			    nbdkit                              # toolkit for creating NBD servers
+			    libnbd0                             # Network Block Device client library -- shared library
+			    libnbd-bin                          # Utilities using the Network Block Device client library
+			    nbd-client                          # Network Block Device protocol - client
 			    open-vm-tools                       # Open VMware Tools for virtual machines hosted on VMware (CLI)
 			    open-vm-tools-desktop               # Open VMware Tools for virtual machines hosted on VMware (GUI)
 			    # --- desktop (from the preconfiguration file) ----------------------------
@@ -560,6 +566,12 @@ _EOT_
 			    cifs-utils                          # Common Internet File System utilities
 			    libnss-winbind                      # Samba nameservice integration plugins
 			    lvm2                                # Linux Logical Volume Manager
+			    nfs-common                          # NFS support files common to client and server
+			    nfs-kernel-server                   # support for NFS kernel server
+			    nbdkit                              # toolkit for creating NBD servers
+			    libnbd0                             # Network Block Device client library -- shared library
+			    libnbd-bin                          # Utilities using the Network Block Device client library
+			    nbd-client                          # Network Block Device protocol - client
 			    open-vm-tools                       # Open VMware Tools for virtual machines hosted on VMware (CLI)
 			    open-vm-tools-desktop               # Open VMware Tools for virtual machines hosted on VMware (GUI)
 			    # --- desktop (from the preconfiguration file) ----------------------------
@@ -826,6 +838,9 @@ _EOT_
 			    cifs-utils                          # Utilities for mounting and managing CIFS mounts
 			    samba-winbind                       # Samba winbind
 			    lvm2                                # Userland logical volume management tools
+			    nfs-utils                           # NFS utilities and supporting clients and daemons for the kernel NFS server
+			    nbdkit                              # NBD server
+			    nbdkit-bash-completion              # Bash tab-completion for nbdkit
 			    open-vm-tools                       # Open Virtual Machine Tools for virtual machines hosted on VMware
 			    open-vm-tools-desktop               # User experience components for Open Virtual Machine Tools
 			    fuse                                # File System in Userspace (FUSE) v2 utilities
@@ -1042,6 +1057,14 @@ _EOT_
 			    cifs-utils                          # Utilities for doing and managing mounts of the Linux CIFS filesystem
 			    samba-winbind                       # Winbind Daemon and Tool
 			    lvm2                                # Logical Volume Manager Tools
+			#   nfs-common                          # 
+			    nfs-kernel-server                   # Support Utilities for Kernel nfsd
+			    nbdkit                              # Network Block Device server
+			    libnbd0                             # Core library for nbd
+			    libnbd                              # NBD client library in userspace
+			    libnbd-bash-completion              # Bash tab-completion for libnbd
+			#   libnbd-bin                          # 
+			#   nbd-client                          # 
 			    open-vm-tools                       # Open Virtual Machine Tools
 			    open-vm-tools-desktop               # User experience components for Open Virtual Machine Tools
 			    fuse                                # Reference implementation of the "Filesystem in Userspace"

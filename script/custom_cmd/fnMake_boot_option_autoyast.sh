@@ -54,7 +54,8 @@ function fnMk_boot_option_autoyast() {
 			case "${__MDIA[$((_OSET_MDIA+2))]}" in
 				opensuse-leap*netinst*      ) __WORK="${__WORK:+"${__WORK} "}install=https://download.opensuse.org/distribution/leap/${__VERS:?}/repo/oss/";;
 				opensuse-tumbleweed*netinst*) __WORK="${__WORK:+"${__WORK} "}install=https://download.opensuse.org/tumbleweed/repo/oss/";;
-				*                           ) __WORK="${__WORK:+"${__WORK} "}install=\${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]:?}";;
+#				*                           ) __WORK="${__WORK:+"${__WORK} "}install=\${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]:?}";;
+				*                           ) __WORK="${__WORK:+"${__WORK} "}install=nfs://\${srvraddr}${_DIRS_XNFS}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]:?}";;
 			esac
 		fi
 	fi

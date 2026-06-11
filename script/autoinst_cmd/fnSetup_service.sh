@@ -27,9 +27,17 @@ fnSetup_service() {
 	do
 		__STAT="$(systemctl is-enabled "${__LIST}" || true)"
 		[ "${__STAT:-}" = "alias" ] && continue
-		if [ ! -e "${_DIRS_TGET:-}/lib/systemd/system/${__LIST}"     ] \
+		if [ ! -e "${_DIRS_TGET:-}/etc/systemd/system/${__LIST}"     ] \
+		&& [ ! -e "${_DIRS_TGET:-}/lib/systemd/system/${__LIST}"     ] \
 		&& [ ! -e "${_DIRS_TGET:-}/usr/lib/systemd/system/${__LIST}" ]; then
+			fnMsgout "${_PROG_NAME:-}" "not found (mask)" "${__LIST}"
 			continue
+		elif   [ -e "${_DIRS_TGET:-}/etc/systemd/system/${__LIST}"     ]; then
+			if [ -d "${_DIRS_TGET:-}/etc/systemd/system/${__LIST}"     ] \
+			|| [ -L "${_DIRS_TGET:-}/etc/systemd/system/${__LIST}"     ]; then
+				fnMsgout "${_PROG_NAME:-}" "not found (mask)" "${__LIST}"
+				continue
+			fi
 		fi
 		fnMsgout "${_PROG_NAME:-}" "mask" "${__LIST}"
 		set -- "$@" "${__LIST}"
@@ -57,17 +65,26 @@ fnSetup_service() {
 		apache2.service \
 		httpd.service \
 		smb.service \
-		smbd.service
+		smbd.service \
+		nfs-server.service \
+		nbdkit.socket
 	do
 		__STAT="$(systemctl is-enabled "${__LIST}" || true)"
 		if [ "${__STAT:-}" = "alias" ]; then
 			fnMsgout "${_PROG_NAME:-}" "alias" "${__LIST}"
 			continue
 		fi
-		if [ ! -e "${_DIRS_TGET:-}/lib/systemd/system/${__LIST}"     ] \
+		if [ ! -e "${_DIRS_TGET:-}/etc/systemd/system/${__LIST}"     ] \
+		&& [ ! -e "${_DIRS_TGET:-}/lib/systemd/system/${__LIST}"     ] \
 		&& [ ! -e "${_DIRS_TGET:-}/usr/lib/systemd/system/${__LIST}" ]; then
-			fnMsgout "${_PROG_NAME:-}" "not found" "${__LIST}"
-			continue
+			fnMsgout "${_PROG_NAME:-}" "not found (enable)" "${__LIST}"
+		continue
+		elif   [ -e "${_DIRS_TGET:-}/etc/systemd/system/${__LIST}"     ]; then
+			if [ -d "${_DIRS_TGET:-}/etc/systemd/system/${__LIST}"     ] \
+			|| [ -L "${_DIRS_TGET:-}/etc/systemd/system/${__LIST}"     ]; then
+				fnMsgout "${_PROG_NAME:-}" "not found (enable)" "${__LIST}"
+				continue
+			fi
 		fi
 		fnMsgout "${_PROG_NAME:-}" "enable" "${__LIST}"
 		set -- "$@" "${__LIST}"

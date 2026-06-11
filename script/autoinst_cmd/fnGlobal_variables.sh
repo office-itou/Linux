@@ -70,6 +70,7 @@
 	_SHEL_NLIN=""						# login shell (disallow system login to samba user)
 	# --- shared directory parameter ------------------------------------------
 	_DIRS_TOPS=""						# top of shared directory
+	_DIRS_EXPO=""						# exports
 	_DIRS_HGFS=""						# vmware shared
 	_DIRS_HTML=""						# html contents#
 	_DIRS_SAMB=""						# samba shared
@@ -93,6 +94,7 @@
 	_DIRS_CHRT=""						# container file (chroot)
 	_DIRS_EXPO=""						# exports
 	_DIRS_NBDS=""						# exports (network block device)
+	_DIRS_XNFS=""						# exports (network file system)
 	# --- working directory parameter -----------------------------------------
 	readonly _DIRS_VADM="/var/admin"	# top of admin working directory
 	_DIRS_ACMD=""						# auto-command working directory

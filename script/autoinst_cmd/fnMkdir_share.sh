@@ -6,6 +6,7 @@
 #   output:   stdout   : message
 #   return:            : unused
 #   g-var : _DIRS_TOPS : read
+#   g-var : _DIRS_EXPO : read
 #   g-var : _DIRS_HGFS : read
 #   g-var : _DIRS_HTML : read
 #   g-var : _DIRS_SAMB : read
@@ -116,6 +117,14 @@ fnMkdir_share(){
 	[ -n "${_DIRS_CHRT:-}" ] && mkdir -p "${_DIRS_CHRT:?}"
 	[ -n "${_DIRS_EXPO:-}" ] && mkdir -p "${_DIRS_EXPO:?}"
 	[ -n "${_DIRS_NBDS:-}" ] && mkdir -p "${_DIRS_NBDS:?}"
+
+	# --- exports -------------------------------------------------------------
+	if [ -n "${_DIRS_EXPO:-}" ]; then
+		mkdir -p "${_DIRS_EXPO}"/nbd
+		mkdir -p "${_DIRS_EXPO}"/nfs
+		[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_EXPO}/nfs/${_DIRS_CONF##*/}"
+		[ -n "${_DIRS_IMGS:-}" ] && mkdir -p "${_DIRS_EXPO}/nfs/${_DIRS_IMGS##*/}"
+	fi
 
 	# --- change file mode ----------------------------------------------------
 	if [ -n "${_DIRS_SAMB:-}" ] && [ -e "${_DIRS_SAMB:?}/." ]; then

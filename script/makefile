@@ -122,6 +122,8 @@ OBJS= \
 	./autoinst_cmd/fnSetup_timesyncd.sh \
 	./autoinst_cmd/fnSetup_chronyd.sh \
 	./autoinst_cmd/fnSetup_ssh.sh \
+	./autoinst_cmd/fnSetup_nfs.sh \
+	./autoinst_cmd/fnSetup_nbd.sh \
 	./autoinst_cmd/fnSetup_vmware.sh \
 	./autoinst_cmd/fnSetup_wireplumber.sh \
 	./autoinst_cmd/fnSetup_input_method.sh \

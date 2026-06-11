@@ -134,6 +134,10 @@
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnSetup_ssh.sh						# openssh-server
 	# shellcheck source=/dev/null
+	. "${_SHEL_COMD}"/fnSetup_nfs.sh						# nfs
+	# shellcheck source=/dev/null
+	. "${_SHEL_COMD}"/fnSetup_nbd.sh						# nbd
+	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnSetup_vmware.sh						# vmware shared directory
 	# shellcheck source=/dev/null
 	. "${_SHEL_COMD}"/fnSetup_wireplumber.sh				# wireplumber
@@ -210,6 +214,8 @@ fnMain() {
 	fnSetup_timesyncd					# timesyncd
 	fnSetup_chronyd						# chronyd
 	fnSetup_ssh							# openssh-server
+	fnSetup_nfs							# nfs
+	fnSetup_nbd							# nbd
 	fnSetup_vmware						# vmware shared directory
 	fnSetup_wireplumber					# wireplumber
 	fnSetup_input_method				# input method

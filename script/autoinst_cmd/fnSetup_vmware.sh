@@ -33,7 +33,7 @@ _EOT_
 		__FSYS="vmhgfs"
 	fi
 	# --- fstab ---------------------------------------------------------------
-	__TITL="$(printf "%-15s %-15s %-19s %-31s %-7s %s" ".# <file system>" "<mount point>"   "<type>"    "<options>"                   "<dump>" "<pass>")"
+	__TITL="$(printf "%-15s %-15s %-19s %-31s %-7s %s" "# <file system>" "<mount point>"   "<type>"    "<options>"                   "<dump>" "<pass>")"
 	__FSTB="$(printf "%-15s %-15s %-19s %-31s %-7s %s" ".host:/"          "${_DIRS_HGFS:?}" "${__FSYS}" "nofail,allow_other,defaults" "0"      "0"      )"
 #	__FSTB=".host:/         /srv/hgfs       fuse.vmhgfs-fuse    nofail,allow_other,defaults     0       0"
 	if ! vmware-hgfsclient > /dev/null 2>&1; then

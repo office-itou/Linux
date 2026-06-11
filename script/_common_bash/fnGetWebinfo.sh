@@ -8,8 +8,11 @@
 #   g-var :            : unused
 # shellcheck disable=SC2148,SC2317,SC2329
 function fnGetWebinfo() {
-	awk -v _urls="${1:?}" -v _wget="${2:-"wget"}" '
+	awk -v _urls="${1:?}" -v _wget="${2:-"wget"}" -v _dbug="${3:-}" '
 		function fnAwk_GetWebstatus(_retn, _code,  _mesg) {
+			if (length(_dbug) > 0) {
+				printf("%s: %s\n", "fnAwk_GetWebstatus", "start") > "/dev/stdout"
+			}
 			# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
 			_mesg="Unknown Code"
 			switch (_code) {
@@ -64,30 +67,45 @@ function fnGetWebinfo() {
 			_mesg=sprintf("%-3s(%s)", _code, _mesg)
 			gsub(" ", "%20", _mesg)
 			_retn[1]=_mesg
+			if (length(_dbug) > 0) {
+				printf("%s: %s\n", "fnAwk_GetWebstatus", "complete") > "/dev/stdout"
+			}
 		}
 		function fnAwk_GetWebdata(_retn, _urls, _wget,  i, j, _list, _line, _code, _leng, _lmod, _date, _lcat, _ptrn, _dirs, _file, _rear, _mesg, _chek) {
 			# --- set pattern part --------------------------------------------
+			if (length(_dbug) > 0) {
+				printf("%s: %s\n", "fnAwk_GetWebdata", "start")  > "/dev/stdout"
+			}
 			_ptrn=""
 			_dirs=""
 			_rear=""
+			if (length(_dbug) > 0) {
+				printf("%s: %s\n", "fnAwk_GetWebdata", "_urls="_urls) > "/dev/stdout"
+			}
 			match(_urls, "/[^/ \t]*\\[[^/ \t]+\\][^/ \t]*")
 			if (RSTART == 0) {
 				if (_wget == "curl") {
-					_comd="LANG=C curl --location --http1.1 --no-progress-meter --no-progress-bar --remote-time --show-error --fail --retry-max-time 3 --retry 3 --connect-timeout 60 --head "_urls" 2>&1"
+					_comd="LANG=C curl --location --http1.1 --no-progress-meter --no-progress-bar --remote-time --show-error --fail --retry-max-time 3 --retry 3 --connect-timeout 10 --head "_urls" 2>&1"
 				} else {
-					_comd="LANG=C wget --tries=3 --timeout=60 --quiet --spider --server-response --output-document=- "_urls" 2>&1"
+					_comd="LANG=C wget --tries=3 --timeout=10 --quiet --spider --server-response --execute robots=off "_urls" 2>&1"
 				}
 			} else {
 				_ptrn=substr(_urls, RSTART+1, RLENGTH-1)
 				_dirs=substr(_urls, 1, RSTART-1)
 				_rear=substr(_urls, RSTART+RLENGTH+1)
 				if (_wget == "curl") {
-					_comd="LANG=C curl --location --http1.1 --no-progress-meter --no-progress-bar --remote-time --show-error --fail --retry-max-time 3 --retry 3 --connect-timeout 60 --show-headers --output - "_dirs" 2>&1"
+					_comd="LANG=C curl --location --http1.1 --no-progress-meter --no-progress-bar --remote-time --show-error --fail --retry-max-time 3 --retry 3 --connect-timeout 10 --show-headers --output - "_dirs"/ 2>&1"
 				} else {
-					_comd="LANG=C wget --tries=3 --timeout=60 --quiet --server-response --output-document=- "_dirs" 2>&1"
+					_comd="LANG=C wget --tries=3 --timeout=10 --quiet --server-response --output-document=- --execute robots=off "_dirs"/ 2>&1"
 				}
 			}
+			if (length(_dbug) > 0) {
+				printf("%s: %s\n", "fnAwk_GetWebdata", "_comd="_comd) > "/dev/stdout"
+			}
 			# --- get web data ------------------------------------------------
+			if (length(_dbug) > 0) {
+				printf("%s: %s\n", "fnAwk_GetWebdata", "get web data: start") > "/dev/stdout"
+			}
 			delete _list
 			i=0
 			while (_comd | getline) {
@@ -96,6 +114,9 @@ function fnGetWebinfo() {
 				_list[i++]=_line
 			}
 			close(_comd)
+			if (length(_dbug) > 0) {
+				printf("%s: %s\n", "fnAwk_GetWebdata", "get web data: complete") > "/dev/stdout"
+			}
 			# --- get results -------------------------------------------------
 			_code=""
 			_leng=""
@@ -107,6 +128,9 @@ function fnGetWebinfo() {
 				_line=_list[i]
 				sub("^[ \t]+", "", _line)
 				sub("[ \t]+$", "", _line)
+				if (length(_dbug) > 0) {
+					printf("%s: %s\n", "fnAwk_GetWebdata", "_line="_line) > "/dev/stdout"
+				}
 				switch (tolower(_line)) {
 					case /^http\/[0-9]+.[0-9]+/:
 						sub("^[^ \t]+[ \t]+", "", _line)
@@ -176,15 +200,24 @@ function fnGetWebinfo() {
 				_urls=_urls"/"_rear
 			}
 			fnAwk_GetWebdata(_retn, _urls, _wget)
+			if (length(_dbug) > 0) {
+				printf("%s: %s\n", "fnAwk_GetWebdata", "complete") > "/dev/stdout"
+			}
 			return
 		}
 		BEGIN {
+			if (length(_dbug) > 0) {
+				printf("%s: %s\n", "BEGIN", "start") > "/dev/stdout"
+			}
 			fnAwk_GetWebdata(_retn, _urls, _wget)
 			for (i in _retn) {
 				if (length(_retn[i]) == 0) {_retn[i]="-"}
 				gsub(" ", "%20", _retn[i])
 			}
 			printf("%s %s %s %s %s %s", _retn[1], _retn[2], _retn[3], _retn[4], _retn[5], _retn[6])
+			if (length(_dbug) > 0) {
+				printf("%s: %s\n", "BEGIN", "complete") > "/dev/stdout"
+			}
 		}
 	' || true
 }

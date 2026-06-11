@@ -25,15 +25,17 @@ fnSetup_selinux() {
 		done
 	done
 	# --- application ---------------------------------------------------------
-	semanage fcontext -a -t var_t                "${_DIRS_SHAR}(/.*)?" || true	# root of shared directory
-	semanage fcontext -a -t fusefs_t             "${_DIRS_HGFS}(/.*)?" || true	# root of hgfs shared directory
-	semanage fcontext -a -t httpd_user_content_t "${_DIRS_HTML}(/.*)?" || true	# root of html shared directory
-	semanage fcontext -a -t samba_share_t        "${_DIRS_SAMB}(/.*)?" || true	# root of samba shared directory
-	semanage fcontext -a -t tftpdir_t            "${_DIRS_TFTP}(/.*)?" || true	# root of tftp shared directory
-	semanage fcontext -a -t var_t                "${_DIRS_USER}(/.*)?" || true	# root of user shared directory
+	semanage fcontext -a -t var_t                "${_DIRS_SHAR}(/.*)?"            || true	# root of shared directory
+#	semanage fcontext -a -t nfs_t                "${_DIRS_EXPO}/nbd(/.*)?"        || true	# root of nbd exports shared directory
+#	semanage fcontext -a -t nfs_t                "${_DIRS_EXPO}/nfs(/.*)?"        || true	# root of nfs exports shared directory
+	semanage fcontext -a -t fusefs_t             "${_DIRS_HGFS}(/.*)?"            || true	# root of hgfs shared directory
+	semanage fcontext -a -t httpd_user_content_t "${_DIRS_HTML}(/.*)?"            || true	# root of html shared directory
+	semanage fcontext -a -t samba_share_t        "${_DIRS_SAMB}(/.*)?"            || true	# root of samba shared directory
+	semanage fcontext -a -t tftpdir_t            "${_DIRS_TFTP}(/.*)?"            || true	# root of tftp shared directory
+	semanage fcontext -a -t var_t                "${_DIRS_USER}(/.*)?"            || true	# root of user shared directory
 	# --- user share ----------------------------------------------------------
-	semanage fcontext -a -t var_t                "${_DIRS_PVAT}(/.*)?" || true	# root of private contents directory
-	semanage fcontext -a -t public_content_t     "${_DIRS_SHAR}(/.*)?" || true	# root of public contents directory
+	semanage fcontext -a -t var_t                "${_DIRS_PVAT}(/.*)?"            || true	# root of private contents directory
+	semanage fcontext -a -t public_content_t     "${_DIRS_SHAR}(/.*)?"            || true	# root of public contents directory
 	# --- container -----------------------------------------------------------
 	semanage fcontext -a -t public_content_t     "${_DIRS_SHAR}/cache(/.*)?"      || true
 	semanage fcontext -a -t container_file_t     "${_DIRS_SHAR}/containers(/.*)?" || true

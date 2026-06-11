@@ -156,6 +156,7 @@
 	declare       _SHEL_NLIN=""				# login shell (disallow system login to samba user)
 	# --- shared directory parameter ------------------------------------------
 	declare       _DIRS_TOPS=""			# top of shared directory
+	declare       _DIRS_EXPO=""			# exports
 	declare       _DIRS_HGFS=""			# vmware shared
 	declare       _DIRS_HTML=""			# html contents#
 	declare       _DIRS_SAMB=""			# samba shared
@@ -177,8 +178,8 @@
 	declare       _DIRS_CACH=""			# cache file
 	declare       _DIRS_CTNR=""			# container file
 	declare       _DIRS_CHRT=""			# container file (chroot)
-	declare       _DIRS_EXPO=""			# exports
 	declare       _DIRS_XNBD=""			# exports (network block device)
+	declare       _DIRS_XNFS=""			# exports (network file system)
 	# --- working directory parameter -----------------------------------------
 	declare -r    _DIRS_VADM="/var/admin"	# top of admin working directory
 	declare       _DIRS_INST=""			# auto-install working directory
@@ -455,8 +456,11 @@ function fnStrmsg() {
 #   output:   stdout   : output (url,last-modified,content-length,check-date,code,message)
 #   return:            : unused
 function fnGetWebinfo() {
-	awk -v _urls="${1:?}" -v _wget="${2:-"wget"}" '
+	awk -v _urls="${1:?}" -v _wget="${2:-"wget"}" -v _dbug="${3:-}" '
 		function fnAwk_GetWebstatus(_retn, _code,  _mesg) {
+			if (length(_dbug) > 0) {
+				printf("%s: %s\n", "fnAwk_GetWebstatus", "start") > "/dev/stdout"
+			}
 			# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
 			_mesg="Unknown Code"
 			switch (_code) {
@@ -511,30 +515,45 @@ function fnGetWebinfo() {
 			_mesg=sprintf("%-3s(%s)", _code, _mesg)
 			gsub(" ", "%20", _mesg)
 			_retn[1]=_mesg
+			if (length(_dbug) > 0) {
+				printf("%s: %s\n", "fnAwk_GetWebstatus", "complete") > "/dev/stdout"
+			}
 		}
 		function fnAwk_GetWebdata(_retn, _urls, _wget,  i, j, _list, _line, _code, _leng, _lmod, _date, _lcat, _ptrn, _dirs, _file, _rear, _mesg, _chek) {
 			# --- set pattern part --------------------------------------------
+			if (length(_dbug) > 0) {
+				printf("%s: %s\n", "fnAwk_GetWebdata", "start")  > "/dev/stdout"
+			}
 			_ptrn=""
 			_dirs=""
 			_rear=""
+			if (length(_dbug) > 0) {
+				printf("%s: %s\n", "fnAwk_GetWebdata", "_urls="_urls) > "/dev/stdout"
+			}
 			match(_urls, "/[^/ \t]*\\[[^/ \t]+\\][^/ \t]*")
 			if (RSTART == 0) {
 				if (_wget == "curl") {
-					_comd="LANG=C curl --location --http1.1 --no-progress-meter --no-progress-bar --remote-time --show-error --fail --retry-max-time 3 --retry 3 --connect-timeout 60 --head "_urls" 2>&1"
+					_comd="LANG=C curl --location --http1.1 --no-progress-meter --no-progress-bar --remote-time --show-error --fail --retry-max-time 3 --retry 3 --connect-timeout 10 --head "_urls" 2>&1"
 				} else {
-					_comd="LANG=C wget --tries=3 --timeout=60 --quiet --spider --server-response --output-document=- "_urls" 2>&1"
+					_comd="LANG=C wget --tries=3 --timeout=10 --quiet --spider --server-response --execute robots=off "_urls" 2>&1"
 				}
 			} else {
 				_ptrn=substr(_urls, RSTART+1, RLENGTH-1)
 				_dirs=substr(_urls, 1, RSTART-1)
 				_rear=substr(_urls, RSTART+RLENGTH+1)
 				if (_wget == "curl") {
-					_comd="LANG=C curl --location --http1.1 --no-progress-meter --no-progress-bar --remote-time --show-error --fail --retry-max-time 3 --retry 3 --connect-timeout 60 --show-headers --output - "_dirs" 2>&1"
+					_comd="LANG=C curl --location --http1.1 --no-progress-meter --no-progress-bar --remote-time --show-error --fail --retry-max-time 3 --retry 3 --connect-timeout 10 --show-headers --output - "_dirs"/ 2>&1"
 				} else {
-					_comd="LANG=C wget --tries=3 --timeout=60 --quiet --server-response --output-document=- "_dirs" 2>&1"
+					_comd="LANG=C wget --tries=3 --timeout=10 --quiet --server-response --output-document=- --execute robots=off "_dirs"/ 2>&1"
 				}
 			}
+			if (length(_dbug) > 0) {
+				printf("%s: %s\n", "fnAwk_GetWebdata", "_comd="_comd) > "/dev/stdout"
+			}
 			# --- get web data ------------------------------------------------
+			if (length(_dbug) > 0) {
+				printf("%s: %s\n", "fnAwk_GetWebdata", "get web data: start") > "/dev/stdout"
+			}
 			delete _list
 			i=0
 			while (_comd | getline) {
@@ -543,6 +562,9 @@ function fnGetWebinfo() {
 				_list[i++]=_line
 			}
 			close(_comd)
+			if (length(_dbug) > 0) {
+				printf("%s: %s\n", "fnAwk_GetWebdata", "get web data: complete") > "/dev/stdout"
+			}
 			# --- get results -------------------------------------------------
 			_code=""
 			_leng=""
@@ -554,6 +576,9 @@ function fnGetWebinfo() {
 				_line=_list[i]
 				sub("^[ \t]+", "", _line)
 				sub("[ \t]+$", "", _line)
+				if (length(_dbug) > 0) {
+					printf("%s: %s\n", "fnAwk_GetWebdata", "_line="_line) > "/dev/stdout"
+				}
 				switch (tolower(_line)) {
 					case /^http\/[0-9]+.[0-9]+/:
 						sub("^[^ \t]+[ \t]+", "", _line)
@@ -623,15 +648,24 @@ function fnGetWebinfo() {
 				_urls=_urls"/"_rear
 			}
 			fnAwk_GetWebdata(_retn, _urls, _wget)
+			if (length(_dbug) > 0) {
+				printf("%s: %s\n", "fnAwk_GetWebdata", "complete") > "/dev/stdout"
+			}
 			return
 		}
 		BEGIN {
+			if (length(_dbug) > 0) {
+				printf("%s: %s\n", "BEGIN", "start") > "/dev/stdout"
+			}
 			fnAwk_GetWebdata(_retn, _urls, _wget)
 			for (i in _retn) {
 				if (length(_retn[i]) == 0) {_retn[i]="-"}
 				gsub(" ", "%20", _retn[i])
 			}
 			printf("%s %s %s %s %s %s", _retn[1], _retn[2], _retn[3], _retn[4], _retn[5], _retn[6])
+			if (length(_dbug) > 0) {
+				printf("%s: %s\n", "BEGIN", "complete") > "/dev/stdout"
+			}
 		}
 	' || true
 }
@@ -2400,6 +2434,7 @@ function fnMk_boot_option_nocloud() {
 			live-*                              ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvrhttp}/${_DIRS_RMAK##*/}/${__MDIA[$((_OSET_MDIA+14))]##*/}";;
 			*                                   ) __WORK="${__WORK:+"${__WORK} "}fetch=\${srvrhttp}/${_DIRS_ISOS##*/}${__MDIA[$((_OSET_MDIA+14))]#"${_DIRS_ISOS}"}";;
 		esac
+		__WORK="netboot=nfs nfsroot=\${srvraddr}:${_DIRS_XNFS}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]:?} network-config=disabled"
 	fi
 	if [[ -n "${__MDIA[$((_OSET_MDIA+27))]##*-}" ]]; then
 		__WORK="${__WORK:+"${__WORK} "}${__MDIA[$((_OSET_MDIA+27))]//%20/ }"
@@ -2428,7 +2463,8 @@ function fnMk_boot_option_kickstart() {
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		__WORK="${__WORK:+"${__WORK} "}inst.ks=hd:sr0:${__MDIA[$((_OSET_MDIA+24))]#"${_DIRS_CONF%/*}"}"
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			__WORK="${__WORK/hd:sr0:/\$\{srvrhttp\}}"
+			__WORK="${__WORK/hd:sr0:/\$\{srvrhttp\}}"						# http
+#			__WORK="${__WORK/hd:sr0:/nfs:\$\{srvraddr\}:${_DIRS_XNFS:-}}"	# nfs
 			__WORK="${__WORK/_dvd/_web}"
 		fi
 	fi
@@ -2452,7 +2488,8 @@ function fnMk_boot_option_kickstart() {
 	__WORK=""
 	if [[ -n "${__MDIA[$((_OSET_MDIA+24))]##*-}" ]]; then
 		if [[ "${__TGET_TYPE:-}" = "pxeboot" ]]; then
-			__WORK="${__WORK:+"${__WORK} "}inst.repo=\${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}"
+#			__WORK="${__WORK:+"${__WORK} "}inst.repo=\${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}"
+			__WORK="${__WORK:+"${__WORK} "}inst.repo=nfs:\$\{srvraddr\}:${_DIRS_XNFS:-}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]}"
 		else
 			__WORK="${__WORK:+"${__WORK} "}inst.stage2=hd:LABEL=${__MDIA[$((_OSET_MDIA+17))]}"
 		fi
@@ -2526,7 +2563,8 @@ function fnMk_boot_option_autoyast() {
 			case "${__MDIA[$((_OSET_MDIA+2))]}" in
 				opensuse-leap*netinst*      ) __WORK="${__WORK:+"${__WORK} "}install=https://download.opensuse.org/distribution/leap/${__VERS:?}/repo/oss/";;
 				opensuse-tumbleweed*netinst*) __WORK="${__WORK:+"${__WORK} "}install=https://download.opensuse.org/tumbleweed/repo/oss/";;
-				*                           ) __WORK="${__WORK:+"${__WORK} "}install=\${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]:?}";;
+#				*                           ) __WORK="${__WORK:+"${__WORK} "}install=\${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]:?}";;
+				*                           ) __WORK="${__WORK:+"${__WORK} "}install=nfs://\${srvraddr}${_DIRS_XNFS}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]:?}";;
 			esac
 		fi
 	fi

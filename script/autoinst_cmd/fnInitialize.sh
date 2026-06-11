@@ -12,6 +12,7 @@
 #   g-var : _TEXT_GAP2 : write
 #   g-var : _TGET_VIRT : write
 #   g-var : _DIRS_TOPS : write
+#   g-var : _DIRS_EXPO : read
 #   g-var : _DIRS_HGFS : write
 #   g-var : _DIRS_HTML : write
 #   g-var : _DIRS_SAMB : write
@@ -106,6 +107,7 @@ fnInitialize() {
 	# --- firewalld parameter -------------------------------------------------
 	# --- shared directory parameter ------------------------------------------
 	readonly _DIRS_TOPS="${_DIRS_TGET:-}/srv"			# top of shared directory
+	readonly _DIRS_EXPO="${_DIRS_TOPS}/exports"			# exports
 	readonly _DIRS_HGFS="${_DIRS_TOPS}/hgfs"			# vmware shared
 	readonly _DIRS_HTML="${_DIRS_TOPS}/http/html"		# html contents#
 	readonly _DIRS_SAMB="${_DIRS_TOPS}/samba"			# samba shared

@@ -50,6 +50,7 @@
 #   g-var : _FWAL_NAME : read
 #   g-var : _FWAL_PORT : read
 #   g-var : _DIRS_TOPS : read
+#   g-var : _DIRS_EXPO : read
 #   g-var : _DIRS_HGFS : read
 #   g-var : _DIRS_HTML : read
 #   g-var : _DIRS_SAMB : read
@@ -157,6 +158,7 @@ fnDbgparam() {
 	# --- shared directory parameter ------------------------------------------
 	fnDbgout "shared directory" \
 		"info,_DIRS_TOPS=[${_DIRS_TOPS:-}]" \
+		"debug,_DIRS_EXPO=[${_DIRS_EXPO:-}]" \
 		"debug,_DIRS_HGFS=[${_DIRS_HGFS:-}]" \
 		"debug,_DIRS_HTML=[${_DIRS_HTML:-}]" \
 		"debug,_DIRS_SAMB=[${_DIRS_SAMB:-}]" \
