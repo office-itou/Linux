@@ -111,6 +111,7 @@
 	_SHEL_NLIN=""						# login shell (disallow system login to samba user)
 	# --- shared directory parameter ------------------------------------------
 	_DIRS_TOPS=""						# top of shared directory
+	_DIRS_EXPO=""						# exports
 	_DIRS_HGFS=""						# vmware shared
 	_DIRS_HTML=""						# html contents#
 	_DIRS_SAMB=""						# samba shared
@@ -134,6 +135,7 @@
 	_DIRS_CHRT=""						# container file (chroot)
 	_DIRS_EXPO=""						# exports
 	_DIRS_NBDS=""						# exports (network block device)
+	_DIRS_XNFS=""						# exports (network file system)
 	# --- working directory parameter -----------------------------------------
 	readonly _DIRS_VADM="/var/admin"	# top of admin working directory
 	_DIRS_ACMD=""						# auto-command working directory
@@ -523,6 +525,7 @@ fnDbgparam() {
 	# --- shared directory parameter ------------------------------------------
 	fnDbgout "shared directory" \
 		"info,_DIRS_TOPS=[${_DIRS_TOPS:-}]" \
+		"debug,_DIRS_EXPO=[${_DIRS_EXPO:-}]" \
 		"debug,_DIRS_HGFS=[${_DIRS_HGFS:-}]" \
 		"debug,_DIRS_HTML=[${_DIRS_HTML:-}]" \
 		"debug,_DIRS_SAMB=[${_DIRS_SAMB:-}]" \
@@ -815,11 +818,12 @@ fnFile_backup() {
 	mkdir -p "${___BACK%/*}"
 	chmod 600 "${___DIRS%/*}"
 	if [ -e "${___BACK}" ] || [ -h "${___BACK}" ]; then
-		___BACK="${___BACK}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
+		___MOVE="${___BACK}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
+		mv --verbose "${___BACK}" "${___MOVE}"
 	fi
 	fnMsgout "${_PROG_NAME:-}" "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
 	cp --archive "${___PATH}" "${___BACK}"
-	unset ___PATH ___MODE ___REAL ___DIRS ___BACK
+	unset ___PATH ___MODE ___REAL ___DIRS ___BACK ___MOVE
 }
 
 # *** function section (subroutine functions) *********************************
@@ -894,6 +898,7 @@ fnInitialize() {
 	# --- firewalld parameter -------------------------------------------------
 	# --- shared directory parameter ------------------------------------------
 	readonly _DIRS_TOPS="${_DIRS_TGET:-}/srv"			# top of shared directory
+	readonly _DIRS_EXPO="${_DIRS_TOPS}/exports"			# exports
 	readonly _DIRS_HGFS="${_DIRS_TOPS}/hgfs"			# vmware shared
 	readonly _DIRS_HTML="${_DIRS_TOPS}/http/html"		# html contents#
 	readonly _DIRS_SAMB="${_DIRS_TOPS}/samba"			# samba shared
@@ -914,6 +919,8 @@ fnInitialize() {
 	readonly _DIRS_CACH="${_DIRS_SHAR}/cache"			# cache file
 	readonly _DIRS_CTNR="${_DIRS_SHAR}/containers"		# container file
 	readonly _DIRS_CHRT="${_DIRS_SHAR}/chroot"			# container file (chroot)
+	readonly _DIRS_XNBD="${_DIRS_EXPO}/nbd"				# exports (network block device)
+	readonly _DIRS_XNFS="${_DIRS_EXPO}/nfs"				# exports (network file system)
 	# --- working directory parameter -----------------------------------------
 												# top of working directory
 	_DIRS_ACMD="${_DIRS_VADM:?}/${_PROG_NAME%%_*}"

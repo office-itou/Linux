@@ -111,6 +111,7 @@
 	_SHEL_NLIN=""						# login shell (disallow system login to samba user)
 	# --- shared directory parameter ------------------------------------------
 	_DIRS_TOPS=""						# top of shared directory
+	_DIRS_EXPO=""						# exports
 	_DIRS_HGFS=""						# vmware shared
 	_DIRS_HTML=""						# html contents#
 	_DIRS_SAMB=""						# samba shared
@@ -134,6 +135,7 @@
 	_DIRS_CHRT=""						# container file (chroot)
 	_DIRS_EXPO=""						# exports
 	_DIRS_NBDS=""						# exports (network block device)
+	_DIRS_XNFS=""						# exports (network file system)
 	# --- working directory parameter -----------------------------------------
 	readonly _DIRS_VADM="/var/admin"	# top of admin working directory
 	_DIRS_ACMD=""						# auto-command working directory
@@ -523,6 +525,7 @@ fnDbgparam() {
 	# --- shared directory parameter ------------------------------------------
 	fnDbgout "shared directory" \
 		"info,_DIRS_TOPS=[${_DIRS_TOPS:-}]" \
+		"debug,_DIRS_EXPO=[${_DIRS_EXPO:-}]" \
 		"debug,_DIRS_HGFS=[${_DIRS_HGFS:-}]" \
 		"debug,_DIRS_HTML=[${_DIRS_HTML:-}]" \
 		"debug,_DIRS_SAMB=[${_DIRS_SAMB:-}]" \
@@ -815,11 +818,12 @@ fnFile_backup() {
 	mkdir -p "${___BACK%/*}"
 	chmod 600 "${___DIRS%/*}"
 	if [ -e "${___BACK}" ] || [ -h "${___BACK}" ]; then
-		___BACK="${___BACK}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
+		___MOVE="${___BACK}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
+		mv --verbose "${___BACK}" "${___MOVE}"
 	fi
 	fnMsgout "${_PROG_NAME:-}" "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
 	cp --archive "${___PATH}" "${___BACK}"
-	unset ___PATH ___MODE ___REAL ___DIRS ___BACK
+	unset ___PATH ___MODE ___REAL ___DIRS ___BACK ___MOVE
 }
 
 # *** function section (subroutine functions) *********************************
@@ -894,6 +898,7 @@ fnInitialize() {
 	# --- firewalld parameter -------------------------------------------------
 	# --- shared directory parameter ------------------------------------------
 	readonly _DIRS_TOPS="${_DIRS_TGET:-}/srv"			# top of shared directory
+	readonly _DIRS_EXPO="${_DIRS_TOPS}/exports"			# exports
 	readonly _DIRS_HGFS="${_DIRS_TOPS}/hgfs"			# vmware shared
 	readonly _DIRS_HTML="${_DIRS_TOPS}/http/html"		# html contents#
 	readonly _DIRS_SAMB="${_DIRS_TOPS}/samba"			# samba shared
@@ -914,6 +919,8 @@ fnInitialize() {
 	readonly _DIRS_CACH="${_DIRS_SHAR}/cache"			# cache file
 	readonly _DIRS_CTNR="${_DIRS_SHAR}/containers"		# container file
 	readonly _DIRS_CHRT="${_DIRS_SHAR}/chroot"			# container file (chroot)
+	readonly _DIRS_XNBD="${_DIRS_EXPO}/nbd"				# exports (network block device)
+	readonly _DIRS_XNFS="${_DIRS_EXPO}/nfs"				# exports (network file system)
 	# --- working directory parameter -----------------------------------------
 												# top of working directory
 	_DIRS_ACMD="${_DIRS_VADM:?}/${_PROG_NAME%%_*}"
@@ -1219,6 +1226,17 @@ fnMkdir_share(){
 	[ -n "${_DIRS_CHRT:-}" ] && mkdir -p "${_DIRS_CHRT:?}"
 	[ -n "${_DIRS_EXPO:-}" ] && mkdir -p "${_DIRS_EXPO:?}"
 	[ -n "${_DIRS_NBDS:-}" ] && mkdir -p "${_DIRS_NBDS:?}"
+	[ -n "${_DIRS_PVAT:-}" ] && mkdir -p "${_DIRS_PVAT:?}"/bin
+	[ -n "${_DIRS_PVAT:-}" ] && mkdir -p "${_DIRS_PVAT:?}"/src/git
+	[ -n "${_DIRS_PVAT:-}" ] && mkdir -p "${_DIRS_PVAT:?}"/wrk
+
+	# --- exports -------------------------------------------------------------
+	if [ -n "${_DIRS_EXPO:-}" ]; then
+		mkdir -p "${_DIRS_EXPO}"/nbd
+		mkdir -p "${_DIRS_EXPO}"/nfs
+		[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_EXPO}/nfs/${_DIRS_CONF##*/}"
+		[ -n "${_DIRS_IMGS:-}" ] && mkdir -p "${_DIRS_EXPO}/nfs/${_DIRS_IMGS##*/}"
+	fi
 
 	# --- change file mode ----------------------------------------------------
 	if [ -n "${_DIRS_SAMB:-}" ] && [ -e "${_DIRS_SAMB:?}/." ]; then
@@ -1275,7 +1293,8 @@ _EOT_
 	fnFile_backup "${_DIRS_TFTP:-}/menu-efi64/syslinux.cfg" "init"
 
 	# --- create autoexec.ipxe ------------------------------------------------
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_DIRS_TFTP:?}/autoexec.ipxe"
+	[ ! -e "${_DIRS_TFTP:?}/ipxe/autoexec.ipxe" ] && ln -sr "${_DIRS_TFTP:?}/autoexec.ipxe" "${_DIRS_TFTP:?}/ipxe/autoexec.ipxe"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_DIRS_TFTP:?}/autoexec.ipxe"
 		#!ipxe
 
 		cpuid --ext 29 && set arch amd64 || set arch x86
@@ -2804,6 +2823,167 @@ _EOT_
 }
 
 # -----------------------------------------------------------------------------
+# descript: nfs
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnSetup_nfs() {
+	__FUNC_NAME="fnSetup_nfs"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	# --- check service -------------------------------------------------------
+	__SRVC="$(fnFind_serivce 'nfs-server.service' | sort -V | head -n 1)"
+	if [ -z "${__SRVC:-}" ]; then
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
+		return
+	fi
+	# --- fstab ---------------------------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/fstab"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "# <file system>" "<mount point>"                     "<type>" "<options>" "<dump>" "<pass>")
+		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_SHEL:?}" "${_DIRS_MKOS:?}/${_DIRS_SHEL##*/}" "none"   "bind,ro"   "0"      "0"     )
+		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_IMGS:?}" "${_DIRS_XNFS:?}/${_DIRS_IMGS##*/}" "none"   "bind,ro"   "0"      "0"     )
+		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_CONF:?}" "${_DIRS_XNFS:?}/${_DIRS_CONF##*/}" "none"   "bind,ro"   "0"      "0"     )
+_EOT_
+	# --- check mount ---------------------------------------------------------
+	if [ -z "${_TGET_CHRT:-}" ]; then
+		systemctl --quiet daemon-reload
+		for __MNTP in \
+			"${_DIRS_MKOS:?}/${_DIRS_SHEL##*/}" \
+			"${_DIRS_XNFS:?}/${_DIRS_IMGS##*/}" \
+			"${_DIRS_XNFS:?}/${_DIRS_CONF##*/}"
+		do
+			if mount "${__MNTP:?}"; then
+				fnMsgout "${_PROG_NAME:-}" "success" "mounted: ${__MNTP}"
+			else
+				fnMsgout "${_PROG_NAME:-}" "failed" "not mounted: ${__MNTP}"
+			fi
+		done
+	fi
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
+	# --- exports /srv --------------------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/exports.d/srv.exports"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
+		# exports file: "${__PATH#*"${_DIRS_TGET:-}"}"
+
+		# --- ipv4 --------------------------------------------------------------------
+		${_DIRS_EXPO:?} ${_IPV4_UADR:?}.0/${_NICS_BIT4:?}(rw,sync,no_subtree_check,no_root_squash,fsid=0,crossmnt)
+		${_DIRS_XNFS:?}/${_DIRS_CONF##*/} ${_IPV4_UADR:?}.0/${_NICS_BIT4:?}(ro,sync,no_subtree_check,no_root_squash)
+		${_DIRS_XNFS:?}/${_DIRS_IMGS##*/} ${_IPV4_UADR:?}.0/${_NICS_BIT4:?}(ro,sync,no_subtree_check,no_root_squash)
+
+		# --- ipv6 --------------------------------------------------------------------
+		#${_DIRS_EXPO:?} ${_IPV6_UADR:?}::/${_IPV6_CIDR:?}(rw,sync,no_subtree_check,no_root_squash,fsid=0,crossmnt)
+		#${_DIRS_XNFS:?}/${_DIRS_CONF##*/} ${_IPV6_UADR:?}::/${_IPV6_CIDR:?}(ro,sync,no_subtree_check,no_root_squash)
+		#${_DIRS_XNFS:?}/${_DIRS_IMGS##*/} ${_IPV6_UADR:?}::/${_IPV6_CIDR:?}(ro,sync,no_subtree_check,no_root_squash)
+
+		# --- link local --------------------------------------------------------------
+		${_DIRS_EXPO:?} ${_LINK_UADR:?}/${_LINK_CIDR:?}(rw,sync,no_subtree_check,no_root_squash,fsid=0,crossmnt)
+		${_DIRS_XNFS:?}/${_DIRS_CONF##*/} ${_LINK_UADR:?}/${_LINK_CIDR:?}(ro,sync,no_subtree_check,no_root_squash)
+		${_DIRS_XNFS:?}/${_DIRS_IMGS##*/} ${_LINK_UADR:?}/${_LINK_CIDR:?}(ro,sync,no_subtree_check,no_root_squash)
+
+		# --- eof ---------------------------------------------------------------------
+_EOT_
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
+	# --- service restart -----------------------------------------------------
+	if [ -z "${_TGET_CHRT:-}" ]; then
+		__SRVC="${__SRVC##*/}"
+		if systemctl --quiet is-active "${__SRVC}"; then
+			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
+			systemctl --quiet daemon-reload
+			if systemctl --quiet restart "${__SRVC}"; then
+				fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
+			else
+				fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
+			fi
+		fi
+		exportfs -v || true
+		showmount -e || true
+	fi
+	unset __SRVC __PATH __MNTP
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: nbd
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnSetup_nbd() {
+	__FUNC_NAME="fnSetup_nbd"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	# --- check command -------------------------------------------------------
+	if ! command -v nbdkit > /dev/null 2>&1; then
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
+		return
+	fi
+	# --- create socket -------------------------------------------------------
+	__SOCK="${_DIRS_TGET:-}/etc/systemd/system/nbdkit.socket"
+	fnFile_backup "${__SOCK}"			# backup original file
+	mkdir -p "${__SOCK%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__SOCK#*"${_DIRS_TGET:-}/"}" "${__SOCK}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__SOCK}"
+		[Unit]
+		Description=NBDKit Network Block Device server
+		[Socket]
+		ListenStream=10809
+		# Optional settings to detect dead clients:
+		#KeepAlive=true
+		#KeepAliveTimeSec=60
+		#KeepAliveIntervalSec=10
+		#KeepAliveProbes=5
+		[Install]
+		WantedBy=sockets.target
+_EOT_
+	fnDbgdump "${__SOCK}"				# debugout
+	fnFile_backup "${__SOCK}" "init"	# backup initial file
+	# --- create service ------------------------------------------------------
+	__COMD="$(command -v nbdkit)"
+	__SRVC="${_DIRS_TGET:-}/etc/systemd/system/nbdkit.service"
+	fnFile_backup "${__SRVC}"			# backup original file
+	mkdir -p "${__SRVC%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__SRVC#*"${_DIRS_TGET:-}/"}" "${__SRVC}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__SRVC}"
+		[Service]
+		ExecStart=${__COMD:?} --exit-with-parent --readonly file cache=default fadvise=normal dir=${_DIRS_EXPO:?}/nbd
+		# Optional settings to run as non-root:
+		#User=nbd
+		#Group=nbd
+_EOT_
+	# --- service restart -----------------------------------------------------
+	if [ -z "${_TGET_CHRT:-}" ]; then
+		__SRVC="${__SRVC##*/}"
+		__SOCK="${__SOCK##*/}"
+		systemctl enable --now "${__SOCK}"
+		if systemctl --quiet is-active "${__SRVC}"; then
+			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
+			systemctl --quiet daemon-reload
+			if systemctl --quiet restart "${__SRVC}"; then
+				fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
+			else
+				fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
+			fi
+		fi
+	fi
+	unset __SRVC __SOCK
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
 # descript: vmware shared directory
 #   input :            : unused
 #   output:   stdout   : message
@@ -2834,9 +3014,8 @@ _EOT_
 		__FSYS="vmhgfs"
 	fi
 	# --- fstab ---------------------------------------------------------------
-	__TITL="$(printf "%-15s %-15s %-19s %-31s %-7s %s" ".# <file system>" "<mount point>"   "<type>"    "<options>"                   "<dump>" "<pass>")"
-	__FSTB="$(printf "%-15s %-15s %-19s %-31s %-7s %s" ".host:/"          "${_DIRS_HGFS:?}" "${__FSYS}" "nofail,allow_other,defaults" "0"      "0"      )"
-#	__FSTB=".host:/         /srv/hgfs       fuse.vmhgfs-fuse    nofail,allow_other,defaults     0       0"
+	__TITL="$(printf "%-27s %-23s %-19s %-27s %-7s %s" "# <file system>" "<mount point>"   "<type>"    "<options>"            "<dump>" "<pass>")"
+	__FSTB="$(printf "%-27s %-23s %-19s %-27s %-7s %s" ".host:/"         "${_DIRS_HGFS:?}" "${__FSYS}" "allow_other,defaults" "0"      "0"      )"
 	if ! vmware-hgfsclient > /dev/null 2>&1; then
 		__FSTB="#${__FSTB}"
 	fi
@@ -2844,10 +3023,15 @@ _EOT_
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
 	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
-		${__TITL}
-		${__FSTB}
+	__RNUM="$(sed -n -e '\%\(/dev/\|UUID=\)%=' "${__PATH}" | tail -n 1)"
+	__INSR="$(
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+			${__TITL}
+			${__FSTB}
 _EOT_
+	)"
+	sed -i "${__PATH}"                \
+	    -e "${__RNUM:?}a ${__INSR:?}"
 	# --- check mount ---------------------------------------------------------
 	if [ -z "${_TGET_CHRT:-}" ]; then
 		systemctl --quiet daemon-reload
@@ -2862,7 +3046,7 @@ _EOT_
 	fi
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
-	unset __PATH __FSYS __TITL __FSTB
+	unset __PATH __FSYS __TITL __FSTB __INSR __RNUM
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
@@ -3725,15 +3909,17 @@ fnSetup_selinux() {
 		done
 	done
 	# --- application ---------------------------------------------------------
-	semanage fcontext -a -t var_t                "${_DIRS_SHAR}(/.*)?" || true	# root of shared directory
-	semanage fcontext -a -t fusefs_t             "${_DIRS_HGFS}(/.*)?" || true	# root of hgfs shared directory
-	semanage fcontext -a -t httpd_user_content_t "${_DIRS_HTML}(/.*)?" || true	# root of html shared directory
-	semanage fcontext -a -t samba_share_t        "${_DIRS_SAMB}(/.*)?" || true	# root of samba shared directory
-	semanage fcontext -a -t tftpdir_t            "${_DIRS_TFTP}(/.*)?" || true	# root of tftp shared directory
-	semanage fcontext -a -t var_t                "${_DIRS_USER}(/.*)?" || true	# root of user shared directory
+	semanage fcontext -a -t var_t                "${_DIRS_SHAR}(/.*)?"            || true	# root of shared directory
+#	semanage fcontext -a -t nfs_t                "${_DIRS_EXPO}/nbd(/.*)?"        || true	# root of nbd exports shared directory
+#	semanage fcontext -a -t nfs_t                "${_DIRS_EXPO}/nfs(/.*)?"        || true	# root of nfs exports shared directory
+	semanage fcontext -a -t fusefs_t             "${_DIRS_HGFS}(/.*)?"            || true	# root of hgfs shared directory
+	semanage fcontext -a -t httpd_user_content_t "${_DIRS_HTML}(/.*)?"            || true	# root of html shared directory
+	semanage fcontext -a -t samba_share_t        "${_DIRS_SAMB}(/.*)?"            || true	# root of samba shared directory
+	semanage fcontext -a -t tftpdir_t            "${_DIRS_TFTP}(/.*)?"            || true	# root of tftp shared directory
+	semanage fcontext -a -t var_t                "${_DIRS_USER}(/.*)?"            || true	# root of user shared directory
 	# --- user share ----------------------------------------------------------
-	semanage fcontext -a -t var_t                "${_DIRS_PVAT}(/.*)?" || true	# root of private contents directory
-	semanage fcontext -a -t public_content_t     "${_DIRS_SHAR}(/.*)?" || true	# root of public contents directory
+	semanage fcontext -a -t var_t                "${_DIRS_PVAT}(/.*)?"            || true	# root of private contents directory
+	semanage fcontext -a -t public_content_t     "${_DIRS_SHAR}(/.*)?"            || true	# root of public contents directory
 	# --- container -----------------------------------------------------------
 	semanage fcontext -a -t public_content_t     "${_DIRS_SHAR}/cache(/.*)?"      || true
 	semanage fcontext -a -t container_file_t     "${_DIRS_SHAR}/containers(/.*)?" || true
@@ -3830,9 +4016,17 @@ fnSetup_service() {
 	do
 		__STAT="$(systemctl is-enabled "${__LIST}" || true)"
 		[ "${__STAT:-}" = "alias" ] && continue
-		if [ ! -e "${_DIRS_TGET:-}/lib/systemd/system/${__LIST}"     ] \
+		if [ ! -e "${_DIRS_TGET:-}/etc/systemd/system/${__LIST}"     ] \
+		&& [ ! -e "${_DIRS_TGET:-}/lib/systemd/system/${__LIST}"     ] \
 		&& [ ! -e "${_DIRS_TGET:-}/usr/lib/systemd/system/${__LIST}" ]; then
+			fnMsgout "${_PROG_NAME:-}" "not found (mask)" "${__LIST}"
 			continue
+		elif   [ -e "${_DIRS_TGET:-}/etc/systemd/system/${__LIST}"     ]; then
+			if [ -d "${_DIRS_TGET:-}/etc/systemd/system/${__LIST}"     ] \
+			|| [ -L "${_DIRS_TGET:-}/etc/systemd/system/${__LIST}"     ]; then
+				fnMsgout "${_PROG_NAME:-}" "not found (mask)" "${__LIST}"
+				continue
+			fi
 		fi
 		fnMsgout "${_PROG_NAME:-}" "mask" "${__LIST}"
 		set -- "$@" "${__LIST}"
@@ -3860,17 +4054,26 @@ fnSetup_service() {
 		apache2.service \
 		httpd.service \
 		smb.service \
-		smbd.service
+		smbd.service \
+		nfs-server.service \
+		nbdkit.socket
 	do
 		__STAT="$(systemctl is-enabled "${__LIST}" || true)"
 		if [ "${__STAT:-}" = "alias" ]; then
 			fnMsgout "${_PROG_NAME:-}" "alias" "${__LIST}"
 			continue
 		fi
-		if [ ! -e "${_DIRS_TGET:-}/lib/systemd/system/${__LIST}"     ] \
+		if [ ! -e "${_DIRS_TGET:-}/etc/systemd/system/${__LIST}"     ] \
+		&& [ ! -e "${_DIRS_TGET:-}/lib/systemd/system/${__LIST}"     ] \
 		&& [ ! -e "${_DIRS_TGET:-}/usr/lib/systemd/system/${__LIST}" ]; then
-			fnMsgout "${_PROG_NAME:-}" "not found" "${__LIST}"
-			continue
+			fnMsgout "${_PROG_NAME:-}" "not found (enable)" "${__LIST}"
+		continue
+		elif   [ -e "${_DIRS_TGET:-}/etc/systemd/system/${__LIST}"     ]; then
+			if [ -d "${_DIRS_TGET:-}/etc/systemd/system/${__LIST}"     ] \
+			|| [ -L "${_DIRS_TGET:-}/etc/systemd/system/${__LIST}"     ]; then
+				fnMsgout "${_PROG_NAME:-}" "not found (enable)" "${__LIST}"
+				continue
+			fi
 		fi
 		fnMsgout "${_PROG_NAME:-}" "enable" "${__LIST}"
 		set -- "$@" "${__LIST}"
@@ -4140,6 +4343,8 @@ fnMain() {
 	fnSetup_timesyncd					# timesyncd
 	fnSetup_chronyd						# chronyd
 	fnSetup_ssh							# openssh-server
+	fnSetup_nfs							# nfs
+	fnSetup_nbd							# nbd
 	fnSetup_vmware						# vmware shared directory
 	fnSetup_wireplumber					# wireplumber
 	fnSetup_input_method				# input method

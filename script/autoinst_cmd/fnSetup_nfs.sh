@@ -17,6 +17,34 @@ fnSetup_nfs() {
 		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
+	# --- fstab ---------------------------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/fstab"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "# <file system>" "<mount point>"                     "<type>" "<options>" "<dump>" "<pass>")
+		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_SHEL:?}" "${_DIRS_MKOS:?}/${_DIRS_SHEL##*/}" "none"   "bind,ro"   "0"      "0"     )
+		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_IMGS:?}" "${_DIRS_XNFS:?}/${_DIRS_IMGS##*/}" "none"   "bind,ro"   "0"      "0"     )
+		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_CONF:?}" "${_DIRS_XNFS:?}/${_DIRS_CONF##*/}" "none"   "bind,ro"   "0"      "0"     )
+_EOT_
+	# --- check mount ---------------------------------------------------------
+	if [ -z "${_TGET_CHRT:-}" ]; then
+		systemctl --quiet daemon-reload
+		for __MNTP in \
+			"${_DIRS_MKOS:?}/${_DIRS_SHEL##*/}" \
+			"${_DIRS_XNFS:?}/${_DIRS_IMGS##*/}" \
+			"${_DIRS_XNFS:?}/${_DIRS_CONF##*/}"
+		do
+			if mount "${__MNTP:?}"; then
+				fnMsgout "${_PROG_NAME:-}" "success" "mounted: ${__MNTP}"
+			else
+				fnMsgout "${_PROG_NAME:-}" "failed" "not mounted: ${__MNTP}"
+			fi
+		done
+	fi
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
 	# --- exports /srv --------------------------------------------------------
 	__PATH="${_DIRS_TGET:-}/etc/exports.d/srv.exports"
 	fnFile_backup "${__PATH}"			# backup original file
@@ -26,19 +54,19 @@ fnSetup_nfs() {
 		# exports file: "${__PATH#*"${_DIRS_TGET:-}"}"
 
 		# --- ipv4 --------------------------------------------------------------------
-		${_DIRS_TOPS:?} ${_IPV4_UADR:?}.0/${_NICS_BIT4:?}(rw,sync,no_subtree_check,no_root_squash,fsid=0,crossmnt)
-		${_DIRS_EXPO:?}/nfs/${_DIRS_CONF##*/} ${_IPV4_UADR:?}.0/${_NICS_BIT4:?}(ro,sync,no_subtree_check,no_root_squash)
-		${_DIRS_EXPO:?}/nfs/${_DIRS_IMGS##*/} ${_IPV4_UADR:?}.0/${_NICS_BIT4:?}(ro,sync,no_subtree_check,no_root_squash)
+		${_DIRS_EXPO:?} ${_IPV4_UADR:?}.0/${_NICS_BIT4:?}(rw,sync,no_subtree_check,no_root_squash,fsid=0,crossmnt)
+		${_DIRS_XNFS:?}/${_DIRS_CONF##*/} ${_IPV4_UADR:?}.0/${_NICS_BIT4:?}(ro,sync,no_subtree_check,no_root_squash)
+		${_DIRS_XNFS:?}/${_DIRS_IMGS##*/} ${_IPV4_UADR:?}.0/${_NICS_BIT4:?}(ro,sync,no_subtree_check,no_root_squash)
 
 		# --- ipv6 --------------------------------------------------------------------
-		#${_DIRS_TOPS:?} ${_IPV6_UADR:?}/${_IPV6_CIDR:?}(rw,sync,no_subtree_check,no_root_squash,fsid=0,crossmnt)
-		#${_DIRS_EXPO:?}/nfs/${_DIRS_CONF##*/} ${_IPV6_UADR:?}/${_IPV6_CIDR:?}(ro,sync,no_subtree_check,no_root_squash)
-		#${_DIRS_EXPO:?}/nfs/${_DIRS_IMGS##*/} ${_IPV6_UADR:?}/${_IPV6_CIDR:?}(ro,sync,no_subtree_check,no_root_squash)
+		#${_DIRS_EXPO:?} ${_IPV6_UADR:?}::/${_IPV6_CIDR:?}(rw,sync,no_subtree_check,no_root_squash,fsid=0,crossmnt)
+		#${_DIRS_XNFS:?}/${_DIRS_CONF##*/} ${_IPV6_UADR:?}::/${_IPV6_CIDR:?}(ro,sync,no_subtree_check,no_root_squash)
+		#${_DIRS_XNFS:?}/${_DIRS_IMGS##*/} ${_IPV6_UADR:?}::/${_IPV6_CIDR:?}(ro,sync,no_subtree_check,no_root_squash)
 
 		# --- link local --------------------------------------------------------------
-		${_DIRS_TOPS:?} ${_LINK_UADR:?}/${_LINK_CIDR:?}(rw,sync,no_subtree_check,no_root_squash,fsid=0,crossmnt)
-		${_DIRS_EXPO:?}/nfs/${_DIRS_CONF##*/} ${_LINK_UADR:?}/${_LINK_CIDR:?}(ro,sync,no_subtree_check,no_root_squash)
-		${_DIRS_EXPO:?}/nfs/${_DIRS_IMGS##*/} ${_LINK_UADR:?}/${_LINK_CIDR:?}(ro,sync,no_subtree_check,no_root_squash)
+		${_DIRS_EXPO:?} ${_LINK_UADR:?}/${_LINK_CIDR:?}(rw,sync,no_subtree_check,no_root_squash,fsid=0,crossmnt)
+		${_DIRS_XNFS:?}/${_DIRS_CONF##*/} ${_LINK_UADR:?}/${_LINK_CIDR:?}(ro,sync,no_subtree_check,no_root_squash)
+		${_DIRS_XNFS:?}/${_DIRS_IMGS##*/} ${_LINK_UADR:?}/${_LINK_CIDR:?}(ro,sync,no_subtree_check,no_root_squash)
 
 		# --- eof ---------------------------------------------------------------------
 _EOT_
@@ -57,8 +85,9 @@ _EOT_
 			fi
 		fi
 		exportfs -v || true
+		showmount -e || true
 	fi
-	unset __SRVC __PATH
+	unset __SRVC __PATH __MNTP
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 

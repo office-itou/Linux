@@ -15,7 +15,7 @@ function fnMk_pxeboot_ipxe_hdrftr() {
 
 		cpuid --ext 29 && set arch x86_64 || set arch i386
 
-		dhcp
+		#dhcp
 		isset \${66} && set srvraddr \${66} || set srvraddr ${_SRVR_ADDR:?}
 
 		set srvrhttp ${_SRVR_PROT:?}://\${srvraddr}

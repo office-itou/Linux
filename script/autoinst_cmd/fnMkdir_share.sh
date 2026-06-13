@@ -117,6 +117,9 @@ fnMkdir_share(){
 	[ -n "${_DIRS_CHRT:-}" ] && mkdir -p "${_DIRS_CHRT:?}"
 	[ -n "${_DIRS_EXPO:-}" ] && mkdir -p "${_DIRS_EXPO:?}"
 	[ -n "${_DIRS_NBDS:-}" ] && mkdir -p "${_DIRS_NBDS:?}"
+	[ -n "${_DIRS_PVAT:-}" ] && mkdir -p "${_DIRS_PVAT:?}"/bin
+	[ -n "${_DIRS_PVAT:-}" ] && mkdir -p "${_DIRS_PVAT:?}"/src/git
+	[ -n "${_DIRS_PVAT:-}" ] && mkdir -p "${_DIRS_PVAT:?}"/wrk
 
 	# --- exports -------------------------------------------------------------
 	if [ -n "${_DIRS_EXPO:-}" ]; then
@@ -181,7 +184,8 @@ _EOT_
 	fnFile_backup "${_DIRS_TFTP:-}/menu-efi64/syslinux.cfg" "init"
 
 	# --- create autoexec.ipxe ------------------------------------------------
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_DIRS_TFTP:?}/autoexec.ipxe"
+	[ ! -e "${_DIRS_TFTP:?}/ipxe/autoexec.ipxe" ] && ln -sr "${_DIRS_TFTP:?}/autoexec.ipxe" "${_DIRS_TFTP:?}/ipxe/autoexec.ipxe"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_DIRS_TFTP:?}/autoexec.ipxe"
 		#!ipxe
 
 		cpuid --ext 29 && set arch amd64 || set arch x86

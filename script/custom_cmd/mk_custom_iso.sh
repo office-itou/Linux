@@ -2723,7 +2723,7 @@ function fnMk_pxeboot_ipxe_hdrftr() {
 
 		cpuid --ext 29 && set arch x86_64 || set arch i386
 
-		dhcp
+		#dhcp
 		isset \${66} && set srvraddr \${66} || set srvraddr ${_SRVR_ADDR:?}
 
 		set srvrhttp ${_SRVR_PROT:?}://\${srvraddr}
@@ -2914,7 +2914,7 @@ function fnMk_pxeboot_ipxe_linux_default() {
 		set otheropt ${__BOPT[@]:3} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
 		set consoles !console=tty0 !console=ttyS0,9600
 		set sulogins !SYSTEMD_SULOGIN_FORCE=1 !init=/sbin/sulogin
-		set debugopt \${consoles} \${sulogins}
+		#set debugopt \${consoles} \${sulogins}
 		form                                    Configure Autoinstall Options
 		item autoinst                           Auto install
 		item language                           Language

@@ -128,6 +128,8 @@ fnInitialize() {
 	readonly _DIRS_CACH="${_DIRS_SHAR}/cache"			# cache file
 	readonly _DIRS_CTNR="${_DIRS_SHAR}/containers"		# container file
 	readonly _DIRS_CHRT="${_DIRS_SHAR}/chroot"			# container file (chroot)
+	readonly _DIRS_XNBD="${_DIRS_EXPO}/nbd"				# exports (network block device)
+	readonly _DIRS_XNFS="${_DIRS_EXPO}/nfs"				# exports (network file system)
 	# --- working directory parameter -----------------------------------------
 												# top of working directory
 	_DIRS_ACMD="${_DIRS_VADM:?}/${_PROG_NAME%%_*}"

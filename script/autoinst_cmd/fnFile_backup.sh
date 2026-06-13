@@ -36,9 +36,10 @@ fnFile_backup() {
 	mkdir -p "${___BACK%/*}"
 	chmod 600 "${___DIRS%/*}"
 	if [ -e "${___BACK}" ] || [ -h "${___BACK}" ]; then
-		___BACK="${___BACK}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
+		___MOVE="${___BACK}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
+		mv --verbose "${___BACK}" "${___MOVE}"
 	fi
 	fnMsgout "${_PROG_NAME:-}" "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
 	cp --archive "${___PATH}" "${___BACK}"
-	unset ___PATH ___MODE ___REAL ___DIRS ___BACK
+	unset ___PATH ___MODE ___REAL ___DIRS ___BACK ___MOVE
 }

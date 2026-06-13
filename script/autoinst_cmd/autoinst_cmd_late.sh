@@ -818,11 +818,12 @@ fnFile_backup() {
 	mkdir -p "${___BACK%/*}"
 	chmod 600 "${___DIRS%/*}"
 	if [ -e "${___BACK}" ] || [ -h "${___BACK}" ]; then
-		___BACK="${___BACK}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
+		___MOVE="${___BACK}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
+		mv --verbose "${___BACK}" "${___MOVE}"
 	fi
 	fnMsgout "${_PROG_NAME:-}" "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
 	cp --archive "${___PATH}" "${___BACK}"
-	unset ___PATH ___MODE ___REAL ___DIRS ___BACK
+	unset ___PATH ___MODE ___REAL ___DIRS ___BACK ___MOVE
 }
 
 # *** function section (subroutine functions) *********************************
@@ -918,6 +919,8 @@ fnInitialize() {
 	readonly _DIRS_CACH="${_DIRS_SHAR}/cache"			# cache file
 	readonly _DIRS_CTNR="${_DIRS_SHAR}/containers"		# container file
 	readonly _DIRS_CHRT="${_DIRS_SHAR}/chroot"			# container file (chroot)
+	readonly _DIRS_XNBD="${_DIRS_EXPO}/nbd"				# exports (network block device)
+	readonly _DIRS_XNFS="${_DIRS_EXPO}/nfs"				# exports (network file system)
 	# --- working directory parameter -----------------------------------------
 												# top of working directory
 	_DIRS_ACMD="${_DIRS_VADM:?}/${_PROG_NAME%%_*}"
@@ -1223,6 +1226,9 @@ fnMkdir_share(){
 	[ -n "${_DIRS_CHRT:-}" ] && mkdir -p "${_DIRS_CHRT:?}"
 	[ -n "${_DIRS_EXPO:-}" ] && mkdir -p "${_DIRS_EXPO:?}"
 	[ -n "${_DIRS_NBDS:-}" ] && mkdir -p "${_DIRS_NBDS:?}"
+	[ -n "${_DIRS_PVAT:-}" ] && mkdir -p "${_DIRS_PVAT:?}"/bin
+	[ -n "${_DIRS_PVAT:-}" ] && mkdir -p "${_DIRS_PVAT:?}"/src/git
+	[ -n "${_DIRS_PVAT:-}" ] && mkdir -p "${_DIRS_PVAT:?}"/wrk
 
 	# --- exports -------------------------------------------------------------
 	if [ -n "${_DIRS_EXPO:-}" ]; then
@@ -1287,7 +1293,8 @@ _EOT_
 	fnFile_backup "${_DIRS_TFTP:-}/menu-efi64/syslinux.cfg" "init"
 
 	# --- create autoexec.ipxe ------------------------------------------------
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_DIRS_TFTP:?}/autoexec.ipxe"
+	[ ! -e "${_DIRS_TFTP:?}/ipxe/autoexec.ipxe" ] && ln -sr "${_DIRS_TFTP:?}/autoexec.ipxe" "${_DIRS_TFTP:?}/ipxe/autoexec.ipxe"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_DIRS_TFTP:?}/autoexec.ipxe"
 		#!ipxe
 
 		cpuid --ext 29 && set arch amd64 || set arch x86
@@ -2830,6 +2837,34 @@ fnSetup_nfs() {
 		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
 		return
 	fi
+	# --- fstab ---------------------------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/fstab"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "# <file system>" "<mount point>"                     "<type>" "<options>" "<dump>" "<pass>")
+		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_SHEL:?}" "${_DIRS_MKOS:?}/${_DIRS_SHEL##*/}" "none"   "bind,ro"   "0"      "0"     )
+		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_IMGS:?}" "${_DIRS_XNFS:?}/${_DIRS_IMGS##*/}" "none"   "bind,ro"   "0"      "0"     )
+		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_CONF:?}" "${_DIRS_XNFS:?}/${_DIRS_CONF##*/}" "none"   "bind,ro"   "0"      "0"     )
+_EOT_
+	# --- check mount ---------------------------------------------------------
+	if [ -z "${_TGET_CHRT:-}" ]; then
+		systemctl --quiet daemon-reload
+		for __MNTP in \
+			"${_DIRS_MKOS:?}/${_DIRS_SHEL##*/}" \
+			"${_DIRS_XNFS:?}/${_DIRS_IMGS##*/}" \
+			"${_DIRS_XNFS:?}/${_DIRS_CONF##*/}"
+		do
+			if mount "${__MNTP:?}"; then
+				fnMsgout "${_PROG_NAME:-}" "success" "mounted: ${__MNTP}"
+			else
+				fnMsgout "${_PROG_NAME:-}" "failed" "not mounted: ${__MNTP}"
+			fi
+		done
+	fi
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
 	# --- exports /srv --------------------------------------------------------
 	__PATH="${_DIRS_TGET:-}/etc/exports.d/srv.exports"
 	fnFile_backup "${__PATH}"			# backup original file
@@ -2839,19 +2874,19 @@ fnSetup_nfs() {
 		# exports file: "${__PATH#*"${_DIRS_TGET:-}"}"
 
 		# --- ipv4 --------------------------------------------------------------------
-		${_DIRS_TOPS:?} ${_IPV4_UADR:?}.0/${_NICS_BIT4:?}(rw,sync,no_subtree_check,no_root_squash,fsid=0,crossmnt)
-		${_DIRS_EXPO:?}/nfs/${_DIRS_CONF##*/} ${_IPV4_UADR:?}.0/${_NICS_BIT4:?}(ro,sync,no_subtree_check,no_root_squash)
-		${_DIRS_EXPO:?}/nfs/${_DIRS_IMGS##*/} ${_IPV4_UADR:?}.0/${_NICS_BIT4:?}(ro,sync,no_subtree_check,no_root_squash)
+		${_DIRS_EXPO:?} ${_IPV4_UADR:?}.0/${_NICS_BIT4:?}(rw,sync,no_subtree_check,no_root_squash,fsid=0,crossmnt)
+		${_DIRS_XNFS:?}/${_DIRS_CONF##*/} ${_IPV4_UADR:?}.0/${_NICS_BIT4:?}(ro,sync,no_subtree_check,no_root_squash)
+		${_DIRS_XNFS:?}/${_DIRS_IMGS##*/} ${_IPV4_UADR:?}.0/${_NICS_BIT4:?}(ro,sync,no_subtree_check,no_root_squash)
 
 		# --- ipv6 --------------------------------------------------------------------
-		#${_DIRS_TOPS:?} ${_IPV6_UADR:?}/${_IPV6_CIDR:?}(rw,sync,no_subtree_check,no_root_squash,fsid=0,crossmnt)
-		#${_DIRS_EXPO:?}/nfs/${_DIRS_CONF##*/} ${_IPV6_UADR:?}/${_IPV6_CIDR:?}(ro,sync,no_subtree_check,no_root_squash)
-		#${_DIRS_EXPO:?}/nfs/${_DIRS_IMGS##*/} ${_IPV6_UADR:?}/${_IPV6_CIDR:?}(ro,sync,no_subtree_check,no_root_squash)
+		#${_DIRS_EXPO:?} ${_IPV6_UADR:?}::/${_IPV6_CIDR:?}(rw,sync,no_subtree_check,no_root_squash,fsid=0,crossmnt)
+		#${_DIRS_XNFS:?}/${_DIRS_CONF##*/} ${_IPV6_UADR:?}::/${_IPV6_CIDR:?}(ro,sync,no_subtree_check,no_root_squash)
+		#${_DIRS_XNFS:?}/${_DIRS_IMGS##*/} ${_IPV6_UADR:?}::/${_IPV6_CIDR:?}(ro,sync,no_subtree_check,no_root_squash)
 
 		# --- link local --------------------------------------------------------------
-		${_DIRS_TOPS:?} ${_LINK_UADR:?}/${_LINK_CIDR:?}(rw,sync,no_subtree_check,no_root_squash,fsid=0,crossmnt)
-		${_DIRS_EXPO:?}/nfs/${_DIRS_CONF##*/} ${_LINK_UADR:?}/${_LINK_CIDR:?}(ro,sync,no_subtree_check,no_root_squash)
-		${_DIRS_EXPO:?}/nfs/${_DIRS_IMGS##*/} ${_LINK_UADR:?}/${_LINK_CIDR:?}(ro,sync,no_subtree_check,no_root_squash)
+		${_DIRS_EXPO:?} ${_LINK_UADR:?}/${_LINK_CIDR:?}(rw,sync,no_subtree_check,no_root_squash,fsid=0,crossmnt)
+		${_DIRS_XNFS:?}/${_DIRS_CONF##*/} ${_LINK_UADR:?}/${_LINK_CIDR:?}(ro,sync,no_subtree_check,no_root_squash)
+		${_DIRS_XNFS:?}/${_DIRS_IMGS##*/} ${_LINK_UADR:?}/${_LINK_CIDR:?}(ro,sync,no_subtree_check,no_root_squash)
 
 		# --- eof ---------------------------------------------------------------------
 _EOT_
@@ -2870,8 +2905,9 @@ _EOT_
 			fi
 		fi
 		exportfs -v || true
+		showmount -e || true
 	fi
-	unset __SRVC __PATH
+	unset __SRVC __PATH __MNTP
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
@@ -2978,9 +3014,8 @@ _EOT_
 		__FSYS="vmhgfs"
 	fi
 	# --- fstab ---------------------------------------------------------------
-	__TITL="$(printf "%-15s %-15s %-19s %-31s %-7s %s" "# <file system>" "<mount point>"   "<type>"    "<options>"                   "<dump>" "<pass>")"
-	__FSTB="$(printf "%-15s %-15s %-19s %-31s %-7s %s" ".host:/"          "${_DIRS_HGFS:?}" "${__FSYS}" "nofail,allow_other,defaults" "0"      "0"      )"
-#	__FSTB=".host:/         /srv/hgfs       fuse.vmhgfs-fuse    nofail,allow_other,defaults     0       0"
+	__TITL="$(printf "%-27s %-23s %-19s %-27s %-7s %s" "# <file system>" "<mount point>"   "<type>"    "<options>"            "<dump>" "<pass>")"
+	__FSTB="$(printf "%-27s %-23s %-19s %-27s %-7s %s" ".host:/"         "${_DIRS_HGFS:?}" "${__FSYS}" "allow_other,defaults" "0"      "0"      )"
 	if ! vmware-hgfsclient > /dev/null 2>&1; then
 		__FSTB="#${__FSTB}"
 	fi
@@ -2988,10 +3023,15 @@ _EOT_
 	fnFile_backup "${__PATH}"			# backup original file
 	mkdir -p "${__PATH%/*}"
 	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
-		${__TITL}
-		${__FSTB}
+	__RNUM="$(sed -n -e '\%\(/dev/\|UUID=\)%=' "${__PATH}" | tail -n 1)"
+	__INSR="$(
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+			${__TITL}
+			${__FSTB}
 _EOT_
+	)"
+	sed -i "${__PATH}"                \
+	    -e "${__RNUM:?}a ${__INSR:?}"
 	# --- check mount ---------------------------------------------------------
 	if [ -z "${_TGET_CHRT:-}" ]; then
 		systemctl --quiet daemon-reload
@@ -3006,7 +3046,7 @@ _EOT_
 	fi
 	fnDbgdump "${__PATH}"				# debugout
 	fnFile_backup "${__PATH}" "init"	# backup initial file
-	unset __PATH __FSYS __TITL __FSTB
+	unset __PATH __FSYS __TITL __FSTB __INSR __RNUM
 
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
