@@ -8,8 +8,8 @@
   |-- exports
   |   |-- nbd
   |   `-- nfs
-  |       |-- conf
-  |       `-- imgs
+  |       |-- conf -> /srv/user/share/conf
+  |       `-- imgs -> /srv/user/share/imgs
   |-- hgfs
   |-- http
   |   `-- html
@@ -50,6 +50,7 @@
   |   |-- conf -> /srv/user/share/conf
   |   |-- imgs -> /srv/user/share/imgs
   |   |-- ipxe
+  |   |   `-- autoexec.ipxe -> ../autoexec.ipxe
   |   |-- isos -> /srv/user/share/isos
   |   |-- load -> /srv/user/share/load
   |   |-- menu-bios
@@ -73,6 +74,10 @@
   |   `-- rmak -> /srv/user/share/rmak
   `-- user
       |-- private
+      |   |-- bin
+      |   |-- src
+      |   |   `-- git
+      |   `-- wrk
       `-- share
           |-- cache
           |-- chroot
@@ -89,7 +94,8 @@
           |   |   |-- mkosi.postoutput.d
           |   |   |-- mkosi.prepare.d
           |   |   |-- mkosi.repart
-          |   |   `-- mkosi.sync.d
+          |   |   |-- mkosi.sync.d
+          |   |   `-- script
           |   |-- _repository
           |   |   `-- opensuse
           |   |-- _template

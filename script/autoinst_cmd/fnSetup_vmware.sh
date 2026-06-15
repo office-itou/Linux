@@ -49,8 +49,15 @@ _EOT_
 			${__FSTB}
 _EOT_
 	)"
-	sed -i "${__PATH}"                \
-	    -e "${__RNUM:?}a ${__INSR:?}"
+	if [ ! -s "${__PATH}" ]; then
+		fnMsgout "${_PROG_NAME:-}" "info" "create: [${__PATH}]"
+		echo "${__INSR:?}" > "${__PATH}"
+	else
+		fnMsgout "${_PROG_NAME:-}" "info" "edit: [${__PATH}]"
+		fnMsgout "${_PROG_NAME:-}" "info" "${__RNUM:-"1i"}${__RNUM:+"a"}"
+		sed -i "${__PATH}"                                          \
+		    -e "${__RNUM:-"1i"}${__RNUM:+"a"} ${__INSR:-}"
+	fi
 	# --- check mount ---------------------------------------------------------
 	if [ -z "${_TGET_CHRT:-}" ]; then
 		systemctl --quiet daemon-reload
