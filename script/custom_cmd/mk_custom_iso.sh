@@ -227,7 +227,7 @@
 	declare       _PATH_RUNS=":_DIRS_SHEL_:/:_FILE_RUNS_:"	# "              to run preseed/run
 
 	# --- tftp menu -----------------------------------------------------------
-	declare       _FILE_IPXE="autoexec.ipxe"				# ipxe
+	declare       _FILE_IPXE="ipxe/autoexec.ipxe"			# ipxe
 	declare       _FILE_GRUB="boot/grub/grub.cfg"			# grub
 	declare       _FILE_SLNX="menu-bios/syslinux.cfg"		# syslinux (bios)
 	declare       _FILE_EF64="menu-efi64/syslinux.cfg"		# syslinux (efi64)
@@ -2393,7 +2393,7 @@ function fnMk_boot_option_nocloud() {
 		[[ "${__TGET_TYPE:-}" = "pxeboot" ]] && __WORK="${__WORK/\/cdrom/\$\{srvrhttp\}}"
 	fi
 	case "${__MDIA[$((_OSET_MDIA+0))]}" in
-		live) __WORK="boot=live";;
+		live) __WORK="boot=casper";;
 		*) ;;
 	esac
 	__BOPT+=("${__WORK}")
@@ -2723,7 +2723,7 @@ function fnMk_pxeboot_ipxe_hdrftr() {
 
 		cpuid --ext 29 && set arch x86_64 || set arch i386
 
-		#dhcp
+		dhcp
 		isset \${66} && set srvraddr \${66} || set srvraddr ${_SRVR_ADDR:?}
 
 		set srvrhttp ${_SRVR_PROT:?}://\${srvraddr}

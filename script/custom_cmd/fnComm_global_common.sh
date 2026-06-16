@@ -21,7 +21,7 @@
 	declare       _PATH_RUNS=":_DIRS_SHEL_:/:_FILE_RUNS_:"	# "              to run preseed/run
 
 	# --- tftp menu -----------------------------------------------------------
-	declare       _FILE_IPXE="autoexec.ipxe"				# ipxe
+	declare       _FILE_IPXE="ipxe/autoexec.ipxe"			# ipxe
 	declare       _FILE_GRUB="boot/grub/grub.cfg"			# grub
 	declare       _FILE_SLNX="menu-bios/syslinux.cfg"		# syslinux (bios)
 	declare       _FILE_EF64="menu-efi64/syslinux.cfg"		# syslinux (efi64)

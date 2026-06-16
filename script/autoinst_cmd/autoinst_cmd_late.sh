@@ -1293,8 +1293,9 @@ _EOT_
 	fnFile_backup "${_DIRS_TFTP:-}/menu-efi64/syslinux.cfg" "init"
 
 	# --- create autoexec.ipxe ------------------------------------------------
-	[ ! -e "${_DIRS_TFTP:?}/ipxe/autoexec.ipxe" ] && ln -sr "${_DIRS_TFTP:?}/autoexec.ipxe" "${_DIRS_TFTP:?}/ipxe/autoexec.ipxe"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_DIRS_TFTP:?}/autoexec.ipxe"
+#	[ ! -e "${_DIRS_TFTP:?}/ipxe/autoexec.ipxe" ] && ln -sr "${_DIRS_TFTP:?}/autoexec.ipxe" "${_DIRS_TFTP:?}/ipxe/autoexec.ipxe"
+#	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_DIRS_TFTP:?}/autoexec.ipxe"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_DIRS_TFTP:?}/ipxe/autoexec.ipxe"
 		#!ipxe
 
 		cpuid --ext 29 && set arch amd64 || set arch x86
@@ -1340,7 +1341,7 @@ _EOT_
 		:exit
 		exit
 _EOT_
-	fnFile_backup "${_DIRS_TFTP:-}/autoexec.ipxe" "init"
+	fnFile_backup "${_DIRS_TFTP:-}/ipxe/autoexec.ipxe" "init"
 
 	# --- debug output --------------------------------------------------------
 	if [ -n "${_DBGS_FLAG:-}" ]; then
@@ -2086,10 +2087,12 @@ _EOT_
 		# --- ipxe block --------------------------------------------------------------
 		#dhcp-match=set:iPXE,175                                                                 #
 		#pxe-prompt="Press F8 for boot menu", 0                                                  # pxe boot prompt
-		#pxe-service=tag:iPXE ,x86PC  , "PXEBoot-x86PC"            , /autoexec.ipxe              #  0 Intel x86PC (iPXE)
+		#pxe-service=tag:iPXE ,x86PC  , "PXEBoot-x86PC"            , ipxe/autoexec.ipxe          #  0 Intel x86PC (iPXE)
 		#pxe-service=tag:!iPXE,x86PC  , "PXEBoot-x86PC"            , ipxe/undionly.kpxe          #  0 Intel x86PC
 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , ipxe/ipxe.efi               #  7 EFI BC
 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , ipxe/ipxe.efi               #  9 EFI x86-64
+		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , ipxe/ipxe-legacy.efi        #  7 EFI BC     (non usb network driver)
+		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , ipxe/ipxe-legacy.efi        #  9 EFI x86-64 (non usb network driver)
 
 		# --- pxe boot ----------------------------------------------------------------
 		#pxe-prompt="Press F8 for boot menu", 0                                                  # pxe boot prompt

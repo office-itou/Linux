@@ -184,8 +184,9 @@ _EOT_
 	fnFile_backup "${_DIRS_TFTP:-}/menu-efi64/syslinux.cfg" "init"
 
 	# --- create autoexec.ipxe ------------------------------------------------
-	[ ! -e "${_DIRS_TFTP:?}/ipxe/autoexec.ipxe" ] && ln -sr "${_DIRS_TFTP:?}/autoexec.ipxe" "${_DIRS_TFTP:?}/ipxe/autoexec.ipxe"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_DIRS_TFTP:?}/autoexec.ipxe"
+#	[ ! -e "${_DIRS_TFTP:?}/ipxe/autoexec.ipxe" ] && ln -sr "${_DIRS_TFTP:?}/autoexec.ipxe" "${_DIRS_TFTP:?}/ipxe/autoexec.ipxe"
+#	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_DIRS_TFTP:?}/autoexec.ipxe"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_DIRS_TFTP:?}/ipxe/autoexec.ipxe"
 		#!ipxe
 
 		cpuid --ext 29 && set arch amd64 || set arch x86
@@ -231,7 +232,7 @@ _EOT_
 		:exit
 		exit
 _EOT_
-	fnFile_backup "${_DIRS_TFTP:-}/autoexec.ipxe" "init"
+	fnFile_backup "${_DIRS_TFTP:-}/ipxe/autoexec.ipxe" "init"
 
 	# --- debug output --------------------------------------------------------
 	if [ -n "${_DBGS_FLAG:-}" ]; then

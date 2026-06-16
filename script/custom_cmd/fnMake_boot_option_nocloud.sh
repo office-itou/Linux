@@ -26,7 +26,7 @@ function fnMk_boot_option_nocloud() {
 		[[ "${__TGET_TYPE:-}" = "pxeboot" ]] && __WORK="${__WORK/\/cdrom/\$\{srvrhttp\}}"
 	fi
 	case "${__MDIA[$((_OSET_MDIA+0))]}" in
-		live) __WORK="boot=live";;
+		live) __WORK="boot=casper";;
 		*) ;;
 	esac
 	__BOPT+=("${__WORK}")

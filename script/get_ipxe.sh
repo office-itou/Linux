@@ -3,9 +3,11 @@
 set -eu
 
 # --- ipxe --------------------------------------------------------------------
+rm -rf ipxe
 mkdir ipxe
 cd ipxe
 wget https://github.com/ipxe/wimboot/releases/latest/download/wimboot
+wget https://boot.ipxe.org/x86_64-efi/ipxe-legacy.efi
 wget https://boot.ipxe.org/x86_64-efi/ipxe.efi
 wget https://boot.ipxe.org/x86_64-efi/snponly.efi
 wget https://boot.ipxe.org/x86_64-pcbios/ipxe.lkrn
