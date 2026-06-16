@@ -58,7 +58,7 @@
 	# --- firewalld -----------------------------------------------------------
 	readonly _FWAL_ZONE="home_use"		# firewalld default zone
 										# firewalld service name
-	readonly _FWAL_NAME="dhcp dhcpv6 dhcpv6-client dns http https mdns nfs proxy-dhcp samba samba-client ssh tftp"
+	readonly _FWAL_NAME="dhcp dhcpv6 dhcpv6-client dns http https mdns nbd nfs proxy-dhcp samba samba-client ssh tftp"
 										# firewalld port
 	readonly _FWAL_PORT="0-65535/tcp 0-65535/udp"
 	# --- samba parameter -----------------------------------------------------
