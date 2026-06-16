@@ -8,8 +8,8 @@
   |-- exports
   |   |-- nbd
   |   `-- nfs
-  |       |-- conf -> /srv/user/share/conf
-  |       `-- imgs -> /srv/user/share/imgs
+  |       |-- conf -> /srv/user/share/conf (bind)
+  |       `-- imgs -> /srv/user/share/imgs (bind)
   |-- hgfs
   |-- http
   |   `-- html
@@ -39,7 +39,6 @@
   |   |   `-- software
   |   `-- usr
   |-- tftp
-  |   |-- autoexec.ipxe
   |   |-- boot
   |   |   `-- grub
   |   |       |-- fonts
@@ -50,7 +49,14 @@
   |   |-- conf -> /srv/user/share/conf
   |   |-- imgs -> /srv/user/share/imgs
   |   |-- ipxe
-  |   |   `-- autoexec.ipxe -> ../autoexec.ipxe
+  |   |   |-- autoexec.ipxe
+  |   |   |-- ipxe-legacy.efi
+  |   |   |-- ipxe.efi
+  |   |   |-- ipxe.lkrn
+  |   |   |-- ipxe.pxe
+  |   |   |-- snponly.efi
+  |   |   |-- undionly.kpxe
+  |   |   `-- wimboot
   |   |-- isos -> /srv/user/share/isos
   |   |-- load -> /srv/user/share/load
   |   |-- menu-bios
@@ -77,6 +83,7 @@
       |   |-- bin
       |   |-- src
       |   |   `-- git
+      |   |       `-- mkosi
       |   `-- wrk
       `-- share
           |-- cache
