@@ -330,6 +330,7 @@ OBJS= \
 	./custom_cmd/fnMake_pxeboot_ipxe_linux_default.sh \
 	./custom_cmd/fnMake_pxeboot_ipxe_linux_live.sh \
 	./custom_cmd/fnMake_pxeboot_ipxe_linux_clive.sh \
+	./custom_cmd/fnMake_pxeboot_ipxe_linux_cnetinst.sh \
 	./custom_cmd/fnMake_pxeboot_ipxe_linux.sh \
 	./custom_cmd/fnMake_pxeboot_ipxe.sh \
 	./custom_cmd/fnMake_pxeboot_grub_hdrftr.sh \

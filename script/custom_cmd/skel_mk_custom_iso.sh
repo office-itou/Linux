@@ -165,6 +165,8 @@
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD:?}"/fnMake_pxeboot_ipxe_linux_clive.sh		# make linux clive section for ipxe menu
 	# shellcheck source=/dev/null
+	source "${_SHEL_COMD:?}"/fnMake_pxeboot_ipxe_linux_cnetinst.sh	# make linux cnetinst section for ipxe menu
+	# shellcheck source=/dev/null
 	source "${_SHEL_COMD:?}"/fnMake_pxeboot_ipxe_linux.sh	# make linux section for ipxe menu
 	# shellcheck source=/dev/null
 	source "${_SHEL_COMD:?}"/fnMake_pxeboot_ipxe.sh			# make ipxe menu

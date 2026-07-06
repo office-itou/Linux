@@ -24,7 +24,7 @@ function fnMk_pxeboot_ipxe_linux() {
 		live    ) fnMk_pxeboot_ipxe_linux_live "${__MDIA[@]}";;		# original media live mode
 #		tool    ) ;;												# tools
 		clive   ) fnMk_pxeboot_ipxe_linux_clive "${__MDIA[@]}";;	# custom media live mode
-#		cnetinst) ;;												# custom media install mode
+		cnetinst) fnMk_pxeboot_ipxe_linux_cnetinst "${__MDIA[@]}";;	# custom media install mode
 #		system  ) ;;												# system command
 		*       ) fnMk_pxeboot_ipxe_linux_default "${__MDIA[@]}";;	# original media install mode
 	esac

@@ -54,8 +54,8 @@ function fnMk_pxeboot_ipxe_linux_clive() {
 		set language ${__BOPT[1]:-}
 		set networks ${__BOPT[2]:-}
 		set otheropt ${__BOPT[@]:3} --- quiet${_MENU_MODE:+" vga=${_MENU_MODE}"}
-		set consoles !console=tty0 !console=ttyS0,9600
-		set sulogins !SYSTEMD_SULOGIN_FORCE=1 !init=/sbin/sulogin
+		set consoles dummy_console=tty0 dummy_console=ttyS0,9600
+		set sulogins SYSTEMD_SULOGIN_FORCE=1 dummy_init=/sbin/sulogin
 		set debugopt \${consoles} \${sulogins}
 		form                                    Configure Autoinstall Options
 		item autoinst                           Auto install

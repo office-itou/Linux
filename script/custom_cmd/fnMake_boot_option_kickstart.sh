@@ -66,7 +66,8 @@ function fnMk_boot_option_kickstart() {
 		__FNAM="${__FNAM##-}"
 		__FNAM="${__FNAM:-"${__MDIA[$((_OSET_MDIA+14))]##*/}"}"
 		__FNAM="${__FNAM##-}"
-		__WORK="${__WORK:+"${__WORK} "}root=live:/dev/nbd0 netroot=nbd:\${srvraddr}:${__FNAM:-}"
+#		__WORK="${__WORK:+"${__WORK} "}root=live:/dev/nbd0 netroot=nbd:\${srvraddr}:${__FNAM:-}"
+		__WORK="${__WORK:+"${__WORK} "}root=live:\${srvrhttp}/${_DIRS_IMGS##*/}/${__MDIA[$((_OSET_MDIA+2))]:-}"/LiveOS/squashfs.img
 		__WORK="${__WORK:+"${__WORK} "}rd.live.image rd.live.overlay.overlayfs=1"
 	fi
 	if [[ -n "${__MDIA[$((_OSET_MDIA+27))]##*-}" ]]; then
