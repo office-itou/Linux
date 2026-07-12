@@ -291,7 +291,7 @@
 
 	# --- wget / curl options -------------------------------------------------
 	declare -r -a _OPTN_CURL=("--location" "--http1.1" "--no-progress-bar" "--remote-time" "--show-error" "--fail" "--retry-max-time" "3" "--retry" "3" "--connect-timeout" "60")
-	declare -r -a _OPTN_WGET=("--tries=3" "--timeout=60" "--quiet")
+	declare -r -a _OPTN_WGET=("--retry-on-http-error" "--tries=3" "--dns-timeout=60" "--connect-timeout=120" "--read-timeout=120" "--quiet")
 	declare       _COMD_WGET=""
 	if command -v wget2 > /dev/null 2>&1; then
 		_COMD_WGET="curl"
@@ -533,18 +533,18 @@ function fnGetWebinfo() {
 			match(_urls, "/[^/ \t]*\\[[^/ \t]+\\][^/ \t]*")
 			if (RSTART == 0) {
 				if (_wget == "curl") {
-					_comd="LANG=C curl --location --http1.1 --no-progress-meter --no-progress-bar --remote-time --show-error --fail --retry-max-time 3 --retry 3 --connect-timeout 10 --head "_urls" 2>&1"
+					_comd="LANG=C curl --location --http1.1 --no-progress-meter --no-progress-bar --remote-time --show-error --fail --retry-max-time 3 --retry 3 --connect-timeout 60 --head "_urls" 2>&1"
 				} else {
-					_comd="LANG=C wget --tries=3 --timeout=10 --quiet --spider --server-response --execute robots=off "_urls" 2>&1"
+					_comd="LANG=C wget --retry-on-http-error --tries=3 --dns-timeout=60 --connect-timeout=120 --read-timeout=120 --quiet --spider --server-response --execute robots=off "_urls" 2>&1"
 				}
 			} else {
 				_ptrn=substr(_urls, RSTART+1, RLENGTH-1)
 				_dirs=substr(_urls, 1, RSTART-1)
 				_rear=substr(_urls, RSTART+RLENGTH+1)
 				if (_wget == "curl") {
-					_comd="LANG=C curl --location --http1.1 --no-progress-meter --no-progress-bar --remote-time --show-error --fail --retry-max-time 3 --retry 3 --connect-timeout 10 --show-headers --output - "_dirs"/ 2>&1"
+					_comd="LANG=C curl --location --http1.1 --no-progress-meter --no-progress-bar --remote-time --show-error --fail --retry-max-time 3 --retry 3 --connect-timeout 60 --show-headers --output - "_dirs"/ 2>&1"
 				} else {
-					_comd="LANG=C wget --tries=3 --timeout=10 --quiet --server-response --output-document=- --execute robots=off "_dirs"/ 2>&1"
+					_comd="LANG=C wget --retry-on-http-error --tries=3 --dns-timeout=60 --connect-timeout=120 --read-timeout=120 --quiet --server-response --output-document=- --execute robots=off "_dirs"/ 2>&1"
 				}
 			}
 			if (length(_dbug) > 0) {
@@ -2062,6 +2062,11 @@ function fnMk_print_list() {
 		__MDIA[_OSET_MDIA+13]="${__ARRY[4]:-"-"}"	# web_status
 		__MESG="$(fnTrim "${__ARRY[5]:-"-"}" "-")"	# message
 		__MESG="${__MESG//%20/ }"
+		if ! echo "${__MDIA[_OSET_MDIA+9]:-}" | grep -qE "${__MDIA[_OSET_MDIA+8]:-}"; then
+			__MDIA[_OSET_MDIA+13]="-"	# web_status
+			__MESG="Not Found"			# message
+			__MESG="${__MESG//%20/ }"
+		fi
 		case "${__MDIA[$((_OSET_MDIA+13))]}" in
 			2[0-9][0-9])
 				__MESG=""

@@ -99,6 +99,11 @@ function fnMk_print_list() {
 		__MDIA[_OSET_MDIA+13]="${__ARRY[4]:-"-"}"	# web_status
 		__MESG="$(fnTrim "${__ARRY[5]:-"-"}" "-")"	# message
 		__MESG="${__MESG//%20/ }"
+		if ! echo "${__MDIA[_OSET_MDIA+9]:-}" | grep -qE "${__MDIA[_OSET_MDIA+8]:-}"; then
+			__MDIA[_OSET_MDIA+13]="-"	# web_status
+			__MESG="Not Found"			# message
+			__MESG="${__MESG//%20/ }"
+		fi
 		case "${__MDIA[$((_OSET_MDIA+13))]}" in
 			2[0-9][0-9])
 				__MESG=""

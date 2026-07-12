@@ -291,7 +291,7 @@
 
 	# --- wget / curl options -------------------------------------------------
 	declare -r -a _OPTN_CURL=("--location" "--http1.1" "--no-progress-bar" "--remote-time" "--show-error" "--fail" "--retry-max-time" "3" "--retry" "3" "--connect-timeout" "60")
-	declare -r -a _OPTN_WGET=("--tries=3" "--timeout=60" "--quiet")
+	declare -r -a _OPTN_WGET=("--retry-on-http-error" "--tries=3" "--dns-timeout=60" "--connect-timeout=120" "--read-timeout=120" "--quiet")
 	declare       _COMD_WGET=""
 	if command -v wget2 > /dev/null 2>&1; then
 		_COMD_WGET="curl"
