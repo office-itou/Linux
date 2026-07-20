@@ -45,6 +45,7 @@ function fnMake_live_preconf() {
 					plucky      ) __VERS="25.04.${__CODE}";;
 					questing    ) __VERS="25.10.${__CODE}";;
 					resolute    ) __VERS="26.04.${__CODE}";;
+					stonking    ) __VERS="26.10.${__CODE}";;
 					F*          ) if [[ "${__DIST}" != "fedora" ]]; then continue; fi; __VERS="${__CODE#F}";;	# fedora
 					*           ) if [[ "${__DIST}" =  "fedora" ]]; then continue; fi; __VERS="${__CODE}"  ;;	# rhel, opensuse
 				esac
@@ -240,7 +241,8 @@ function fnMake_live_preconf() {
 							-e '/^ *vlc-plugin-pipewire */                s/^ /#/' \
 							-e '}}'
 						;;
-					ubuntu.26.04.*)
+					ubuntu.26.04.* | \
+					ubuntu.26.10.*)
 						sed -i "${__DTOP}"                                         \
 							-e '/^\[Content\]/,/^#*\[.\+\]/                     {' \
 							-e '/^Packages=/,/^#*\(\[.\+\]\|[[:alnum:]]\+=\)/   {' \

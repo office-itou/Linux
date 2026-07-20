@@ -1018,6 +1018,7 @@ function fnFind_codename() {
 		"Ubuntu                  25.04                   Plucky%20Puffin                         -               2025-04-17      2026-01-15      -               "
 		"Ubuntu                  25.10                   Questing%20Quokka                       -               2025-10-09      2026-07-09      -               "
 		"Ubuntu                  26.04                   Resolute%20Raccoon                      -               2026-04-23      2031-05-29      2036-04-23      "
+		"Ubuntu                  26.10                   Stonking%20Stingray                     -               2026-10-15      2027-07-15      -               "
 	)
 
 	__DIST="${__TGET_DIST,,}"
@@ -1039,7 +1040,8 @@ function fnFind_codename() {
 		ubuntu-24.04        | \
 		ubuntu-25.04        | \
 		ubuntu-25.10        | \
-		ubuntu-26.04        ) ;;
+		ubuntu-26.04        | \
+		ubuntu-26.10        ) ;;
 #		rhel-*              ) ;;
 		fedora-43           | \
 		fedora-44           ) ;;
@@ -1617,6 +1619,7 @@ function fnMake_live_preconf() {
 					plucky      ) __VERS="25.04.${__CODE}";;
 					questing    ) __VERS="25.10.${__CODE}";;
 					resolute    ) __VERS="26.04.${__CODE}";;
+					stonking    ) __VERS="26.10.${__CODE}";;
 					F*          ) if [[ "${__DIST}" != "fedora" ]]; then continue; fi; __VERS="${__CODE#F}";;	# fedora
 					*           ) if [[ "${__DIST}" =  "fedora" ]]; then continue; fi; __VERS="${__CODE}"  ;;	# rhel, opensuse
 				esac
@@ -1812,7 +1815,8 @@ function fnMake_live_preconf() {
 							-e '/^ *vlc-plugin-pipewire */                s/^ /#/' \
 							-e '}}'
 						;;
-					ubuntu.26.04.*)
+					ubuntu.26.04.* | \
+					ubuntu.26.10.*)
 						sed -i "${__DTOP}"                                         \
 							-e '/^\[Content\]/,/^#*\[.\+\]/                     {' \
 							-e '/^Packages=/,/^#*\(\[.\+\]\|[[:alnum:]]\+=\)/   {' \

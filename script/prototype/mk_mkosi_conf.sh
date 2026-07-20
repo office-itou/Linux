@@ -281,6 +281,7 @@ _EOT_
 			    # --- desktop (from the preconfiguration file) ----------------------------
 			#   task-desktop                        # Debian desktop environment
 			#   task-gnome-desktop                  # GNOME
+			#   task-cinnamon-desktop               # Cinnamon
 			#   task-laptop                         # laptop
 			#   task-japanese                       # Japanese environment
 			#   task-japanese-desktop               # Japanese desktop
@@ -448,6 +449,7 @@ function fnMake_mkosi_conf_ubuntu() {
 	# x 25.04 plucky
 	# o 25.10 questing
 	# o 26.04 resolute
+	# o 26.10 stonking
 
 	__DIST="Distribution=ubuntu"
 	__RELS="$(
@@ -456,6 +458,7 @@ function fnMake_mkosi_conf_ubuntu() {
 			#Release=noble
 			#Release=questing
 			#Release=resolute
+			#Release=stonking
 _EOT_
 	)"
 	__REPO="Repositories=main,restricted,universe,multiverse"
@@ -528,6 +531,8 @@ _EOT_
 			    virtiofsd                           # Virtio-fs vhost-user device daemon
 			    websockify                          # WebSockets support for any application/server
 			    # --- server (from the preconfiguration file) -----------------------------
+			    ubuntu-standard                     # Ubuntu standard system
+			    ubuntu-minimal                      # Minimal core of Ubuntu
 			    apparmor                            # user-space parser utility for AppArmor
 			    apparmor-utils                      # utilities for controlling AppArmor
 			#   selinux-basics                      # SELinux basic support
@@ -577,7 +582,16 @@ _EOT_
 			    # --- desktop (from the preconfiguration file) ----------------------------
 			#   ubuntu-desktop                      # Ubuntu desktop system
 			#   ubuntu-desktop-minimal              # Ubuntu desktop minimal system
-			#   ubuntu-gnome-desktop                # The Ubuntu desktop system (transitional package)
+			##  ubuntu-gnome-desktop                # The Ubuntu desktop system (transitional package)
+			##  ubuntucinnamon-environment          # Ubuntu Cinnamon's Desktop Environment
+			##  ubuntucinnamon-lightdm-theme        # LightDM Greeter theme for Ubuntu Cinnamon
+			##  ubuntucinnamon-lightdm-theme-base   # LightDM Session for Ubuntu Cinnamon
+			#   gnome                               # Full GNOME Desktop Environment, with extra components
+			##  cinnamon                            # Innovative and comfortable desktop
+			#   lightdm                             # simple display manager
+			#   lightdm-settings                    # LightDM Settings Configuration Tool
+			#   i965-va-driver                      # VAAPI driver for Intel G45 & HD Graphics family
+			#   intel-media-va-driver               # VAAPI driver for the Intel GEN8+ Graphics family
 			#   language-pack-ja                    # translation updates for language Japanese
 			#   language-pack-gnome-ja              # GNOME translation updates for language Japanese
 			#   fonts-noto                          # metapackage to pull in all Noto fonts

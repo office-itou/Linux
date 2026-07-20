@@ -223,7 +223,8 @@ autoinstall:
   - ubuntu-server-minimal               # Ubuntu Server minimal system
 # - ubuntu-desktop                      # Ubuntu desktop system
 # - ubuntu-desktop-minimal              # Ubuntu desktop minimal system
-# - ubuntu-gnome-desktop                # The Ubuntu desktop system (transitional package)
+# - gnome                               # Full GNOME Desktop Environment, with extra components
+# - cinnamon                            # Innovative and comfortable desktop
 # - language-pack-ja                    # translation updates for language Japanese
 # - language-pack-gnome-ja              # GNOME translation updates for language Japanese
 # - fonts-noto                          # metapackage to pull in all Noto fonts
