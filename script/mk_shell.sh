@@ -159,7 +159,7 @@ fnInitialize() {
 #   return:            : unused
 #   g-var :  FUNCNAME  : read
 # shellcheck disable=SC2148,SC2317,SC2329
-function funcCreate() {
+function fnCreate() {
 	declare -r    __FUNC_NAME="${FUNCNAME[0]}"
 	_DBGS_FAIL+=("${__FUNC_NAME:-}")
 	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
@@ -183,6 +183,10 @@ function funcCreate() {
 		__PARM="$1"
 		shift
 #		__OPTN=("${@:-}")
+
+		if [[ "${__PARM:-}" = "${__PARM%/*}" ]]; then
+			__PARM="./${__PARM:-}"
+		fi
 
 		# --- file check ------------------------------------------------------
 		if [[ ! -e "${__PARM}" ]]; then
@@ -327,7 +331,7 @@ function fnMain() {
 		__OPTN=("${@:-}")
 		case "${__PARM}" in
 			--create)
-				funcCreate __REFR "${__OPTN[@]:-}"
+				fnCreate __REFR "${__OPTN[@]:-}"
 				read -r -a __OPTN < <(echo "${__REFR}")
 				;;
 			*) ;;
