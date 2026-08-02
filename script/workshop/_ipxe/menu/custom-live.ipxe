@@ -1,0 +1,72 @@
+#!ipxe
+
+# --- Menu block --------------------------------------------------------------
+:menu
+menu Select the OS type you want to boot
+item --gap --                                   [ Return menu ]
+item -- return                                  - Return
+item --gap --                                   [ Current (supported) ]
+item -- live-debian-13-x86_64-desktop           - Live Debian 13 Desktop ............................. 2026-07-17 23:27:04
+item -- live-ubuntu-26.04-x86_64-desktop        - Live Ubuntu 26.04 Desktop .......................... 2026-07-19 23:24:33
+item -- live-ubuntu-26.10-x86_64-desktop        - Live Ubuntu 26.10 Desktop .......................... 2026-07-19 23:56:26
+choose --timeout ${menu-timeout} --default ${menu-default} selected && goto ${selected}
+goto menu
+
+:live-debian-13-x86_64-desktop
+set messages Loading Custom Live Debian 13 Desktop ...
+set isosfile live-debian-13.0-x86_64-desktop.iso   
+set imgsdirs ${srvrhttp}/imgs/live-debian-13-x86_64-desktop
+set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/live-debian-13-x86_64-desktop
+goto booting
+
+:live-ubuntu-26.04-x86_64-desktop
+set messages Loading Custom Live Ubuntu 26.04 Desktop ...
+set isosfile live-ubuntu-26.04-x86_64-desktop.iso  
+set imgsdirs ${srvrhttp}/imgs/live-ubuntu-26.04-x86_64-desktop
+set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/live-ubuntu-26.04-x86_64-desktop
+goto booting
+
+:live-ubuntu-26.10-x86_64-desktop
+set messages Loading Custom Live Ubuntu 26.10 Desktop ...
+set isosfile live-ubuntu-26.10-x86_64-desktop.iso
+set imgsdirs ${srvrhttp}/imgs/live-ubuntu-26.10-x86_64-desktop
+set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/live-ubuntu-26.10-x86_64-desktop
+goto booting
+
+:booting
+set autoinst 
+set language 
+set networks ip=dhcp
+set otheropt root=live:nfs:${exptdirs}/LiveOS/squashfs.img rd.live.image rd.live.overlay.overlayfs=1 --- quiet vga=788
+set kernlopt ${imgsdirs}/LiveOS/vmlinuz
+set inirdopt ${imgsdirs}/LiveOS/initrd.img
+set consoles dummy_console=tty0 dummy_console=ttyS0,9600
+set sulogins SYSTEMD_SULOGIN_FORCE=1 dummy_init=/sbin/sulogin
+set debugopt ${consoles} ${sulogins}
+form                                    Configure Autoinstall Options
+item autoinst                           Auto install
+item language                           Language
+item networks                           Network
+item otheropt                           Other options
+item debugopt                           Debug options
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
+isset ${openmenu} && present ||
+set options ${autoinst} ${language} ${networks} ${otheropt} ${debugopt}
+echo ${messages}
+echo Loading boot files ...
+kernel ${kernlopt} ${options} || goto error
+initrd ${inirdopt} || goto error
+boot || goto error
+exit
+
+:return
+echo "Return ..."
+chain ${ipxebase}/menu/menu.ipxe
+goto menu
+
+:exit
+exit
+
+:error
+prompt Press any key to continue
+exit

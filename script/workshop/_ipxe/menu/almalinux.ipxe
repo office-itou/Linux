@@ -1,0 +1,103 @@
+#!ipxe
+
+# --- Menu block --------------------------------------------------------------
+# https://wiki.almalinux.org/release-notes/
+set edition server
+:menu
+menu Select the OS type you want to boot
+item --gap --                                   [ Return menu ]
+item -- return                                  - Return
+item --gap --                                   [ Edition ]
+item -- server                                  - Server
+item -- desktop                                 - Desktop
+#item --gap --                                   [ Development ]
+item --gap --                                   [ Current (supported) ]
+item -- 10                                      - AlmaLinux ${edition} 10
+item --  9                                      - AlmaLinux ${edition} 9
+item --  8                                      - AlmaLinux ${edition} 8
+#item --gap --                                   [ End of life (unsupported) ]
+choose --default ${selected} selected || goto menu
+iseq ${selected} server  && goto edition ||
+iseq ${selected} desktop && goto edition ||
+iseq ${selected} return  && goto return  ||
+isset ${selected} && goto almalinux-${selected} ||
+goto menu
+
+:edition
+iseq ${selected} server  && set edition server ||
+iseq ${selected} desktop && set edition desktop ||
+goto menu
+
+:almalinux-10
+:almalinux-9
+:almalinux-8
+set vers ${selected}
+isset ${vers} || goto menu
+iseq ${edition} server  && goto almalinux-server ||
+iseq ${edition} desktop && goto almalinux-desktop ||
+goto menu
+
+:almalinux-server
+set messages Loading AlmaLinux ${vers} Server ...
+set imgsdirs ${srvrhttp}/imgs/almalinux-netinst-${vers}
+set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/almalinux-netinst-${vers}
+set autoinst inst.ks=${srvrhttp}/conf/kickstart/ks_almalinux-${vers}_net.cfg
+goto booting
+
+:almalinux-desktop
+set messages Loading AlmaLinux ${vers} Desktop ...
+set imgsdirs ${srvrhttp}/imgs/almalinux-netinst-${vers}
+set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/almalinux-netinst-${vers}
+set autoinst inst.ks=${srvrhttp}/conf/kickstart/ks_almalinux-${vers}_net_desktop.cfg
+goto booting
+
+:booting
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
+set hostname sv-almalinux.workgroup
+set ethrname ens160
+set ipv4addr 192.168.1.1
+set ipv4mask 255.255.255.0
+set ipv4gway 192.168.1.254
+set ipv4nsvr 192.168.1.254
+form                                    Configure Network Options
+item hostname                           Hostname
+item ethrname                           Interface
+item ipv4addr                           IPv4 address/netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+isset ${openmenu} && present ||
+#set autoinst inst.ks=${srvrhttp}/conf/kickstart/ks_almalinux-${vers}_net.cfg
+set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106 language=ja_JP
+set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
+set otheropt inst.repo=nfs:${exptdirs} --- quiet vga=788
+set kernlopt ${imgsdirs}/images/pxeboot/vmlinuz
+set inirdopt ${imgsdirs}/images/pxeboot/initrd.img
+set consoles dummy_console=tty0 dummy_console=ttyS0,9600
+set sulogins SYSTEMD_SULOGIN_FORCE=1 dummy_init=/sbin/sulogin
+#set debugopt ${consoles} ${sulogins}
+form                                    Configure Autoinstall Options
+item autoinst                           Auto install
+item language                           Language
+item networks                           Network
+item otheropt                           Other options
+#item debugopt                           Debug options
+isset ${openmenu} && present ||
+set options ${autoinst} ${language} ${networks} ${otheropt} ${debugopt}
+echo ${messages}
+echo Loading boot files ...
+kernel ${kernlopt} ${options} || goto error
+initrd ${inirdopt} || goto error
+boot || goto error
+exit
+
+:return
+echo "Return ..."
+chain ${ipxebase}/menu/menu.ipxe
+goto menu
+
+:exit
+exit
+
+:error
+prompt Press any key to continue
+exit
