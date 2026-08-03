@@ -33,6 +33,9 @@
 #   g-var : _DIRS_CACH : write
 #   g-var : _DIRS_CTNR : write
 #   g-var : _DIRS_CHRT : write
+#   g-var : _DIRS_XNBD : write
+#   g-var : _DIRS_XNFS : write
+#   g-var : _DIRS_XSMB : write
 #   g-var : _DIRS_INST : write
 #   g-var : _DIRS_BACK : write
 #   g-var : _DIRS_ORIG : write
@@ -130,6 +133,7 @@ fnInitialize() {
 	readonly _DIRS_CHRT="${_DIRS_SHAR}/chroot"			# container file (chroot)
 	readonly _DIRS_XNBD="${_DIRS_EXPO}/nbd"				# exports (network block device)
 	readonly _DIRS_XNFS="${_DIRS_EXPO}/nfs"				# exports (network file system)
+	readonly _DIRS_XSMB="${_DIRS_EXPO}/smb"				# exports (samba)
 	# --- working directory parameter -----------------------------------------
 												# top of working directory
 	_DIRS_ACMD="${_DIRS_VADM:?}/${_PROG_NAME%%_*}"

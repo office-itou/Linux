@@ -207,18 +207,6 @@ fnSetup_samba() {
 		    path = ${_DIRS_SAMB}/pub/contents/dlna
 		    valid users = @${_SAMB_GRUP}
 		    write list = @${_SAMB_GADM}
-		[share-html]
-		    browseable = No
-		    comment = Shared directory for HTML
-		    guest ok = Yes
-		    path = ${_DIRS_HTML}
-		    wide links = Yes
-		[share-tftp]
-		    browseable = No
-		    comment = Shared directory for TFTP
-		    guest ok = Yes
-		    path = ${_DIRS_TFTP}
-		    wide links = Yes
 		[share-conf]
 		    browseable = No
 		    comment = Shared directory for configuration files
@@ -226,7 +214,17 @@ fnSetup_samba() {
 		    directory mask = 2775
 		    force group = ${_SAMB_GRUP}
 		    force user = ${_SAMB_USER}
-		    path = ${_DIRS_CONF}
+		    path = ${_DIRS_XSMB}/${_DIRS_CONF##*/}
+		    valid users = @${_SAMB_GRUP}
+		    write list = @${_SAMB_GADM}
+		[share-imgs]
+		    browseable = No
+		    comment = Shared directory for iso file extraction destination
+		    create mask = 0664
+		    directory mask = 2775
+		    force group = ${_SAMB_GRUP}
+		    force user = ${_SAMB_USER}
+		    path = ${_DIRS_XSMB}/${_DIRS_IMGS##*/}
 		    valid users = @${_SAMB_GRUP}
 		    write list = @${_SAMB_GADM}
 		[share-isos]
@@ -236,7 +234,17 @@ fnSetup_samba() {
 		    directory mask = 2775
 		    force group = ${_SAMB_GRUP}
 		    force user = ${_SAMB_USER}
-		    path = ${_DIRS_ISOS}
+		    path = ${_DIRS_XSMB}/${_DIRS_ISOS##*/}
+		    valid users = @${_SAMB_GRUP}
+		    write list = @${_SAMB_GADM}
+		[share-load]
+		    browseable = No
+		    comment = Shared directory for load module
+		    create mask = 0664
+		    directory mask = 2775
+		    force group = ${_SAMB_GRUP}
+		    force user = ${_SAMB_USER}
+		    path = ${_DIRS_XSMB}/${_DIRS_LOAD##*/}
 		    valid users = @${_SAMB_GRUP}
 		    write list = @${_SAMB_GADM}
 		[share-rmak]
@@ -246,10 +254,52 @@ fnSetup_samba() {
 		    directory mask = 2775
 		    force group = ${_SAMB_GRUP}
 		    force user = ${_SAMB_USER}
-		    path = ${_DIRS_RMAK}
+		    path = ${_DIRS_XSMB}/${_DIRS_RMAK##*/}
 		    valid users = @${_SAMB_GRUP}
 		    write list = @${_SAMB_GADM}
 _EOT_
+#		[share-html]
+#		    browseable = No
+#		    comment = Shared directory for HTML
+#		    guest ok = Yes
+#		    path = ${_DIRS_HTML}
+#		    wide links = Yes
+#		[share-tftp]
+#		    browseable = No
+#		    comment = Shared directory for TFTP
+#		    guest ok = Yes
+#		    path = ${_DIRS_TFTP}
+#		    wide links = Yes
+#		[share-conf]
+#		    browseable = No
+#		    comment = Shared directory for configuration files
+#		    create mask = 0664
+#		    directory mask = 2775
+#		    force group = ${_SAMB_GRUP}
+#		    force user = ${_SAMB_USER}
+#		    path = ${_DIRS_CONF}
+#		    valid users = @${_SAMB_GRUP}
+#		    write list = @${_SAMB_GADM}
+#		[share-isos]
+#		    browseable = No
+#		    comment = Shared directory for iso image files
+#		    create mask = 0664
+#		    directory mask = 2775
+#		    force group = ${_SAMB_GRUP}
+#		    force user = ${_SAMB_USER}
+#		    path = ${_DIRS_ISOS}
+#		    valid users = @${_SAMB_GRUP}
+#		    write list = @${_SAMB_GADM}
+#		[share-rmak]
+#		    browseable = No
+#		    comment = Shared directory for remake files
+#		    create mask = 0664
+#		    directory mask = 2775
+#		    force group = ${_SAMB_GRUP}
+#		    force user = ${_SAMB_USER}
+#		    path = ${_DIRS_RMAK}
+#		    valid users = @${_SAMB_GRUP}
+#		    write list = @${_SAMB_GADM}
 	# --- output --------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "info" "output"
 	testparm -s "${__CONF}" > "${__PATH}" || true

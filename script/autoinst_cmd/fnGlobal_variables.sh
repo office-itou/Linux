@@ -93,8 +93,9 @@
 	_DIRS_CTNR=""						# container file
 	_DIRS_CHRT=""						# container file (chroot)
 	_DIRS_EXPO=""						# exports
-	_DIRS_NBDS=""						# exports (network block device)
+	_DIRS_XNBD=""						# exports (network block device)
 	_DIRS_XNFS=""						# exports (network file system)
+	_DIRS_XSMB=""						# exports (samba)
 	# --- working directory parameter -----------------------------------------
 	readonly _DIRS_VADM="/var/admin"	# top of admin working directory
 	_DIRS_ACMD=""						# auto-command working directory

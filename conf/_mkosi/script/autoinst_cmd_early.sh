@@ -134,8 +134,9 @@
 	_DIRS_CTNR=""						# container file
 	_DIRS_CHRT=""						# container file (chroot)
 	_DIRS_EXPO=""						# exports
-	_DIRS_NBDS=""						# exports (network block device)
+	_DIRS_XNBD=""						# exports (network block device)
 	_DIRS_XNFS=""						# exports (network file system)
+	_DIRS_XSMB=""						# exports (samba)
 	# --- working directory parameter -----------------------------------------
 	readonly _DIRS_VADM="/var/admin"	# top of admin working directory
 	_DIRS_ACMD=""						# auto-command working directory
@@ -921,6 +922,7 @@ fnInitialize() {
 	readonly _DIRS_CHRT="${_DIRS_SHAR}/chroot"			# container file (chroot)
 	readonly _DIRS_XNBD="${_DIRS_EXPO}/nbd"				# exports (network block device)
 	readonly _DIRS_XNFS="${_DIRS_EXPO}/nfs"				# exports (network file system)
+	readonly _DIRS_XSMB="${_DIRS_EXPO}/smb"				# exports (samba)
 	# --- working directory parameter -----------------------------------------
 												# top of working directory
 	_DIRS_ACMD="${_DIRS_VADM:?}/${_PROG_NAME%%_*}"

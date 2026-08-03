@@ -7,9 +7,15 @@
   /srv/
   |-- exports
   |   |-- nbd
-  |   `-- nfs
-  |       |-- conf -> /srv/user/share/conf (bind)
-  |       `-- imgs -> /srv/user/share/imgs (bind)
+  |   |-- nfs
+  |   |   |-- conf (mount bind -> /srv/user/share/conf)
+  |   |   `-- imgs (mount bind -> /srv/user/share/imgs)
+  |   `-- smb
+  |       |-- conf (mount bind -> /srv/user/share/conf)
+  |       |-- imgs (mount bind -> /srv/user/share/imgs)
+  |       |-- isos (mount bind -> /srv/user/share/isos)
+  |       |-- load (mount bind -> /srv/user/share/load)
+  |       `-- rmak (mount bind -> /srv/user/share/rmak)
   |-- hgfs
   |-- http
   |   `-- html
@@ -35,7 +41,27 @@
   |   |   |       `-- sounds
   |   |   |-- hardware
   |   |   |-- resource
-  |   |   |   `-- git
+  |   |   |   |-- image
+  |   |   |   |   |-- isos
+  |   |   |   |   |   |-- linux
+  |   |   |   |   |   |   |-- almalinux
+  |   |   |   |   |   |   |-- centos
+  |   |   |   |   |   |   |-- debian
+  |   |   |   |   |   |   |-- fedora
+  |   |   |   |   |   |   |-- memtest86plus
+  |   |   |   |   |   |   |-- miraclelinux
+  |   |   |   |   |   |   |-- opensuse
+  |   |   |   |   |   |   |-- rockylinux
+  |   |   |   |   |   |   `-- ubuntu
+  |   |   |   |   |   `-- windows
+  |   |   |   |   |       |-- aomei
+  |   |   |   |   |       |-- ati
+  |   |   |   |   |       |-- windows-10
+  |   |   |   |   |       |-- windows-11
+  |   |   |   |   |       `-- winpe
+  |   |   |   |   `-- rmak
+  |   |   |   `-- source
+  |   |   |       `-- git
   |   |   `-- software
   |   `-- usr
   |-- tftp
@@ -46,44 +72,39 @@
   |   |       |-- i386-pc
   |   |       |-- locale
   |   |       `-- x86_64-efi
-  |   |-- conf -> /srv/user/share/conf
-  |   |-- imgs -> /srv/user/share/imgs
+  |   |-- exports
+  |   |   |-- conf -> /srv/user/share/conf
+  |   |   |-- imgs -> /srv/user/share/imgs
+  |   |   |-- isos -> /srv/user/share/isos
+  |   |   |-- load -> /srv/user/share/load
+  |   |   `-- rmak -> /srv/user/share/rmak
   |   |-- ipxe
   |   |   |-- autoexec.ipxe
-  |   |   |-- ipxe-legacy.efi
-  |   |   |-- ipxe.efi
-  |   |   |-- ipxe.lkrn
-  |   |   |-- ipxe.pxe
-  |   |   |-- snponly.efi
-  |   |   |-- undionly.kpxe
-  |   |   `-- wimboot
-  |   |-- isos -> /srv/user/share/isos
-  |   |-- load -> /srv/user/share/load
+  |   |   `-- menu
+  |   |       `-- menu.ipxe
   |   |-- menu-bios
   |   |   |-- syslinux.cfg
-  |   |   |-- conf -> ../conf
-  |   |   |-- imgs -> ../imgs
-  |   |   |-- isos -> ../isos
-  |   |   |-- load -> ../load
+  |   |   |-- conf -> ../exports/conf
+  |   |   |-- imgs -> ../exports/imgs
+  |   |   |-- isos -> ../exports/isos
+  |   |   |-- load -> ../exports/load
   |   |   |-- pxelinux.cfg
   |   |   |   `-- default -> ../syslinux.cfg
-  |   |   `-- rmak -> ../rmak
-  |   |-- menu-efi64
-  |   |   |-- syslinux.cfg
-  |   |   |-- conf -> ../conf
-  |   |   |-- imgs -> ../imgs
-  |   |   |-- isos -> ../isos
-  |   |   |-- load -> ../load
-  |   |   |-- pxelinux.cfg
-  |   |   |   `-- default -> ../syslinux.cfg
-  |   |   `-- rmak -> ../rmak
-  |   `-- rmak -> /srv/user/share/rmak
+  |   |   `-- rmak -> ../exports/rmak
+  |   `-- menu-efi64
+  |       |-- syslinux.cfg
+  |       |-- conf -> ../exports/conf
+  |       |-- imgs -> ../exports/imgs
+  |       |-- isos -> ../exports/isos
+  |       |-- load -> ../exports/load
+  |       |-- pxelinux.cfg
+  |       |   `-- default -> ../syslinux.cfg
+  |       `-- rmak -> ../exports/rmak
   `-- user
       |-- private
       |   |-- bin
       |   |-- src
       |   |   `-- git
-      |   |       `-- mkosi
       |   `-- wrk
       `-- share
           |-- cache
@@ -102,7 +123,7 @@
           |   |   |-- mkosi.prepare.d
           |   |   |-- mkosi.repart
           |   |   |-- mkosi.sync.d
-          |   |   `-- script
+          |   |   `-- script (mount bind -> /srv/user/share/conf/script)
           |   |-- _repository
           |   |   `-- opensuse
           |   |-- _template

@@ -18,33 +18,33 @@ fnSetup_nfs() {
 		return
 	fi
 	# --- fstab ---------------------------------------------------------------
-	__PATH="${_DIRS_TGET:-}/etc/fstab"
-	fnFile_backup "${__PATH}"			# backup original file
-	mkdir -p "${__PATH%/*}"
-	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
-		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "# <file system>" "<mount point>"                     "<type>" "<options>" "<dump>" "<pass>")
-		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_SHEL:?}" "${_DIRS_MKOS:?}/${_DIRS_SHEL##*/}" "none"   "bind,ro"   "0"      "0"     )
-		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_IMGS:?}" "${_DIRS_XNFS:?}/${_DIRS_IMGS##*/}" "none"   "bind,ro"   "0"      "0"     )
-		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_CONF:?}" "${_DIRS_XNFS:?}/${_DIRS_CONF##*/}" "none"   "bind,ro"   "0"      "0"     )
-_EOT_
+#	__PATH="${_DIRS_TGET:-}/etc/fstab"
+#	fnFile_backup "${__PATH}"			# backup original file
+#	mkdir -p "${__PATH%/*}"
+#	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+#	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+#		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "# <file system>" "<mount point>"                     "<type>" "<options>" "<dump>" "<pass>")
+#		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_SHEL:?}" "${_DIRS_MKOS:?}/${_DIRS_SHEL##*/}" "none"   "bind,ro"   "0"      "0"     )
+#		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_IMGS:?}" "${_DIRS_XNFS:?}/${_DIRS_IMGS##*/}" "none"   "bind,ro"   "0"      "0"     )
+#		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_CONF:?}" "${_DIRS_XNFS:?}/${_DIRS_CONF##*/}" "none"   "bind,ro"   "0"      "0"     )
+#_EOT_
 	# --- check mount ---------------------------------------------------------
-	if [ -z "${_TGET_CHRT:-}" ]; then
-		systemctl --quiet daemon-reload
-		for __MNTP in \
-			"${_DIRS_MKOS:?}/${_DIRS_SHEL##*/}" \
-			"${_DIRS_XNFS:?}/${_DIRS_IMGS##*/}" \
-			"${_DIRS_XNFS:?}/${_DIRS_CONF##*/}"
-		do
-			if mount "${__MNTP:?}"; then
-				fnMsgout "${_PROG_NAME:-}" "success" "mounted: ${__MNTP}"
-			else
-				fnMsgout "${_PROG_NAME:-}" "failed" "not mounted: ${__MNTP}"
-			fi
-		done
-	fi
-	fnDbgdump "${__PATH}"				# debugout
-	fnFile_backup "${__PATH}" "init"	# backup initial file
+#	if [ -z "${_TGET_CHRT:-}" ]; then
+#		systemctl --quiet daemon-reload
+#		for __MNTP in \
+#			"${_DIRS_MKOS:?}/${_DIRS_SHEL##*/}" \
+#			"${_DIRS_XNFS:?}/${_DIRS_IMGS##*/}" \
+#			"${_DIRS_XNFS:?}/${_DIRS_CONF##*/}"
+#		do
+#			if mount "${__MNTP:?}"; then
+#				fnMsgout "${_PROG_NAME:-}" "success" "mounted: ${__MNTP}"
+#			else
+#				fnMsgout "${_PROG_NAME:-}" "failed" "not mounted: ${__MNTP}"
+#			fi
+#		done
+#	fi
+#	fnDbgdump "${__PATH}"				# debugout
+#	fnFile_backup "${__PATH}" "init"	# backup initial file
 	# --- exports /srv --------------------------------------------------------
 	__PATH="${_DIRS_TGET:-}/etc/exports.d/srv.exports"
 	fnFile_backup "${__PATH}"			# backup original file

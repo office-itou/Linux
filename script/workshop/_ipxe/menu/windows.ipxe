@@ -24,7 +24,7 @@ choose --default ${selected} selected || goto menu
 #iseq ${selected} server  && goto edition ||
 #iseq ${selected} desktop && goto edition ||
 iseq ${selected} return  && goto return  ||
-isset ${selected} && goto almalinux-${selected} ||
+isset ${selected} && goto ${selected} ||
 goto menu
 
 :edition
@@ -138,4 +138,16 @@ initrd ${knladdr}/boot/bcd                     BCD          || goto error
 initrd ${knladdr}/boot/boot.sdi                boot.sdi     || goto error
 initrd ${knladdr}/sources/boot.wim             boot.wim     || goto error
 boot || goto error
+exit
+
+:return
+echo "Return ..."
+chain ${ipxebase}/menu/menu.ipxe
+goto menu
+
+:exit
+exit
+
+:error
+prompt Press any key to continue
 exit
