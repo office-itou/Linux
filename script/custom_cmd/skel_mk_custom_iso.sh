@@ -96,7 +96,7 @@
 	source "${_SHEL_COMD:?}"/fnMake_init_mk_custom_iso.sh	# initialize
 
 	# shellcheck source=/dev/null
-	source "${_SHEL_COMD:?}"/fnComm_list_conf_Get.sh		# get auto-installation configuration file
+	source "${_SHEL_COMD:?}"/fnComm_list_conf_Get.sh		# get common configuration data
 	# shellcheck source=/dev/null
 #	source "${_SHEL_COMD:?}"/fnComm_list_conf_Put.sh		# put common configuration data
 

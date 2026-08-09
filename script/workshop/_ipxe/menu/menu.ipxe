@@ -7,7 +7,7 @@ item --gap --                                   [ Distribution for automatic ins
 item -- debian                                  - Debian
 item -- ubuntu                                  - Ubuntu
 item -- fedora                                  - Fedora
-item -- centos-stream                           - CentOS Stream
+item -- centos                                  - CentOS Stream
 item -- almalinux                               - AlmaLinux
 item -- rockylinux                              - Rocky Linux
 item -- miraclelinux                            - MIRACLE LINUX
@@ -27,7 +27,7 @@ goto menu
 :debian
 :ubuntu
 :fedora
-:centos-stream
+:centos
 :almalinux
 :rockylinux
 :miraclelinux
@@ -35,6 +35,7 @@ goto menu
 :windows
 :live
 :custom-live
+set distribution ${selected}
 echo "Loading menu/${selected}.ipxe ..."
 chain --autofree --replace ${ipxebase}/menu/${selected}.ipxe && exit ||
 goto menu

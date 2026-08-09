@@ -124,6 +124,7 @@ fnMkdir_share(){
 	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/windows
 	[ -n "${_DIRS_DATA:-}" ] && mkdir -p "${_DIRS_DATA:?}"
 	[ -n "${_DIRS_KEYS:-}" ] && mkdir -p "${_DIRS_KEYS:?}"
+	[ -n "${_DIRS_MKOS:-}" ] && mkdir -p "${_DIRS_MKOS:?}"/_template
 	[ -n "${_DIRS_MKOS:-}" ] && mkdir -p "${_DIRS_MKOS:?}"/mkosi.build.d
 	[ -n "${_DIRS_MKOS:-}" ] && mkdir -p "${_DIRS_MKOS:?}"/mkosi.clean.d
 	[ -n "${_DIRS_MKOS:-}" ] && mkdir -p "${_DIRS_MKOS:?}"/mkosi.conf.d
@@ -134,6 +135,7 @@ fnMkdir_share(){
 	[ -n "${_DIRS_MKOS:-}" ] && mkdir -p "${_DIRS_MKOS:?}"/mkosi.prepare.d
 	[ -n "${_DIRS_MKOS:-}" ] && mkdir -p "${_DIRS_MKOS:?}"/mkosi.repart
 	[ -n "${_DIRS_MKOS:-}" ] && mkdir -p "${_DIRS_MKOS:?}"/mkosi.sync.d
+	[ -n "${_DIRS_MKOS:-}" ] && mkdir -p "${_DIRS_MKOS:?}"/repository
 	[ -n "${_DIRS_MKOS:-}" ] && mkdir -p "${_DIRS_MKOS:?}/${_DIRS_SHEL##*/}"
 	[ -n "${_DIRS_TMPL:-}" ] && mkdir -p "${_DIRS_TMPL:?}"
 	[ -n "${_DIRS_SHEL:-}" ] && mkdir -p "${_DIRS_SHEL:?}"

@@ -1,9 +1,9 @@
     @Echo Off
 Rem SetLocal
     Set WindowsVer=11
-    Set ShareName=\\sv-server\share-tftp\imgs
+    Set ShareName=\\sv-server\public-imgs\windows-%WindowsVer%
     Set ShareDrv=Z:
-    Set SetupExe=%ShareDrv%\windows-%WindowsVer%\setup.exe
+    Set SetupExe=%ShareDrv%\setup.exe
     Set AutoInst=%SystemDrive%\Windows\System32\unattend.xml
     Echo Start the automatic installation of Windows %WindowsVer%
     REG ADD HKEY_LOCAL_MACHINE\SYSTEM\Setup\LabConfig /v BypassTPMCheck        /t REG_DWORD /d 1 /f

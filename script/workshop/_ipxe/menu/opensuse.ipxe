@@ -10,14 +10,15 @@ item -- return                                  - Return
 item --gap --                                   [ Edition ]
 item -- server                                  - Server
 item -- desktop                                 - Desktop
-#item --gap --                                   [ Development ]
+item --gap --                                   [ Development ]
+item -- 16.1                                    - openSUSE ${edition} 16.1
 item --gap --                                   [ Current (supported) ]
-item -- 16.0                                    - openSUSE  ${edition} 16.0
-#item --gap --                                   [ End of life (unsupported) ]
+item -- 16.0                                    - openSUSE ${edition} 16.0
+#item --gap --                                  [ End of life (unsupported) ]
 choose --default ${selected} selected || goto menu
+iseq ${selected} return  && goto return  ||
 iseq ${selected} server  && goto edition ||
 iseq ${selected} desktop && goto edition ||
-iseq ${selected} return  && goto return  ||
 isset ${selected} && goto opensuse-leap-${selected} ||
 goto menu
 
@@ -26,7 +27,9 @@ iseq ${selected} server  && set edition server ||
 iseq ${selected} desktop && set edition desktop ||
 goto menu
 
+:opensuse-leap-16.1
 :opensuse-leap-16.0
+clear vers
 set vers ${selected}
 isset ${vers} || goto menu
 iseq ${edition} server  && goto opensuse-leap-server ||
@@ -34,57 +37,32 @@ iseq ${edition} desktop && goto opensuse-leap-desktop ||
 goto menu
 
 :opensuse-leap-server
-set messages Loading openSUSE  ${vers} Server ...
+set messages Loading openSUSE ${vers} Server ...
+set parmauto live.password=install inst.auto=${srvrhttp}/conf/agama/autoinst_leap-${vers}.json
 set imgsdirs ${srvrhttp}/imgs/opensuse-leap-netinst-${vers}
 set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/opensuse-leap-netinst-${vers}
-set autoinst live.password=install inst.auto=${srvrhttp}/conf/agama/autoinst_leap-${vers}.json
-goto booting
+goto opensuse-leap-common
 
 :opensuse-leap-desktop
-set messages Loading openSUSE  ${vers} Desktop ...
+set messages Loading openSUSE ${vers} Desktop ...
+set parmauto live.password=install inst.auto=${srvrhttp}/conf/agama/autoinst_leap-${vers}_desktop.json
 set imgsdirs ${srvrhttp}/imgs/opensuse-leap-netinst-${vers}
 set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/opensuse-leap-netinst-${vers}
-set autoinst live.password=install inst.auto=${srvrhttp}/conf/agama/autoinst_leap-${vers}_desktop.json
-goto booting
+goto opensuse-leap-common
 
-:booting
-prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
-set hostname sv-opensuse-leap.workgroup
-set ethrname ens160
-set ipv4addr 192.168.1.1
-set ipv4mask 255.255.255.0
-set ipv4gway 192.168.1.254
-set ipv4nsvr 192.168.1.254
-form                                    Configure Network Options
-item hostname                           Hostname
-item ethrname                           Interface
-item ipv4addr                           IPv4 address/netmask
-item ipv4gway                           IPv4 gateway
-item ipv4nsvr                           IPv4 nameservers
-isset ${openmenu} && present ||
-#set autoinst live.password=install inst.auto=${srvrhttp}/conf/agama/autoinst_leap-${vers}.json
-set language language=ja_JP
-set networks netsetup=dhcp hostname=${hostname} ifcfg=${ethrname}=${ipv4addr},${ipv4gway},${ipv4nsvr},workgroup
-set otheropt root=live:${srvrhttp}/isos/linux/opensuse/Leap-${vers}-online-installer-x86_64.install.iso --- quiet vga=788
+:opensuse-leap-common
 set kernlopt ${imgsdirs}/boot/x86_64/loader/linux
 set inirdopt ${imgsdirs}/boot/x86_64/loader/initrd
+set hnameopt sv-opensuse.workgroup
+set enameopt ens160
+set languopt language=ja_JP
+set otheropt root=live:${srvrhttp}/isos/linux/opensuse/Leap-${vers}-online-installer-x86_64.install.iso --- quiet vga=788
 set consoles dummy_console=tty0 dummy_console=ttyS0,9600
 set sulogins SYSTEMD_SULOGIN_FORCE=1 dummy_init=/sbin/sulogin
-#set debugopt ${consoles} ${sulogins}
-form                                    Configure Autoinstall Options
-item autoinst                           Auto install
-item language                           Language
-item networks                           Network
-item otheropt                           Other options
-#item debugopt                           Debug options
-isset ${openmenu} && present ||
-set options ${autoinst} ${language} ${networks} ${otheropt} ${debugopt}
-echo ${messages}
-echo Loading boot files ...
-kernel ${kernlopt} ${options} || goto error
-initrd ${inirdopt} || goto error
-boot || goto error
-exit
+set debugopt ${consoles} ${sulogins}
+echo "Loading menu/booting.ipxe ..."
+chain --autofree --replace ${ipxebase}/menu/booting.ipxe && exit ||
+goto menu
 
 :return
 echo "Return ..."

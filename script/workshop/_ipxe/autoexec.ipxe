@@ -1,5 +1,8 @@
 #!ipxe
 
+# --- Configure graphical console ---------------------------------------------
+
+console --x 1024 --y 768 ||
 # --- Define colour pair ------------------------------------------------------
 # Reset the default colour pair
 cpair 0 ||
@@ -8,6 +11,7 @@ cpair --foreground 7 --background 0 4 ||
 
 # --- Check x86 CPU feature ---------------------------------------------------
 # Check if CPU supports 64-bit operation ("long mode")
+clear arch
 cpuid --ext 29 && set arch x86_64 || set arch i386
 
 # --- Automatically configure interfaces --------------------------------------
@@ -17,11 +21,12 @@ ifconf --configurator dhcp ||
 ifconf --configurator ipv6 ||
 
 # --- Set the IP address of the PXE boot server -------------------------------
+clear srvraddr
 isset ${66} && set srvraddr ${66} || set srvraddr 192.168.1.11
 
 # --- Set the parameters. -----------------------------------------------------
 set srvrhttp http://${srvraddr}
-set ipxebase ${srvrhttp}/tftp/ipxe/
+set ipxebase ${srvrhttp}/tftp/ipxe
 set optn-timeout 1000
 set menu-timeout 0
 set esc:hex 1b

@@ -113,6 +113,7 @@
           |   |-- _data
           |   |-- _keyring
           |   |-- _mkosi
+          |   |   |-- _template
           |   |   |-- mkosi.build.d
           |   |   |-- mkosi.clean.d
           |   |   |-- mkosi.conf.d
@@ -123,6 +124,7 @@
           |   |   |-- mkosi.prepare.d
           |   |   |-- mkosi.repart
           |   |   |-- mkosi.sync.d
+          |   |   |-- repository
           |   |   `-- script (mount bind -> /srv/user/share/conf/script)
           |   |-- _repository
           |   |   `-- opensuse

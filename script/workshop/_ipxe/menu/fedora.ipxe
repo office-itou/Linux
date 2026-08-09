@@ -16,49 +16,49 @@ item -- 45                                      - Fedora ${edition} 45
 item --gap --                                   [ Current (supported) ]
 item -- 44                                      - Fedora ${edition} 44
 item -- 43                                      - Fedora ${edition} 43
-#item --gap --                                   [ End of life (unsupported) ]
-#item -- 42                                      - Fedora Linux 42 (Adams)
-#item -- 41                                      - Fedora Linux 41
-#item -- 40                                      - Fedora Linux 40
-#item -- 39                                      - Fedora Linux 39
-#item -- 38                                      - Fedora Linux 38
-#item -- 37                                      - Fedora Linux 37
-#item -- 36                                      - Fedora Linux 36
-#item -- 35                                      - Fedora Linux 35
-#item -- 34                                      - Fedora Linux 34
-#item -- 33                                      - Fedora Linux 33
-#item -- 32                                      - Fedora Linux 32
-#item -- 31                                      - Fedora Linux 31
-#item -- 30                                      - Fedora Linux 30
-#item -- 29                                      - Fedora Linux 29
-#item -- 28                                      - Fedora Linux 28
-#item -- 27                                      - Fedora Linux 27
-#item -- 26                                      - Fedora Linux 26
-#item -- 25                                      - Fedora Linux 25
-#item -- 24                                      - Fedora Linux 24
-#item -- 23                                      - Fedora Linux 23
-#item -- 22                                      - Fedora Linux 22
-#item -- 21                                      - Fedora Linux 21 (Twenty One)
-#item -- 20                                      - Fedora Linux 20 (Heisenbug)
-#item -- 19                                      - Fedora Linux 19 (Schrödinger’s Cat)
-#item -- 18                                      - Fedora Linux 18 (Spherical Cow)
-#item -- 17                                      - Fedora Linux 17 (Beefy Miracle)
-#item -- 16                                      - Fedora Linux 16 (Verne)
-#item -- 15                                      - Fedora Linux 15 (Lovelock)
-#item -- 14                                      - Fedora Linux 14 (Laughlin)
-#item -- 13                                      - Fedora Linux 13 (Goddard)
-#item -- 12                                      - Fedora Linux 12 (Constantine)
-#item -- 11                                      - Fedora Linux 11 (Leonidas)
-#item -- 10                                      - Fedora Linux 10 (Cambridge)
-#item --  9                                      - Fedora Linux 9 (Sulphur)
-#item --  8                                      - Fedora Linux 8 (Werewolf)
-#item --  7                                      - Fedora Linux 7 (Moonshine)
-#item --  6                                      - Fedora Core 6 (Zod)
-#item --  5                                      - Fedora Core 5 (Bordeaux)
-#item --  4                                      - Fedora Core 4 (Stentz)
-#item --  3                                      - Fedora Core 3 (Heidelberg)
-#item --  2                                      - Fedora Core 2 (Tettnang)
-#item --  1                                      - Fedora Core 1 (Yarrow)
+#item --gap --                                  [ End of life (unsupported) ]
+#item -- 42                                     - Fedora Linux ${edition} 42 (Adams)
+#item -- 41                                     - Fedora Linux ${edition} 41
+#item -- 40                                     - Fedora Linux ${edition} 40
+#item -- 39                                     - Fedora Linux ${edition} 39
+#item -- 38                                     - Fedora Linux ${edition} 38
+#item -- 37                                     - Fedora Linux ${edition} 37
+#item -- 36                                     - Fedora Linux ${edition} 36
+#item -- 35                                     - Fedora Linux ${edition} 35
+#item -- 34                                     - Fedora Linux ${edition} 34
+#item -- 33                                     - Fedora Linux ${edition} 33
+#item -- 32                                     - Fedora Linux ${edition} 32
+#item -- 31                                     - Fedora Linux ${edition} 31
+#item -- 30                                     - Fedora Linux ${edition} 30
+#item -- 29                                     - Fedora Linux ${edition} 29
+#item -- 28                                     - Fedora Linux ${edition} 28
+#item -- 27                                     - Fedora Linux ${edition} 27
+#item -- 26                                     - Fedora Linux ${edition} 26
+#item -- 25                                     - Fedora Linux ${edition} 25
+#item -- 24                                     - Fedora Linux ${edition} 24
+#item -- 23                                     - Fedora Linux ${edition} 23
+#item -- 22                                     - Fedora Linux ${edition} 22
+#item -- 21                                     - Fedora Linux ${edition} 21 (Twenty One)
+#item -- 20                                     - Fedora Linux ${edition} 20 (Heisenbug)
+#item -- 19                                     - Fedora Linux ${edition} 19 (Schrödinger’s Cat)
+#item -- 18                                     - Fedora Linux ${edition} 18 (Spherical Cow)
+#item -- 17                                     - Fedora Linux ${edition} 17 (Beefy Miracle)
+#item -- 16                                     - Fedora Linux ${edition} 16 (Verne)
+#item -- 15                                     - Fedora Linux ${edition} 15 (Lovelock)
+#item -- 14                                     - Fedora Linux ${edition} 14 (Laughlin)
+#item -- 13                                     - Fedora Linux ${edition} 13 (Goddard)
+#item -- 12                                     - Fedora Linux ${edition} 12 (Constantine)
+#item -- 11                                     - Fedora Linux ${edition} 11 (Leonidas)
+#item -- 10                                     - Fedora Linux ${edition} 10 (Cambridge)
+#item --  9                                     - Fedora Linux ${edition} 9 (Sulphur)
+#item --  8                                     - Fedora Linux ${edition} 8 (Werewolf)
+#item --  7                                     - Fedora Linux ${edition} 7 (Moonshine)
+#item --  6                                     - Fedora Core ${edition} 6 (Zod)
+#item --  5                                     - Fedora Core ${edition} 5 (Bordeaux)
+#item --  4                                     - Fedora Core ${edition} 4 (Stentz)
+#item --  3                                     - Fedora Core ${edition} 3 (Heidelberg)
+#item --  2                                     - Fedora Core ${edition} 2 (Tettnang)
+#item --  1                                     - Fedora Core ${edition} 1 (Yarrow)
 choose --default ${selected} selected || goto menu
 iseq ${selected} return  && goto return  ||
 iseq ${selected} server  && goto edition ||
@@ -75,6 +75,7 @@ goto menu
 :fedora-45
 :fedora-44
 :fedora-43
+clear vers
 set vers ${selected}
 isset ${vers} || goto menu
 iseq ${edition} server  && goto fedora-server ||
@@ -83,56 +84,31 @@ goto menu
 
 :fedora-server
 set messages Loading Fedora ${vers} Server ...
+set parmauto inst.ks=${srvrhttp}/conf/kickstart/ks_fedora-${vers}_net.cfg
 set imgsdirs ${srvrhttp}/imgs/fedora-netinst-${vers}
 set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/fedora-netinst-${vers}
-set autoinst inst.ks=${srvrhttp}/conf/kickstart/ks_fedora-${vers}_net.cfg
-goto booting
+goto fedora-common
 
 :fedora-desktop
 set messages Loading Fedora ${vers} Desktop ...
+set parmauto inst.ks=${srvrhttp}/conf/kickstart/ks_fedora-${vers}_net_desktop.cfg
 set imgsdirs ${srvrhttp}/imgs/fedora-netinst-${vers}
 set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/fedora-netinst-${vers}
-set autoinst inst.ks=${srvrhttp}/conf/kickstart/ks_fedora-${vers}_net_desktop.cfg
-goto booting
+goto fedora-common
 
-:booting
-prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
-set hostname sv-fedora.workgroup
-set ethrname ens160
-set ipv4addr 192.168.1.1
-set ipv4mask 255.255.255.0
-set ipv4gway 192.168.1.254
-set ipv4nsvr 192.168.1.254
-form                                    Configure Network Options
-item hostname                           Hostname
-item ethrname                           Interface
-item ipv4addr                           IPv4 address/netmask
-item ipv4gway                           IPv4 gateway
-item ipv4nsvr                           IPv4 nameservers
-isset ${openmenu} && present ||
-#set autoinst inst.ks=${srvrhttp}/conf/kickstart/ks_fedora-${vers}_net.cfg
-set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106 language=ja_JP
-set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
-set otheropt inst.repo=nfs:${exptdirs} --- quiet vga=788
+:fedora-common
 set kernlopt ${imgsdirs}/images/pxeboot/vmlinuz
 set inirdopt ${imgsdirs}/images/pxeboot/initrd.img
+set hnameopt sv-fedora.workgroup
+set enameopt ens160
+set languopt locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106 language=ja_JP
+set otheropt inst.repo=nfs:${exptdirs} --- quiet vga=788
 set consoles dummy_console=tty0 dummy_console=ttyS0,9600
 set sulogins SYSTEMD_SULOGIN_FORCE=1 dummy_init=/sbin/sulogin
-#set debugopt ${consoles} ${sulogins}
-form                                    Configure Autoinstall Options
-item autoinst                           Auto install
-item language                           Language
-item networks                           Network
-item otheropt                           Other options
-#item debugopt                           Debug options
-isset ${openmenu} && present ||
-set options ${autoinst} ${language} ${networks} ${otheropt} ${debugopt}
-echo ${messages}
-echo Loading boot files ...
-kernel ${kernlopt} ${options} || goto error
-initrd ${inirdopt} || goto error
-boot || goto error
-exit
+set debugopt ${consoles} ${sulogins}
+echo "Loading menu/booting.ipxe ..."
+chain --autofree --replace ${ipxebase}/menu/booting.ipxe && exit ||
+goto menu
 
 :return
 echo "Return ..."
