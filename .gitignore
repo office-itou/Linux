@@ -2,3 +2,4 @@
 *.BAK
 *.SAV
 Thumbs.db
+__pycache__

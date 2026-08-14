@@ -425,6 +425,7 @@ fixed address -->
       <package>xorriso</package>
       <package>gawk</package>
       <package>jq</package>
+      <package>git</package>
       <package>clamav</package>
       <package>openssh-server</package>
 <!-- leap

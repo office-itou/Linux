@@ -118,6 +118,7 @@
       "xorriso",
       "gawk",
       "jq",
+      "git",
       "clamav",
       "openssh-server",
       "systemd-resolved",

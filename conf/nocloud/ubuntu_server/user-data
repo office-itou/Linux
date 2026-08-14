@@ -198,6 +198,7 @@ autoinstall:
   - xorriso                             # command line ISO-9660 and Rock Ridge manipulation tool
   - gawk                                # GNU awk, a pattern scanning and processing language
   - jq                                  # lightweight and flexible command-line JSON processor
+  - git                                 # fast, scalable, distributed revision control system
   - tasksel                             # tool for selecting tasks for installation on Debian systems
   - clamav                              # anti-virus utility for Unix - command-line interface
   - openssh-server                      # secure shell (SSH) server, for secure access from remote machines

@@ -1,0 +1,70 @@
+filename = "menu_rockylinux.ipxe"
+script = r"""#!ipxe
+
+# --- Menu block --------------------------------------------------------------
+# https://wiki.rockylinux.org/rocky/version/
+set edition server
+:menu
+menu Select the OS type you want to boot
+item --gap --                                   [ Return menu ]
+item -- return                                  - Return
+item --gap --                                   [ Edition ]
+item -- server                                  - Server
+item -- desktop                                 - Desktop
+#item --gap --                                  [ Development ]
+item --gap --                                   [ Current (supported) ]
+item -- 10                                      - Rocky Linux ${edition} 10
+item --  9                                      - Rocky Linux ${edition} 9
+item --  8                                      - Rocky Linux ${edition} 8
+#item --gap --                                  [ End of life (unsupported) ]
+choose --default ${selected} selected || goto menu
+iseq ${selected} return  && goto return  ||
+iseq ${selected} server  && goto edition ||
+iseq ${selected} desktop && goto edition ||
+isset ${selected} && goto rockylinux-${selected} ||
+goto menu
+
+:edition
+iseq ${selected} server  && set edition server ||
+iseq ${selected} desktop && set edition desktop ||
+goto menu
+
+:rockylinux-10
+:rockylinux-9
+:rockylinux-8
+clear vers
+set vers ${selected}
+isset ${vers} || goto menu
+iseq ${edition} server  && goto rockylinux-server ||
+iseq ${edition} desktop && goto rockylinux-desktop ||
+goto menu
+
+:rockylinux-server
+set messages Loading Rocky Linux ${vers} Server ...
+set parmauto inst.ks=${srvrhttp}/conf/kickstart/ks_rockylinux-${vers}_net.cfg
+set imgsdirs ${srvrhttp}/imgs/rockylinux-netinst-${vers}
+set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/rockylinux-netinst-${vers}
+goto rockylinux-common
+
+:rockylinux-desktop
+set messages Loading Rocky Linux ${vers} Desktop ...
+set parmauto inst.ks=${srvrhttp}/conf/kickstart/ks_rockylinux-${vers}_net_desktop.cfg
+set imgsdirs ${srvrhttp}/imgs/rockylinux-netinst-${vers}
+set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/rockylinux-netinst-${vers}
+goto rockylinux-common
+
+:rockylinux-common
+set kernlopt ${imgsdirs}/images/pxeboot/vmlinuz
+set inirdopt ${imgsdirs}/images/pxeboot/initrd.img
+set hnameopt sv-rockylinux.workgroup
+set enameopt ens160
+set languopt locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106 language=ja_JP
+set otheropt inst.repo=nfs:${exptdirs} --- quiet vga=788
+set consoles dummy_console=tty0 dummy_console=ttyS0,9600
+set sulogins SYSTEMD_SULOGIN_FORCE=1 dummy_init=/sbin/sulogin
+set debugopt ${consoles} ${sulogins}
+echo "Loading menu/booting.ipxe ..."
+chain --autofree --replace ${ipxebase}/menu/booting.ipxe && exit ||
+goto menu
+
+"""

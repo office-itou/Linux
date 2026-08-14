@@ -30,6 +30,16 @@ function fnOutput_json() {
 		read -r -a __LIST < <(echo "${__LINE:-}")
 		if [[ -z "${__HEAD[*]}" ]]; then
 			__HEAD=("${__LIST[@]}")
+			__WORK=""
+			for I in "${!__HEAD[@]}"
+			do
+				__WORK="${__WORK:+"${__WORK},"}\"${__LIST[I]}\""
+			done
+			__WORK="  [${__WORK}]"
+			if [[ -n "${__DATA:-}" ]]; then
+				__DATA="${__DATA},"$'\n'
+			fi
+			__DATA="${__DATA:-}${__WORK}"
 			continue
 		fi
 		__WORK=""
@@ -60,3 +70,5 @@ function fnOutput_json() {
 	fnOutput_json "./distribution.dat"	# distribution data file
 	fnOutput_json "./media.dat"			# media data file
 #	fnOutput_json "./work.txt"
+
+# printf "%s\n" "$(cat distribution.dat.json | jq -r '.[-0] | @tsv')"

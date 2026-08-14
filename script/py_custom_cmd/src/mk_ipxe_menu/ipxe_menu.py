@@ -1,0 +1,44 @@
+filename = "menu.ipxe"
+script = r"""#!ipxe
+
+# --- Menu block --------------------------------------------------------------
+:menu
+menu Select the OS type you want to boot
+item --gap --                                   [ Distribution for automatic installation ]
+item -- debian                                  - Debian
+item -- ubuntu                                  - Ubuntu
+item -- fedora                                  - Fedora
+item -- centos                                  - CentOS Stream
+item -- almalinux                               - AlmaLinux
+item -- rockylinux                              - Rocky Linux
+item -- miraclelinux                            - MIRACLE LINUX
+item -- opensuse                                - openSUSE
+item -- windows                                 - Windows
+item --gap --                                   [ Other ]
+item -- live                                    - Live Media
+item -- custom_live                             - Custom Live Media
+item --gap --                                   [ System command ]
+item -- shell                                   - iPXE shell
+item -- shutdown                                - System shutdown
+item -- restart                                 - System reboot
+choose --timeout ${menu-timeout} --default ${menu-default} selected && goto ${selected}
+goto menu
+
+# --- Interactive form block --------------------------------------------------
+:debian
+:ubuntu
+:fedora
+:centos
+:almalinux
+:rockylinux
+:miraclelinux
+:opensuse
+:windows
+:live
+:custom_live
+set distribution ${selected}
+echo "Loading menu/${selected}.ipxe ..."
+chain --autofree --replace ${ipxebase}/menu/menu_${selected}.ipxe && exit ||
+goto menu
+
+"""
