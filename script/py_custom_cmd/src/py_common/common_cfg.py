@@ -17,7 +17,7 @@ def get():
             continue
         path_conf = path
         break
-    if path_conf == "":
+    if not path_conf:
         print("file not found: " + file_conf)
         sys.exit(1)
     # --- get setting items ---------------------------------------------------
@@ -49,3 +49,35 @@ def get():
         conf[key] = value
     # --- return --------------------------------------------------------------
     return conf
+
+# --- convert to data format --------------------------------------------------
+def conv2data(conf, list_inpt):
+    list_outp = []
+    for line in list_inpt:
+        for key in line.keys():
+            while True:
+                match = re.search(r":_[a-zA-Z0-9]+_[a-zA-Z0-9]+_:", line[key])
+                if not match:
+                    break
+                match_text = match.group()
+                match_key  = re.sub(r"^:_", "", match_text)
+                match_key  = re.sub(r"_:$", "", match_key)
+                line[key]  = re.sub(r":_" + match_key + "_:", conf[match_key], line[key])
+        list_outp.append(line)
+    return(list_outp)
+
+# --- convert to variable format ----------------------------------------------
+def conv2variable(conf, list_inpt):
+    list_outp = []
+    for line in list_inpt:
+        for key in line.keys():
+            for conf_key in reversed(conf):
+                match = re.search(r"DIRS_[a-zA-Z0-9]+", conf_key)
+                if not match:
+                    continue
+                match = re.search(r"^/", conf[conf_key])
+                if not match:
+                    continue
+                line[key]  = re.sub(conf[conf_key], r":_" + conf_key + "_:", line[key])
+        list_outp.append(line)
+    return(list_outp)
