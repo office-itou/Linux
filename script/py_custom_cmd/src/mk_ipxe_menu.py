@@ -7,35 +7,23 @@ import sys
 import os
 import glob
 import re
+import json
 
 import py_common
 import mk_ipxe_menu
 
-flg_debug=""
+flag_debug=""
 
 # --- get command line options ------------------------------------------------
 for argv in sys.argv:
     match argv:
         case "-d" | "--debug":
-            flg_debug = "on"
+            flag_debug = "on"
 
-# --- get setting items -------------------------------------------------------
-file_conf="common.cfg"                  # common configuration file
-path_conf=""                            # common configuration file
-for path in ["./" + file_conf, "/srv/user/share/conf/_data/" + file_conf]:
-    if not os.path.exists(path):
-        continue
-    path_conf = path
-    break
-
-if path_conf == "":
-    print("file not found: " + file_conf)
-    sys.exit(1)
-
-#path_conf = "/srv/user/share/conf/_data/common.cfg"
-conf = py_common.common_cfg.get(path_conf)
-if flg_debug != "":
-    py_common.common_cfg.debug(conf)
+# --- get common data file ----------------------------------------------------
+conf = py_common.common_cfg.get()                       # get common configuration file
+list_dist = py_common.distribution_dat.get(conf)        # get distribution data file
+list_mdia = py_common.media_dat.get(conf, list_dist)    # get media data file
 
 # --- create from templates ---------------------------------------------------
 def create_from(dirs_tmpl, dirs_tftp):
@@ -86,5 +74,5 @@ def create_of(dirs_tmpl):
 dirs_tmpl = conf["DIRS_TMPL"]           # templates for various configuration files : '/srv/user/share/conf/_template'
 dirs_tftp = conf["DIRS_TFTP"]           # tftp contents                             : '/srv/tftp'
 
-create_of(dirs_tmpl)
-create_from(dirs_tmpl, dirs_tftp)
+#create_of(dirs_tmpl)
+#create_from(dirs_tmpl, dirs_tftp)

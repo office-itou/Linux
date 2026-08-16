@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
+import inspect
+import asyncio
+import requests
+from functools import partial
+import datetime
+import re
+import sys
+import time
+
 urls = [
     "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/netboot/mini.iso",
     "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/netboot/mini.iso",
@@ -89,14 +98,6 @@ urls = [
     "https://www.memtest.org/download/v8.10/mt86plus_8.10_x86_64.grub.iso.zip"
 ]
 
-import inspect
-import asyncio
-import requests
-from functools import partial
-from bs4 import BeautifulSoup
-import re
-import datetime
-
 def url_strip(text):
     text = re.sub(r"^\"", "", text)
     text = re.sub(r"\"$", "", text)
@@ -127,41 +128,23 @@ async def getsize(url):
         url = match_dirs + "/"
         # --- request ---------------------------------------------------------
         loop = asyncio.get_event_loop()
-        func = partial(requests.get, url, allow_redirects=True, headers=headers, timeout=(30, 30))
+        func = partial(requests.get, url, allow_redirects=True, headers=headers, timeout=(10.0, 30.0))
         response = await loop.run_in_executor(None, func)
-        if not response:
-            if not response.status_code:
-                stat_code = -1
-            else:
-                stat_code = int(response.status_code)
-            if not response.reason:
-                stat_mesg = "ABORT (GET)"
-            else:
-                stat_mesg = response.reason
-            print(f"{func_name}({url}) {stat_mesg}")
-            return f"{url},\"-\",0,{stat_code},\"{stat_mesg}\""
-        else:
-            stat_code = int(response.status_code)
-            stat_mesg = response.reason
-            # --- error detection ---------------------------------------------
-            if stat_code < 200 or stat_code > 299:
-                file_date = "-"
-                file_size = 0
-                print(f"{func_name}({url}) ERROR (GET)")
-                return f"{url},\"{file_date}\",{file_size},{stat_code},\"{stat_mesg}\""
+        stat_code = int(response.status_code)
+        stat_mesg = response.reason
+        # --- error detection -------------------------------------------------
+        if stat_code < 200 or stat_code > 299:
+            file_date = "-"
+            file_size = 0
+            print(f"{func_name}({url}) ERROR")
+            return f"{url},\"{file_date}\",{file_size},{stat_code},\"{stat_mesg}\""
         # --- pattern matching ------------------------------------------------
-        soup = BeautifulSoup(response.text, "html.parser")
+        result = re.findall(r'<a href="' + match_ptrn + r'/*"[^>]*>', response.text)
         list = []
-        for a in soup.find_all('a'):
-            href = a.get('href')
-            if not href:
-                continue
-            match = re.match(f"^{match_ptrn}", href)
-            if not match:
-                continue
-            list.append(match.group())
-        if not list:
-            continue
+        for text in result:
+            match = re.search(match_ptrn, text)
+            text = url_strip(match.group())
+            list.append(text)
         list.sort(key=version_key, reverse=True)
         url = url + list[0]
         if match_rear:
@@ -169,31 +152,18 @@ async def getsize(url):
     # === get file information ================================================
     # --- request -------------------------------------------------------------
     loop = asyncio.get_event_loop()
-    func = partial(requests.head, url, allow_redirects=True, headers=headers, timeout=(30, 30))
+    func = partial(requests.head, url, allow_redirects=True, headers=headers, timeout=(10.0, 30.0))
     response = await loop.run_in_executor(None, func)
-    if not response:
-        if not response.status_code:
-            stat_code = -1
-        else:
-            stat_code = int(response.status_code)
-        if not response.reason:
-            stat_mesg = "ABORT (HEAD)"
-        else:
-            stat_mesg = response.reason
-        print(f"{func_name}({url}) {stat_mesg}")
-        return f"{url},\"-\",0,{stat_code},\"{stat_mesg}\""
-    else:
-        stat_code = int(response.status_code)
-        stat_mesg = response.reason
+    stat_code = int(response.status_code)
+    stat_mesg = response.reason
         # --- error detection -------------------------------------------------
-        if stat_code < 200 or stat_code > 299:
-            file_date = "-"
-            file_size = 0
-            print(f"{func_name}({url}) ERROR (HEAD)")
-        else:
-            file_size = int(response.headers.get("Content-Length"))
-            file_date = datetime.datetime.strptime(response.headers.get("Last-Modified"), "%a, %d %b %Y %H:%M:%S GMT")
-            print(f"{func_name}({url}) END")
+    if stat_code < 200 or stat_code > 299:
+        file_date = "-"
+        file_size = 0
+    else:
+        file_size = int(response.headers.get("Content-Length"))
+        file_date = datetime.datetime.strptime(response.headers.get("Last-Modified"), "%a, %d %b %Y %H:%M:%S GMT")
+    print(f"{func_name}({url}) END")
     return f"{url},\"{file_date}\",{file_size},{stat_code},\"{stat_mesg}\""
 
 async def main():
@@ -201,11 +171,7 @@ async def main():
     print(f"{func_name}() START")
     tasks = [asyncio.create_task(getsize(url)) for url in urls]
     results = await asyncio.gather(*tasks)
-    print("result: ")
-    for result in results:
-        if not result:
-            continue
-        print(result)
+    print("result: ", results)
     print(f"{func_name}() END")
 
 if __name__ == "__main__":

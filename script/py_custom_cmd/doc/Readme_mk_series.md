@@ -272,6 +272,7 @@
   |    10 | note             |   27 | TEXT                          |            |                                          | -                                                                     |
   |    11 | wallpaper        |   87 | TEXT                          |            |                                          | -                                                                     |
   |    12 | create_flag      |   11 | TEXT                          |            |                                          | -                                                                     |
+  |    13 | sort_flag        |   11 | TEXT                          |            |                                          | 0                                                                     |
 
 </details>
 

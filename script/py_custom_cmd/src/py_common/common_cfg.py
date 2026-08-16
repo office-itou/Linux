@@ -1,23 +1,38 @@
+import os
+import sys
 import re
 
-def debug(conf):
-    for key in conf.keys():
-        print("conf[" + key + "]='" + conf[key] + "'")
+def debug(list):
+    print("=== debug out: " + __name__ + " ===")
+    for key in list.keys():
+        print("conf[" + key + "]='" + list[key] + "'")
 
-def get(path):
-    conf={}
+def get():
+    dirs_data = "/srv/user/share/conf/_data"    # data file                                 : '/srv/user/share/conf/_data'
+    file_conf = "common.cfg"                    # common configuration file
+    path_conf = ""                              # common configuration file
+    for dirs in [".", dirs_data]:
+        path = os.path.join(dirs, file_conf)
+        if not os.path.exists(path):
+            continue
+        path_conf = path
+        break
+    if path_conf == "":
+        print("file not found: " + file_conf)
+        sys.exit(1)
     # --- get setting items ---------------------------------------------------
-    for line in open(path, "r", encoding='utf-8'):
+    conf={}
+    for line in open(path_conf, "r", encoding='utf-8'):
         match = re.search(r"^[A-Z]", line)      # get parameter row
         if not match:
             continue
-        line  = re.sub(r"[\n|\r\n]$", "", line)  # remove lf or crlf
-        line  = re.sub(r"#.*$", "", line)        # remove comment
-        line  = re.sub(r"[ \t]+$", "", line)     # remove trailing whitespace
-        key   = re.sub(r"=.*$", "", line)        # get the key
-        value = re.sub(key + r"=", "", line)     # get the value
-        value = re.sub(r"^\"", "", value)        # remove the first double quotation mark
-        value = re.sub(r"\"$", "", value)        # remove the last double quotation mark
+        line  = re.sub(r"[\n|\r\n]$", "", line) # remove lf or crlf
+        line  = re.sub(r"#.*$", "", line)       # remove comment
+        line  = re.sub(r"[ \t]+$", "", line)    # remove trailing whitespace
+        key   = re.sub(r"=.*$", "", line)       # get the key
+        value = re.sub(key + r"=", "", line)    # get the value
+        value = re.sub(r"^\"", "", value)       # remove the first double quotation mark
+        value = re.sub(r"\"$", "", value)       # remove the last double quotation mark
         conf[key] = value
     # --- convert setting items -----------------------------------------------
     for key in conf.keys():
