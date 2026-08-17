@@ -2,6 +2,23 @@ import json
 import re
 import csv
 
+# distribution data file
+class Distribution_dat():
+    def __init__(self):
+        self.data = dict()
+    def debug(self):
+        debug(self.data)
+    def load(self, conf):
+        self.data = get(conf)
+    def save(self, conf):
+        put(conf, self.data)
+    def get(self, key):
+        return self.data.get(key, "")
+    def set(self, key, value):
+        self.data[key] = value
+    def dump(self):
+        return self.data
+
 def debug(list):
     print("=== debug out: " + __name__ + " ===")
     for line in list:

@@ -2,6 +2,28 @@ import json
 import re
 import csv
 
+from .common_cfg import conv2data
+from .common_cfg import conv2variable
+
+# media data file
+class Media_dat():
+    def __init__(self):
+        self.data = dict()
+    def debug(self):
+        debug(self.data)
+    def load(self, conf, dist):
+        self.data = get(conf, dist)
+        self.data = conv2data(conf, self.data)
+    def save(self, conf):
+        self.data = conv2variable(conf, self.data)
+        put(conf, self.data)
+    def get(self, key):
+        return self.data.get(key, "")
+    def set(self, key, value):
+        self.data[key] = value
+    def dump(self):
+        return self.data
+
 def debug(list):
     print("=== debug out: " + __name__ + " ===")
     for line in list:

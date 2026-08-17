@@ -2624,7 +2624,7 @@
         "sort_flag": "0"
     },
     {
-        "version": "memtest86plus",
+        "version": "memtest86plus-7.20",
         "name": "memtest86plus",
         "version_id": "7.20",
         "code_name": "-",
@@ -2640,9 +2640,25 @@
         "sort_flag": "0"
     },
     {
-        "version": "memtest86plus",
+        "version": "memtest86plus-8.00",
         "name": "memtest86plus",
         "version_id": "8.00",
+        "code_name": "-",
+        "life": "-",
+        "release": "2025-11-24",
+        "support": "20xx-xx-xx",
+        "long_term": "-",
+        "rhel": "-",
+        "kerne": "-",
+        "note": "-",
+        "wallpaper": "-",
+        "create_flag": "-",
+        "sort_flag": "0"
+    },
+    {
+        "version": "memtest86plus-8.10",
+        "name": "memtest86plus",
+        "version_id": "8.10",
         "code_name": "-",
         "life": "-",
         "release": "2025-11-24",

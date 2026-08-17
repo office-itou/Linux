@@ -2,6 +2,21 @@ import os
 import sys
 import re
 
+# common configuration file
+class Common_cfg():
+    def __init__(self):
+        self.conf = dict()
+    def debug(self):
+        debug(self.conf)
+    def load(self):
+        self.conf = get()
+    def get(self, key):
+        return self.conf.get(key, "")
+#   def set(self, key, value):
+#       self.conf[key] = value
+    def dump(self):
+        return self.conf
+
 def debug(list):
     print("=== debug out: " + __name__ + " ===")
     for key in list.keys():
