@@ -6,12 +6,12 @@ import tempfile
 import requests
 import shutil
 from datetime import datetime, timezone
-from zoneinfo import ZoneInfo
+#from zoneinfo import ZoneInfo
 import os
 from tqdm import tqdm
 
 url = "https://deb.debian.org/debian/dists/trixie/main/installer-amd64/current/images/netboot/mini.iso"
-url = "https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-13.6.0-amd64-netinst.iso"
+#url = "https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-13.6.0-amd64-netinst.iso"
 dirname = Path.cwd()
 filename = Path(url).name
 dst = Path(dirname, filename)
@@ -51,7 +51,7 @@ with tempfile.NamedTemporaryFile(delete=True) as tmp, tqdm(
         fsize = int(response.headers.get("Content-Length"))
         ltime = datetime.strptime(response.headers.get("Last-Modified"), '%a, %d %b %Y %H:%M:%S %Z')
         ltime = ltime.replace(tzinfo=timezone.utc)
-        nowdt = datetime.now()
+        nowdt = datetime.now(tz=timezone.utc)
         print(f"Ltime: {response.headers.get("Last-Modified")}")
         print(f"fsize: {fsize}")
         print(f"ltime: {ltime}")
