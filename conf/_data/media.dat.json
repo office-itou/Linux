@@ -4129,7 +4129,7 @@
         "entry_disp": "Memtest86+%208.10",
         "version": "memtest86plus-8.10",
         "latest": "memtest86plus-8.10",
-        "release": "2025-11-24",
+        "release": "2026-05-16",
         "support": "20xx-xx-xx",
         "web_regexp": "https://www.memtest.org/download/v8.10/mt86plus_8.10_x86_64.grub.iso.zip",
         "web_path": "-",
