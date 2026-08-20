@@ -9,6 +9,9 @@ import subprocess
 import sys
 
 import py_common
+from py_common.common_cfg       import Common_cfg
+from py_common.distribution_dat import Distribution_dat
+from py_common.media_dat        import Media_dat
 
 flag_debug=""
 
@@ -31,10 +34,10 @@ parser.add_argument("-T", "--TREE", nargs='?', type=str, default="", help="tree 
 
 args = parser.parse_args()
 
-print(args)
-print(args.debug)
-print(args.debugout)
-print(args.TREE)
+#print(args)
+#print(args.debug)
+#print(args.debugout)
+#print(args.TREE)
 
 if args.TREE != "":
     dirs_tops = args.TREE
@@ -48,20 +51,36 @@ if args.TREE != "":
 #sys.exit(0)
 
 # --- get common data file ----------------------------------------------------
-conf = py_common.common_cfg.get()                       # get common configuration file
-if flag_debug != "":
-    py_common.common_cfg.debug(conf)
+comm_conf = Common_cfg()
+dist_data = Distribution_dat()
+mdia_data = Media_dat()
 
-list_dist = py_common.distribution_dat.get(conf)        # get distribution data file
-if flag_debug != "":
-    py_common.distribution_dat.debug(list_dist)
+def initialize():
+    comm_conf.load()
+    dist_data.load(comm_conf.conf)
+    mdia_data.load(comm_conf.conf, dist_data.data)
+    return
 
-list_mdia = py_common.media_dat.get(conf, list_dist)    # get media data file
-if flag_debug != "":
-    py_common.media_dat.debug(list_mdia)
+def debug():
+    comm_conf.debug()
+    dist_data.debug()
+    mdia_data.debug()
 
-# --- put common data file ----------------------------------------------------
-py_common.distribution_dat.put(conf, list_dist)
-py_common.distribution_dat.json2text(conf)
-py_common.media_dat.put(conf, list_mdia)
-py_common.media_dat.json2text(conf, list_dist)
+def save_json():
+    dist_data.save(comm_conf.conf)
+    mdia_data.save(comm_conf.conf)
+
+def conv_text():
+    py_common.distribution_dat.json2text(comm_conf.conf)
+    py_common.media_dat.json2text(comm_conf.conf, dist_data.data)
+
+def conv_json():
+    comm_conf.load()
+    py_common.distribution_dat.text2json(comm_conf.conf)
+    py_common.media_dat.text2json(comm_conf.conf)
+
+#initialize()
+#debug()
+#save_json()
+#conv_text()
+conv_json()

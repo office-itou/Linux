@@ -1,7 +1,9 @@
 import json
+import urllib.parse
 import re
 import csv
 
+from .color import Color_code
 from .common_cfg import conv2data
 from .common_cfg import conv2variable
 
@@ -12,22 +14,28 @@ class Media_dat():
     def debug(self):
         debug(self.data)
     def load(self, conf, dist):
-        self.data = get(conf, dist)
-        self.data = conv2data(conf, self.data)
+        data = get(conf, dist)
+        data = decode(data)
+        self.data = conv2data(conf, data)
     def save(self, conf):
-        self.data = conv2variable(conf, self.data)
-        put(conf, self.data)
+        data = conv2variable(conf, self.data)
+        data = encode(data)
+        put(conf, data)
     def get(self, key):
         return self.data.get(key, "")
     def set(self, key, value):
         self.data[key] = value
-    def dump(self):
+    def exports(self):
         return self.data
+    def imports(self, data):
+        self.data = json.dump(data, ensure_ascii=False, indent=4)
 
 def debug(list):
-    print("=== debug out: " + __name__ + " ===")
+    color = Color_code()
+    print(f"{color.code['br_green']}=== debug out: {__name__} : start ==={color.code['reset']}")
     for line in list:
-        print(line)
+        print(f"{color.code['yellow']}    list_mdia='{line}'{color.code['reset']}")
+    print(f"{color.code['br_green']}=== debug out: {__name__} : complete ==={color.code['reset']}")
 
 def get(conf, list_dist):
     path_mdia = conf["PATH_MDIA"]       # media data file           : '/srv/user/share/conf/_data/media.dat'
@@ -51,6 +59,22 @@ def put(conf, list_mdia):
     path_mdia = conf["PATH_MDIA"]       # media data file           : '/srv/user/share/conf/_data/media.dat'
     with open(path_mdia + ".json", "w", encoding="utf-8") as f:
         json.dump(list_mdia, f, ensure_ascii=False, indent=4)
+
+def encode(list):
+    for line in list:
+        for key, value in line.items():
+            if isinstance(value, str):
+                line[key] = value.replace(' ', '%20')
+#               line[key] = urllib.parse.quote(value, safe='')
+    return list
+
+def decode(list):
+    for line in list:
+        for key, value in line.items():
+            if isinstance(value, str):
+                line[key] = value.replace('%20', ' ')
+#               line[key] = urllib.parse.unquote(value)
+    return list
 
 def text2json(conf):
     path_mdia = conf["PATH_MDIA"]       # media data file           : '/srv/user/share/conf/_data/media.dat'

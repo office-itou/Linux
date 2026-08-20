@@ -2,6 +2,8 @@ import os
 import sys
 import re
 
+from .color import Color_code
+
 # common configuration file
 class Common_cfg():
     def __init__(self):
@@ -10,17 +12,24 @@ class Common_cfg():
         debug(self.conf)
     def load(self):
         self.conf = get()
+#   def save(self):
+#       put(self.data)
     def get(self, key):
         return self.conf.get(key, "")
 #   def set(self, key, value):
 #       self.conf[key] = value
-    def dump(self):
-        return self.conf
+    def exports(self):
+        return self.data
+#   def imports(self, data):
+#       self.data = json.dump(data, ensure_ascii=False, indent=4)
 
 def debug(list):
-    print("=== debug out: " + __name__ + " ===")
+    color = Color_code()
+    print(f"{color.code['br_green']}=== debug out: {__name__} : start ==={color.code['reset']}")
     for key in list.keys():
-        print("conf[" + key + "]='" + list[key] + "'")
+        value = list[key]
+        print(f"{color.code['yellow']}    conf[{key}]='{value}'{color.code['reset']}")
+    print(f"{color.code['br_green']}=== debug out: {__name__} : complete ==={color.code['reset']}")
 
 def get():
     dirs_data = "/srv/user/share/conf/_data"    # data file                                 : '/srv/user/share/conf/_data'
@@ -36,7 +45,7 @@ def get():
         print("file not found: " + file_conf)
         sys.exit(1)
     # --- get setting items ---------------------------------------------------
-    conf={}
+    conf=dict()
     for line in open(path_conf, "r", encoding='utf-8'):
         match = re.search(r"^[A-Z]", line)      # get parameter row
         if not match:

@@ -1,6 +1,9 @@
 import json
+import urllib.parse
 import re
 import csv
+
+from .color import Color_code
 
 # distribution data file
 class Distribution_dat():
@@ -9,20 +12,26 @@ class Distribution_dat():
     def debug(self):
         debug(self.data)
     def load(self, conf):
-        self.data = get(conf)
+        data = get(conf)
+        self.data = decode(data)
     def save(self, conf):
-        put(conf, self.data)
+        data = encode(self.data)
+        put(conf, data)
     def get(self, key):
         return self.data.get(key, "")
     def set(self, key, value):
         self.data[key] = value
-    def dump(self):
+    def exports(self):
         return self.data
+    def imports(self, data):
+        self.data = json.dump(data, ensure_ascii=False, indent=4)
 
 def debug(list):
-    print("=== debug out: " + __name__ + " ===")
+    color = Color_code()
+    print(f"{color.code['br_green']}=== debug out: {__name__} : start ==={color.code['reset']}")
     for line in list:
-        print(line)
+        print(f"{color.code['yellow']}    list_dist='{line}'{color.code['reset']}")
+    print(f"{color.code['br_green']}=== debug out: {__name__} : complete ==={color.code['reset']}")
 
 def get(conf):
     path_dist = conf["PATH_DIST"]       # distribution data file    : '/srv/user/share/conf/_data/distribution.dat'
@@ -36,6 +45,22 @@ def put(conf, list_dist):
     path_dist = conf["PATH_DIST"]       # distribution data file    : '/srv/user/share/conf/_data/distribution.dat'
     with open(path_dist + ".json", "w", encoding="utf-8") as f:
         json.dump(list_dist, f, ensure_ascii=False, indent=4)
+
+def encode(list):
+    for line in list:
+        for key, value in line.items():
+            if isinstance(value, str):
+                line[key] = value.replace(' ', '%20')
+#               line[key] = urllib.parse.quote(value, safe='')
+    return list
+
+def decode(list):
+    for line in list:
+        for key, value in line.items():
+            if isinstance(value, str):
+                line[key] = value.replace('%20', ' ')
+#               line[key] = urllib.parse.unquote(value)
+    return list
 
 def text2json(conf):
     path_dist = conf["PATH_DIST"]       # distribution data file    : '/srv/user/share/conf/_data/distribution.dat'

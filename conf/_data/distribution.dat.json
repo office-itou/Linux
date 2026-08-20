@@ -2561,7 +2561,7 @@
     },
     {
         "version": "windows-10-22h2",
-        "name": "windows",
+        "name": "Windows",
         "version_id": "10.0-22h2",
         "code_name": "-",
         "life": "ESU",
@@ -2577,7 +2577,7 @@
     },
     {
         "version": "windows-11-24h2",
-        "name": "windows",
+        "name": "Windows",
         "version_id": "11.0-24h2",
         "code_name": "-",
         "life": "-",
@@ -2593,7 +2593,7 @@
     },
     {
         "version": "windows-11-25h2",
-        "name": "windows",
+        "name": "Windows",
         "version_id": "11.0-25h2",
         "code_name": "-",
         "life": "-",
@@ -2609,12 +2609,12 @@
     },
     {
         "version": "windows-11-26h2",
-        "name": "windows",
+        "name": "Windows",
         "version_id": "11.0-26h2",
         "code_name": "-",
         "life": "-",
-        "release": "2025-09-30",
-        "support": "2027-10-12",
+        "release": "2026-xx-xx",
+        "support": "202x-xx-xx",
         "long_term": "-",
         "rhel": "-",
         "kerne": "-",
@@ -2625,7 +2625,7 @@
     },
     {
         "version": "memtest86plus-7.20",
-        "name": "memtest86plus",
+        "name": "Memtest86+",
         "version_id": "7.20",
         "code_name": "-",
         "life": "EOL",
@@ -2641,7 +2641,7 @@
     },
     {
         "version": "memtest86plus-8.00",
-        "name": "memtest86plus",
+        "name": "Memtest86+",
         "version_id": "8.00",
         "code_name": "-",
         "life": "-",
@@ -2657,7 +2657,7 @@
     },
     {
         "version": "memtest86plus-8.10",
-        "name": "memtest86plus",
+        "name": "Memtest86+",
         "version_id": "8.10",
         "code_name": "-",
         "life": "-",
@@ -2673,7 +2673,7 @@
     },
     {
         "version": "winpe-x86",
-        "name": "winpe-x86",
+        "name": "WinPE",
         "version_id": "x86",
         "code_name": "-",
         "life": "-",
@@ -2689,7 +2689,7 @@
     },
     {
         "version": "winpe-x64",
-        "name": "winpe-x64",
+        "name": "WinPE",
         "version_id": "x64",
         "code_name": "-",
         "life": "-",
@@ -2705,7 +2705,7 @@
     },
     {
         "version": "ati2020x86",
-        "name": "ati2020x86",
+        "name": "ATI2020",
         "version_id": "2020x86",
         "code_name": "-",
         "life": "-",
@@ -2721,7 +2721,7 @@
     },
     {
         "version": "ati2020x64",
-        "name": "ati2020x64",
+        "name": "ATI2020",
         "version_id": "2020x64",
         "code_name": "-",
         "life": "-",
