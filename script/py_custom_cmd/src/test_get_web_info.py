@@ -1,15 +1,6 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
-import inspect
-import asyncio
-import requests
-from functools import partial
-import datetime
-import re
-import sys
-import time
-
 urls = [
     "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/netboot/mini.iso",
     "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/netboot/mini.iso",
@@ -98,82 +89,65 @@ urls = [
     "https://www.memtest.org/download/v8.10/mt86plus_8.10_x86_64.grub.iso.zip"
 ]
 
-def url_strip(text):
-    text = re.sub(r"^\"", "", text)
-    text = re.sub(r"\"$", "", text)
-    text = re.sub(r"^/", "", text)
-    text = re.sub(r"/$", "", text)
-    return(text)
+import asyncio
 
-def version_key(v):
-    v = re.sub(r"^[^0-9]*([0-9.]+).*$", r"\1", v)
-    return [int(x) for x in v.split(".")]
+from py_common.web import get_header, get_text, get_info
 
-headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-    "Connection": "close",
-}
+async def sub_get_info(urls):
+    list = []
+    tasks = [get_info(url) for url in urls]
+    wis = await asyncio.gather(*tasks)
+    for wi in wis:
+        if False:
+            print(f"url     : [{wi.get('url')}]")
+            print(f"urldir  : [{wi.get('urldir')}]")
+            print(f"status  : [{wi.get('status')}]")
+            print(f"message : [{wi.get('message')}]")
+            print(f"path    : [{wi.get('path')}]")
+            print(f"dirname : [{wi.get('dirname')}]")
+            print(f"filename: [{wi.get('filename')}]")
+            print(f"size    : [{wi.get('size')}]")
+            print(f"date    : [{wi.get('date')}]")
+        list.append(wi.get('url'))
+    return list
 
-async def getsize(url):
-    func_name = inspect.currentframe().f_code.co_name
-    print(f"{func_name}({url}) START")
-    while True:
-        match = re.search(r"[^/ \t]*\[[^/ \t]+\][^/ \t]*", url)
-        if not match:
-            break
-        # === get directory and file name =====================================
-        match_dirs = url_strip(url[0:match.start()])
-        match_ptrn = url_strip(match.group())
-        match_rear = url_strip(url[match.end():])
-        url = match_dirs + "/"
-        # --- request ---------------------------------------------------------
-        loop = asyncio.get_event_loop()
-        func = partial(requests.get, url, allow_redirects=True, headers=headers, timeout=(10.0, 30.0))
-        response = await loop.run_in_executor(None, func)
-        stat_code = int(response.status_code)
-        stat_mesg = response.reason
-        # --- error detection -------------------------------------------------
-        if stat_code < 200 or stat_code > 299:
-            file_date = "-"
-            file_size = 0
-            print(f"{func_name}({url}) ERROR")
-            return f"{url},\"{file_date}\",{file_size},{stat_code},\"{stat_mesg}\""
-        # --- pattern matching ------------------------------------------------
-        result = re.findall(r'<a href="' + match_ptrn + r'/*"[^>]*>', response.text)
-        list = []
-        for text in result:
-            match = re.search(match_ptrn, text)
-            text = url_strip(match.group())
-            list.append(text)
-        list.sort(key=version_key, reverse=True)
-        url = url + list[0]
-        if match_rear:
-            url = url + "/" + match_rear
-    # === get file information ================================================
-    # --- request -------------------------------------------------------------
-    loop = asyncio.get_event_loop()
-    func = partial(requests.head, url, allow_redirects=True, headers=headers, timeout=(10.0, 30.0))
-    response = await loop.run_in_executor(None, func)
-    stat_code = int(response.status_code)
-    stat_mesg = response.reason
-        # --- error detection -------------------------------------------------
-    if stat_code < 200 or stat_code > 299:
-        file_date = "-"
-        file_size = 0
-    else:
-        file_size = int(response.headers.get("Content-Length"))
-        file_date = datetime.datetime.strptime(response.headers.get("Last-Modified"), "%a, %d %b %Y %H:%M:%S GMT")
-    print(f"{func_name}({url}) END")
-    return f"{url},\"{file_date}\",{file_size},{stat_code},\"{stat_mesg}\""
+async def sub_get_header(urls):
+    tasks = [get_header(url) for url in urls]
+    wis = await asyncio.gather(*tasks)
+    for wi in wis:
+        if True:
+            print(f"url     : [{wi.get('url')}]")
+            print(f"urldir  : [{wi.get('urldir')}]")
+            print(f"status  : [{wi.get('status')}]")
+            print(f"message : [{wi.get('message')}]")
+            print(f"path    : [{wi.get('path')}]")
+            print(f"dirname : [{wi.get('dirname')}]")
+            print(f"filename: [{wi.get('filename')}]")
+            print(f"size    : [{wi.get('size')}]")
+            print(f"date    : [{wi.get('date')}]")
+            print(f"text    : [{wi.get('text'):120}]")
 
+async def sub_get_text(urls):
+    tasks = [get_text(url) for url in urls]
+    wis = await asyncio.gather(*tasks)
+    for wi in wis:
+        if True:
+            print(f"url     : [{wi.get('url')}]")
+            print(f"urldir  : [{wi.get('urldir')}]")
+            print(f"status  : [{wi.get('status')}]")
+            print(f"message : [{wi.get('message')}]")
+            print(f"path    : [{wi.get('path')}]")
+            print(f"dirname : [{wi.get('dirname')}]")
+            print(f"filename: [{wi.get('filename')}]")
+            print(f"size    : [{wi.get('size')}]")
+            print(f"date    : [{wi.get('date')}]")
+            print(f"text    : [{wi.get('text'):120}]")
+
+# -----------------------------------------------------------------------------
 async def main():
-    func_name = inspect.currentframe().f_code.co_name
-    print(f"{func_name}() START")
-    tasks = [asyncio.create_task(getsize(url)) for url in urls]
-    results = await asyncio.gather(*tasks)
-    print("result: ", results)
-    print(f"{func_name}() END")
+    list = await sub_get_info(urls)
+    await sub_get_header(list)
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    asyncio.run(main())
+

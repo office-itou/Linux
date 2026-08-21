@@ -89,125 +89,137 @@ urls = [
     "https://www.memtest.org/download/v8.10/mt86plus_8.10_x86_64.grub.iso.zip"
 ]
 
-import inspect
+urls = [
+    "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/netboot/mini.iso",
+    "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/netboot/mini.iso",
+    "https://deb.debian.org/debian/dists/trixie/main/installer-amd64/current/images/netboot/mini.iso",
+    "https://deb.debian.org/debian/dists/forky/main/installer-amd64/current/images/netboot/mini.iso",
+    "https://deb.debian.org/debian/dists/duke/main/installer-amd64/current/images/netboot/mini.iso",
+    "https://deb.debian.org/debian/dists/testing/main/installer-amd64/current/images/netboot/mini.iso",
+    "https://d-i.debian.org/daily-images/amd64/daily/netboot/mini.iso"
+]
+
+urls = [
+    "https://cdimage.debian.org/cdimage/archive/11.[0-9.]*/amd64/iso-cd/debian-11.[0-9.]*-amd64-netinst.iso",
+    "https://cdimage.debian.org/cdimage/archive/12.[0-9.]*/amd64/iso-cd/debian-12.[0-9.]*-amd64-netinst.iso",
+    "https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-13.[0-9.]*-amd64-netinst.iso",
+    "https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso"
+]
+
+urls = [
+    "https:/cdimage.debian.org/cdimage/archive/11.11.0/amd64/iso-cd/debian-11.11.0-amd64-netinst.iso",
+    "https:/cdimage.debian.org/cdimage/archive/12.15.0/amd64/iso-cd/debian-12.15.0-amd64-netinst.iso",
+    "https:/cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-13.6.0-amd64-netinst.iso",
+    "https:/cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso"
+]
+
 import asyncio
-import requests
-from functools import partial
-from bs4 import BeautifulSoup
-import re
-import datetime
+import functools
+from pathlib import Path
+import sys
 
-def url_strip(text):
-    text = re.sub(r"^\"", "", text)
-    text = re.sub(r"\"$", "", text)
-    text = re.sub(r"^/", "", text)
-    text = re.sub(r"/$", "", text)
-    return(text)
+from py_common import web
+from py_common.color import Color_code
+from py_common.web import webinfo, get_header, get_text, get_info, download
 
-def version_key(v):
-    v = re.sub(r"^[^0-9]*([0-9.]+).*$", r"\1", v)
-    return [int(x) for x in v.split(".")]
+async def main2():
+#    tasks = [web.get_info(url) for url in urls]
+#    wis = await asyncio.gather(*tasks)
+#    list = []
+#    for wi in wis:
+#        list.append(Path(wi.get('dirname'), wi.get('filename')))
+#   urls = list
+#   print(list)
+#   sys.exit(0)
+    tasks = [web.download(url) for url in urls]
+    wis = await asyncio.gather(*tasks)
+    for wi in wis:
+        fmat_url      = f"{wi.get('url'):<124}"
+        fmat_status   = f"{wi.get('status'):>4}"
+        fmat_message  = f"{wi.get('message'):<20}"
+        fmat_dirname  = str(wi.get('dirname'))
+        fmat_dirname  = f"{fmat_dirname:<108}"
+        fmat_filename = f"{wi.get('filename'):<48}"
+        fmat_size     = f"{wi.get('size'):>12}"
+        fmat_date     = ""
+        if wi.get('date'):
+            fmat_date     = wi.get('date').strftime('%Y/%m/%d %H:%M:%S %Z')
+        fmat_date     = f"{fmat_date:<26}"
+        fmat = f"{fmat_url} {fmat_status} {fmat_message} {fmat_dirname} {fmat_filename} {fmat_size} {fmat_date}"
+        print(fmat)
 
-headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-    "Connection": "close",
-}
+#if __name__ == "__main__":
+#    asyncio.run(main())
 
-async def getsize(url):
-    func_name = inspect.currentframe().f_code.co_name
-    print(f"{func_name}({url}) START")
-    while True:
-        match = re.search(r"[^/ \t]*\[[^/ \t]+\][^/ \t]*", url)
-        if not match:
-            break
-        # === get directory and file name =====================================
-        match_dirs = url_strip(url[0:match.start()])
-        match_ptrn = url_strip(match.group())
-        match_rear = url_strip(url[match.end():])
-        url = match_dirs + "/"
-        # --- request ---------------------------------------------------------
-        loop = asyncio.get_event_loop()
-        func = partial(requests.get, url, allow_redirects=True, headers=headers, timeout=(30, 30))
-        response = await loop.run_in_executor(None, func)
-        if not response:
-            if not response.status_code:
-                stat_code = -1
-            else:
-                stat_code = int(response.status_code)
-            if not response.reason:
-                stat_mesg = "ABORT (GET)"
-            else:
-                stat_mesg = response.reason
-            print(f"{func_name}({url}) {stat_mesg}")
-            return f"{url},\"-\",0,{stat_code},\"{stat_mesg}\""
-        else:
-            stat_code = int(response.status_code)
-            stat_mesg = response.reason
-            # --- error detection ---------------------------------------------
-            if stat_code < 200 or stat_code > 299:
-                file_date = "-"
-                file_size = 0
-                print(f"{func_name}({url}) ERROR (GET)")
-                return f"{url},\"{file_date}\",{file_size},{stat_code},\"{stat_mesg}\""
-        # --- pattern matching ------------------------------------------------
-        soup = BeautifulSoup(response.text, "html.parser")
-        list = []
-        for a in soup.find_all('a'):
-            href = a.get('href')
-            if not href:
-                continue
-            match = re.match(f"^{match_ptrn}", href)
-            if not match:
-                continue
-            list.append(match.group())
-        if not list:
-            continue
-        list.sort(key=version_key, reverse=True)
-        url = url + list[0]
-        if match_rear:
-            url = url + "/" + match_rear
-    # === get file information ================================================
-    # --- request -------------------------------------------------------------
-    loop = asyncio.get_event_loop()
-    func = partial(requests.head, url, allow_redirects=True, headers=headers, timeout=(30, 30))
-    response = await loop.run_in_executor(None, func)
-    if not response:
-        if not response.status_code:
-            stat_code = -1
-        else:
-            stat_code = int(response.status_code)
-        if not response.reason:
-            stat_mesg = "ABORT (HEAD)"
-        else:
-            stat_mesg = response.reason
-        print(f"{func_name}({url}) {stat_mesg}")
-        return f"{url},\"-\",0,{stat_code},\"{stat_mesg}\""
-    else:
-        stat_code = int(response.status_code)
-        stat_mesg = response.reason
-        # --- error detection -------------------------------------------------
-        if stat_code < 200 or stat_code > 299:
-            file_date = "-"
-            file_size = 0
-            print(f"{func_name}({url}) ERROR (HEAD)")
-        else:
-            file_size = int(response.headers.get("Content-Length"))
-            file_date = datetime.datetime.strptime(response.headers.get("Last-Modified"), "%a, %d %b %Y %H:%M:%S GMT")
-            print(f"{func_name}({url}) END")
-    return f"{url},\"{file_date}\",{file_size},{stat_code},\"{stat_mesg}\""
+color = Color_code()
 
-async def main():
-    func_name = inspect.currentframe().f_code.co_name
-    print(f"{func_name}() START")
-    tasks = [asyncio.create_task(getsize(url)) for url in urls]
-    results = await asyncio.gather(*tasks)
-    print("result: ")
-    for result in results:
-        if not result:
-            continue
-        print(result)
-    print(f"{func_name}() END")
+async def sub0(urls):
+    tasks = [get_header(url) for url in urls]
+    wis = await asyncio.gather(*tasks)
+    for wi in wis:
+        fmat_url      = f"{wi.get('url'):<124}"
+        fmat_status   = f"{wi.get('status'):>4}"
+        fmat_message  = f"{wi.get('message'):<20}"
+        fmat_dirname  = str(wi.get('dirname'))
+        fmat_dirname  = f"{fmat_dirname:<108}"
+        fmat_filename = f"{wi.get('filename'):<48}"
+        fmat_size     = f"{wi.get('size'):>12}"
+        fmat_date     = ""
+        if wi.get('date'):
+            fmat_date     = wi.get('date').strftime('%Y/%m/%d %H:%M:%S %Z')
+        fmat_date     = f"{fmat_date:<26}"
+        fmat = f"{color.code['blue']}{fmat_url} {fmat_status} {fmat_message} {fmat_dirname} {fmat_filename} {fmat_size} {fmat_date}{color.code['reset']}"
+        print(fmat)
+    return(wis)
 
-if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+def sub1(urls):
+    tasks = [get_info(url) for url in urls]
+    wis = asyncio.gather(*tasks)
+    for wi in wis:
+        fmat_url      = f"{wi.get('url'):<124}"
+        fmat_status   = f"{wi.get('status'):>4}"
+        fmat_message  = f"{wi.get('message'):<20}"
+        fmat_dirname  = str(wi.get('dirname'))
+        fmat_dirname  = f"{fmat_dirname:<108}"
+        fmat_filename = f"{wi.get('filename'):<48}"
+        fmat_size     = f"{wi.get('size'):>12}"
+        fmat_date     = ""
+        if wi.get('date'):
+            fmat_date     = wi.get('date').strftime('%Y/%m/%d %H:%M:%S %Z')
+        fmat_date     = f"{fmat_date:<26}"
+        fmat = f"{color.code['blue']}{fmat_url} {fmat_status} {fmat_message} {fmat_dirname} {fmat_filename} {fmat_size} {fmat_date}{color.code['reset']}"
+        print(fmat)
+    return(wis)
+
+def sub2(urls):
+    tasks = [download(url) for url in urls]
+    wis = asyncio.gather(*tasks)
+    for wi in wis:
+        fmat_url      = f"{wi.get('url'):<124}"
+        fmat_status   = f"{wi.get('status'):>4}"
+        fmat_message  = f"{wi.get('message'):<20}"
+        fmat_dirname  = str(wi.get('dirname'))
+        fmat_dirname  = f"{fmat_dirname:<108}"
+        fmat_filename = f"{wi.get('filename'):<48}"
+        fmat_size     = f"{wi.get('size'):>12}"
+        fmat_date     = ""
+        if wi.get('date'):
+            fmat_date     = wi.get('date').strftime('%Y/%m/%d %H:%M:%S %Z')
+        fmat_date     = f"{fmat_date:<26}"
+        fmat = f"{color.code['cyan']}{fmat_url} {fmat_status} {fmat_message} {fmat_dirname} {fmat_filename} {fmat_size} {fmat_date}{color.code['reset']}"
+        print(fmat)
+    return(wis)
+
+async def main3():
+    loop = asyncio.get_running_loop()
+    func = functools.partial(sub1, urls)
+    result = await loop.run_in_executor(None, func)
+    print(result)
+#   wi = await sub1(urls)
+#   wi = sub2(urls)
+
+def main():
+    sub1(urls)
+
+#if __name__ == "__main__":
+#    asyncio.run(main())
