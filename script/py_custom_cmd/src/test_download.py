@@ -90,136 +90,85 @@ urls = [
 ]
 
 urls = [
-    "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/netboot/mini.iso",
-    "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/netboot/mini.iso",
-    "https://deb.debian.org/debian/dists/trixie/main/installer-amd64/current/images/netboot/mini.iso",
-    "https://deb.debian.org/debian/dists/forky/main/installer-amd64/current/images/netboot/mini.iso",
-    "https://deb.debian.org/debian/dists/duke/main/installer-amd64/current/images/netboot/mini.iso",
-    "https://deb.debian.org/debian/dists/testing/main/installer-amd64/current/images/netboot/mini.iso",
-    "https://d-i.debian.org/daily-images/amd64/daily/netboot/mini.iso"
-]
-
-urls = [
-    "https://cdimage.debian.org/cdimage/archive/11.[0-9.]*/amd64/iso-cd/debian-11.[0-9.]*-amd64-netinst.iso",
-    "https://cdimage.debian.org/cdimage/archive/12.[0-9.]*/amd64/iso-cd/debian-12.[0-9.]*-amd64-netinst.iso",
-    "https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-13.[0-9.]*-amd64-netinst.iso",
-    "https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso"
-]
-
-urls = [
-    "https:/cdimage.debian.org/cdimage/archive/11.11.0/amd64/iso-cd/debian-11.11.0-amd64-netinst.iso",
-    "https:/cdimage.debian.org/cdimage/archive/12.15.0/amd64/iso-cd/debian-12.15.0-amd64-netinst.iso",
-    "https:/cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-13.6.0-amd64-netinst.iso",
-    "https:/cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso"
+    "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/netboot/mini.iso"
 ]
 
 import asyncio
-import functools
-from pathlib import Path
-import sys
 
-from py_common import web
-from py_common.color import Color_code
-from py_common.web import webinfo, get_header, get_text, get_info, download
+from py_common.web import get_header, get_text, get_info, download
 
-async def main2():
-#    tasks = [web.get_info(url) for url in urls]
-#    wis = await asyncio.gather(*tasks)
-#    list = []
-#    for wi in wis:
-#        list.append(Path(wi.get('dirname'), wi.get('filename')))
-#   urls = list
-#   print(list)
-#   sys.exit(0)
-    tasks = [web.download(url) for url in urls]
+async def sub_get_info(urls):
+    list = []
+    tasks = [get_info(url) for url in urls]
     wis = await asyncio.gather(*tasks)
     for wi in wis:
-        fmat_url      = f"{wi.get('url'):<124}"
-        fmat_status   = f"{wi.get('status'):>4}"
-        fmat_message  = f"{wi.get('message'):<20}"
-        fmat_dirname  = str(wi.get('dirname'))
-        fmat_dirname  = f"{fmat_dirname:<108}"
-        fmat_filename = f"{wi.get('filename'):<48}"
-        fmat_size     = f"{wi.get('size'):>12}"
-        fmat_date     = ""
-        if wi.get('date'):
-            fmat_date     = wi.get('date').strftime('%Y/%m/%d %H:%M:%S %Z')
-        fmat_date     = f"{fmat_date:<26}"
-        fmat = f"{fmat_url} {fmat_status} {fmat_message} {fmat_dirname} {fmat_filename} {fmat_size} {fmat_date}"
-        print(fmat)
+        if False:
+            print(f"url     : [{wi.get('url')}]")
+            print(f"urldir  : [{wi.get('urldir')}]")
+            print(f"status  : [{wi.get('status')}]")
+            print(f"message : [{wi.get('message')}]")
+            print(f"path    : [{wi.get('path')}]")
+            print(f"dirname : [{wi.get('dirname')}]")
+            print(f"filename: [{wi.get('filename')}]")
+            print(f"size    : [{wi.get('size')}]")
+            print(f"date    : [{wi.get('date')}]")
+        list.append(wi.get('url'))
+    return list
 
-#if __name__ == "__main__":
-#    asyncio.run(main())
-
-color = Color_code()
-
-async def sub0(urls):
+async def sub_get_header(urls):
     tasks = [get_header(url) for url in urls]
     wis = await asyncio.gather(*tasks)
     for wi in wis:
-        fmat_url      = f"{wi.get('url'):<124}"
-        fmat_status   = f"{wi.get('status'):>4}"
-        fmat_message  = f"{wi.get('message'):<20}"
-        fmat_dirname  = str(wi.get('dirname'))
-        fmat_dirname  = f"{fmat_dirname:<108}"
-        fmat_filename = f"{wi.get('filename'):<48}"
-        fmat_size     = f"{wi.get('size'):>12}"
-        fmat_date     = ""
-        if wi.get('date'):
-            fmat_date     = wi.get('date').strftime('%Y/%m/%d %H:%M:%S %Z')
-        fmat_date     = f"{fmat_date:<26}"
-        fmat = f"{color.code['blue']}{fmat_url} {fmat_status} {fmat_message} {fmat_dirname} {fmat_filename} {fmat_size} {fmat_date}{color.code['reset']}"
-        print(fmat)
-    return(wis)
+        if False:
+            print(f"url     : [{wi.get('url')}]")
+            print(f"urldir  : [{wi.get('urldir')}]")
+            print(f"status  : [{wi.get('status')}]")
+            print(f"message : [{wi.get('message')}]")
+            print(f"path    : [{wi.get('path')}]")
+            print(f"dirname : [{wi.get('dirname')}]")
+            print(f"filename: [{wi.get('filename')}]")
+            print(f"size    : [{wi.get('size')}]")
+            print(f"date    : [{wi.get('date')}]")
+            print(f"text    : [{wi.get('text'):80}]")
 
-def sub1(urls):
-    tasks = [get_info(url) for url in urls]
-    wis = asyncio.gather(*tasks)
+async def sub_get_text(urls):
+    tasks = [get_text(url) for url in urls]
+    wis = await asyncio.gather(*tasks)
     for wi in wis:
-        fmat_url      = f"{wi.get('url'):<124}"
-        fmat_status   = f"{wi.get('status'):>4}"
-        fmat_message  = f"{wi.get('message'):<20}"
-        fmat_dirname  = str(wi.get('dirname'))
-        fmat_dirname  = f"{fmat_dirname:<108}"
-        fmat_filename = f"{wi.get('filename'):<48}"
-        fmat_size     = f"{wi.get('size'):>12}"
-        fmat_date     = ""
-        if wi.get('date'):
-            fmat_date     = wi.get('date').strftime('%Y/%m/%d %H:%M:%S %Z')
-        fmat_date     = f"{fmat_date:<26}"
-        fmat = f"{color.code['blue']}{fmat_url} {fmat_status} {fmat_message} {fmat_dirname} {fmat_filename} {fmat_size} {fmat_date}{color.code['reset']}"
-        print(fmat)
-    return(wis)
+        if True:
+            print(f"url     : [{wi.get('url')}]")
+            print(f"urldir  : [{wi.get('urldir')}]")
+            print(f"status  : [{wi.get('status')}]")
+            print(f"message : [{wi.get('message')}]")
+            print(f"path    : [{wi.get('path')}]")
+            print(f"dirname : [{wi.get('dirname')}]")
+            print(f"filename: [{wi.get('filename')}]")
+            print(f"size    : [{wi.get('size')}]")
+            print(f"date    : [{wi.get('date')}]")
+            print(f"text    : [{wi.get('text'):80}]")
 
-def sub2(urls):
+async def sub_download(urls):
+    list = []
     tasks = [download(url) for url in urls]
-    wis = asyncio.gather(*tasks)
+    wis = await asyncio.gather(*tasks)
     for wi in wis:
-        fmat_url      = f"{wi.get('url'):<124}"
-        fmat_status   = f"{wi.get('status'):>4}"
-        fmat_message  = f"{wi.get('message'):<20}"
-        fmat_dirname  = str(wi.get('dirname'))
-        fmat_dirname  = f"{fmat_dirname:<108}"
-        fmat_filename = f"{wi.get('filename'):<48}"
-        fmat_size     = f"{wi.get('size'):>12}"
-        fmat_date     = ""
-        if wi.get('date'):
-            fmat_date     = wi.get('date').strftime('%Y/%m/%d %H:%M:%S %Z')
-        fmat_date     = f"{fmat_date:<26}"
-        fmat = f"{color.code['cyan']}{fmat_url} {fmat_status} {fmat_message} {fmat_dirname} {fmat_filename} {fmat_size} {fmat_date}{color.code['reset']}"
-        print(fmat)
-    return(wis)
+        if True:
+            print(f"url     : [{wi.get('url')}]")
+            print(f"urldir  : [{wi.get('urldir')}]")
+            print(f"status  : [{wi.get('status')}]")
+            print(f"message : [{wi.get('message')}]")
+            print(f"path    : [{wi.get('path')}]")
+            print(f"dirname : [{wi.get('dirname')}]")
+            print(f"filename: [{wi.get('filename')}]")
+            print(f"size    : [{wi.get('size')}]")
+            print(f"date    : [{wi.get('date')}]")
+        list.append(wi.get('url'))
+    return list
 
-async def main3():
-    loop = asyncio.get_running_loop()
-    func = functools.partial(sub1, urls)
-    result = await loop.run_in_executor(None, func)
-    print(result)
-#   wi = await sub1(urls)
-#   wi = sub2(urls)
+# -----------------------------------------------------------------------------
+async def main():
+    list = await sub_get_info(urls)
+    await sub_download(list)
 
-def main():
-    sub1(urls)
-
-#if __name__ == "__main__":
-#    asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())

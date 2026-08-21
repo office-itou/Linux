@@ -125,7 +125,7 @@ async def sub_get_header(urls):
             print(f"filename: [{wi.get('filename')}]")
             print(f"size    : [{wi.get('size')}]")
             print(f"date    : [{wi.get('date')}]")
-            print(f"text    : [{wi.get('text'):120}]")
+            print(f"text    : [{wi.get('text'):80}]")
 
 async def sub_get_text(urls):
     tasks = [get_text(url) for url in urls]
@@ -141,7 +141,7 @@ async def sub_get_text(urls):
             print(f"filename: [{wi.get('filename')}]")
             print(f"size    : [{wi.get('size')}]")
             print(f"date    : [{wi.get('date')}]")
-            print(f"text    : [{wi.get('text'):120}]")
+            print(f"text    : [{wi.get('text'):80}]")
 
 # -----------------------------------------------------------------------------
 async def main():
@@ -150,4 +150,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-

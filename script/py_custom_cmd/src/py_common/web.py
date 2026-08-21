@@ -66,8 +66,8 @@ async def set_webinfo(wi, url, path, response):
         wi.set("size"    , int(response.headers.get("Content-Length")))
     if response.headers.get("Last-Modified"):
         wi.set("date"    , datetime.strftime(datetime.strptime(response.headers.get("Last-Modified"), '%a, %d %b %Y %H:%M:%S %Z').replace(tzinfo=timezone.utc), "%Y/%m/%d %H:%M:%S %Z"))
-    if hasattr(response, 'text'):
-        wi.set("text"    , await response.text())
+#   if hasattr(response, 'text'):
+#       wi.set("text"    , await response.text())
     return wi
 
 # -----------------------------------------------------------------------------
@@ -112,6 +112,8 @@ async def get_text(url, *args):
                 async with session.get(url, allow_redirects=True) as response:
                     wi = await set_webinfo(wi, url, path, response)
                     response.raise_for_status() 
+                    if hasattr(response, 'text'):
+                        wi.set("text"    , await response.text())
                     break
         except:
             print(f"{color.code['yellow']}retry({r}): {url}{color.code['reset']}")
@@ -162,66 +164,38 @@ async def get_info(url):
     print(f"{func_name}({url}) END")
     return await get_header(url)
 
+# -----------------------------------------------------------------------------
 async def download(url, *args):
     func_name = inspect.currentframe().f_code.co_name
     print(f"{func_name}({url}) START")
+    # -------------------------------------------------------------------------
     wi = webinfo()
-    wi.set("url", url)
-    wi.set("dirname", Path(url).parent)
-    wi.set("filename", Path(url).name)
-    path = Path(Path.cwd(), Path(url).name)
-    if args:
-        path = Path(args[0], Path(url).name)
-    wi.set("path", path)
-    print(f"url: {url}")
-    print(f"path: {path}")
+    path = get_url2path(url, *args)
+    # -------------------------------------------------------------------------
     timeout = ClientTimeout(total=60, sock_connect=10, sock_read=30)
-    for r in range(3):
-        try:
-            async with aiohttp.ClientSession(raise_for_status=False, timeout=timeout) as session:
-                async with session.get(url, allow_redirects=True) as response:
-                    print(f"status: {response.status}")
-                    print(f"reason: {response.reason}")
-                    wi.set("status", response.status)
-                    wi.set("message", response.reason)
-                    response.raise_for_status() 
-                    if response.status == 200:
-                        async with tempfile.NamedTemporaryFile(delete=True) as tmp, tqdm(
-                            desc=Path(path).name,
-                            total=int(response.headers.get("content-length", 0)),
-                            unit="iB",
-                            unit_scale=True,
-                            unit_divisor=1024,
-                            leave=True,
-                            colour='CYAN',
-                            bar_format='{l_bar}{bar:a}{r_bar}',
-                            dynamic_ncols=False
-                        ) as bar:
-                            async for chunk in response.iter_content(chunk_size=(1024**2)):
-                                size = await tmp.write(chunk)
-                                await bar.update(size)
-                            print(f"status: {response.status}")
-                            print(f"reason: {response.reason}")
-                            wi.set("status", response.status)
-                            wi.set("message", response.reason)
-                            response.raise_for_status() 
-                            if response.status == 200:
-                                if response.headers.get("Content-Length"):
-                                    wi.set("size", int(response.headers.get("Content-Length")))
-                                if response.headers.get("Last-Modified"):
-                                    wi.set("date", datetime.strptime(response.headers.get("Last-Modified"), '%a, %d %b %Y %H:%M:%S %Z').replace(tzinfo=timezone.utc))
-                                nowdt = datetime.now(tz=timezone.utc)
-                                atime = nowdt.timestamp()
-                                mtime = wi.get("date").timestamp()
-                                shutil.copy(tmp.name, path)
-                                os.utime(path, (atime, mtime))
-                                break
-        except:
-            print(f"{color.code['yellow']}{url}: retry({r}){color.code['reset']}")
-            await asyncio.sleep(1)
-        else:
-            pass
-        finally:
-            pass
+    async with aiohttp.ClientSession(raise_for_status=False, timeout=timeout) as session:
+        async with session.get(url, allow_redirects=True) as response:
+            wi = await set_webinfo(wi, url, path, response)
+            response.raise_for_status() 
+            with tempfile.NamedTemporaryFile(delete=True) as tmp, tqdm(
+                desc=Path(path).name,
+                total=int(response.headers.get("content-length", 0)),
+                unit="iB",
+                unit_scale=True,
+                unit_divisor=1024,
+                leave=True,
+                colour='CYAN',
+                bar_format='{l_bar}{bar:a}{r_bar}',
+                dynamic_ncols=False
+            ) as bar:
+                async for chunk in response.content.iter_chunked(1024**2):
+                    size = tmp.write(chunk)
+                    bar.update(size)
+                    response.raise_for_status()
+                mtime = datetime.strptime(wi.get("date"), "%Y/%m/%d %H:%M:%S %Z").replace(tzinfo=timezone.utc).timestamp()
+                atime = datetime.now(tz=timezone.utc).timestamp()
+                shutil.copy(tmp.name, path)
+                os.utime(path, (atime, mtime))
+    # -------------------------------------------------------------------------
     print(f"{func_name}({url}) END")
     return wi
