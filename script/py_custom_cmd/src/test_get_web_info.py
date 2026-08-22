@@ -91,62 +91,38 @@ urls = [
 
 import asyncio
 
-from py_common.web import get_header, get_text, get_info
+from py_common.colors import color
+from py_common.web import Info, get_fileinfo, get_webinfo
 
+# -----------------------------------------------------------------------------
 async def sub_get_info(urls):
-    list = []
-    tasks = [get_info(url) for url in urls]
-    wis = await asyncio.gather(*tasks)
-    for wi in wis:
+    info = Info()
+#   info.web  = await get_webinfo(target_regexp)
+#   info.file = get_fileinfo(target_path)
+
+    tasks = [get_webinfo(url) for url in urls]
+    result = await asyncio.gather(*tasks)
+    for info.web in result:
+        if True:
+            print(f"{color.yellow}# --------------------------------------------------------------------------- #{color.reset}")
+            print(f"info.web.regexp  : [{info.web.regexp}]")
+            print(f"info.web.path    : [{info.web.path}]")
+            print(f"info.web.tmstamp : [{info.web.tmstamp}]")
+            print(f"info.web.size    : [{info.web.size}]")
+            print(f"info.web.check   : [{info.web.check}]")
+            print(f"info.web.status  : [{info.web.status}]")
+            print(f"info.web.reason  : [{info.web.reason}]")
+            print(f"info.web.contents: [{info.web.contents}]") if info.web.status == 200 else print(f"info.web.contents: []")
+            print(f"{color.yellow}# --------------------------------------------------------------------------- #{color.reset}")
         if False:
-            print(f"url     : [{wi.get('url')}]")
-            print(f"urldir  : [{wi.get('urldir')}]")
-            print(f"status  : [{wi.get('status')}]")
-            print(f"message : [{wi.get('message')}]")
-            print(f"path    : [{wi.get('path')}]")
-            print(f"dirname : [{wi.get('dirname')}]")
-            print(f"filename: [{wi.get('filename')}]")
-            print(f"size    : [{wi.get('size')}]")
-            print(f"date    : [{wi.get('date')}]")
-        list.append(wi.get('url'))
-    return list
-
-async def sub_get_header(urls):
-    tasks = [get_header(url) for url in urls]
-    wis = await asyncio.gather(*tasks)
-    for wi in wis:
-        if True:
-            print(f"url     : [{wi.get('url')}]")
-            print(f"urldir  : [{wi.get('urldir')}]")
-            print(f"status  : [{wi.get('status')}]")
-            print(f"message : [{wi.get('message')}]")
-            print(f"path    : [{wi.get('path')}]")
-            print(f"dirname : [{wi.get('dirname')}]")
-            print(f"filename: [{wi.get('filename')}]")
-            print(f"size    : [{wi.get('size')}]")
-            print(f"date    : [{wi.get('date')}]")
-            print(f"text    : [{wi.get('text'):80}]")
-
-async def sub_get_text(urls):
-    tasks = [get_text(url) for url in urls]
-    wis = await asyncio.gather(*tasks)
-    for wi in wis:
-        if True:
-            print(f"url     : [{wi.get('url')}]")
-            print(f"urldir  : [{wi.get('urldir')}]")
-            print(f"status  : [{wi.get('status')}]")
-            print(f"message : [{wi.get('message')}]")
-            print(f"path    : [{wi.get('path')}]")
-            print(f"dirname : [{wi.get('dirname')}]")
-            print(f"filename: [{wi.get('filename')}]")
-            print(f"size    : [{wi.get('size')}]")
-            print(f"date    : [{wi.get('date')}]")
-            print(f"text    : [{wi.get('text'):80}]")
+            print(f"info.file.path   : [{info.file.path}]")
+            print(f"info.file.tmstamp: [{info.file.tmstamp}]")
+            print(f"info.file.size   : [{info.file.size}]")
+            print(f"info.file.volume : [{info.file.volume}]")
 
 # -----------------------------------------------------------------------------
 async def main():
-    list = await sub_get_info(urls)
-    await sub_get_header(list)
+    await sub_get_info(urls)
 
 if __name__ == "__main__":
     asyncio.run(main())

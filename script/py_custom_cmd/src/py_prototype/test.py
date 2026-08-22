@@ -1,36 +1,28 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
-## -----------------------------------------------------------------------------
-import inspect
+topdir = "/home/master/linux/script/py_custom_cmd/src"
+#import os
+import sys
+sys.path.append(topdir) # (os.getcwd())
 
+import pathlib
+from pathlib import Path
+from urllib.parse import urlparse
+from datetime import datetime, timezone
+import re
+import sys
+import pycdlib                          # sudo apt-get install python3-pycdlib
+
+import inspect
 import aiohttp                          # sudo apt-get install python3-aiohttp
 from aiohttp import ClientError, ClientTimeout
 import asyncio
 
-#import functools
-#from functools import partial
-#import time
-
-from urllib.parse import urlparse
-from pathlib import Path
-from datetime import datetime, timezone
-
-#import sys
-#import requests
-
 from bs4 import BeautifulSoup
 from natsort import natsort_keygen
-import re
 
-#import tempfile
-#import shutil
-#import os
-import pycdlib                          # sudo apt-get install python3-pycdlib
-
-from tqdm import tqdm
-
-from .colors import color
+from py_common.colors import color
 
 # -----------------------------------------------------------------------------
 import dataclasses
@@ -191,35 +183,44 @@ async def get_webinfo(target_regexp):
     print(f"{color.white}{func_name}({target_url}) END{color.reset}")
     return infoweb
 
-# -----------------------------------------------------------------------------
-import subprocess
-
-def get_volume_uuid(device):
-    res = subprocess.run(['blkid', '-s', 'UUID', '-o', 'value', device], capture_output=True, text=True)
-    return str(res.stdout.strip())
-
-def get_volume_label(device):
-    res = subprocess.run(['blkid', '-s', 'LABEL', '-o', 'value', device], capture_output=True, text=True)
-    return str(res.stdout.strip())
-
-# -----------------------------------------------------------------------------
 def get_fileinfo(target_path):
-    func_name = inspect.currentframe().f_code.co_name
-    print(f"{color.white}{func_name}({target_path}) START{color.reset}")
-    # -------------------------------------------------------------------------
     infofile = Info.file()
     path = Path(target_path)
     infofile.path = path.resolve()
     if path.exists():
-#       iso = pycdlib.PyCdlib()
-#       iso.open(infofile.path)
-#       infofile.volume  = iso.pvd.volume_identifier.decode('utf-8').strip()
-#       iso.close()
-        infofile.volume  = get_volume_label(infofile.path)
+        iso = pycdlib.PyCdlib()
+        iso.open(infofile.path)
+        infofile.volume = iso.pvd.volume_identifier.decode('utf-8').strip()
+        iso.close()
         infofile.tmstamp = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc).isoformat()
-        infofile.size    = path.stat().st_size
-    else:
-        print(f"{color.yellow}not exist: {target_path}{color.reset}")
-    # -------------------------------------------------------------------------
-    print(f"{color.white}{func_name}({target_path}) END{color.reset}")
+        infofile.size   = path.stat().st_size
     return infofile
+
+async def main():
+    target_regexp = "https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-13.[0-9.]*-amd64-netinst.iso"
+    target_path = "/srv/user/share/isos/linux/debian/debian-13.6.0-amd64-netinst.iso"
+#    target_regexp = "https://deb.debian.org/debian/dists/trixie/main/installer-amd64/current/images/netboot/mini.iso"
+#    target_path   = "/srv/user/share/isos/linux/debian/mini-trixie-amd64.iso"
+
+    info = Info()
+    info.web  = await get_webinfo(target_regexp)
+    info.file = get_fileinfo(target_path)
+
+    print(f"web.regexp  : [{info.web.regexp}]")
+    print(f"web.path    : [{info.web.path}]")
+    print(f"web.tmstamp : [{info.web.tmstamp}]")
+    print(f"web.size    : [{info.web.size}]")
+    print(f"web.check   : [{info.web.check}]")
+    print(f"web.status  : [{info.web.status}]")
+    print(f"web.reason  : [{info.web.reason}]")
+    print(f"web.contents: [{info.web.contents}]")
+    print(f"file.path   : [{info.file.path}]")
+    print(f"file.tmstamp: [{info.file.tmstamp}]")
+    print(f"file.size   : [{info.file.size}]")
+    print(f"file.volume : [{info.file.volume}]")
+
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

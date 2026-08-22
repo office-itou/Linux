@@ -3,7 +3,7 @@ import urllib.parse
 import re
 import csv
 
-from .color import Color_code
+from .colors import color
 from .common_cfg import conv2data
 from .common_cfg import conv2variable
 
@@ -31,11 +31,10 @@ class Media_dat():
         self.data = json.dump(data, ensure_ascii=False, indent=4)
 
 def debug(list):
-    color = Color_code()
-    print(f"{color.code['br_green']}=== debug out: {__name__} : start ==={color.code['reset']}")
+    print(f"{color.br_green}=== debug out: {__name__} : start ==={color.reset}")
     for line in list:
-        print(f"{color.code['yellow']}    list_mdia='{line}'{color.code['reset']}")
-    print(f"{color.code['br_green']}=== debug out: {__name__} : complete ==={color.code['reset']}")
+        print(f"{color.yellow}    list_dist='{line}'{color.reset}")
+    print(f"{color.br_green}=== debug out: {__name__} : complete ==={color.reset}")
 
 def get(conf, list_dist):
     path_mdia = conf["PATH_MDIA"]       # media data file           : '/srv/user/share/conf/_data/media.dat'

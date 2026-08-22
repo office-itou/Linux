@@ -90,7 +90,10 @@ urls = [
 ]
 
 urls = [
-    "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/netboot/mini.iso"
+    "https://cdimage.debian.org/cdimage/archive/11.[0-9.]*/amd64/iso-cd/debian-11.[0-9.]*-amd64-netinst.iso",
+    "https://cdimage.debian.org/cdimage/archive/12.[0-9.]*/amd64/iso-cd/debian-12.[0-9.]*-amd64-netinst.iso",
+    "https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-13.[0-9.]*-amd64-netinst.iso",
+    "https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso"
 ]
 
 import asyncio
@@ -148,6 +151,7 @@ async def sub_get_text(urls):
             print(f"text    : [{wi.get('text'):80}]")
 
 async def sub_download(urls):
+    sem = asyncio.Semaphore(2)
     list = []
     tasks = [download(url) for url in urls]
     wis = await asyncio.gather(*tasks)

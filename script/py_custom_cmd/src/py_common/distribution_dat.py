@@ -3,7 +3,7 @@ import urllib.parse
 import re
 import csv
 
-from .color import Color_code
+from .colors import color
 
 # distribution data file
 class Distribution_dat():
@@ -27,11 +27,10 @@ class Distribution_dat():
         self.data = json.dump(data, ensure_ascii=False, indent=4)
 
 def debug(list):
-    color = Color_code()
-    print(f"{color.code['br_green']}=== debug out: {__name__} : start ==={color.code['reset']}")
+    print(f"{color.br_green}=== debug out: {__name__} : start ==={color.reset}")
     for line in list:
-        print(f"{color.code['yellow']}    list_dist='{line}'{color.code['reset']}")
-    print(f"{color.code['br_green']}=== debug out: {__name__} : complete ==={color.code['reset']}")
+        print(f"{color.yellow}    list_dist='{line}'{color.reset}")
+    print(f"{color.br_green}=== debug out: {__name__} : complete ==={color.reset}")
 
 def get(conf):
     path_dist = conf["PATH_DIST"]       # distribution data file    : '/srv/user/share/conf/_data/distribution.dat'

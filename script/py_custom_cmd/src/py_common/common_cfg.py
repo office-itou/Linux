@@ -2,7 +2,7 @@ import os
 import sys
 import re
 
-from .color import Color_code
+from .colors import color
 
 # common configuration file
 class Common_cfg():
@@ -24,12 +24,11 @@ class Common_cfg():
 #       self.data = json.dump(data, ensure_ascii=False, indent=4)
 
 def debug(list):
-    color = Color_code()
-    print(f"{color.code['br_green']}=== debug out: {__name__} : start ==={color.code['reset']}")
+    print(f"{color.br_green}=== debug out: {__name__} : start ==={color.reset}")
     for key in list.keys():
         value = list[key]
-        print(f"{color.code['yellow']}    conf[{key}]='{value}'{color.code['reset']}")
-    print(f"{color.code['br_green']}=== debug out: {__name__} : complete ==={color.code['reset']}")
+        print(f"{color.yellow}    conf[{key}]='{value}'{color.reset}")
+    print(f"{color.br_green}=== debug out: {__name__} : complete ==={color.reset}")
 
 def get():
     dirs_data = "/srv/user/share/conf/_data"    # data file                                 : '/srv/user/share/conf/_data'
