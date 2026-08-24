@@ -1,36 +1,49 @@
+#!/usr/bin/env python3
+# encoding: utf-8
+
+## -----------------------------------------------------------------------------
+import inspect
+
 import os
 import sys
 import re
 
+from . import config
 from .colors import color
+from .debug  import debugout
 
 # common configuration file
 class Common_cfg():
     def __init__(self):
-        self.conf = dict()
+        self.data = dict()
     def debug(self):
-        debug(self.conf)
+        debug(self.data)
     def load(self):
-        self.conf = get()
+        self.data = get()
 #   def save(self):
-#       put(self.data)
+#       put(data)
     def get(self, key):
-        return self.conf.get(key, "")
+        return self.data.get(key, "")
 #   def set(self, key, value):
-#       self.conf[key] = value
+#       self.data[key] = value
     def exports(self):
         return self.data
 #   def imports(self, data):
 #       self.data = json.dump(data, ensure_ascii=False, indent=4)
 
 def debug(list):
+    func_name = inspect.currentframe().f_code.co_name
+    debugout(config.debugout, color.yellow, func_name, "Start", "")
     print(f"{color.br_green}=== debug out: {__name__} : start ==={color.reset}")
     for key in list.keys():
         value = list[key]
         print(f"{color.yellow}    conf[{key}]='{value}'{color.reset}")
     print(f"{color.br_green}=== debug out: {__name__} : complete ==={color.reset}")
+    debugout(config.debugout, color.yellow, func_name, "Complete", "")
 
 def get():
+    func_name = inspect.currentframe().f_code.co_name
+    debugout(config.debugout, color.yellow, func_name, "Start", "")
     dirs_data = "/srv/user/share/conf/_data"    # data file                                 : '/srv/user/share/conf/_data'
     file_conf = "common.cfg"                    # common configuration file
     path_conf = ""                              # common configuration file
@@ -44,7 +57,7 @@ def get():
         print("file not found: " + file_conf)
         sys.exit(1)
     # --- get setting items ---------------------------------------------------
-    conf=dict()
+    conf = dict()
     for line in open(path_conf, "r", encoding='utf-8'):
         match = re.search(r"^[A-Z]", line)      # get parameter row
         if not match:
@@ -71,10 +84,13 @@ def get():
             value = re.sub(r":_" + match_key + "_:", match_value, value)
         conf[key] = value
     # --- return --------------------------------------------------------------
+    debugout(config.debugout, color.yellow, func_name, "Complete", "")
     return conf
 
 # --- convert to data format --------------------------------------------------
 def conv2data(conf, list_inpt):
+    func_name = inspect.currentframe().f_code.co_name
+    debugout(config.debugout, color.yellow, func_name, "Start", "")
     list_outp = []
     for line in list_inpt:
         for key in line.keys():
@@ -87,10 +103,13 @@ def conv2data(conf, list_inpt):
                 match_key  = re.sub(r"_:$", "", match_key)
                 line[key]  = re.sub(r":_" + match_key + "_:", conf[match_key], line[key])
         list_outp.append(line)
+    debugout(config.debugout, color.yellow, func_name, "Complete", "")
     return(list_outp)
 
 # --- convert to variable format ----------------------------------------------
 def conv2variable(conf, list_inpt):
+    func_name = inspect.currentframe().f_code.co_name
+    debugout(config.debugout, color.yellow, func_name, "Start", "")
     list_outp = []
     for line in list_inpt:
         for key in line.keys():
@@ -103,4 +122,5 @@ def conv2variable(conf, list_inpt):
                     continue
                 line[key]  = re.sub(conf[conf_key], r":_" + conf_key + "_:", line[key])
         list_outp.append(line)
+    debugout(config.debugout, color.yellow, func_name, "Complete", "")
     return(list_outp)

@@ -79,24 +79,24 @@ async def get_header(target_url):
                     resp.raise_for_status()
                     break
             except aiohttp.ClientConnectorError as e:
-                print(f"Connection failed: {e}")
+                print(f"{color.bg_red}Connection failed: {e}{color.reset}")
                 print(f"{color.yellow}retry({r}): {target_url}{color.reset}")
                 await asyncio.sleep(1)
             except aiohttp.ClientResponseError as e:
-                print(f"HTTP error status {e.status}: {e.message}")
+                print(f"{color.bg_red}HTTP error status {e.status}: {e.message}{color.reset}")
                 print(f"{color.yellow}retry({r}): {target_url}{color.reset}")
                 await asyncio.sleep(1)
             except aiohttp.ClientError as e:
-                print(f"Aiohttp general error: {e}")
+                print(f"{color.bg_red}Aiohttp general error: {e}{color.reset}")
                 print(f"{color.yellow}retry({r}): {target_url}{color.reset}")
                 await asyncio.sleep(1)
             except asyncio.TimeoutError:
-                print("The request timed out.")
+                print(f"{color.bg_red}The request timed out.{color.reset}")
                 print(f"{color.yellow}retry({r}): {target_url}{color.reset}")
                 await asyncio.sleep(1)
             except Exception as e:
-                print(f"Exception error: {e}")
-                raise
+                print(f"{color.bg_red}Exception error: {e}{color.reset}")
+                raise SystemExit
             else:
                 pass
             finally:
@@ -124,24 +124,24 @@ async def get_text(target_url):
                     resp.raise_for_status()
                     break
             except aiohttp.ClientConnectorError as e:
-                print(f"Connection failed: {e}")
+                print(f"{color.bg_red}Connection failed: {e}{color.reset}")
                 print(f"{color.yellow}retry({r}): {target_url}{color.reset}")
                 await asyncio.sleep(1)
             except aiohttp.ClientResponseError as e:
-                print(f"HTTP error status {e.status}: {e.message}")
+                print(f"{color.bg_red}HTTP error status {e.status}: {e.message}{color.reset}")
                 print(f"{color.yellow}retry({r}): {target_url}{color.reset}")
                 await asyncio.sleep(1)
             except aiohttp.ClientError as e:
-                print(f"Aiohttp general error: {e}")
+                print(f"{color.bg_red}Aiohttp general error: {e}{color.reset}")
                 print(f"{color.yellow}retry({r}): {target_url}{color.reset}")
                 await asyncio.sleep(1)
             except asyncio.TimeoutError:
-                print("The request timed out.")
+                print(f"{color.bg_red}The request timed out.{color.reset}")
                 print(f"{color.yellow}retry({r}): {target_url}{color.reset}")
                 await asyncio.sleep(1)
             except Exception as e:
-                print(f"Exception error: {e}")
-                raise
+                print(f"{color.bg_red}Exception error: {e}{color.reset}")
+                raise SystemExit
             else:
                 pass
             finally:

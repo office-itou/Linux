@@ -1,123 +1,139 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
-url = "https://deb.debian.org/debian/dists/trixie/main/installer-amd64/current/images/netboot/mini.iso"
-#url = "https://deb.debian.org/debian/dists/trixie/main/installer-amd64/current/images/netboot/a"
-#url = "https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-13.6.0-amd64-netinst.iso"
-url = "https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-13.[0-9.]*-amd64-netinst.iso"
-url = "https://cdimage.debian.org/cdimage/archive/12.[0-9.]*/amd64/iso-cd/debian-12.[0-9.]*-amd64-netinst.iso"
+import os
+#topdir = os.getcwd()
 
-urls = [
-    "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/netboot/mini.iso",
-    "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/netboot/mini.iso",
-    "https://deb.debian.org/debian/dists/trixie/main/installer-amd64/current/images/netboot/mini.iso",
-    "https://deb.debian.org/debian/dists/forky/main/installer-amd64/current/images/netboot/mini.iso",
-    "https://deb.debian.org/debian/dists/duke/main/installer-amd64/current/images/netboot/mini.iso",
-    "https://deb.debian.org/debian/dists/testing/main/installer-amd64/current/images/netboot/mini.iso",
-    "https://d-i.debian.org/daily-images/amd64/daily/netboot/mini.iso",
-    "https://cdimage.debian.org/cdimage/archive/11.[0-9.]*/amd64/iso-cd/debian-11.[0-9.]*-amd64-netinst.iso",
-    "https://cdimage.debian.org/cdimage/archive/12.[0-9.]*/amd64/iso-cd/debian-12.[0-9.]*-amd64-netinst.iso",
-    "https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-13.[0-9.]*-amd64-netinst.iso",
-    "https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso",
-    "https://cdimage.debian.org/cdimage/daily-builds/daily/current/amd64/iso-cd/debian-testing-amd64-netinst.iso",
-    "https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso",
-    "https://cdimage.debian.org/cdimage/archive/11.[0-9.]*/amd64/iso-dvd/debian-11.[0-9.]*-amd64-DVD-1.iso",
-    "https://cdimage.debian.org/cdimage/archive/12.[0-9.]*/amd64/iso-dvd/debian-12.[0-9.]*-amd64-DVD-1.iso",
-    "https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-13.[0-9.]*-amd64-DVD-1.iso",
-    "https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso",
-    "https://cdimage.debian.org/cdimage/archive/11.[0-9.]*-live/amd64/iso-hybrid/debian-live-11.[0-9.]*-amd64-cinnamon.iso",
-    "https://cdimage.debian.org/cdimage/archive/11.[0-9.]*-live/amd64/iso-hybrid/debian-live-11.[0-9.]*-amd64-gnome.iso",
-    "https://cdimage.debian.org/cdimage/archive/11.[0-9.]*-live/amd64/iso-hybrid/debian-live-11.[0-9.]*-amd64-lxde.iso",
-    "https://cdimage.debian.org/cdimage/archive/11.[0-9.]*-live/amd64/iso-hybrid/debian-live-11.[0-9.]*-amd64-standard.iso",
-    "https://cdimage.debian.org/cdimage/archive/12.[0-9.]*-live/amd64/iso-hybrid/debian-live-12.[0-9.]*-amd64-cinnamon.iso",
-    "https://cdimage.debian.org/cdimage/archive/12.[0-9.]*-live/amd64/iso-hybrid/debian-live-12.[0-9.]*-amd64-gnome.iso",
-    "https://cdimage.debian.org/cdimage/archive/12.[0-9.]*-live/amd64/iso-hybrid/debian-live-12.[0-9.]*-amd64-lxde.iso",
-    "https://cdimage.debian.org/cdimage/archive/12.[0-9.]*-live/amd64/iso-hybrid/debian-live-12.[0-9.]*-amd64-standard.iso",
-    "https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-13.[0-9.]*-amd64-cinnamon.iso",
-    "https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-13.[0-9.]*-amd64-gnome.iso",
-    "https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-13.[0-9.]*-amd64-lxde.iso",
-    "https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-13.[0-9.]*-amd64-standard.iso",
-    "https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-cinnamon.iso",
-    "https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-gnome.iso",
-    "https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso",
-    "https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-standard.iso",
-    "https://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/netboot/mini.iso",
-    "https://releases.ubuntu.com/20.04/ubuntu-20.04[0-9.]*-live-server-amd64.iso",
-    "https://releases.ubuntu.com/22.04/ubuntu-22.04[0-9.]*-live-server-amd64.iso",
-    "https://releases.ubuntu.com/24.04/ubuntu-24.04[0-9.]*-live-server-amd64.iso",
-    "https://releases.ubuntu.com/24.10/ubuntu-24.10[0-9.]*-live-server-amd64.iso",
-    "https://releases.ubuntu.com/25.04/ubuntu-25.04[0-9.]*-live-server-amd64.iso",
-    "https://releases.ubuntu.com/25.10/ubuntu-25.10[0-9.]*-live-server-amd64.iso",
-    "https://releases.ubuntu.com/26.04/ubuntu-26.04[0-9.]*-live-server-amd64.iso",
-    "https://cdimage.ubuntu.com/ubuntu-server/stonking/daily-live/current/stonking-live-server-amd64.iso",
-    "https://releases.ubuntu.com/20.04/ubuntu-20.04[0-9.]*-desktop-amd64.iso",
-    "https://releases.ubuntu.com/22.04/ubuntu-22.04[0-9.]*-desktop-amd64.iso",
-    "https://releases.ubuntu.com/24.04/ubuntu-24.04[0-9.]*-desktop-amd64.iso",
-    "https://releases.ubuntu.com/24.10/ubuntu-24.10[0-9.]*-desktop-amd64.iso",
-    "https://releases.ubuntu.com/25.04/ubuntu-25.04[0-9.]*-desktop-amd64.iso",
-    "https://releases.ubuntu.com/25.10/ubuntu-25.10[0-9.]*-desktop-amd64.iso",
-    "https://releases.ubuntu.com/26.04/ubuntu-26.04[0-9.]*-desktop-amd64.iso",
-    "https://cdimage.ubuntu.com/ubuntu/stonking/daily-live/current/stonking-desktop-amd64.iso",
-    "https://download.fedoraproject.org/pub/fedora/linux/releases/40/Server/x86_64/iso/Fedora-Server-netinst-x86_64-40-[0-9.]*.iso",
-    "https://download.fedoraproject.org/pub/fedora/linux/releases/41/Server/x86_64/iso/Fedora-Server-netinst-x86_64-41-[0-9.]*.iso",
-    "https://download.fedoraproject.org/pub/fedora/linux/releases/42/Server/x86_64/iso/Fedora-Server-netinst-x86_64-42-[0-9.]*.iso",
-    "https://download.fedoraproject.org/pub/fedora/linux/releases/43/Server/x86_64/iso/Fedora-Server-netinst-x86_64-43-[0-9.]*.iso",
-    "https://download.fedoraproject.org/pub/fedora/linux/releases/44/Server/x86_64/iso/Fedora-Server-netinst-x86_64-44-[0-9.]*.iso",
-    "https://download.fedoraproject.org/pub/fedora/linux/releases/40/Server/x86_64/iso/Fedora-Server-dvd-x86_64-40-[0-9.]*.iso",
-    "https://download.fedoraproject.org/pub/fedora/linux/releases/41/Server/x86_64/iso/Fedora-Server-dvd-x86_64-41-[0-9.]*.iso",
-    "https://download.fedoraproject.org/pub/fedora/linux/releases/42/Server/x86_64/iso/Fedora-Server-dvd-x86_64-42-[0-9.]*.iso",
-    "https://download.fedoraproject.org/pub/fedora/linux/releases/43/Server/x86_64/iso/Fedora-Server-dvd-x86_64-43-[0-9.]*.iso",
-    "https://download.fedoraproject.org/pub/fedora/linux/releases/44/Server/x86_64/iso/Fedora-Server-dvd-x86_64-44-[0-9.]*.iso",
-    "https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso",
-    "https://mirror.stream.centos.org/10-stream/BaseOS/x86_64/iso/CentOS-Stream-10-latest-x86_64-boot.iso",
-    "https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso",
-    "https://mirror.stream.centos.org/10-stream/BaseOS/x86_64/iso/CentOS-Stream-10-latest-x86_64-dvd1.iso",
-    "https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-9-latest-x86_64-boot.iso",
-    "https://repo.almalinux.org/almalinux/10/isos/x86_64/AlmaLinux-10-latest-x86_64-boot.iso",
-    "https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-9-latest-x86_64-dvd.iso",
-    "https://repo.almalinux.org/almalinux/10/isos/x86_64/AlmaLinux-10-latest-x86_64-dvd.iso",
-    "https://repo.almalinux.org/almalinux/10/live/x86_64/AlmaLinux-10-latest-x86_64-Live-GNOME.iso",
-    "https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-boot.iso",
-    "https://download.rockylinux.org/pub/rocky/10/isos/x86_64/Rocky-10-latest-x86_64-boot.iso",
-    "https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-dvd.iso",
-    "https://download.rockylinux.org/pub/rocky/10/isos/x86_64/Rocky-10-latest-x86_64-dvd.iso",
-    "https://repo.dist.miraclelinux.net/miraclelinux/isos/9.6-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-minimal-x86_64.iso",
-    "https://repo.dist.miraclelinux.net/miraclelinux/isos/9.6-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-x86_64.iso",
-    "https://download.opensuse.org/distribution/leap/15.6/iso/openSUSE-Leap-15.6-NET-x86_64-Media.iso",
-    "https://download.opensuse.org/distribution/leap/16.0/offline/Leap-16.0-online-installer-x86_64.install.iso",
-    "https://download.opensuse.org/distribution/leap/16.1/offline/Leap-16.1-online-installer-x86_64.install.iso",
-    "https://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso",
-    "https://download.opensuse.org/distribution/leap/15.6/iso/openSUSE-Leap-15.6-DVD-x86_64-Media.iso",
-    "https://download.opensuse.org/distribution/leap/16.0/offline/Leap-16.0-offline-installer-x86_64.install.iso",
-    "https://download.opensuse.org/distribution/leap/16.1/offline/Leap-16.1-offline-installer-x86_64.install.iso",
-    "https://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso",
-    "https://www.memtest.org/download/v8.00/mt86plus_8.00_x86_64.grub.iso.zip",
-    "https://www.memtest.org/download/v8.10/mt86plus_8.10_x86_64.grub.iso.zip"
-]
+#topdir = "/home/master/linux/script/py_custom_cmd/src"
+import sys
+#sys.path.append(topdir)
 
+import argparse
+from pathlib import Path
+import re
+import inspect
+
+import aiohttp                          # sudo apt-get install python3-aiohttp
+from aiohttp import ClientError, ClientTimeout
 import asyncio
 
-from py_common import web
+import json
+import time
 
-async def main():
-    tasks = [web.get_info(url) for url in urls]
-    wis = await asyncio.gather(*tasks)
-    for wi in wis:
-#   for url in urls:
-#       wi = await get_info(url)
-        fmat_url      = f"{wi.get('url'):<124}"
-        fmat_status   = f"{wi.get('status'):>4}"
-        fmat_message  = f"{wi.get('message'):<20}"
-        fmat_dirname  = str(wi.get('dirname'))
-        fmat_dirname  = f"{fmat_dirname:<108}"
-        fmat_filename = f"{wi.get('filename'):<48}"
-        fmat_size     = f"{wi.get('size'):>12}"
-        fmat_date     = ""
-        if wi.get('date'):
-            fmat_date     = wi.get('date').strftime('%Y/%m/%d %H:%M:%S %Z')
-        fmat_date     = f"{fmat_date:<26}"
-        fmat = f"{fmat_url} {fmat_status} {fmat_message} {fmat_dirname} {fmat_filename} {fmat_size} {fmat_date}"
-        print(fmat)
+# sudo apt-get install python3-pandas
+import pandas as pd
+
+from collections import defaultdict
+
+from py_common          import config
+from py_common.colors   import color
+from py_common.debug    import debugout
+
+from py_common.common_cfg       import Common_cfg
+from py_common.distribution_dat import Distribution_dat
+from py_common.media_dat        import Media_dat
+
+#from py_common.infoweb  import Infoweb, get_webinfo
+#from py_common.infofile import Infofile, get_fileinfo
+#from py_common.infodata import Infodata, debug_info, get_infodata
+
+def output_cfg2md(path, data):
+    func_name = inspect.currentframe().f_code.co_name
+    debugout(config.debugout, color.yellow, func_name, "Start", "")
+    max_key, max_val = max(data.items(), key=lambda x: len(x[1]))
+    len_max_key = len(max_key)
+    len_max_val = len(max_val)
+    item_key = "key"
+    item_val = "value"
+    align    = "|:" + "-" * (len_max_key - 2) + ":|:" + "-" * (len_max_val - 1) + "|"
+    md_text = f"|{item_key:^{len_max_key}}|{item_val:^{len_max_val}}|\n{align}\n"
+    for key in data.keys():
+        value = data[key]
+        value = re.sub(r":_", ":\\_", value)
+        value = re.sub(r"_:", "\\_:", value)
+        md_text = md_text + f"|{key:^{len_max_key}}|{value:<{len_max_val}}|\n"
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(md_text)
+    debugout(config.debugout, color.yellow, func_name, "Complete", "")
+    return
+
+def output_dat2md(path, data):
+    func_name = inspect.currentframe().f_code.co_name
+    debugout(config.debugout, color.yellow, func_name, "Start", "")
+    colssize  = []
+    header    = ""
+    align     = ""
+    df = pd.DataFrame(data)
+#    colcount = df.shape[1]
+#    rowcount = df.shape[0]
+#    print(f"colcount:{colcount}")
+#    print(f"rowcount:{rowcount}")
+#    datalist  = defaultdict(dict)
+    for name in df.columns.to_list():
+        list = df[name].values
+        max_val = max(list, key=len)
+        colsize = len(max_val) if len(max_val) >= len(name) else len(name)
+        colssize.append(colsize)
+        header += f"|{name:^{colsize}}"
+        align += "|:" + "-" * (colsize - 1)
+#        for i, line in enumerate(list):
+#            datalist[i][name] = line
+    header += "|"
+    align += "|"
+#    print(datablock)
+    md_text = f"{header}\n{align}\n"
+    for index, row in df.iterrows():
+        md_line = ""
+        for i, name in enumerate(df.columns.to_list()):
+            colsize = colssize[i]
+            md_line += f"|{row[name]:<{colsize}}"
+        md_text += md_line + f"|\n"
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(md_text)
+    debugout(config.debugout, color.yellow, func_name, "Complete", "")
+    return
+
+def main():
+    start = time.perf_counter()
+    func_name = inspect.currentframe().f_code.co_name
+    debugout(config.debugout, color.yellow, func_name, "Start", "")
+
+    parser = argparse.ArgumentParser(allow_abbrev=False)
+    parser.add_argument('--debug', help='Debug mode', action='store_true')
+    parser.add_argument('--debugout', help='Debug mode for display only', action='store_true')
+    args = parser.parse_args()
+    config.debug = args.debug
+    config.debugout = args.debugout
+    if config.debug == True:
+        config.debugout = True
+
+    debugout(config.debugout, color.yellow, func_name, "info", "Debug mode on")
+
+#   if os.geteuid() != 0:
+#       print(f"{color.br_yellow}You have standard user privileges. Please run this with sudo.{color.reset}")
+#       exit(1)
+
+    common_cfg       = Common_cfg()
+    distribution_dat = Distribution_dat()
+    media_dat        = Media_dat()
+
+    common_cfg.load()
+    conf = common_cfg.exports()
+
+    distribution_dat.load(conf)
+    dist = distribution_dat.exports()
+
+    media_dat.load(conf, dist)
+    mdia = media_dat.exports()
+
+    output_cfg2md("./Readme_table_common_cfg.md"      , conf)
+    output_dat2md("./Readme_table_distribution_dat.md", dist)
+    output_dat2md("./Readme_table_media_dat.md"       , mdia)
+
+    debugout(config.debugout, color.yellow, func_name, "Complete", "")
+    end = time.perf_counter()
+    elapsed = end - start
+    print(f"elapsed time: {elapsed:.4f} 秒")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
