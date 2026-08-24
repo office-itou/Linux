@@ -71,6 +71,9 @@ def output_dat2md(path, data):
 #    datalist  = defaultdict(dict)
     for name in df.columns.to_list():
         list = df[name].values
+        for i, line in enumerate(list):
+            line = re.sub(r"^(http[|s]:[^ ]+)", r"`\1`", line)
+            list[i] = line
         max_val = max(list, key=len)
         colsize = len(max_val) if len(max_val) >= len(name) else len(name)
         colssize.append(colsize)
