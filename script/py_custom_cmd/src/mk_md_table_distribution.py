@@ -18,73 +18,124 @@ import re
 #import subprocess
 #import sys
 
-#import py_common
+from py_common          import config
+from py_common.colors   import color
+from py_common.debug    import debugout
+
 from py_common.common_cfg       import Common_cfg
 from py_common.distribution_dat import Distribution_dat
 from py_common.media_dat        import Media_dat
 
 # --- get common data file ----------------------------------------------------
-comm_conf = Common_cfg()
-dist_data = Distribution_dat()
-mdia_data = Media_dat()
+common_cfg       = Common_cfg()
+distribution_dat = Distribution_dat()
+media_dat        = Media_dat()
 
 def initialize():
     func_name = inspect.currentframe().f_code.co_name
     print(f"{func_name}() START")
-    comm_conf.load()
-    dist_data.load(comm_conf.conf)
-    mdia_data.load(comm_conf.conf, dist_data.data)
+
+    common_cfg.load()
+    conf = common_cfg.exports()
+
+    distribution_dat.load(conf)
+    dist = distribution_dat.exports()
+
+    media_dat.load(conf, dist)
+    mdia = media_dat.exports()
+
     print(f"{func_name}() END")
+
+    return conf, dist, mdia
 
 def debug():
     func_name = inspect.currentframe().f_code.co_name
     print(f"{func_name}() START")
-    comm_conf.debug()
-    dist_data.debug()
-    mdia_data.debug()
+    common_cfg.debug()
+    distribution_dat.debug()
+    media_dat.debug()
     print(f"{func_name}() END")
 
-def generate_table_debian(list):
+def generate_md_table(dist, data):
     func_name = inspect.currentframe().f_code.co_name
-    print(f"{func_name}({list[0]['name']}) START")
-    md_dist = list[0]['name']
-    md_text = f"""
-* <details><summary>{md_dist}</summary>
-
-  | version_id               | code_name                                | life             | release          | support          | long_term        | kerne                        | note                         |
-  | :----------------------: | :--------------------------------------- | :--------------: | :--------------: | :--------------: | :--------------: | :--------------------------- | :--------------------------- |
-"""
-    for line in list:
-        md_text = md_text + f"  | {line['version_id']:<24} | {line['code_name']:<40} | {line['life']:<16} | {line['release']:<16} | {line['support']:<16} | {line['long_term']:<16} | {line['kerne']:<28} | {line['note']:<28} |\n"
-    md_text = md_text + f"""
-</details>
-"""
-    print(f"{func_name}({list[0]['name']}) END")
+    debugout(config.debugout, color.yellow, func_name, "Start", "")
+    df = pd.DataFrame(data)
+    colssize  = []
+    spc = " " * 2
+    header    = ""
+    align     = ""
+    md_text = ""
+    # -------------------------------------------------------------------------
+    md_text += f"* <details><summary>{data[0]['name']}</summary>\n\n"
+    # -------------------------------------------------------------------------
+    for name in df.columns.to_list():
+        list = df[name].values
+        for i, line in enumerate(list):
+            line = re.sub(r"^(http[|s]:[^ ]+)", r"`\1`", line)
+            list[i] = line
+        max_val = max(list, key=len)
+        colsize = len(max_val) if len(max_val) >= len(name) else len(name)
+        colssize.append(colsize)
+        match dist:
+            case "debian":
+                match name:
+                    case "version_id" | "code_name" | "kerne" | "note":
+                        header += f"|{name:^{colsize}}"
+                        align += "|:" + "-" * (colsize - 1)
+                    case "life" | "release" | "support" | "long_term":
+                        header += f"|{name:^{colsize}}"
+                        align += "|:" + "-" * (colsize - 2) + ":"
+                    case _:
+                        continue
+            case \
+              "fedora":
+                match name:
+                    case "version_id" | "code_name" | "kerne" | "note":
+                        header += f"|{name:^{colsize}}"
+                        align += "|:" + "-" * (colsize - 1)
+                    case "life" | "release" | "support" | "long_term" | "rhel":
+                        header += f"|{name:^{colsize}}"
+                        align += "|:" + "-" * (colsize - 2) + ":"
+                    case _:
+                        continue
+            case _:
+                        continue
+    header += "|"
+    align += "|"
+    md_text += f"{spc}{header}\n{spc}{align}\n"
+    # -------------------------------------------------------------------------
+    for index, row in df.iterrows():
+        md_line = ""
+        for i, name in enumerate(df.columns.to_list()):
+            colsize = colssize[i]
+            match dist:
+                case "debian":
+                    match name:
+                        case "version_id" | "code_name" | "kerne" | "note":
+                            md_line += f"|{row[name]:<{colsize}}"
+                        case "life" | "release" | "support" | "long_term":
+                            md_line += f"|{row[name]:^{colsize}}"
+                        case _:
+                            continue
+                case \
+                "fedora":
+                    match name:
+                        case "version_id" | "code_name" | "kerne" | "note":
+                            md_line += f"|{row[name]:<{colsize}}"
+                        case "life" | "release" | "support" | "long_term" | "rhel":
+                            md_line += f"|{row[name]:^{colsize}}"
+                        case _:
+                            continue
+                case _:
+                            continue
+        md_text += f"{spc}{md_line}|\n"
+    # -------------------------------------------------------------------------
+    md_text += f"\n</details>\n\n"
+    # -------------------------------------------------------------------------
+    debugout(config.debugout, color.yellow, func_name, "Complete", "")
     return md_text
 
-def generate_table_fedora(list):
-    func_name = inspect.currentframe().f_code.co_name
-    print(f"{func_name}({list[0]['name']}) START")
-    md_dist = list[0]['name']
-    md_text = f"""
-* <details><summary>{md_dist}</summary>
-
-  | version_id               | code_name                                | life             | release          | support          | long_term        | rhel             | kerne                        | note                         |
-  | :----------------------: | :--------------------------------------- | :--------------: | :--------------: | :--------------: | :--------------: | :--------------: | :--------------------------- | :--------------------------- |
-"""
-    for line in list:
-        md_text = md_text + f"  | {line['version_id']:<24} | {line['code_name']:<40} | {line['life']:<16} | {line['release']:<16} | {line['support']:<16} | {line['long_term']:<16} | {line['rhel']:<16} | {line['kerne']:<28} | {line['note']:<28} |\n"
-    md_text = md_text + f"""
-</details>
-"""
-    print(f"{func_name}({list[0]['name']}) END")
-    return md_text
-
-#def version_key(v):
-#    v = re.sub(r"^[^0-9]*([0-9.]+).*$", r"\1", v)
-#    return [int(x) for x in v.split(".")]
-
-def generate_table():
+def generate_table(conf, dist, mdia):
     func_name = inspect.currentframe().f_code.co_name
     print(f"{func_name}() START")
     list_dist = [
@@ -104,16 +155,8 @@ def generate_table():
     ]
     md_path = "./Readme_table_distribution.md"
     md_list = []
-    md_text = """
-# Distribution list
-"""
-
-    dist = dist_data.exports()
+    md_text = f"# Distribution list\n\n"
     df = pd.DataFrame(dist)
-#    result = df.query("version.str.match('debian-[0-9]+')", engine='python')
-#    print(result[['version','name']])
-
-#    sys.exit(0)
 
     for line in list_dist:
         dist = line.lower()
@@ -125,7 +168,7 @@ def generate_table():
             case \
               "debian" | \
               "ubuntu":
-                md_text = md_text + generate_table_debian(list)
+                md_text = md_text + generate_md_table("debian", list)
             case \
               "fedora"        | \
               "centos"        | \
@@ -133,7 +176,7 @@ def generate_table():
               "almalinux"     | "alma linux"    | \
               "rockylinux"    | "rocky linux"   | \
               "miraclelinux"  | "miracle linux":
-                md_text = md_text + generate_table_fedora(list)
+                md_text = md_text + generate_md_table("fedora", list)
 #            case \
 #              "opensuse":
 #                return
@@ -150,7 +193,7 @@ def generate_table():
 #              "memtest86plus":
 #                return
             case _:
-                md_text = md_text + generate_table_debian(list)
+                md_text = md_text + generate_md_table("debian", list)
 
     with open(md_path, "w", encoding="utf-8") as f:
         f.write(md_text)
@@ -161,9 +204,9 @@ def generate_table():
 def main():
     func_name = inspect.currentframe().f_code.co_name
     print(f"{func_name}() START")
-    initialize()
+    conf, dist, mdia = initialize()
 #   debug()
-    generate_table()
+    generate_table(conf, dist, mdia)
     print(f"{func_name}() END")
 
 if __name__ == "__main__":

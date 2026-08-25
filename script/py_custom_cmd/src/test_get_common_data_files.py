@@ -37,7 +37,7 @@ from py_common.media_dat        import Media_dat
 #from py_common.infofile import Infofile, get_fileinfo
 #from py_common.infodata import Infodata, debug_info, get_infodata
 
-def output_cfg2md(path, data):
+def output_cfg2md(path, title, data):
     func_name = inspect.currentframe().f_code.co_name
     debugout(config.debugout, color.yellow, func_name, "Start", "")
     max_key, max_val = max(data.items(), key=lambda x: len(x[1]))
@@ -45,22 +45,24 @@ def output_cfg2md(path, data):
     len_max_val = len(max_val)
     item_key = "key"
     item_val = "value"
+    spc = " " * 2
     align    = "|:" + "-" * (len_max_key - 2) + ":|:" + "-" * (len_max_val - 1) + "|"
-    md_text = f"|{item_key:^{len_max_key}}|{item_val:^{len_max_val}}|\n{align}\n"
+    md_text = f"# Data table\n\n* {title}\n\n{spc}|{item_key:^{len_max_key}}|{item_val:^{len_max_val}}|\n{spc}{align}\n"
     for key in data.keys():
         value = data[key]
         value = re.sub(r":_", ":\\_", value)
         value = re.sub(r"_:", "\\_:", value)
-        md_text = md_text + f"|{key:^{len_max_key}}|{value:<{len_max_val}}|\n"
+        md_text = md_text + f"{spc}|{key:^{len_max_key}}|{value:<{len_max_val}}|\n"
     with open(path, "w", encoding="utf-8") as f:
         f.write(md_text)
     debugout(config.debugout, color.yellow, func_name, "Complete", "")
     return
 
-def output_dat2md(path, data):
+def output_dat2md(path, title, data):
     func_name = inspect.currentframe().f_code.co_name
     debugout(config.debugout, color.yellow, func_name, "Start", "")
     colssize  = []
+    spc = " " * 2
     header    = ""
     align     = ""
     df = pd.DataFrame(data)
@@ -68,7 +70,7 @@ def output_dat2md(path, data):
 #    rowcount = df.shape[0]
 #    print(f"colcount:{colcount}")
 #    print(f"rowcount:{rowcount}")
-#    datalist  = defaultdict(dict)
+#    datalist = defaultdict(dict)
     for name in df.columns.to_list():
         list = df[name].values
         for i, line in enumerate(list):
@@ -79,18 +81,15 @@ def output_dat2md(path, data):
         colssize.append(colsize)
         header += f"|{name:^{colsize}}"
         align += "|:" + "-" * (colsize - 1)
-#        for i, line in enumerate(list):
-#            datalist[i][name] = line
     header += "|"
     align += "|"
-#    print(datablock)
-    md_text = f"{header}\n{align}\n"
+    md_text = f"# Data table\n\n* {title}\n\n{spc}{header}\n{spc}{align}\n"
     for index, row in df.iterrows():
         md_line = ""
         for i, name in enumerate(df.columns.to_list()):
             colsize = colssize[i]
             md_line += f"|{row[name]:<{colsize}}"
-        md_text += md_line + f"|\n"
+        md_text += f"{spc}{md_line}|\n"
     with open(path, "w", encoding="utf-8") as f:
         f.write(md_text)
     debugout(config.debugout, color.yellow, func_name, "Complete", "")
@@ -129,9 +128,9 @@ def main():
     media_dat.load(conf, dist)
     mdia = media_dat.exports()
 
-    output_cfg2md("./Readme_table_common_cfg.md"      , conf)
-    output_dat2md("./Readme_table_distribution_dat.md", dist)
-    output_dat2md("./Readme_table_media_dat.md"       , mdia)
+    output_cfg2md("./Readme_table_common_cfg.md"      , "common configuration file (common.cfg)"   , conf)
+    output_dat2md("./Readme_table_distribution_dat.md", "distribution data file (distribution.dat)", dist)
+    output_dat2md("./Readme_table_media_dat.md"       , "media data file (media.dat)"              , mdia)
 
     debugout(config.debugout, color.yellow, func_name, "Complete", "")
     end = time.perf_counter()
