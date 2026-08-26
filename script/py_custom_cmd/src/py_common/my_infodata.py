@@ -1,25 +1,27 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
-## -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 import inspect
 
 import asyncio
 from pathlib import Path
 import re
-import inspect
 
-from .colors   import color
-from .debug    import debugout
-from .infoweb  import Infoweb, get_webinfo
-from .infofile import Infofile, get_fileinfo
+# -----------------------------------------------------------------------------
+from .my_config import debug_flag, debugout_flag
+from .my_colors import color
+from .my_debug  import debugout
 
-## -----------------------------------------------------------------------------
+from .my_infoweb  import Infoweb, get_webinfo
+from .my_infofile import Infofile, get_fileinfo
+
+# -----------------------------------------------------------------------------
 class Infodata:
     web:  Infoweb
     file: Infofile
 
-## -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 def debug_info(infodata):
     print("# --------------------------------------------------------------------------- #")
     if hasattr(infodata, "web"):
@@ -31,7 +33,7 @@ def debug_info(infodata):
         if hasattr(infodata.web, "status"  ): print(f"web.status  : [{infodata.web.status}]")
         if hasattr(infodata.web, "reason"  ): print(f"web.reason  : [{infodata.web.reason}]")
         if hasattr(infodata.web, "contents"): print(f"web.contents: [{infodata.web.contents}]")
-        if hasattr(infodata.web, "output"  ): print(f"web.output  : [{infodata.output}]")
+        if hasattr(infodata.web, "output"  ): print(f"web.output  : [{infodata.web.output}]")
     if hasattr(infodata, "file"):
         if hasattr(infodata.file, "path"   ): print(f"file.path   : [{infodata.file.path}]")
         if hasattr(infodata.file, "tmstamp"): print(f"file.tmstamp: [{infodata.file.tmstamp}]")
@@ -39,10 +41,10 @@ def debug_info(infodata):
         if hasattr(infodata.file, "volume" ): print(f"file.volume : [{infodata.file.volume}]")
     print("# --------------------------------------------------------------------------- #")
 
-## -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 async def get_infodata(session, list):
     func_name = inspect.currentframe().f_code.co_name
-    debugout(True, color.yellow, func_name, "Start", "")
+    debugout(debugout_flag, color.yellow, func_name, "Start", "")
     # -------------------------------------------------------------------------
     tasks = []
     for line in list:
@@ -100,5 +102,5 @@ async def get_infodata(session, list):
     # -------------------------------------------------------------------------
 #   debug_info(infodata)
 #   await asyncio.sleep(1)
-    debugout(True, color.yellow, func_name, "Complete", "")
+    debugout(debugout_flag, color.yellow, func_name, "Complete", "")
     return infodatas

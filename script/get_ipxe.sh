@@ -13,4 +13,4 @@ wget https://boot.ipxe.org/x86_64-efi/snponly.efi
 wget https://boot.ipxe.org/x86_64-pcbios/ipxe.lkrn
 wget https://boot.ipxe.org/x86_64-pcbios/ipxe.pxe
 wget https://boot.ipxe.org/x86_64-pcbios/undionly.kpxe
-sudo cp --preserve=timestamps * /srv/tftp/ipxe/
+sudo cp --preserve=timestamps ./* /srv/tftp/ipxe/

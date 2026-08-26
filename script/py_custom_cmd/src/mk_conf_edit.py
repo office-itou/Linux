@@ -9,9 +9,9 @@ import subprocess
 import sys
 
 import py_common
-from py_common.common_cfg       import Common_cfg
-from py_common.distribution_dat import Distribution_dat
-from py_common.media_dat        import Media_dat
+from py_common.my_common_cfg       import Common_cfg
+from py_common.my_distribution_dat import Distribution_dat
+from py_common.my_media_dat        import Media_dat
 
 flag_debug=""
 

@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
+import os
+#topdir = os.getcwd()
+
+#topdir = "/home/master/linux/script/py_custom_cmd/src"
+#import sys
+#sys.path.append(topdir)
+
+import argparse
+
 import inspect
 
 # sudo apt-get install python3-pandas
@@ -17,14 +26,15 @@ import re
 #import os
 #import subprocess
 #import sys
+import time
 
-from py_common          import config
-from py_common.colors   import color
-from py_common.debug    import debugout
+from py_common.my_config           import debug_flag, debugout_flag
+from py_common.my_colors           import color
+from py_common.my_debug            import debugout
 
-from py_common.common_cfg       import Common_cfg
-from py_common.distribution_dat import Distribution_dat
-from py_common.media_dat        import Media_dat
+from py_common.my_common_cfg       import Common_cfg
+from py_common.my_distribution_dat import Distribution_dat
+from py_common.my_media_dat        import Media_dat
 
 # --- get common data file ----------------------------------------------------
 common_cfg       = Common_cfg()
@@ -58,7 +68,7 @@ def debug():
 
 def generate_md_table(dist, data):
     func_name = inspect.currentframe().f_code.co_name
-    debugout(config.debugout, color.yellow, func_name, "Start", "")
+    debugout(debugout_flag, color.yellow, func_name, "Start", "")
     df = pd.DataFrame(data)
     colssize  = []
     spc = " " * 2
@@ -132,7 +142,7 @@ def generate_md_table(dist, data):
     # -------------------------------------------------------------------------
     md_text += f"\n</details>\n\n"
     # -------------------------------------------------------------------------
-    debugout(config.debugout, color.yellow, func_name, "Complete", "")
+    debugout(debugout_flag, color.yellow, func_name, "Complete", "")
     return md_text
 
 def generate_table(conf, dist, mdia):
@@ -202,12 +212,36 @@ def generate_table(conf, dist, mdia):
 
 
 def main():
+    start = time.perf_counter()
     func_name = inspect.currentframe().f_code.co_name
-    print(f"{func_name}() START")
+    debugout(True, color.yellow, func_name, "Start", "")
+
+    global debug_flag
+    global debugout_flag
+
+    parser = argparse.ArgumentParser(allow_abbrev=False)
+    parser.add_argument('--debug', help='Debug mode', action='store_true')
+    parser.add_argument('--debugout', help='Debug mode for display only', action='store_true')
+    args = parser.parse_args()
+    debug_flag = args.debug
+    debugout_flag = args.debugout
+    if debug_flag == True:
+        debugout_flag = True
+
+    debugout(debugout_flag, color.yellow, func_name, "info", "Debug mode on")
+
+    if os.geteuid() != 0:
+       print(f"{color.br_yellow}You have standard user privileges. Please run this with sudo.{color.reset}")
+       exit(1)
+
     conf, dist, mdia = initialize()
 #   debug()
     generate_table(conf, dist, mdia)
-    print(f"{func_name}() END")
+
+    debugout(True, color.yellow, func_name, "Complete", "")
+    end = time.perf_counter()
+    elapsed = end - start
+    print(f"elapsed time: {elapsed:.4f} 秒")
 
 if __name__ == "__main__":
     main()
