@@ -32,6 +32,19 @@ from py_common.my_message import message_start, message_end, message_elapsed, me
 #from py_common.my_infodata import Infodata, debug_info, get_infodata
 
 # -----------------------------------------------------------------------------
+# descript: args parser
+#   input :                  : unused
+#   output:                  : unused
+#   return: parse_args       : output
+#   global:                  : unused
+# -----------------------------------------------------------------------------
+def argsparser():
+    parser = argparse.ArgumentParser(allow_abbrev=False)
+    parser.add_argument('--debug', help='Debug mode', action='store_true')
+    parser.add_argument('--debugout', help='Debug mode for display only', action='store_true')
+    return parser.parse_args()
+
+# -----------------------------------------------------------------------------
 # descript: initialize
 #   input :                  : unused
 #   output:                  : unused
@@ -39,6 +52,12 @@ from py_common.my_message import message_start, message_end, message_elapsed, me
 #   global:                  : unused
 # -----------------------------------------------------------------------------
 def initialize():
+    function_name = inspect.currentframe().f_code.co_name
+    debugout(function_name, "Start", color.yellow, "")
+    # -------------------------------------------------------------------------
+    debugout(function_name, "Info", color.yellow, "Debug mode on")
+    # -------------------------------------------------------------------------
+    debugout(function_name, "Complete", color.yellow, "")
     return
 
 # -----------------------------------------------------------------------------
@@ -53,35 +72,34 @@ def initialize():
 #   global: row_size         : read/write
 # -----------------------------------------------------------------------------
 def main():
+    # --- elapsed start--------------------------------------------------------
+    start = time.perf_counter()
     # --- global variable -----------------------------------------------------
 #   global debug_flag
 #   global debugout_flag
 #   global program_name
 #   global col_size
 #   global row_size
-    # --- startup process -----------------------------------------------------
-    start = time.perf_counter()
+    # --- command options -----------------------------------------------------
+    args = argsparser()
+    my_config.debug_flag = args.debug
+    my_config.debugout_flag = args.debugout if my_config.debug_flag != True else True
+    # --- system parameters ---------------------------------------------------
     my_config.program_name = Path(__file__).name
     my_config.col_size = shutil.get_terminal_size().columns
     my_config.row_size = shutil.get_terminal_size().lines
     function_name = inspect.currentframe().f_code.co_name
-    message_start(function_name)
-    # --- command options -----------------------------------------------------
-    parser = argparse.ArgumentParser(allow_abbrev=False)
-    parser.add_argument('--debug', help='Debug mode', action='store_true')
-    parser.add_argument('--debugout', help='Debug mode for display only', action='store_true')
-    args = parser.parse_args()
-    my_config.debug_flag = args.debug
-    my_config.debugout_flag = args.debugout if my_config.debug_flag != True else True
-    debugout(function_name, "info", color.yellow, "Debug mode on")
     # --- check the executing user --------------------------------------------
     if os.geteuid() != 0:
         message_debug(function_name, "Warning", color.br_yellow, "You have standard user privileges. Please run this with sudo.")
         exit(1)
+    # --- startup process -----------------------------------------------------
+    message_start(function_name)
     # --- processing block ----------------------------------------------------
     initialize()
     # --- termination process -------------------------------------------------
     message_end(function_name)
+    # --- elapsed end ---------------------------------------------------------
     end = time.perf_counter()
     elapsed = end - start
     message_elapsed(function_name, elapsed)

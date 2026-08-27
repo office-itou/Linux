@@ -42,7 +42,7 @@ from py_common.my_string import eprint
 #   global: col_size         : read
 # -----------------------------------------------------------------------------
 def message_common(function_name, mode, message_color, date_time):
-    message = f"{function_name}:{mode:^10}:--- {date_time} "
+    message = f"{function_name:<30}:{mode:^10}:--- {date_time} "
     message += "-" * (my_config.col_size - count_width(message))
     eprint(f"{color.reset}{message_color}{message}{color.reset}", my_config.col_size)
 
@@ -77,7 +77,7 @@ def message_end(function_name):
 #   global:                  : unused
 # -----------------------------------------------------------------------------
 def message_elapsed(function_name, elapsed):
-    message_debug(function_name, "Elapsed", color.yellow, f"{elapsed:.4f} sec")
+    message_debug(f"{my_config.program_name}({function_name})", "Elapsed", color.yellow, f"{elapsed:.4f} sec")
 
 # -----------------------------------------------------------------------------
 # descript: message output for debug
@@ -90,6 +90,6 @@ def message_elapsed(function_name, elapsed):
 #   global: program_name     : read
 # -----------------------------------------------------------------------------
 def message_debug(function_name, mode, message_color, message):
-    eprint(f"{color.reset}{message_color}{my_config.program_name}({function_name}):{mode:^10}:{message}{color.reset}", my_config.col_size)
+    eprint(f"{color.reset}{message_color}{function_name:<30}:{mode:^10}:{message}{color.reset}", my_config.col_size)
 
 # --- eof ---------------------------------------------------------------------

@@ -128,4 +128,34 @@ def eprint(text: str, max_width = 80):
 
     print(f"{txt_split}")
 
+# -----------------------------------------------------------------------------
+# descript: Encoding whitespace characters on a per-list basis
+#   input : list             : input
+#   output:                  : unused
+#   return: list             : output
+#   global:                  : unused
+# -----------------------------------------------------------------------------
+def spc_encode(list):
+    for line in list:
+        for key, value in line.items():
+            if not isinstance(value, str): continue
+            line[key] = value.replace(' ', '%20')
+#           line[key] = urllib.parse.quote(value, safe='')
+    return list
+
+# -----------------------------------------------------------------------------
+# descript: Decoding whitespace characters on a per-list basis
+#   input : list             : input
+#   output:                  : unused
+#   return: list             : output
+#   global:                  : unused
+# -----------------------------------------------------------------------------
+def spc_decode(list):
+    for line in list:
+        for key, value in line.items():
+            if not isinstance(value, str): break
+            line[key] = value.replace('%20', ' ')
+#           line[key] = urllib.parse.unquote(value)
+    return list
+
 # --- eof ---------------------------------------------------------------------
