@@ -34,14 +34,13 @@ from py_common.my_message import message_debug
 #from py_common.my_infofile import Infofile, get_fileinfo
 #from py_common.my_infodata import Infodata, debug_info, get_infodata
 
-
 # -----------------------------------------------------------------------------
-from dataclasses_json import dataclass_json
-from dataclasses import dataclass
+#from dataclasses_json import dataclass_json
+from dataclasses import dataclass, asdict
 
-@dataclass_json
+#@dataclass_json
 @dataclass
-class Info_distribution:
+class Data_distribution:
     version:     str = ""
     name:        str = ""
     version_id:  str = ""
@@ -57,46 +56,67 @@ class Info_distribution:
     create_flag: str = ""
     sort_flag:   str = ""
 
+class Info_distribution:
+    def __init__(self):
+        self.data = Data_distribution
+    def load(self, path):
+        self.data = load(path)
+    def save(self, path):
+        save(path, self.data)
+
+# ----------------------------# -----------------------------------------------------------------------------
+# descript: hook function for load
+#   input : dict             : input
+#   output:                  : unused
+#   return: result           : output
+#   global:                  : unused
+# -----------------------------------------------------------------------------
+def from_json(dict):
+    return Data_distribution(**dict)
+
+# -----------------------------------------------------------------------------
+# descript: hook function for save
+#   input : dict             : input
+#   output:                  : unused
+#   return: result           : output
+#   global:                  : unused
+# -----------------------------------------------------------------------------
+def to_json(objs):
+    return [asdict(obj) for obj in objs]
+
 # -----------------------------------------------------------------------------
 # descript: load distribution information in json format
 #   input : path             : input
 #   output:                  : unused
-#   return: data             : output
+#   return: obj              : output
 #   global:                  : unused
 # -----------------------------------------------------------------------------
 def load(path):
     function_name = inspect.currentframe().f_code.co_name
     debugout(function_name, "Start", color.yellow, "")
     # -------------------------------------------------------------------------
-    debugout(function_name, "Info", color.yellow, "Debug mode on")
+    obj = None
     with open(path, "r", encoding='utf-8') as f:
-        json_str = json.load(f)
-    for line in json_str:
-        for key in line.keys:
-            line[key] = line[key].replace(r" ", r"%20")
+        obj = json.load(f, object_hook=from_json)
     # -------------------------------------------------------------------------
     debugout(function_name, "Complete", color.yellow, "")
-    return Info_distribution.from_json(json_str)
+    return obj
 
 # -----------------------------------------------------------------------------
 # descript: save distribution information in json format
 #   input : path             : input
-#   input : data             : input
+#   input : items            : input
 #   output:                  : unused
 #   return:                  : output
 #   global:                  : unused
 # -----------------------------------------------------------------------------
-def save(path, data):
+def save(path, items):
     function_name = inspect.currentframe().f_code.co_name
     debugout(function_name, "Start", color.yellow, "")
     # -------------------------------------------------------------------------
-    debugout(function_name, "Info", color.yellow, "Debug mode on")
-    json_str = Info_distribution.to_json(data)
-    for line in json_str:
-        for key in line.keys:
-            line[key] = line[key].replace(r" ", r"%20")
+    obj = to_json(items)
     with open(path, "w", encoding='utf-8') as f:
-        json.dump(json_str, f, ensure_ascii=False, indent=4)
+        json.dump(obj, f, ensure_ascii=False, indent=4)
     # -------------------------------------------------------------------------
     debugout(function_name, "Complete", color.yellow, "")
 

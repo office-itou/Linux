@@ -24,8 +24,8 @@ from py_common.my_debug  import debugout
 from py_common.my_message import message_start, message_end, message_elapsed, message_debug
 
 from py_common.my_common_cfg       import Common_cfg
-from py_common.my_distribution_dat import Info_distribution, load, save
-from py_common.my_media_dat        import Info_media, load, save
+from py_common.my_distribution_dat import Info_distribution
+from py_common.my_media_dat        import Info_media
 
 #from py_common.my_infoweb  import Infoweb, get_webinfo
 #from py_common.my_infofile import Infofile, get_fileinfo
@@ -59,6 +59,29 @@ def initialize():
     # -------------------------------------------------------------------------
     debugout(function_name, "Complete", color.yellow, "")
     return
+
+# -----------------------------------------------------------------------------
+# descript: get data
+#   input :                  : unused
+#   output:                  : unused
+#   return:                  : unused
+#   global:                  : unused
+# -----------------------------------------------------------------------------
+def get_data():
+#from py_common.my_common_cfg       import Common_cfg
+#from py_common.my_distribution_dat import Info_distribution
+#from py_common.my_media_dat        import Info_media
+    dist = Info_distribution()
+    dist.load("/srv/user/share/conf/_data/distribution.dat.json")
+    mdia = Info_media()
+    mdia.load("/srv/user/share/conf/_data/media.dat.json")
+    print("-" * my_config.col_size)
+    for line in dist.data:
+        print(line.version)
+    print("-" * my_config.col_size)
+#    for line in mdia.data:
+#        print(line)
+#    print("-" * my_config.col_size)
 
 # -----------------------------------------------------------------------------
 # descript: main
@@ -97,6 +120,7 @@ def main():
     message_start(function_name)
     # --- processing block ----------------------------------------------------
     initialize()
+    get_data()
     # --- termination process -------------------------------------------------
     message_end(function_name)
     # --- elapsed end ---------------------------------------------------------
