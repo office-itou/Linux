@@ -11,7 +11,7 @@ from datetime import datetime
 #import os
 
 # --- my library --------------------------------------------------------------
-#topdir = "/home/master/linux/script/py_custom_cmd/src"
+#topdir = '/home/master/linux/script/py_custom_cmd/src'
 #import sys
 #sys.path.append(topdir)
 
@@ -43,7 +43,7 @@ from py_common.my_string import eprint
 # -----------------------------------------------------------------------------
 def message_common(function_name, mode, message_color, date_time):
     message = f"{function_name:<30}:{mode:^10}:--- {date_time} "
-    message += "-" * (my_config.col_size - count_width(message))
+    message += '-' * (my_config.col_size - count_width(message))
     eprint(f"{color.reset}{message_color}{message}{color.reset}", my_config.col_size)
 
 # -----------------------------------------------------------------------------
@@ -54,8 +54,8 @@ def message_common(function_name, mode, message_color, date_time):
 #   global: program_name     : read
 # -----------------------------------------------------------------------------
 def message_start(function_name):
-    date_time = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-    message_common(f"{my_config.program_name}({function_name})", "Start", color.green, date_time)
+    date_time = datetime.now().strftime('%Y/%m/%d %H:%M:%S')
+    message_common(f"{my_config.program_name}({function_name})", 'Start', color.green, date_time)
 
 # -----------------------------------------------------------------------------
 # descript: message output for termination
@@ -65,8 +65,8 @@ def message_start(function_name):
 #   global: program_name     : read
 # -----------------------------------------------------------------------------
 def message_end(function_name):
-    date_time = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-    message_common(f"{my_config.program_name}({function_name})", "Complete", color.green, date_time)
+    date_time = datetime.now().strftime('%Y/%m/%d %H:%M:%S')
+    message_common(f"{my_config.program_name}({function_name})", 'Complete', color.green, date_time)
 
 # -----------------------------------------------------------------------------
 # descript: message output for elapsed time
@@ -77,7 +77,7 @@ def message_end(function_name):
 #   global:                  : unused
 # -----------------------------------------------------------------------------
 def message_elapsed(function_name, elapsed):
-    message_debug(f"{my_config.program_name}({function_name})", "Elapsed", color.yellow, f"{elapsed:.4f} sec")
+    message_debug(f"{my_config.program_name}({function_name})", 'Elapsed', color.yellow, f"{elapsed:.4f} sec")
 
 # -----------------------------------------------------------------------------
 # descript: message output for debug

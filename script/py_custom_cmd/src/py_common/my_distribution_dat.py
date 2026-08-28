@@ -14,7 +14,7 @@ import json
 import csv
 
 # --- my library --------------------------------------------------------------
-#topdir = "/home/master/linux/script/py_custom_cmd/src"
+#topdir = '/home/master/linux/script/py_custom_cmd/src'
 #import sys
 #sys.path.append(topdir)
 
@@ -41,20 +41,20 @@ from dataclasses import dataclass, asdict
 #@dataclass_json
 @dataclass
 class Data_distribution:
-    version:     str = ""
-    name:        str = ""
-    version_id:  str = ""
-    code_name:   str = ""
-    life:        str = ""
-    release:     str = ""
-    support:     str = ""
-    long_term:   str = ""
-    rhel:        str = ""
-    kerne:       str = ""
-    note:        str = ""
-    wallpaper:   str = ""
-    create_flag: str = ""
-    sort_flag:   str = ""
+    version:     str = ''
+    name:        str = ''
+    version_id:  str = ''
+    code_name:   str = ''
+    life:        str = ''
+    release:     str = ''
+    support:     str = ''
+    long_term:   str = ''
+    rhel:        str = ''
+    kerne:       str = ''
+    note:        str = ''
+    wallpaper:   str = ''
+    create_flag: str = ''
+    sort_flag:   str = ''
 
 class Info_distribution:
     def __init__(self):
@@ -93,13 +93,13 @@ def to_json(objs):
 # -----------------------------------------------------------------------------
 def load(path):
     function_name = inspect.currentframe().f_code.co_name
-    debugout(function_name, "Start", color.yellow, "")
+    debugout(function_name, 'Start', color.yellow, '')
     # -------------------------------------------------------------------------
     obj = None
-    with open(path, "r", encoding='utf-8') as f:
+    with open(path, 'r', encoding='utf-8') as f:
         obj = json.load(f, object_hook=from_json)
     # -------------------------------------------------------------------------
-    debugout(function_name, "Complete", color.yellow, "")
+    debugout(function_name, 'Complete', color.yellow, '')
     return obj
 
 # -----------------------------------------------------------------------------
@@ -112,12 +112,12 @@ def load(path):
 # -----------------------------------------------------------------------------
 def save(path, items):
     function_name = inspect.currentframe().f_code.co_name
-    debugout(function_name, "Start", color.yellow, "")
+    debugout(function_name, 'Start', color.yellow, '')
     # -------------------------------------------------------------------------
     obj = to_json(items)
-    with open(path, "w", encoding='utf-8') as f:
+    with open(path, 'w', encoding='utf-8') as f:
         json.dump(obj, f, ensure_ascii=False, indent=4)
     # -------------------------------------------------------------------------
-    debugout(function_name, "Complete", color.yellow, "")
+    debugout(function_name, 'Complete', color.yellow, '')
 
 # --- eof ---------------------------------------------------------------------

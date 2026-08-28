@@ -14,7 +14,7 @@ import json
 import csv
 
 # --- my library --------------------------------------------------------------
-#topdir = "/home/master/linux/script/py_custom_cmd/src"
+#topdir = '/home/master/linux/script/py_custom_cmd/src'
 #import sys
 #sys.path.append(topdir)
 
@@ -41,35 +41,35 @@ from dataclasses import dataclass, asdict
 #@dataclass_json
 @dataclass
 class Data_media:
-    type:        str = ""
-    entry_flag:  str = ""
-    entry_name:  str = ""
-    entry_disp:  str = ""
-    version:     str = ""
-    latest:      str = ""
-    release:     str = ""
-    support:     str = ""
-    web_regexp:  str = ""
-    web_path:    str = ""
-    web_tstamp:  str = ""
-    web_size:    str = ""
-    web_check:   str = ""
-    web_status:  str = ""
-    iso_path:    str = ""
-    iso_tstamp:  str = ""
-    iso_size:    str = ""
-    iso_volume:  str = ""
-    rmk_path:    str = ""
-    rmk_tstamp:  str = ""
-    rmk_size:    str = ""
-    rmk_volume:  str = ""
-    ldr_initrd:  str = ""
-    ldr_kernel:  str = ""
-    cfg_path:    str = ""
-    cfg_tstamp:  str = ""
-    lnk_path:    str = ""
-    options:     str = ""
-    create_flag: str = ""
+    type:        str = ''
+    entry_flag:  str = ''
+    entry_name:  str = ''
+    entry_disp:  str = ''
+    version:     str = ''
+    latest:      str = ''
+    release:     str = ''
+    support:     str = ''
+    web_regexp:  str = ''
+    web_path:    str = ''
+    web_tstamp:  str = ''
+    web_size:    str = ''
+    web_check:   str = ''
+    web_status:  str = ''
+    iso_path:    str = ''
+    iso_tstamp:  str = ''
+    iso_size:    str = ''
+    iso_volume:  str = ''
+    rmk_path:    str = ''
+    rmk_tstamp:  str = ''
+    rmk_size:    str = ''
+    rmk_volume:  str = ''
+    ldr_initrd:  str = ''
+    ldr_kernel:  str = ''
+    cfg_path:    str = ''
+    cfg_tstamp:  str = ''
+    lnk_path:    str = ''
+    options:     str = ''
+    create_flag: str = ''
 
 class Info_media:
     def __init__(self):
@@ -108,13 +108,13 @@ def to_json(objs):
 # -----------------------------------------------------------------------------
 def load(path):
     function_name = inspect.currentframe().f_code.co_name
-    debugout(function_name, "Start", color.yellow, "")
+    debugout(function_name, 'Start', color.yellow, '')
     # -------------------------------------------------------------------------
     obj = None
-    with open(path, "r", encoding='utf-8') as f:
+    with open(path, 'r', encoding='utf-8') as f:
         obj = json.load(f, object_hook=from_json)
     # -------------------------------------------------------------------------
-    debugout(function_name, "Complete", color.yellow, "")
+    debugout(function_name, 'Complete', color.yellow, '')
     return obj
 
 # -----------------------------------------------------------------------------
@@ -127,12 +127,12 @@ def load(path):
 # -----------------------------------------------------------------------------
 def save(path, items):
     function_name = inspect.currentframe().f_code.co_name
-    debugout(function_name, "Start", color.yellow, "")
+    debugout(function_name, 'Start', color.yellow, '')
     # -------------------------------------------------------------------------
     obj = to_json(items)
-    with open(path, "w", encoding='utf-8') as f:
+    with open(path, 'w', encoding='utf-8') as f:
         json.dump(obj, f, ensure_ascii=False, indent=4)
     # -------------------------------------------------------------------------
-    debugout(function_name, "Complete", color.yellow, "")
+    debugout(function_name, 'Complete', color.yellow, '')
 
 # --- eof ---------------------------------------------------------------------

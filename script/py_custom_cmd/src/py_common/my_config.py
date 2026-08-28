@@ -11,8 +11,8 @@ debug_flag = False
 debugout_flag = False
 
 # --- global: system ----------------------------------------------------------
-program_name = ""
-col_size = ""
-row_size = ""
+program_name = ''
+col_size = ''
+row_size = ''
 
 # --- eof ---------------------------------------------------------------------

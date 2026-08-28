@@ -11,7 +11,7 @@ from datetime import datetime
 #import os
 
 # --- my library --------------------------------------------------------------
-#topdir = "/home/master/linux/script/py_custom_cmd/src"
+#topdir = r"/home/master/linux/script/py_custom_cmd/src"
 #import sys
 #sys.path.append(topdir)
 
@@ -39,15 +39,15 @@ from py_common.my_message import message_debug
 #   global:                  : unused
 # -----------------------------------------------------------------------------
 def debugout_scale(size):
-        gap = "-" * size
-        scale_u = ""
-        scale_m = ""
-        scale_l = ""
+        gap = '-' * size
+        scale_u = ''
+        scale_m = ''
+        scale_l = ''
         for i in range(1, size + 1):
             u, m = divmod(i, 100)
             m, l = divmod(i, 10)
-            scale_u += str(u)[-1] if l == 0 else " "
-            scale_m += str(m)[-1] if l == 0 else " "
+            scale_u += str(u)[-1] if l == 0 else ' '
+            scale_m += str(m)[-1] if l == 0 else ' '
             scale_l += str(l)
 #       print(gap)
 #       print(scale_u)

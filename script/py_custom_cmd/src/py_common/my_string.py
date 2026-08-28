@@ -13,13 +13,13 @@ import re
 import unicodedata
 
 # --- my library --------------------------------------------------------------
-#topdir = "/home/master/linux/script/py_custom_cmd/src"
+#topdir = '/home/master/linux/script/py_custom_cmd/src'
 #import sys
 #sys.path.append(topdir)
 
 #import py_common.my_config as my_config
 #from py_common.my_config import debug_flag, debugout_flag, program_name, col_size, row_size
-#from py_common.my_colors import color
+from py_common.my_colors import code, color
 #from py_common.my_string import count_width
 #from py_common.my_string import eprint
 #from py_common.my_debug  import debugout
@@ -61,7 +61,7 @@ def count_half_width(text: str):
 #   global:                  : unused
 # -----------------------------------------------------------------------------
 def count_width(text: str):
-    return count_full_width(text) + count_half_width(text)
+    return count_full_width(text) * 2 + count_half_width(text)
 
 # -----------------------------------------------------------------------------
 # descript: character count for full-width and half-width characters on the screen
@@ -71,7 +71,7 @@ def count_width(text: str):
 #   global:                  : unused
 # -----------------------------------------------------------------------------
 def get_char_width(char: str):
-  return 2 if unicodedata.east_asian_width(char) in ("W", "F", "A") else 1
+  return 2 if unicodedata.east_asian_width(char) in ('W', 'F', 'A') else 1
 
 # -----------------------------------------------------------------------------
 # descript: character splitting for full-width and half-width characters on the screen
@@ -83,7 +83,7 @@ def get_char_width(char: str):
 # -----------------------------------------------------------------------------
 def split_by_width(text: str, max_width = 80):
     lines = []
-    current_line = ""
+    current_line = ''
     current_width = 0
 
     for char in text:
@@ -110,23 +110,23 @@ def split_by_width(text: str, max_width = 80):
 #   global:                  : unused
 # -----------------------------------------------------------------------------
 def eprint(text: str, max_width = 80):
-#   escape_cd = r"\x1b"
-    ptn_escpe = r"\x1b\[[0-9;]*[mG]"
+#   escape_cd = '\x1b'
+    ptn_escpe = r"\x1b\[[0-9;]*[mG]"    # escape codes are also treated as strings.
     txt_split = text
-    txt_plain = re.sub(ptn_escpe, "", text)
-    len_split = count_half_width(txt_split) + count_full_width(txt_split) * 2
-    len_plain = count_half_width(txt_plain) + count_full_width(txt_plain) * 2
+    txt_plain = re.sub(ptn_escpe, '', text)
+    len_split = count_width(txt_split)
+    len_plain = count_width(txt_plain)
     len_escpe = len_split - len_plain
-    if len(txt_plain) > max_width:      # txt_plain text length > console width
+    if count_width(txt_plain) > max_width:  # txt_plain text length > console width
         while True:
             txt_split = split_by_width(txt_split, max_width + len_escpe)
-            txt_plain = re.sub(ptn_escpe, "", txt_split)
-            len_split = count_half_width(txt_split) + count_full_width(txt_split) * 2
-            len_plain = count_half_width(txt_plain) + count_full_width(txt_plain) * 2
+            txt_plain = re.sub(ptn_escpe, '', txt_split)
+            len_split = count_width(txt_split)
+            len_plain = count_width(txt_plain)
             len_escpe = len_split - len_plain
             if len_plain <= max_width: break
 
-    print(f"{txt_split}")
+    print(f"{color.reset}{txt_split}{color.reset}")
 
 # -----------------------------------------------------------------------------
 # descript: Encoding whitespace characters on a per-list basis

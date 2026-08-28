@@ -2,10 +2,6 @@
 # encoding: utf-8
 
 # --- Python library ----------------------------------------------------------
-#topdir = "/home/master/linux/script/py_custom_cmd/src"
-#import sys
-#sys.path.append(topdir)
-
 #from pathlib import Path
 #import argparse
 import inspect
@@ -18,7 +14,7 @@ import json
 import csv
 
 # --- my library --------------------------------------------------------------
-#topdir = "/home/master/linux/script/py_custom_cmd/src"
+#topdir = '/home/master/linux/script/py_custom_cmd/src'
 #import sys
 #sys.path.append(topdir)
 
@@ -47,13 +43,13 @@ from py_common.my_debug   import debugout
 # -----------------------------------------------------------------------------
 def load_json(path, hook):
     function_name = inspect.currentframe().f_code.co_name
-    debugout(function_name, "Start", color.yellow, "")
+    debugout(function_name, 'Start', color.yellow, '')
     # -------------------------------------------------------------------------
     obj = None
-    with open(path, "r", encoding='utf-8') as f:
+    with open(path, 'r', encoding='utf-8') as f:
         obj = json.load(f, object_hook=hook)
     # -------------------------------------------------------------------------
-    debugout(function_name, "Complete", color.yellow, "")
+    debugout(function_name, 'Complete', color.yellow, '')
     return obj
 
 # -----------------------------------------------------------------------------
@@ -66,12 +62,12 @@ def load_json(path, hook):
 # -----------------------------------------------------------------------------
 def save_json(path, obj):
     function_name = inspect.currentframe().f_code.co_name
-    debugout(function_name, "Start", color.yellow, "")
+    debugout(function_name, 'Start', color.yellow, '')
     # -------------------------------------------------------------------------
-    with open(path, "w", encoding='utf-8') as f:
+    with open(path, 'w', encoding='utf-8') as f:
         json.dump(obj, f, ensure_ascii=False, indent=4)
     # -------------------------------------------------------------------------
-    debugout(function_name, "Complete", color.yellow, "")
+    debugout(function_name, 'Complete', color.yellow, '')
 
 # -----------------------------------------------------------------------------
 # descript: text file to json
@@ -82,12 +78,12 @@ def save_json(path, obj):
 # -----------------------------------------------------------------------------
 def get_text2json(path):
     function_name = inspect.currentframe().f_code.co_name
-    debugout(function_name, "Start", color.yellow, "")
+    debugout(function_name, 'Start', color.yellow, '')
     # -------------------------------------------------------------------------
-    text = list(csv.DictReader(re.sub(r"[ \t]+", ",", line.strip()) for line in open(path, "r", encoding="utf-8", newline="")))
+    text = list(csv.DictReader(re.sub(r"[ \t]+", ",", line.strip()) for line in open(path, 'r', encoding='utf-8', newline='')))
     data = json.dumps(text, ensure_ascii=False)
     # -------------------------------------------------------------------------
-    debugout(function_name, "Complete", color.yellow, "")
+    debugout(function_name, 'Complete', color.yellow, '')
     return data
 
 # -----------------------------------------------------------------------------
@@ -101,7 +97,7 @@ def get_text2json(path):
 # -----------------------------------------------------------------------------
 def put_json2text(path, data, format):
     function_name = inspect.currentframe().f_code.co_name
-    debugout(function_name, "Start", color.yellow, "")
+    debugout(function_name, 'Start', color.yellow, '')
     # -------------------------------------------------------------------------
     list = json.loads(data)
     keys = dict()
@@ -110,9 +106,9 @@ def put_json2text(path, data, format):
     text = [format.format(**keys)]
     for line in list:
         text.append(format.format(**line))
-    with open(path, "w", encoding="utf-8") as f:
-        f.write("\n".join(text) + "\n")
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(f"\n".join(text) + f"\n")
     # -------------------------------------------------------------------------
-    debugout(function_name, "Complete", color.yellow, "")
+    debugout(function_name, 'Complete', color.yellow, '')
 
 # --- eof ---------------------------------------------------------------------
