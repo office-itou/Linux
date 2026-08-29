@@ -1,12 +1,20 @@
+#topdir = '/home/master/linux/script/py_custom_cmd/src'
+#import sys
+#sys.path.append(topdir)
+
 from . import my_config
 from . import my_colors
 from . import my_string
 from . import my_message
+from . import my_debug
+from . import my_process
 from . import my_json
+from . import my_markdown
+
 from . import my_common_cfg
 from . import my_distribution_dat
 from . import my_media_dat
-from . import my_process
-from . import my_infoweb
-from . import my_infofile
-from . import my_infodata
+
+#from . import my_infoweb
+#from . import my_infofile
+#from . import my_infodata

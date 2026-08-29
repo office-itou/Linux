@@ -2,9 +2,8 @@
 # encoding: utf-8
 
 # --- Python library ----------------------------------------------------------
-import csv
 import inspect
-import json
+import pandas as pd
 import re
 
 #import os
@@ -43,7 +42,6 @@ import re
 #topdir = Path(Path.home(), '/linux/script/py_custom_cmd/src')
 #sys.path.append(topdir)
 
-
 #from py_common.my_config            import infosystem
 from py_common.my_colors            import color
 #from py_common.my_string            import eprint, count_width
@@ -62,80 +60,82 @@ from py_common.my_debug             import debugout
 #from py_common.my_infodata          import Infodata, debug_info, get_infodata
 
 # -----------------------------------------------------------------------------
-# descript: load data in json format
-#   input : path             : input
-#   output:                  : unused
-#   return: obj              : output
-#   global:                  : unused
-# -----------------------------------------------------------------------------
-def load_json(path, hook):
-    function_name = inspect.currentframe().f_code.co_name
-    debugout(function_name, 'Start', color.yellow, '')
-    # -------------------------------------------------------------------------
-    obj = None
-    with open(path, 'r', encoding='utf-8') as f:
-        obj = json.load(f, object_hook=hook)
-    # -------------------------------------------------------------------------
-    debugout(function_name, 'Complete', color.yellow, '')
-    return obj
-
-# -----------------------------------------------------------------------------
-# descript: save distridata in json format
-#   input : path             : input
-#   input : obj              : input
-#   output:                  : unused
-#   return:                  : output
-#   global:                  : unused
-# -----------------------------------------------------------------------------
-def save_json(path, obj):
-    function_name = inspect.currentframe().f_code.co_name
-    debugout(function_name, 'Start', color.yellow, '')
-    # -------------------------------------------------------------------------
-    with open(path, 'w', encoding='utf-8') as f:
-        json.dump(obj, f, ensure_ascii=False, indent=4)
-    # -------------------------------------------------------------------------
-    debugout(function_name, 'Complete', color.yellow, '')
-
-# -----------------------------------------------------------------------------
-# descript: text file to json
-#   input : path             : input
-#   output:                  : unused
-#   return: data             : output
-#   global:                  : unused
-# -----------------------------------------------------------------------------
-def get_text2json(path):
-    function_name = inspect.currentframe().f_code.co_name
-    debugout(function_name, 'Start', color.yellow, '')
-    # -------------------------------------------------------------------------
-    text = list(csv.DictReader(re.sub(r"[ \t]+", ",", line.strip()) for line in open(path, 'r', encoding='utf-8', newline='')))
-    data = json.dumps(text, ensure_ascii=False)
-    # -------------------------------------------------------------------------
-    debugout(function_name, 'Complete', color.yellow, '')
-    return data
-
-# -----------------------------------------------------------------------------
-# descript: json to text file
-#   input : path             : input
+# descript: Encoding whitespace characters and html on a per-list basis
 #   input : data             : input
-#   input : format           : input
+#   output:                  : unused
+#   return: list             : output
+#   global:                  : unused
+# -----------------------------------------------------------------------------
+def spc_encode4md(data: list) -> list:
+    conv = data.copy()
+    for line in conv:
+        for key, value in line.items():
+            if not isinstance(value, str): break
+            value = re.sub('^`(http[|s]:[^ ]+)`', '\1', value)
+            value = re.sub(' ', '%20', value)
+            line[key] = value
+            print(line[key])
+#           line[key] = urllib.parse.unquote(value)
+    return conv
+
+# -----------------------------------------------------------------------------
+# descript: Decoding whitespace characters and html on a per-list basis
+#   input : list             : input
+#   output:                  : unused
+#   return: list             : output
+#   global:                  : unused
+# -----------------------------------------------------------------------------
+def spc_decode4md(data: list) -> list:
+    conv = data.copy()
+    for line in conv:
+        for key, value in line.items():
+            if not isinstance(value, str): break
+            value = re.sub('^(http[|s]:[^ ]+)', r"`\1`", value)
+            value = re.sub('%20', ' ', value)
+            value = re.sub(':_', r":\\_", value)
+            value = re.sub('_:', r"\\_:", value)
+            line[key] = value
+#           line[key] = urllib.parse.unquote(value)
+    return conv
+
+# -----------------------------------------------------------------------------
+# descript: markdown output of json data
+#   input : path             : unused
+#   input : title            : unused
+#   input : data             : unused
 #   output:                  : unused
 #   return:                  : unused
 #   global:                  : unused
 # -----------------------------------------------------------------------------
-def put_json2text(path, data, format):
+def json2markdown(path: str, title: str, data: list):
     function_name = inspect.currentframe().f_code.co_name
-    debugout(function_name, 'Start', color.yellow, '')
+    debugout(function_name, 'Start', color.yellow, f"({path})")
     # -------------------------------------------------------------------------
-    list = json.loads(data)
-    keys = dict()
-    for key, value in list[0].items():
-        keys[key] = key
-    text = [format.format(**keys)]
-    for line in list:
-        text.append(format.format(**line))
+    text      = spc_decode4md(data.copy())
+    colssize  = []
+    spc = ' ' * 2
+    header    = ''
+    align     = ''
+    df = pd.DataFrame(text)
+    for name in df.columns.to_list():
+        values = df[name].values
+        max_val = max(values, key=len)
+        colsize = len(max_val) if len(max_val) >= len(name) else len(name)
+        colssize.append(colsize)
+        header += f"|{name:^{colsize}}"
+        align += '|:' + '-' * (colsize - 1)
+    header += '|'
+    align += '|'
+    md_text = f"# Data table\n\n* {title}\n\n{spc}{header}\n{spc}{align}\n"
+    for index, row in df.iterrows():
+        md_line = ''
+        for i, name in enumerate(df.columns.to_list()):
+            colsize = colssize[i]
+            md_line += f"|{row[name]:<{colsize}}"
+        md_text += f"{spc}{md_line}|\n"
     with open(path, 'w', encoding='utf-8') as f:
-        f.write(f"\n".join(text) + f"\n")
-    # -------------------------------------------------------------------------
-    debugout(function_name, 'Complete', color.yellow, '')
+        f.write(md_text)
+     # -------------------------------------------------------------------------
+    debugout(function_name, 'Complete', color.yellow, f"({path})")
 
 # --- eof ---------------------------------------------------------------------

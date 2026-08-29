@@ -2,34 +2,58 @@
 # encoding: utf-8
 
 # --- Python library ----------------------------------------------------------
-from pathlib import Path
-import argparse
-import inspect
-from datetime import datetime
-import time
-import shutil
 import os
+import inspect
+import time
+import argparse
+
+#from aiohttp import ClientError, ClientTimeout
+#from bs4 import BeautifulSoup
+#from dataclasses import dataclass
+#from dataclasses import dataclass, asdict
+#from datetime import datetime
+#from datetime import datetime, timedelta
+#from datetime import datetime, timezone
+#from natsort import natsort_keygen
+#from pathlib import Path
+#from tqdm import tqdm
+#from urllib.parse import urlparse
+#import aiohttp # sudo apt-get install python3-aiohttp
+#import asyncio
+#import csv
+#import dataclasses
+#import json
+#import magic # sudo apt-get install python3-magic
+#import pandas as pd
+#import re
+#import shutil
+#import subprocess
+#import sys
+#import unicodedata
+#import __main__
 
 # --- my library --------------------------------------------------------------
-#topdir = "/home/master/linux/script/py_custom_cmd/src"
+#from pathlib import Path
 #import sys
+#topdir = Path(Path.home(), '/linux/script/py_custom_cmd/src')
 #sys.path.append(topdir)
 
-import py_common.my_config as my_config
-#from py_common.my_config import debug_flag, debugout_flag, program_name, col_size, row_size
-from py_common.my_colors import color
-#from py_common.my_string import count_width
-#from py_common.my_string import eprint
-from py_common.my_debug  import debugout
-from py_common.my_message import message_start, message_end, message_elapsed, message_debug
+from py_common.my_config            import infosystem
+from py_common.my_colors            import color
+#from py_common.my_string            import eprint, count_width
+from py_common.my_message           import message_start, message_end, message_elapsed, message_debug, message_info, message_warn, message_alert
+from py_common.my_debug             import debugout
+#from py_common.my_process           import run_subprocess
+#from py_common.my_json              import load_json, save_json, get_text2json, put_json2text
+#from py_common.my_markdown          import json2markdown, spc_encode4md, spc_decode4md
 
-#from py_common.my_common_cfg       import Common_cfg
-#from py_common.my_distribution_dat import Distribution_dat
-#from py_common.my_media_dat        import Media_dat
+#from py_common.my_common_cfg        import InfoConfiguration, conv2data, conv2variable
+#from py_common.my_distribution_dat  import InfoDistribution
+#from py_common.my_media_dat         import InfoMedia, conv2data, conv2variable
 
-#from py_common.my_infoweb  import Infoweb, get_webinfo
-#from py_common.my_infofile import Infofile, get_fileinfo
-#from py_common.my_infodata import Infodata, debug_info, get_infodata
+#from py_common.my_infoweb           import Infoweb, get_webinfo
+#from py_common.my_infofile          import Infofile, get_fileinfo
+#from py_common.my_infodata          import Infodata, debug_info, get_infodata
 
 # -----------------------------------------------------------------------------
 # descript: args parser
@@ -40,9 +64,17 @@ from py_common.my_message import message_start, message_end, message_elapsed, me
 # -----------------------------------------------------------------------------
 def argsparser():
     parser = argparse.ArgumentParser(allow_abbrev=False)
-    parser.add_argument('--debug', help='Debug mode', action='store_true')
+    parser.add_argument('--debug'   , help='Debug mode'                 , action='store_true')
     parser.add_argument('--debugout', help='Debug mode for display only', action='store_true')
-    return parser.parse_args()
+    try:
+        args = parser.parse_args()
+    except:
+        pass
+    else:
+        infosystem.data.args = args
+    if infosystem.data.args:
+        infosystem.data.debug    = infosystem.data.args.debug
+        infosystem.data.debugout = infosystem.data.args.debugout if infosystem.data.debug != True else True
 
 # -----------------------------------------------------------------------------
 # descript: initialize
@@ -55,7 +87,10 @@ def initialize():
     function_name = inspect.currentframe().f_code.co_name
     debugout(function_name, "Start", color.yellow, "")
     # -------------------------------------------------------------------------
-    debugout(function_name, "Info", color.yellow, "Debug mode on")
+    if infosystem.data.debug == True:
+        message_info(function_name, 'Debug mode on')
+    if infosystem.data.debugout == True:
+        message_info(function_name, 'Debugout mode on')
     # -------------------------------------------------------------------------
     debugout(function_name, "Complete", color.yellow, "")
     return
@@ -72,6 +107,12 @@ def initialize():
 #   global: row_size         : read/write
 # -----------------------------------------------------------------------------
 def main():
+    # --- check the executing user --------------------------------------------
+    if os.geteuid() != 0:
+        print(f"{color.reset}{color.br_green}{infosystem.data.program_name}:\n{color.br_yellow} You have standard user privileges. {color.underline}Please run this with sudo.{color.reset}")
+        exit(1)
+    # --- system parameters ---------------------------------------------------
+    function_name = inspect.currentframe().f_code.co_name
     # --- elapsed start--------------------------------------------------------
     start = time.perf_counter()
     # --- global variable -----------------------------------------------------
@@ -80,23 +121,12 @@ def main():
 #   global program_name
 #   global col_size
 #   global row_size
-    # --- command options -----------------------------------------------------
-    args = argsparser()
-    my_config.debug_flag = args.debug
-    my_config.debugout_flag = args.debugout if my_config.debug_flag != True else True
-    # --- system parameters ---------------------------------------------------
-    my_config.program_name = Path(__file__).name
-    my_config.col_size = shutil.get_terminal_size().columns
-    my_config.row_size = shutil.get_terminal_size().lines
-    function_name = inspect.currentframe().f_code.co_name
-    # --- check the executing user --------------------------------------------
-    if os.geteuid() != 0:
-        message_debug(function_name, "Warning", color.br_yellow, "You have standard user privileges. Please run this with sudo.")
-        exit(1)
     # --- startup process -----------------------------------------------------
     message_start(function_name)
     # --- processing block ----------------------------------------------------
-    initialize()
+    argsparser()
+    if infosystem.data.args:
+        initialize()
     # --- termination process -------------------------------------------------
     message_end(function_name)
     # --- elapsed end ---------------------------------------------------------
