@@ -80,15 +80,17 @@ class InfoConfiguration:
     def load(self):
         self.data = load()
 
+    def markdown(self, path: str, title: str):
+        data = list()
+        for key, value in self.data.items():
+            data.append({'key': key, 'value': value})
+        json2markdown(path, title, data)
+
     def conv2data(self, data: list) -> str:
         return conv2data(self.data, data)
 
     def conv2variable(self, data: list) -> str:
         return conv2variable(self.data, data)
-
-    def markdown(self, path: str, title: str):
-        data = list(self.data)
-        json2markdown(path, title, data)
 
 # -----------------------------------------------------------------------------
 # descript: load data in common.cfg

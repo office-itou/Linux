@@ -179,13 +179,13 @@ def test():
 
     dist = InfoDistribution()
     dist.load(path_dist)
-#    dump(dist.data)
+    dump(dist.data)
 
     mdia = InfoMedia()
     mdia.load(path_mdia)
 #    dump(mdia.data)
 
-#    conf.markdown(mkdw_conf, titl_conf)
+    conf.markdown(mkdw_conf, titl_conf)
     dist.markdown(mkdw_dist, titl_dist)
     mdia.markdown(mkdw_mdia, titl_mdia)
 

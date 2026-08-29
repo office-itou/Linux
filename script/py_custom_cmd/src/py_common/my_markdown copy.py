@@ -6,7 +6,6 @@ import inspect
 import json
 import pandas as pd
 import re
-import pprint
 
 #import os
 #import inspect
@@ -107,29 +106,6 @@ def spc_decode4md_sub(data: list) -> list:
 #   global:                  : unused
 # -----------------------------------------------------------------------------
 def spc_decode4md(data: list) -> list:
-    url_pattern = re.compile(
-        r'^(?:http[s]?://)?'
-        r'(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+'
-        r'[a-zA-Z]{2,}'
-        r'(?:/[a-zA-Z0-9._~:/?#\[\]@!$&\'()*+,;=%-]*)?$'
-    )
-    conv = list()
-    for line in data.copy():
-        for key, value in line.items():
-            if isinstance(value, str):
-                match = url_pattern.search(value)
-                if match:
-                    for group in match.group(0).splitlines():
-                        value = re.sub(f"({group})", r"`\1`", value)
-                value = re.sub('^(http[|s]:[^ ]+)', r"`\1`", value)
-                value = re.sub('%20', ' ', value)
-                value = re.sub(':_', r":\\_", value)
-                value = re.sub('_:', r"\\_:", value)
-            line[key] = value
-        conv.append(line)
-    return conv
-
-def spc_decode4md2(data: list) -> list:
     conv = list()
     if isinstance(data, dict):
         print("dict")
@@ -153,6 +129,7 @@ def json2markdown(path: str, title: str, data: list):
     function_name = inspect.currentframe().f_code.co_name
     debugout(function_name, 'Start', color.yellow, f"({path})")
     # -------------------------------------------------------------------------
+    print(f"type:{type(data)}")
     text      = spc_decode4md(data.copy())
     colssize  = []
     spc = ' ' * 2
