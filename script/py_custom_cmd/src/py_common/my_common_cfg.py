@@ -56,9 +56,9 @@ from py_common.my_debug             import debugout
 #from py_common.my_markdown          import json2markdown, spc_encode4md, spc_decode4md
 from py_common.my_markdown          import json2markdown
 
-#from py_common.my_common_cfg        import InfoConfiguration, conv2data, conv2variable
+#from py_common.my_common_cfg        import InfoConfiguration
 #from py_common.my_distribution_dat  import InfoDistribution
-#from py_common.my_media_dat         import InfoMedia, conv2data, conv2variable
+#from py_common.my_media_dat         import InfoMedia
 
 #from py_common.my_infoweb           import Infoweb, get_webinfo
 #from py_common.my_infofile          import Infofile, get_fileinfo

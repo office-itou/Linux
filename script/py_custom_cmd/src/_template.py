@@ -47,9 +47,9 @@ from py_common.my_debug             import debugout
 #from py_common.my_json              import load_json, save_json, get_text2json, put_json2text
 #from py_common.my_markdown          import json2markdown, spc_encode4md, spc_decode4md
 
-#from py_common.my_common_cfg        import InfoConfiguration, conv2data, conv2variable
+#from py_common.my_common_cfg        import InfoConfiguration
 #from py_common.my_distribution_dat  import InfoDistribution
-#from py_common.my_media_dat         import InfoMedia, conv2data, conv2variable
+#from py_common.my_media_dat         import InfoMedia
 
 #from py_common.my_infoweb           import Infoweb, get_webinfo
 #from py_common.my_infofile          import Infofile, get_fileinfo
@@ -100,11 +100,7 @@ def initialize():
 #   input :                  : unused
 #   output: stdout           : output
 #   return: exit             : output
-#   global: debug_flag       : read/write
-#   global: debugout_flag    : read/write
-#   global: program_name     : read/write
-#   global: col_size         : read/write
-#   global: row_size         : read/write
+#   global:                  : unused
 # -----------------------------------------------------------------------------
 def main():
     # --- check the executing user --------------------------------------------
