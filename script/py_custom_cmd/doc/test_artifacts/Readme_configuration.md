@@ -2,122 +2,122 @@
 
 * common configuration file (common.cfg)
 
-  |   key   |                      value                       |
-  |:--------|:-------------------------------------------------|
-  |DIRS_TOPS|/srv                                              |
-  |DIRS_EXPO|/srv/exports                                      |
-  |DIRS_HGFS|/srv/hgfs                                         |
-  |DIRS_HTML|/srv/http/html                                    |
-  |DIRS_SAMB|/srv/samba                                        |
-  |DIRS_TFTP|/srv/tftp                                         |
-  |DIRS_USER|/srv/user                                         |
-  |DIRS_PVAT|/srv/user/private                                 |
-  |DIRS_SHAR|/srv/user/share                                   |
-  |DIRS_CONF|/srv/user/share/conf                              |
-  |DIRS_DATA|/srv/user/share/conf/_data                        |
-  |DIRS_KEYS|/srv/user/share/conf/_keyring                     |
-  |DIRS_MKOS|/srv/user/share/conf/_mkosi                       |
-  |DIRS_TMPL|/srv/user/share/conf/_template                    |
-  |DIRS_SHEL|/srv/user/share/conf/script                       |
-  |DIRS_IMGS|/srv/user/share/imgs                              |
-  |DIRS_ISOS|/srv/user/share/isos                              |
-  |DIRS_LOAD|/srv/user/share/load                              |
-  |DIRS_RMAK|/srv/user/share/rmak                              |
-  |DIRS_CACH|/srv/user/share/cache                             |
-  |DIRS_CTNR|/srv/user/share/containers                        |
-  |DIRS_CHRT|/srv/user/share/chroot                            |
-  |DIRS_XNBD|/srv/exports/nbd                                  |
-  |DIRS_XNFS|/srv/exports/nfs                                  |
-  |DIRS_XSMB|/srv/exports/smb                                  |
-  |FILE_CONF|`common.cfg`                                      |
-  |FILE_DIST|`distribution.dat`                                |
-  |FILE_MDIA|`media.dat`                                       |
-  |FILE_DSTP|`debstrap.dat`                                    |
-  |PATH_CONF|/srv/user/share/conf/_data/common.cfg             |
-  |PATH_DIST|/srv/user/share/conf/_data/distribution.dat       |
-  |PATH_MDIA|/srv/user/share/conf/_data/media.dat              |
-  |PATH_DSTP|/srv/user/share/conf/_data/debstrap.dat           |
-  |FILE_KICK|kickstart_rhel.cfg                                |
-  |FILE_CLUD|user-data_ubuntu                                  |
-  |FILE_SEDD|preseed_debian.cfg                                |
-  |FILE_SEDU|preseed_ubuntu.cfg                                |
-  |FILE_YAST|yast_opensuse.xml                                 |
-  |FILE_AGMA|agama_opensuse.json                               |
-  |PATH_KICK|/srv/user/share/conf/_template/kickstart_rhel.cfg |
-  |PATH_CLUD|/srv/user/share/conf/_template/user-data_ubuntu   |
-  |PATH_SEDD|/srv/user/share/conf/_template/preseed_debian.cfg |
-  |PATH_SEDU|/srv/user/share/conf/_template/preseed_ubuntu.cfg |
-  |PATH_YAST|/srv/user/share/conf/_template/yast_opensuse.xml  |
-  |PATH_AGMA|/srv/user/share/conf/_template/agama_opensuse.json|
-  |FILE_ERLY|autoinst_cmd_early.sh                             |
-  |FILE_LATE|autoinst_cmd_late.sh                              |
-  |FILE_PART|autoinst_cmd_part.sh                              |
-  |FILE_RUNS|autoinst_cmd_run.sh                               |
-  |PATH_ERLY|/srv/user/share/conf/script/autoinst_cmd_early.sh |
-  |PATH_LATE|/srv/user/share/conf/script/autoinst_cmd_late.sh  |
-  |PATH_PART|/srv/user/share/conf/script/autoinst_cmd_part.sh  |
-  |PATH_RUNS|/srv/user/share/conf/script/autoinst_cmd_run.sh   |
-  |FILE_IPXE|ipxe/autoexec.ipxe                                |
-  |FILE_GRUB|boot/grub/grub.cfg                                |
-  |FILE_SLNX|menu-bios/syslinux.cfg                            |
-  |FILE_EF64|menu-efi64/syslinux.cfg                           |
-  |PATH_IPXE|/srv/tftp/ipxe/autoexec.ipxe                      |
-  |PATH_GRUB|/srv/tftp/boot/grub/grub.cfg                      |
-  |PATH_SLNX|/srv/tftp/menu-bios/syslinux.cfg                  |
-  |PATH_EF64|/srv/tftp/menu-efi64/syslinux.cfg                 |
-  |FILE_NBDS|`exports.conf`                                    |
-  |DIRS_NBDS|/etc/nbd-server/conf.d                            |
-  |PATH_NBDS|/etc/nbd-server/conf.d/exports.conf               |
-  |SRVR_HTTP|http                                              |
-  |SRVR_PROT|http                                              |
-  |SRVR_NICS|ens160                                            |
-  |SRVR_MADR|00:00:00:00:00:00                                 |
-  |SRVR_ADDR|192.168.1.11                                      |
-  |SRVR_CIDR|24                                                |
-  |SRVR_MASK|255.255.255.0                                     |
-  |SRVR_GWAY|192.168.1.254                                     |
-  |SRVR_NSVR|192.168.1.254                                     |
-  |SRVR_UADR|192.168.1                                         |
-  |NWRK_HOST|sv-:\_DISTRO\_:                                   |
-  |NWRK_WGRP|workgroup                                         |
-  |NICS_NAME|ens160                                            |
-  |NICS_MADR|                                                  |
-  |IPV4_ADDR|192.168.1.1                                       |
-  |IPV4_CIDR|24                                                |
-  |IPV4_MASK|255.255.255.0                                     |
-  |IPV4_GWAY|192.168.1.254                                     |
-  |IPV4_NSVR|192.168.1.254                                     |
-  |IPV4_UADR|                                                  |
-  |NMAN_NAME|                                                  |
-  |NTPS_ADDR|`ntp.nict.jp`                                     |
-  |NTPS_IPV4|61.205.120.130                                    |
-  |MENU_TOUT|5                                                 |
-  |MENU_RESO|800x600                                           |
-  |MENU_DPTH|16                                                |
-  |MENU_MODE|788                                               |
-  |MENU_SPLS|`splash.png`                                      |
-  |AUTO_INST|`autoinst.cfg`                                    |
-  |MINI_IRAM|`initps.gz`                                       |
-  |MKOS_OUTP|root_img                                          |
-  |MKOS_FMAT|directory                                         |
-  |MKOS_RECM|yes                                               |
-  |MKOS_ARCH|x86-64                                            |
-  |FILE_RTIM|root_img.raw                                      |
-  |FILE_SQFS|`squashfs.img`                                    |
-  |FILE_MBRF|`bios.img`                                        |
-  |FILE_UEFI|`uefi.img`                                        |
-  |FILE_BCAT|`boot.cat`                                        |
-  |FILE_ICFG|`isolinux.cfg`                                    |
-  |FILE_GCFG|`grub.cfg`                                        |
-  |FILE_MENU|`menu.cfg`                                        |
-  |FILE_THME|`theme.cfg`                                       |
-  |DIRS_LIVE|LiveOS                                            |
-  |DIRS_MNTP|mntp                                              |
-  |DIRS_RTFS|rtfs                                              |
-  |DIRS_CDFS|cdfs                                              |
-  |PATH_VLNZ|                                                  |
-  |PATH_IRAM|                                                  |
-  |PATH_SPLS|/boot/grub/splash.png                             |
-  |SECU_OPTN|                                                  |
-  |SECU_APPA|security=apparmor apparmor=1                      |
-  |SECU_SLNX|security=selinux selinux=1 enforcing=0            |
+  |   key   |                      value                       |                                                                               comment                                                                               |
+  |:--------|:-------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+  |DIRS_TOPS|/srv                                              |`# top of shared directory`                                                                                                                                          |
+  |DIRS_EXPO|/srv/exports                                      |`# exports`                                                                                                                                                          |
+  |DIRS_HGFS|/srv/hgfs                                         |`# vmware shared`                                                                                                                                                    |
+  |DIRS_HTML|/srv/http/html                                    |`# html contents`                                                                                                                                                    |
+  |DIRS_SAMB|/srv/samba                                        |`# samba shared`                                                                                                                                                     |
+  |DIRS_TFTP|/srv/tftp                                         |`# tftp contents`                                                                                                                                                    |
+  |DIRS_USER|/srv/user                                         |`# user file`                                                                                                                                                        |
+  |DIRS_PVAT|/srv/user/private                                 |`# private contents directory`                                                                                                                                       |
+  |DIRS_SHAR|/srv/user/share                                   |`# shared of user file`                                                                                                                                              |
+  |DIRS_CONF|/srv/user/share/conf                              |`# configuration file`                                                                                                                                               |
+  |DIRS_DATA|/srv/user/share/conf/_data                        |`# data file`                                                                                                                                                        |
+  |DIRS_KEYS|/srv/user/share/conf/_keyring                     |`# keyring file`                                                                                                                                                     |
+  |DIRS_MKOS|/srv/user/share/conf/_mkosi                       |`# mkosi configuration files`                                                                                                                                        |
+  |DIRS_TMPL|/srv/user/share/conf/_template                    |`# templates for various configuration files`                                                                                                                        |
+  |DIRS_SHEL|/srv/user/share/conf/script                       |`# shell script file`                                                                                                                                                |
+  |DIRS_IMGS|/srv/user/share/imgs                              |`# iso file extraction destination`                                                                                                                                  |
+  |DIRS_ISOS|/srv/user/share/isos                              |`# iso file`                                                                                                                                                         |
+  |DIRS_LOAD|/srv/user/share/load                              |`# load module`                                                                                                                                                      |
+  |DIRS_RMAK|/srv/user/share/rmak                              |`# remake file`                                                                                                                                                      |
+  |DIRS_CACH|/srv/user/share/cache                             |`# cache file`                                                                                                                                                       |
+  |DIRS_CTNR|/srv/user/share/containers                        |`# container file`                                                                                                                                                   |
+  |DIRS_CHRT|/srv/user/share/chroot                            |`# container file (chroot)`                                                                                                                                          |
+  |DIRS_XNBD|/srv/exports/nbd                                  |`# exports (network block device)`                                                                                                                                   |
+  |DIRS_XNFS|/srv/exports/nfs                                  |`# exports (network file system)`                                                                                                                                    |
+  |DIRS_XSMB|/srv/exports/smb                                  |`# exports (samba)`                                                                                                                                                  |
+  |FILE_CONF|`common.cfg`                                      |`# common configuration file`                                                                                                                                        |
+  |FILE_DIST|`distribution.dat`                                |`# distribution data file`                                                                                                                                           |
+  |FILE_MDIA|`media.dat`                                       |`# media data file`                                                                                                                                                  |
+  |FILE_DSTP|`debstrap.dat`                                    |`# debstrap data file`                                                                                                                                               |
+  |PATH_CONF|/srv/user/share/conf/_data/common.cfg             |`# common configuration file`                                                                                                                                        |
+  |PATH_DIST|/srv/user/share/conf/_data/distribution.dat       |`# distribution data file`                                                                                                                                           |
+  |PATH_MDIA|/srv/user/share/conf/_data/media.dat              |`# media data file`                                                                                                                                                  |
+  |PATH_DSTP|/srv/user/share/conf/_data/debstrap.dat           |`# debstrap data file`                                                                                                                                               |
+  |FILE_KICK|kickstart_rhel.cfg                                |`# for rhel`                                                                                                                                                         |
+  |FILE_CLUD|user-data_ubuntu                                  |`# for ubuntu cloud-init`                                                                                                                                            |
+  |FILE_SEDD|preseed_debian.cfg                                |`# for debian`                                                                                                                                                       |
+  |FILE_SEDU|preseed_ubuntu.cfg                                |`# for ubuntu`                                                                                                                                                       |
+  |FILE_YAST|yast_opensuse.xml                                 |`# for opensuse`                                                                                                                                                     |
+  |FILE_AGMA|agama_opensuse.json                               |`# for opensuse`                                                                                                                                                     |
+  |PATH_KICK|/srv/user/share/conf/_template/kickstart_rhel.cfg |`# for rhel`                                                                                                                                                         |
+  |PATH_CLUD|/srv/user/share/conf/_template/user-data_ubuntu   |`# for ubuntu cloud-init`                                                                                                                                            |
+  |PATH_SEDD|/srv/user/share/conf/_template/preseed_debian.cfg |`# for debian`                                                                                                                                                       |
+  |PATH_SEDU|/srv/user/share/conf/_template/preseed_ubuntu.cfg |`# for ubuntu`                                                                                                                                                       |
+  |PATH_YAST|/srv/user/share/conf/_template/yast_opensuse.xml  |`# for opensuse`                                                                                                                                                     |
+  |PATH_AGMA|/srv/user/share/conf/_template/agama_opensuse.json|`# for opensuse`                                                                                                                                                     |
+  |FILE_ERLY|autoinst_cmd_early.sh                             |`# shell commands to run early`                                                                                                                                      |
+  |FILE_LATE|autoinst_cmd_late.sh                              |`# "              to run late`                                                                                                                                       |
+  |FILE_PART|autoinst_cmd_part.sh                              |`# "              to run after partition`                                                                                                                            |
+  |FILE_RUNS|autoinst_cmd_run.sh                               |`# "              to run preseed/run`                                                                                                                                |
+  |PATH_ERLY|/srv/user/share/conf/script/autoinst_cmd_early.sh |`# shell commands to run early`                                                                                                                                      |
+  |PATH_LATE|/srv/user/share/conf/script/autoinst_cmd_late.sh  |`# "              to run late`                                                                                                                                       |
+  |PATH_PART|/srv/user/share/conf/script/autoinst_cmd_part.sh  |`# "              to run after partition`                                                                                                                            |
+  |PATH_RUNS|/srv/user/share/conf/script/autoinst_cmd_run.sh   |`# "              to run preseed/run`                                                                                                                                |
+  |FILE_IPXE|ipxe/autoexec.ipxe                                |`# ipxe`                                                                                                                                                             |
+  |FILE_GRUB|boot/grub/grub.cfg                                |`# grub`                                                                                                                                                             |
+  |FILE_SLNX|menu-bios/syslinux.cfg                            |`# syslinux (bios)`                                                                                                                                                  |
+  |FILE_EF64|menu-efi64/syslinux.cfg                           |`# syslinux (efi64)`                                                                                                                                                 |
+  |PATH_IPXE|/srv/tftp/ipxe/autoexec.ipxe                      |`# ipxe`                                                                                                                                                             |
+  |PATH_GRUB|/srv/tftp/boot/grub/grub.cfg                      |`# grub`                                                                                                                                                             |
+  |PATH_SLNX|/srv/tftp/menu-bios/syslinux.cfg                  |`# syslinux (bios)`                                                                                                                                                  |
+  |PATH_EF64|/srv/tftp/menu-efi64/syslinux.cfg                 |`# syslinux (efi64)`                                                                                                                                                 |
+  |FILE_NBDS|`exports.conf`                                    |`# nbd exports`                                                                                                                                                      |
+  |DIRS_NBDS|/etc/nbd-server/conf.d                            |`# nbd exports`                                                                                                                                                      |
+  |PATH_NBDS|/etc/nbd-server/conf.d/exports.conf               |`# nbd exports`                                                                                                                                                      |
+  |SRVR_HTTP|http                                              |`# server connection protocol (http or https)`                                                                                                                       |
+  |SRVR_PROT|http                                              |`# server connection protocol (http or tftp)`                                                                                                                        |
+  |SRVR_NICS|ens160                                            |`# network device name   (ex. ens160)            (Set execution server setting to empty variable.)`                                                                  |
+  |SRVR_MADR|00:00:00:00:00:00                                 |`#                mac    (ex. 00:00:00:00:00:00)`                                                                                                                    |
+  |SRVR_ADDR|192.168.1.11                                      |`# IPv4 address          (ex. 192.168.1.11)`                                                                                                                         |
+  |SRVR_CIDR|24                                                |`# IPv4 cidr             (ex. 24)`                                                                                                                                   |
+  |SRVR_MASK|255.255.255.0                                     |`# IPv4 subnetmask       (ex. 255.255.255.0)`                                                                                                                        |
+  |SRVR_GWAY|192.168.1.254                                     |`# IPv4 gateway          (ex. 192.168.1.254)`                                                                                                                        |
+  |SRVR_NSVR|192.168.1.254                                     |`# IPv4 nameserver       (ex. 192.168.1.254)`                                                                                                                        |
+  |SRVR_UADR|192.168.1                                         |`# IPv4 address up       (ex. 192.168.1)`                                                                                                                            |
+  |NWRK_HOST|sv-:\_DISTRO\_:                                   |`# hostname              (ex. sv-server)`                                                                                                                            |
+  |NWRK_WGRP|workgroup                                         |`# domain                (ex. workgroup)`                                                                                                                            |
+  |NICS_NAME|ens160                                            |`# network device name   (ex. ens160)`                                                                                                                               |
+  |NICS_MADR|                                                  |`#                mac    (ex. 00:00:00:00:00:00)`                                                                                                                    |
+  |IPV4_ADDR|192.168.1.1                                       |`# IPv4 address          (ex. 192.168.1.1)   (empty to dhcp)`                                                                                                        |
+  |IPV4_CIDR|24                                                |`# IPv4 cidr             (ex. 24)            (empty to ipv4 subnetmask, if both to 24)`                                                                              |
+  |IPV4_MASK|255.255.255.0                                     |`# IPv4 subnetmask       (ex. 255.255.255.0) (empty to ipv4 cidr)`                                                                                                   |
+  |IPV4_GWAY|192.168.1.254                                     |`# IPv4 gateway          (ex. 192.168.1.254)`                                                                                                                        |
+  |IPV4_NSVR|192.168.1.254                                     |`# IPv4 nameserver       (ex. 192.168.1.254)`                                                                                                                        |
+  |IPV4_UADR|                                                  |`# IPv4 address up       (ex. 192.168.1)`                                                                                                                            |
+  |NMAN_NAME|                                                  |`# network manager name  (nm_config, ifupdown, loopback)`                                                                                                            |
+  |NTPS_ADDR|`ntp.nict.jp`                                     |`# ntp server address    (ntp.nict.jp)`                                                                                                                              |
+  |NTPS_IPV4|61.205.120.130                                    |`# ntp server ipv4 addr  (61.205.120.130)`                                                                                                                           |
+  |MENU_TOUT|5                                                 |`# timeout (sec)`                                                                                                                                                    |
+  |MENU_RESO|800x600                                           |`# resolution (widht x hight)`                                                                                                                                       |
+  |MENU_DPTH|16                                                |`# colors`                                                                                                                                                           |
+  |MENU_MODE|788                                               |`# screen mode (vga=nnn)`                                                                                                                                            |
+  |MENU_SPLS|`splash.png`                                      |`# splash file`                                                                                                                                                      |
+  |AUTO_INST|`autoinst.cfg`                                    |`# autoinstall configuration file`                                                                                                                                   |
+  |MINI_IRAM|`initps.gz`                                       |`# initial ram disk of mini.iso including preseed`                                                                                                                   |
+  |MKOS_OUTP|root_img                                          |`# --output=`                                                                                                                                                        |
+  |MKOS_FMAT|directory                                         |`# --format= (directory, tar, cpio, disk, uki, esp, oci, sysext, confext, portable, addon, none)`                                                                    |
+  |MKOS_RECM|yes                                               |`# --with-recommends (yes, no)`                                                                                                                                      |
+  |MKOS_ARCH|x86-64                                            |`# --architecture= (alpha, arc, arm, arm64, ia64, loongarch64, mips64-le, mips-le, parisc, ppc, ppc64, ppc64-le, riscv32, riscv64, s390, s390x, tilegx, x86, x86-64)`|
+  |FILE_RTIM|root_img.raw                                      |`# root image`                                                                                                                                                       |
+  |FILE_SQFS|`squashfs.img`                                    |`# squashfs / filesystem.squashfs`                                                                                                                                   |
+  |FILE_MBRF|`bios.img`                                        |`# mbr image`                                                                                                                                                        |
+  |FILE_UEFI|`uefi.img`                                        |`# uefi image`                                                                                                                                                       |
+  |FILE_BCAT|`boot.cat`                                        |`# eltorito catalog`                                                                                                                                                 |
+  |FILE_ICFG|`isolinux.cfg`                                    |`# isolinux.cfg`                                                                                                                                                     |
+  |FILE_GCFG|`grub.cfg`                                        |`# grub.cfg`                                                                                                                                                         |
+  |FILE_MENU|`menu.cfg`                                        |`# menu.cfg`                                                                                                                                                         |
+  |FILE_THME|`theme.cfg`                                       |`# theme.cfg`                                                                                                                                                        |
+  |DIRS_LIVE|LiveOS                                            |`# LiveOS / live`                                                                                                                                                    |
+  |DIRS_MNTP|mntp                                              |`# mount point`                                                                                                                                                      |
+  |DIRS_RTFS|rtfs                                              |`# root image`                                                                                                                                                       |
+  |DIRS_CDFS|cdfs                                              |`# cdfs image`                                                                                                                                                       |
+  |PATH_VLNZ|                                                  |`# kernel`                                                                                                                                                           |
+  |PATH_IRAM|                                                  |`# initramfs`                                                                                                                                                        |
+  |PATH_SPLS|/boot/grub/splash.png                             |`# splash.png`                                                                                                                                                       |
+  |SECU_OPTN|                                                  |`# security option`                                                                                                                                                  |
+  |SECU_APPA|security=apparmor apparmor=1                      |                                                                                                                                                                     |
+  |SECU_SLNX|security=selinux selinux=1 enforcing=0            |                                                                                                                                                                     |

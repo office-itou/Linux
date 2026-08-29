@@ -45,7 +45,7 @@ import sys
 #sys.path.append(topdir)
 
 
-#from py_common.my_config            import infosystem
+from py_common.my_config            import infosystem
 from py_common.my_colors            import color
 #from py_common.my_string            import eprint, count_width
 #from py_common.my_message           import message_start, message_end, message_elapsed, message_debug, message_info, message_warn, message_alert
@@ -81,16 +81,18 @@ class InfoConfiguration:
         self.data = load()
 
     def markdown(self, path: str, title: str):
-        data = list()
-        for key, value in self.data.items():
-            data.append({'key': key, 'value': value})
-        json2markdown(path, title, data)
+        json2markdown(path, title, self.data)
 
     def conv2data(self, data: list) -> str:
         return conv2data(self.data, data)
 
     def conv2variable(self, data: list) -> str:
         return conv2variable(self.data, data)
+
+    def dump(self):
+        for line in self.data:
+            text = f"{str(line):.{infosystem.data.columns}s}"
+            print(f"{color.yellow}{text}{color.reset}")
 
 # -----------------------------------------------------------------------------
 # descript: load data in common.cfg
@@ -122,17 +124,21 @@ def load() -> dict:
         match = re.search('^[A-Z]', line)      # get parameter row
         if not match:
             continue
+        comnt = line
         line  = re.sub(r"[\n|\r\n]$", '', line)     # remove lf or crlf
         line  = re.sub('#.*$'       , '', line)     # remove comment
         line  = re.sub(r"[ \t]+$"   , '', line)     # remove trailing whitespace
+        comnt = re.sub('^' + line   , '', comnt)    # get the comment
         key   = re.sub('=.*$'       , '', line)     # get the key
         value = re.sub(key + '='    , '', line)     # get the value
         value = re.sub(r"^\""       , '', value)    # remove the first double quotation mark
         value = re.sub(r"\"$"       , '', value)    # remove the last double quotation mark
         dict_conf[key] = value
+        list_conf.append({'key': key, 'value': value, 'comment': comnt.strip()})
+
     # --- convert setting items -----------------------------------------------
-    for key in dict_conf.keys():
-        value = dict_conf[key]
+    for i, line in enumerate(list_conf):
+        (k1, key), (k2, value), (k3, comnt) = line.items()
         while True:
             match = re.search(':_[a-zA-Z0-9]+_[a-zA-Z0-9]+_:', value)
             if not match:
@@ -143,9 +149,10 @@ def load() -> dict:
             match_value = dict_conf[match_key]
             value = re.sub(':_' + match_key + '_:', match_value, value)
         dict_conf[key] = value
+        list_conf[i] = {'key': key, 'value': value, 'comment': comnt}
     # --- return --------------------------------------------------------------
     debugout(function_name, 'Complete', color.yellow, '')
-    return dict_conf
+    return list_conf
 
 # -----------------------------------------------------------------------------
 # descript: convert to data format
@@ -159,7 +166,10 @@ def conv2data(data_conf: str, data_orig: dict) -> list:
     function_name = inspect.currentframe().f_code.co_name
     debugout(function_name, 'Start', color.yellow, '')
     # -------------------------------------------------------------------------
-    dict_conf = data_conf
+    dict_conf = dict()
+    for i, line in enumerate(data_conf):
+        (k1, key), (k2, value), (k3, comnt) = line.items()
+        dict_conf[key] = value
     data_conv = list()
     for line in [asdict(d) for d in data_orig]:
         for key, value in line.items():
@@ -189,7 +199,10 @@ def conv2variable(data_conf: str, data_orig: dict) -> list:
     function_name = inspect.currentframe().f_code.co_name
     debugout(function_name, 'Start', color.yellow, '')
     # -------------------------------------------------------------------------
-    dict_conf = data_conf
+    dict_conf = dict()
+    for i, line in enumerate(data_conf):
+        (k1, key), (k2, value), (k3, comnt) = line.items()
+        dict_conf[key] = value
     data_conv = list()
     for line in [asdict(d) for d in data_orig]:
         for key, value in line.items():

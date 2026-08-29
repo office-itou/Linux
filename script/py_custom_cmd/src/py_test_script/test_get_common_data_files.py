@@ -175,20 +175,18 @@ def test():
 
     conf = InfoConfiguration()
     conf.load()
-#    dump_dict(conf.data)
+#   conf.dump()
+    conf.markdown(mkdw_conf, titl_conf)
 
     dist = InfoDistribution()
     dist.load(path_dist)
-    dump(dist.data)
+#   dist.dump()
+    dist.markdown(mkdw_dist, titl_dist)
 
     mdia = InfoMedia()
     mdia.load(path_mdia)
-#    dump(mdia.data)
-
-    conf.markdown(mkdw_conf, titl_conf)
-    dist.markdown(mkdw_dist, titl_dist)
+#   mdia.dump()
     mdia.markdown(mkdw_mdia, titl_mdia)
-
     mdia.conv2data(conf)
     mdia.markdown(mkdw_mda2, titl_mda2)
     mdia.conv2variable(conf)

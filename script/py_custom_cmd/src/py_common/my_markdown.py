@@ -123,8 +123,12 @@ def spc_decode4md(data: list) -> list:
                         value = re.sub(f"({group})", r"`\1`", value)
                 value = re.sub('^(http[|s]:[^ ]+)', r"`\1`", value)
                 value = re.sub('%20', ' ', value)
+#               value = re.sub(' ', '&nbsp;', value)
                 value = re.sub(':_', r":\\_", value)
                 value = re.sub('_:', r"\\_:", value)
+                match = re.match('^#', value)
+                if match:
+                    value = f"`{value}`"
             line[key] = value
         conv.append(line)
     return conv
