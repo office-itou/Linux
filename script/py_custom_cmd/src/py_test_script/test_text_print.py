@@ -7,11 +7,30 @@ import inspect
 import time
 import argparse
 
-from collections.abc import Iterable
-from dataclasses import dataclass, fields
-from datetime import datetime
-from pathlib import Path
-import pandas as pd                     # sudo apt-get install python3-pandas
+#from aiohttp import ClientError, ClientTimeout
+#from bs4 import BeautifulSoup
+#from dataclasses import dataclass
+#from dataclasses import dataclass, asdict
+#from datetime import datetime
+#from datetime import datetime, timedelta
+#from datetime import datetime, timezone
+#from natsort import natsort_keygen
+#from pathlib import Path
+#from tqdm import tqdm
+#from urllib.parse import urlparse
+#import aiohttp # sudo apt-get install python3-aiohttp
+#import asyncio
+#import csv
+#import dataclasses
+#import json
+#import magic # sudo apt-get install python3-magic
+#import pandas as pd
+#import re
+#import shutil
+#import subprocess
+#import sys
+#import unicodedata
+#import __main__
 
 # --- my library --------------------------------------------------------------
 from pathlib        import Path
@@ -27,21 +46,20 @@ sys.path.append(str(libsdir))
 
 from py_common.my_config                import infosystem
 from py_common.my_colors                import color
-#from py_common.my_string               import eprint, count_width
+from py_common.my_string                import eprint, count_full_width, count_half_width, count_width
 from py_common.my_message               import message_start, message_end, message_elapsed, message_debug, message_info, message_warn, message_alert
 from py_common.my_debug                 import debugout
 #from py_common.my_process              import run_subprocess
 #from py_common.my_json                 import load_json, save_json, get_text2json, put_json2text
 #from py_common.my_markdown             import json2markdown, spc_encode4md, spc_decode4md
 
-from py_common.my_common_cfg            import InfoConfiguration
-from py_common.my_distribution_dat      import InfoDistribution
-from py_common.my_media_dat             import InfoMedia
+from py_common.my_common_cfg           import InfoConfiguration
+from py_common.my_distribution_dat     import InfoDistribution
+from py_common.my_media_dat            import InfoMedia
 
-#from py_common.my_infoweb              import InfoWeb
-#from py_common.my_infofile             import InfoFile
-#from py_common.my_infodata             import InfoData
-
+#from py_common.my_infoweb              import Infoweb, get_webinfo
+#from py_common.my_infofile             import Infofile, get_fileinfo
+#from py_common.my_infodata             import Infodata, debug_info, get_infodata
 # -----------------------------------------------------------------------------
 # descript: args parser
 #   input :                  : unused
@@ -72,14 +90,14 @@ def argsparser():
 # -----------------------------------------------------------------------------
 def initialize():
     function_name = inspect.currentframe().f_code.co_name
-    debugout(function_name, "Start", color.yellow, "")
+    debugout(Path(__file__).stem + '('+ function_name + ')', "Start", color.yellow, "")
     # -------------------------------------------------------------------------
     if infosystem.data.debug == True:
         message_info(function_name, 'Debug mode on')
     if infosystem.data.debugout == True:
         message_info(function_name, 'Debugout mode on')
     # -------------------------------------------------------------------------
-    debugout(function_name, "Complete", color.yellow, "")
+    debugout(Path(__file__).stem + '('+ function_name + ')', "Complete", color.yellow, "")
     return
 
 # -----------------------------------------------------------------------------
@@ -89,78 +107,21 @@ def initialize():
 #   return:                  : unused
 #   global:                  : unused
 # -----------------------------------------------------------------------------
-def get_field_list(obj):
-    list_field = []
-    for field in fields(obj):
-        list_field.append(field.name)
-    return f" ".join(list_field)
-
-def dump_dict(data):
-    width = infosystem.data.columns
-    print(color.yellow + '-' * width + color.reset)
-    if isinstance(data, Iterable):
-        if isinstance(data, dict):
-            try:
-                for key, value in data.items():
-                    text = f"{key}: {value}"
-                    print(f"{color.green}{text:.{width}s}{color.reset}")
-            except Exception as e:
-                print(f"{color.bg_red}Exception error: {e}{color.reset}")
-                raise
-    print(color.yellow + '-' * width + color.reset)
-
-def dump(data):
-    width = infosystem.data.columns
-    print(color.yellow + '-' * width + color.reset)
-    try:
-        for line in data:
-            text = str(line)
-            print(f"{color.green}{text:.{width}s}{color.reset}")
-    except Exception as e:
-        print(f"{color.bg_red}Exception error: {e}{color.reset}")
-        raise
-    print(color.yellow + '-' * width + color.reset)
-
-# -----------------------------------------------------------------------------
-# descript: test
-#   input :                  : unused
-#   output:                  : unused
-#   return:                  : unused
-#   global:                  : unused
-# -----------------------------------------------------------------------------
 def test():
-#    path_conf = '/srv/user/share/conf/_data/common.cfg'
-    path_dist = '/srv/user/share/conf/_data/distribution.dat.json'
-    path_mdia = '/srv/user/share/conf/_data/media.dat.json'
-    mkdw_conf = './Readme_configuration.md'
-    mkdw_dist = './Readme_distribution.md'
-    mkdw_mdia = './Readme_media.md'
-    mkdw_mda2 = './Readme_media(data).md'
-    mkdw_mda3 = './Readme_media(revert).md'
-    titl_conf = 'common configuration file (common.cfg)'
-    titl_dist = 'distribution data file (distribution.dat)'
-    titl_mdia = 'media data file (media.dat)'
-    titl_mda2 = 'media data file (data)'
-    titl_mda3 = 'media data file (revert)'
+    strhalf = "1234567890123456798012345678901234567980"
+    strwide = "１２３４５６７８９０１２３４５６７８９０"
+    strmixd = "12345678901234567980１２３４５６７８９０"
+    strslid = "12345678901234567980 １２３４５６７８９０"
 
-    conf = InfoConfiguration()
-    conf.load()
-#   conf.dump()
-    conf.markdown(mkdw_conf, titl_conf)
+    list_text = [
+        f"{color.reset}{strhalf}{color.green}{strhalf}{color.yellow}{strhalf}{color.red}{strhalf}{color.magenta}{strhalf}{color.reset}",
+        f"{color.reset}{strwide}{color.green}{strwide}{color.yellow}{strwide}{color.red}{strwide}{color.magenta}{strwide}{color.reset}",
+        f"{color.reset}{strhalf}{color.green}{strmixd}{color.yellow}{strwide}{color.red}{strwide}{color.magenta}{strwide}{color.reset}",
+        f"{color.reset}{strhalf}{color.green}{strslid}{color.yellow}{strwide}{color.red}{strwide}{color.magenta}{strwide}{color.reset}"
+    ]
 
-    dist = InfoDistribution()
-    dist.load(path_dist)
-#   dist.dump()
-    dist.markdown(mkdw_dist, titl_dist)
-
-    mdia = InfoMedia()
-    mdia.load(path_mdia)
-#   mdia.dump()
-    mdia.markdown(mkdw_mdia, titl_mdia)
-    mdia.conv2data(conf)
-    mdia.markdown(mkdw_mda2, titl_mda2)
-    mdia.conv2variable(conf)
-    mdia.markdown(mkdw_mda3, titl_mda3)
+    for text in list_text:
+        eprint(text, infosystem.data.columns)
 
 # -----------------------------------------------------------------------------
 # descript: main
@@ -171,9 +132,9 @@ def test():
 # -----------------------------------------------------------------------------
 def main():
     # --- check the executing user --------------------------------------------
-    if os.geteuid() != 0:
-        print(f"{color.reset}{color.br_green}{infosystem.data.program_name}:\n{color.br_yellow} You have standard user privileges. {color.underline}Please run this with sudo.{color.reset}")
-        exit(1)
+#    if os.geteuid() != 0:
+#        print(f"{color.reset}{color.br_green}{infosystem.data.program_name}:\n{color.br_yellow} You have standard user privileges. {color.underline}Please run this with sudo.{color.reset}")
+#        exit(1)
     # --- system parameters ---------------------------------------------------
     function_name = inspect.currentframe().f_code.co_name
     # --- elapsed start--------------------------------------------------------

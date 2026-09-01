@@ -1,65 +1,13 @@
-#!/usr/bin/env python3
-# encoding: utf-8
-
 # --- Python library ----------------------------------------------------------
+from pathlib import Path
 import csv
 import inspect
 import json
 import re
 
-#import os
-#import inspect
-#import time
-#import argparse
-
-#from aiohttp import ClientError, ClientTimeout
-#from bs4 import BeautifulSoup
-#from dataclasses import dataclass
-#from dataclasses import dataclass, asdict
-#from datetime import datetime
-#from datetime import datetime, timedelta
-#from datetime import datetime, timezone
-#from natsort import natsort_keygen
-#from pathlib import Path
-#from tqdm import tqdm
-#from urllib.parse import urlparse
-#import aiohttp # sudo apt-get install python3-aiohttp
-#import asyncio
-#import csv
-#import dataclasses
-#import json
-#import magic # sudo apt-get install python3-magic
-#import pandas as pd
-#import re
-#import shutil
-#import subprocess
-#import sys
-#import unicodedata
-#import __main__
-
 # --- my library --------------------------------------------------------------
-#from pathlib import Path
-#import sys
-#topdir = Path(Path.home(), '/linux/script/py_custom_cmd/src')
-#sys.path.append(topdir)
-
-
-#from py_common.my_config            import infosystem
-from py_common.my_colors            import color
-#from py_common.my_string            import eprint, count_width
-#from py_common.my_message           import message_start, message_end, message_elapsed, message_debug, message_info, message_warn, message_alert
-from py_common.my_debug             import debugout
-#from py_common.my_process           import run_subprocess
-#from py_common.my_json              import load_json, save_json, get_text2json, put_json2text
-#from py_common.my_markdown          import json2markdown, spc_encode4md, spc_decode4md
-
-#from py_common.my_common_cfg        import InfoConfiguration, conv2data, conv2variable
-#from py_common.my_distribution_dat  import InfoDistribution
-#from py_common.my_media_dat         import InfoMedia, conv2data, conv2variable
-
-#from py_common.my_infoweb           import Infoweb, get_webinfo
-#from py_common.my_infofile          import Infofile, get_fileinfo
-#from py_common.my_infodata          import Infodata, debug_info, get_infodata
+from py_common.my_colors                import color
+from py_common.my_debug                 import debugout
 
 # -----------------------------------------------------------------------------
 # descript: load data in json format
@@ -68,13 +16,13 @@ from py_common.my_debug             import debugout
 #   return: obj              : output
 #   global:                  : unused
 # -----------------------------------------------------------------------------
-def load_json(path, hook):
-    function_name = inspect.currentframe().f_code.co_name
+def load_json(path: str) -> str:
+    function_name = f"{Path(__file__).stem}({inspect.currentframe().f_code.co_name})"
     debugout(function_name, 'Start', color.yellow, '')
     # -------------------------------------------------------------------------
     obj = None
     with open(path, 'r', encoding='utf-8') as f:
-        obj = json.load(f, object_hook=hook)
+        obj = json.load(f)
     # -------------------------------------------------------------------------
     debugout(function_name, 'Complete', color.yellow, '')
     return obj
@@ -87,54 +35,12 @@ def load_json(path, hook):
 #   return:                  : output
 #   global:                  : unused
 # -----------------------------------------------------------------------------
-def save_json(path, obj):
-    function_name = inspect.currentframe().f_code.co_name
+def save_json(path: str, obj: str) -> str:
+    function_name = f"{Path(__file__).stem}({inspect.currentframe().f_code.co_name})"
     debugout(function_name, 'Start', color.yellow, '')
     # -------------------------------------------------------------------------
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(obj, f, ensure_ascii=False, indent=4)
-    # -------------------------------------------------------------------------
-    debugout(function_name, 'Complete', color.yellow, '')
-
-# -----------------------------------------------------------------------------
-# descript: text file to json
-#   input : path             : input
-#   output:                  : unused
-#   return: data             : output
-#   global:                  : unused
-# -----------------------------------------------------------------------------
-def get_text2json(path):
-    function_name = inspect.currentframe().f_code.co_name
-    debugout(function_name, 'Start', color.yellow, '')
-    # -------------------------------------------------------------------------
-    text = list(csv.DictReader(re.sub(r"[ \t]+", ",", line.strip()) for line in open(path, 'r', encoding='utf-8', newline='')))
-    data = json.dumps(text, ensure_ascii=False)
-    # -------------------------------------------------------------------------
-    debugout(function_name, 'Complete', color.yellow, '')
-    return data
-
-# -----------------------------------------------------------------------------
-# descript: json to text file
-#   input : path             : input
-#   input : data             : input
-#   input : format           : input
-#   output:                  : unused
-#   return:                  : unused
-#   global:                  : unused
-# -----------------------------------------------------------------------------
-def put_json2text(path, data, format):
-    function_name = inspect.currentframe().f_code.co_name
-    debugout(function_name, 'Start', color.yellow, '')
-    # -------------------------------------------------------------------------
-    list = json.loads(data)
-    keys = dict()
-    for key, value in list[0].items():
-        keys[key] = key
-    text = [format.format(**keys)]
-    for line in list:
-        text.append(format.format(**line))
-    with open(path, 'w', encoding='utf-8') as f:
-        f.write(f"\n".join(text) + f"\n")
     # -------------------------------------------------------------------------
     debugout(function_name, 'Complete', color.yellow, '')
 

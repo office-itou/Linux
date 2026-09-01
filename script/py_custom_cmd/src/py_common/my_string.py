@@ -1,63 +1,10 @@
-#!/usr/bin/env python3
-# encoding: utf-8
-
 # --- Python library ----------------------------------------------------------
 import re
 import unicodedata
 
-#import os
-#import inspect
-#import time
-#import argparse
-
-#from aiohttp import ClientError, ClientTimeout
-#from bs4 import BeautifulSoup
-#from dataclasses import dataclass
-#from dataclasses import dataclass, asdict
-#from datetime import datetime
-#from datetime import datetime, timedelta
-#from datetime import datetime, timezone
-#from natsort import natsort_keygen
-#from pathlib import Path
-#from tqdm import tqdm
-#from urllib.parse import urlparse
-#import aiohttp # sudo apt-get install python3-aiohttp
-#import asyncio
-#import csv
-#import dataclasses
-#import json
-#import magic # sudo apt-get install python3-magic
-#import pandas as pd
-#import re
-#import shutil
-#import subprocess
-#import sys
-#import unicodedata
-#import __main__
-
 # --- my library --------------------------------------------------------------
-#from pathlib import Path
-#import sys
-#topdir = Path(Path.home(), '/linux/script/py_custom_cmd/src')
-#sys.path.append(topdir)
-
-
-#from py_common.my_config            import infosystem
-from py_common.my_colors            import color
-#from py_common.my_string            import eprint, count_width
-#from py_common.my_message           import message_start, message_end, message_elapsed, message_debug, message_info, message_warn, message_alert
-#from py_common.my_debug             import debugout
-#from py_common.my_process           import run_subprocess
-#from py_common.my_json              import load_json, save_json, get_text2json, put_json2text
-#from py_common.my_markdown          import json2markdown, spc_encode4md, spc_decode4md
-
-#from py_common.my_common_cfg        import InfoConfiguration, conv2data, conv2variable
-#from py_common.my_distribution_dat  import InfoDistribution
-#from py_common.my_media_dat         import InfoMedia, conv2data, conv2variable
-
-#from py_common.my_infoweb           import Infoweb, get_webinfo
-#from py_common.my_infofile          import Infofile, get_fileinfo
-#from py_common.my_infodata          import Infodata, debug_info, get_infodata
+from py_common.my_config                import infosystem
+from py_common.my_colors                import color
 
 # -----------------------------------------------------------------------------
 # descript: character count for full-width characters only
@@ -66,7 +13,7 @@ from py_common.my_colors            import color
 #   return: count            : output
 #   global:                  : unused
 # -----------------------------------------------------------------------------
-def count_full_width(text: str):
+def count_full_width(text: str) -> int:
     return sum(1 for c in text if unicodedata.east_asian_width(c) in 'FWA')
 
 # -----------------------------------------------------------------------------
@@ -76,7 +23,7 @@ def count_full_width(text: str):
 #   return: count            : output
 #   global:                  : unused
 # -----------------------------------------------------------------------------
-def count_half_width(text: str):
+def count_half_width(text: str) -> int:
     return sum(1 for c in text if not unicodedata.east_asian_width(c) in 'FWA')
 
 # -----------------------------------------------------------------------------
@@ -86,7 +33,7 @@ def count_half_width(text: str):
 #   return: count            : output
 #   global:                  : unused
 # -----------------------------------------------------------------------------
-def count_width(text: str):
+def count_width(text: str) -> int:
     return count_full_width(text) * 2 + count_half_width(text)
 
 # -----------------------------------------------------------------------------
@@ -96,7 +43,7 @@ def count_width(text: str):
 #   return: length           : output
 #   global:                  : unused
 # -----------------------------------------------------------------------------
-def get_char_width(char: str):
+def get_char_width(char: str) -> int:
   return 2 if unicodedata.east_asian_width(char) in ('W', 'F', 'A') else 1
 
 # -----------------------------------------------------------------------------
@@ -107,7 +54,7 @@ def get_char_width(char: str):
 #   return: lines[0]         : output
 #   global:                  : unused
 # -----------------------------------------------------------------------------
-def split_by_width(text: str, max_width = 80):
+def split_by_width(text: str, max_width = 80) -> str:
     lines = []
     current_line = ''
     current_width = 0
@@ -135,24 +82,22 @@ def split_by_width(text: str, max_width = 80):
 #   return: lines[0]         : output
 #   global:                  : unused
 # -----------------------------------------------------------------------------
-def eprint(text: str, max_width = 80):
-#   escape_cd = '\x1b'
-    ptn_escpe = r"\x1b\[[0-9;]*[mG]"    # escape codes are also treated as strings.
-    txt_split = text
-    txt_plain = re.sub(ptn_escpe, '', text)
-    len_split = count_width(txt_split)
-    len_plain = count_width(txt_plain)
-    len_escpe = len_split - len_plain
-    if count_width(txt_plain) > max_width:  # txt_plain text length > console width
+def eprint(text: str, max_width = 0):
+    match_ptrn = r"\x1b\[[0-9;]*[mG]"
+    plain_text = re.sub(match_ptrn, '', text)
+    plain_len  = count_width(plain_text)
+    split_text = text
+    split_len  = count_width(split_text)
+    escpe_len  = split_len - plain_len
+    if max_width > 0 and plain_len > max_width:
         while True:
-            txt_split = split_by_width(txt_split, max_width + len_escpe)
-            txt_plain = re.sub(ptn_escpe, '', txt_split)
-            len_split = count_width(txt_split)
-            len_plain = count_width(txt_plain)
-            len_escpe = len_split - len_plain
-            if len_plain <= max_width: break
-
-    print(f"{color.reset}{txt_split}{color.reset}")
+            split_text = split_by_width(split_text, max_width + escpe_len)
+            plain_text = re.sub(match_ptrn, '', split_text)
+            plain_len  = count_width(plain_text)
+            split_len  = count_width(split_text)
+            escpe_len  = split_len - plain_len
+            if plain_len <= max_width: break
+    print(f"{color.reset}{split_text}{color.reset}")
 
 # -----------------------------------------------------------------------------
 # descript: Encoding whitespace characters on a per-list basis
@@ -161,7 +106,7 @@ def eprint(text: str, max_width = 80):
 #   return: list             : output
 #   global:                  : unused
 # -----------------------------------------------------------------------------
-def spc_encode(list):
+def spc_encode(list) -> str:
     for line in list:
         for key, value in line.items():
             if not isinstance(value, str): continue
@@ -176,7 +121,7 @@ def spc_encode(list):
 #   return: list             : output
 #   global:                  : unused
 # -----------------------------------------------------------------------------
-def spc_decode(list):
+def spc_decode(list) -> str:
     for line in list:
         for key, value in line.items():
             if not isinstance(value, str): break
@@ -193,12 +138,13 @@ def spc_decode(list):
 #   return: text             : output
 #   global:                  : unused
 # -----------------------------------------------------------------------------
-def omit_middle(text, max_len=80, placeholder="..."):
-    if count_width(text) <= max_len:
+def omit_middle(text, max_len=80, placeholder="...") -> str:
+    if count_width(re.sub(r"\x1b\[[0-9;]*[mG]", '', text)) <= max_len:
         return text
-    n = (max_len - count_width(placeholder)) // 2
-    front = text[:n + (max_len - count_width(placeholder)) % 2]
-    back = text[-n:]
-    return front + placeholder + back
+    front_len  = (max_len - count_width(placeholder)) // 3
+    back_len   = (max_len - count_width(placeholder)) - front_len
+    front_part = text[:front_len]
+    back_part  = text[-back_len:] if back_len > 0 else ""
+    return front_part + placeholder + back_part
 
 # --- eof ---------------------------------------------------------------------
