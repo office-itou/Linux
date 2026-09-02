@@ -1,4 +1,5 @@
 # --- Python library ----------------------------------------------------------
+from pathlib import Path
 import inspect
 import json
 import pandas as pd
@@ -7,6 +8,7 @@ import pprint
 
 # --- my library --------------------------------------------------------------
 from py_common.my_colors                import color
+from py_common.my_string                import omit_middle, generate_comment, count_width
 from py_common.my_debug                 import debugout
 
 # -----------------------------------------------------------------------------
@@ -63,7 +65,8 @@ def spc_decode4md(data: list) -> list:
     )
     conv = list()
     for line in data.copy():
-        for key, value in line.items():
+        for key in line.keys():
+            value = line[key]
             if isinstance(value, str):
                 match = url_pattern.search(value)
                 if match:
@@ -71,7 +74,6 @@ def spc_decode4md(data: list) -> list:
                         value = re.sub(f"({group})", r"`\1`", value)
                 value = re.sub('^(http[|s]:[^ ]+)', r"`\1`", value)
                 value = re.sub('%20', ' ', value)
-#               value = re.sub(' ', '&nbsp;', value)
                 value = re.sub(':_', r":\\_", value)
                 value = re.sub('_:', r"\\_:", value)
                 match = re.match('^#', value)
@@ -102,31 +104,32 @@ def spc_decode4md2(data: list) -> list:
 #   global:                  : unused
 # -----------------------------------------------------------------------------
 def json2markdown(path: str, title: str, data: list):
-    function_name = f"{Path(__file__).stem}({inspect.currentframe().f_code.co_name})"
-    debugout(function_name, 'Start', color.yellow, '')
+    frame = inspect.currentframe()
+    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
+    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, f"{path}")
+    debugout(function_name, 'Start', color.yellow, comment)
     # -------------------------------------------------------------------------
     text      = spc_decode4md(data.copy())
-    colssize  = []
-    spc = ' ' * 2
+    spc       = ' ' * 2
     header    = ''
     align     = ''
+    formats   = ''
     df = pd.DataFrame(text)
+    # --- header --------------------------------------------------------------
     for name in df.columns.to_list():
-        values = df[name].values
-        max_val = max(values, key=len)
-        colsize = len(max_val) if len(max_val) >= len(name) else len(name)
-        colssize.append(colsize)
-        header += f"|{name:^{colsize}}"
-        align += '|:' + '-' * (colsize - 1)
-    header += '|'
-    align += '|'
+        cnt_name = count_width(name)
+        max_size = df[name].apply(lambda x: count_width(str(x))).max()
+        colsize  = max_size if max_size >= cnt_name else cnt_name
+        header  += f"|{name:^{colsize}}"
+        align   += '|:' + '-' * (colsize - 1)
+        formats += f"|{{{name}:<{colsize}}}"
+    header  += '|'
+    align   += '|'
+    formats += '|\n'
+    # --- data ----------------------------------------------------------------
     md_text = f"# Data table\n\n* {title}\n\n{spc}{header}\n{spc}{align}\n"
     for index, row in df.iterrows():
-        md_line = ''
-        for i, name in enumerate(df.columns.to_list()):
-            colsize = colssize[i]
-            md_line += f"|{row[name]:<{colsize}}"
-        md_text += f"{spc}{md_line}|\n"
+        md_text += f"{spc}{formats}".format(**row)
     with open(path, 'w', encoding='utf-8') as f:
         f.write(md_text)
      # -------------------------------------------------------------------------

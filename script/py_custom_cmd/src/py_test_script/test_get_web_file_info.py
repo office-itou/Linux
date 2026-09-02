@@ -7,7 +7,7 @@ import inspect
 import time
 import argparse
 
-#from aiohttp import ClientError, ClientTimeout
+from aiohttp import ClientError, ClientTimeout
 #from bs4 import BeautifulSoup
 #from dataclasses import dataclass
 #from dataclasses import dataclass, asdict
@@ -18,8 +18,8 @@ import argparse
 from pathlib import Path
 #from tqdm import tqdm
 #from urllib.parse import urlparse
-#import aiohttp # sudo apt-get install python3-aiohttp
-#import asyncio
+import aiohttp # sudo apt-get install python3-aiohttp
+import asyncio
 #import csv
 #import dataclasses
 import json
@@ -53,14 +53,15 @@ from py_common.my_debug                 import debugout
 from py_common.my_fileio                import get_text2list, put_list2text, conv_text2json, conv_json2text
 from py_common.my_json                  import load_json, save_json
 #from py_common.my_markdown             import json2markdown, spc_encode4md, spc_decode4md
+from py_common.my_markdown              import json2markdown
 
 from py_common.my_common_cfg            import InfoConfiguration
 from py_common.my_distribution_dat      import InfoDistribution
 from py_common.my_media_dat             import InfoMedia
 
-#from py_common.my_infoweb              import Infoweb, get_webinfo
-#from py_common.my_infofile             import Infofile, get_fileinfo
-#from py_common.my_infodata             import Infodata, debug_info, get_infodata
+from py_common.my_infoweb              import InfoWeb
+from py_common.my_infofile             import InfoFile
+#from py_common.my_infodata              import InfoData
 
 # -----------------------------------------------------------------------------
 # descript: args parser
@@ -76,10 +77,14 @@ def argsparser():
     parser = argparse.ArgumentParser(allow_abbrev=False)
     # -------------------------------------------------------------------------
     parser.add_argument('--debug'   , help='Debug mode'                 , default=False, action='store_true')
-    parser.add_argument('--debugout', help='Debug mode for display only', default=False,action='store_true')
+    parser.add_argument('--debugout', help='Debug mode for display only', default=False, action='store_true')
     # -------------------------------------------------------------------------
-    parser.add_argument('--t2j'     , help='Text -> json convert'       , default=False,action='store_true')
-    parser.add_argument('--j2t'     , help='json -> Text convert'       , default=False,action='store_true')
+    parser.add_argument('--t2j'     , help='Text -> json convert', default=False, action='store_true')
+    parser.add_argument('--j2t'     , help='json -> Text convert', default=False, action='store_true')
+    # -------------------------------------------------------------------------
+    parser.add_argument('--md'      , help='json -> Markdown generate', default='', type=str)
+    # -------------------------------------------------------------------------
+    parser.add_argument('--info'    , help='Get ISO file information for web', default='', type=str)
     # -------------------------------------------------------------------------
     try:
         args = parser.parse_args()
@@ -111,17 +116,57 @@ def initialize():
         message_info(function_name, 'Debugout mode on')
     # -------------------------------------------------------------------------
     info_conf = InfoConfiguration()
- #   print(f"info_conf:{info_conf}")
     path_dist = info_conf.get('PATH_DIST')
     path_mdia = info_conf.get('PATH_MDIA')
     info_dist = InfoDistribution(path_dist + '.json')
-    info_mdia = InfoMedia(path_mdia + '.json')
-
-#    info_dist.load(path_dist)
-#    info_mdia.load(path_mdia)
+    info_mdia = InfoMedia(path_mdia + '.json', info_conf)
     # -------------------------------------------------------------------------
     debugout(function_name, 'Complete', color.yellow, '')
     return info_conf, info_dist, info_mdia
+
+# -----------------------------------------------------------------------------
+def generate_md(dirs: str, info_conf: InfoConfiguration, info_dist: InfoDistribution, info_mdia: InfoMedia):
+    function_name = f"{Path(__file__).stem}({inspect.currentframe().f_code.co_name})"
+    debugout(function_name, 'Start', color.yellow, '')
+    # -------------------------------------------------------------------------
+    info_conf.markdown(Path(dirs) / 'Readme_Configuration.md', f"Configuration data({Path(info_conf.get('PATH_CONF')).name})")
+    info_dist.markdown(Path(dirs) / 'Readme_Distribution.md' , f"Distribution data({Path(info_conf.get('PATH_DIST')).name})")
+    info_mdia.markdown(Path(dirs) / 'Readme_Media.md'        , f"Media data({Path(info_conf.get('PATH_MDIA')).name})")
+    # -------------------------------------------------------------------------
+    debugout(function_name, 'Complete', color.yellow, '')
+
+# -----------------------------------------------------------------------------
+async def get_web_file_info(info_conf: InfoConfiguration, info_dist: InfoDistribution, info_mdia: InfoMedia):
+    info_web  = InfoWeb()
+    info_file = InfoFile()
+    timeout = ClientTimeout(total=60, sock_connect=10, sock_read=30)
+    async with aiohttp.ClientSession(timeout=timeout, raise_for_status=False) as session:
+        count = 0
+        for tget_mdia in info_mdia.data:
+#            if tget_mdia.entry_flag != 'o' \
+            if tget_mdia.web_regexp == '-' \
+            or tget_mdia.iso_path   == '-':
+                continue
+            await info_web.get_info(session, tget_mdia.web_regexp, tget_mdia.iso_path)
+            tget_mdia.web_path   = info_web.data.url
+            tget_mdia.web_tstamp = info_web.data.tmstamp
+            tget_mdia.web_size   = info_web.data.size
+            tget_mdia.web_check  = info_web.data.check
+            tget_mdia.web_status = info_web.data.status
+            if info_web.data.status != 200:
+                continue
+            if Path(info_web.data.output).exists():
+                info_file.get_info(info_web.data.output)
+                tget_mdia.iso_path   = info_file.data.path
+                tget_mdia.iso_tstamp = info_file.data.tmstamp
+                tget_mdia.iso_size   = info_file.data.size
+                tget_mdia.iso_volume = info_file.data.volume
+            else:
+                tget_mdia.iso_path   = info_web.data.output
+                tget_mdia.iso_tstamp = '-'
+                tget_mdia.iso_size   = '-'
+                tget_mdia.iso_volume = '-'
+    return info_mdia.data
 
 # -----------------------------------------------------------------------------
 # descript: main
@@ -130,7 +175,7 @@ def initialize():
 #   return: exit             : output
 #   global:                  : unused
 # -----------------------------------------------------------------------------
-def main():
+async def main():
     # --- check the executing user --------------------------------------------
     if os.geteuid() != 0:
         print(f"{color.reset}{color.br_green}{infosystem.data.program_name}:\n{color.br_yellow} You have standard user privileges. {color.underline}Please run this with sudo.{color.reset}")
@@ -150,6 +195,10 @@ def main():
             conv_text2json(info_conf, info_dist, info_mdia)
         if infosystem.data.args.j2t == True:
             conv_json2text(info_conf, info_dist, info_mdia)
+        if (dirs := infosystem.data.args.info):
+            await get_web_file_info(info_conf, info_dist, info_mdia)
+        if (dirs := infosystem.data.args.md):
+            generate_md(dirs, info_conf, info_dist, info_mdia)
     # --- termination process -------------------------------------------------
     message_end(function_name)
     # --- elapsed end ---------------------------------------------------------
@@ -161,6 +210,6 @@ def main():
     # -------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
 
 # --- eof ---------------------------------------------------------------------

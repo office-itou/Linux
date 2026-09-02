@@ -10,6 +10,7 @@ import sys
 # --- my library --------------------------------------------------------------
 from py_common.my_config                import infosystem
 from py_common.my_colors                import color
+from py_common.my_string                import omit_middle, generate_comment
 from py_common.my_message               import message_alert
 from py_common.my_debug                 import debugout
 from py_common.my_markdown              import json2markdown
@@ -54,8 +55,10 @@ class InfoConfiguration:
 #   global:                       : unused
 # -----------------------------------------------------------------------------
 def load() -> dict:
-    function_name = f"{Path(__file__).stem}({inspect.currentframe().f_code.co_name})"
-    debugout(function_name, 'Start', color.yellow, '')
+    frame = inspect.currentframe()
+    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
+    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, '')
+    debugout(function_name, 'Start', color.yellow, comment)
     # -------------------------------------------------------------------------
     dirs_data = '/srv/user/share/conf/_data'    # data file                                 : '/srv/user/share/conf/_data'
     file_conf = 'common.cfg'                    # common configuration file
@@ -113,8 +116,10 @@ def load() -> dict:
 #   global:                       : unused
 # -----------------------------------------------------------------------------
 def conv2data(data_conf: str, data_orig: dict) -> list:
-    function_name = f"{Path(__file__).stem}({inspect.currentframe().f_code.co_name})"
-    debugout(function_name, 'Start', color.yellow, '')
+    frame = inspect.currentframe()
+    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
+    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, '')
+    debugout(function_name, 'Start', color.yellow, comment)
     # -------------------------------------------------------------------------
     dict_conf = dict()
     for i, line in enumerate(data_conf):
@@ -146,8 +151,10 @@ def conv2data(data_conf: str, data_orig: dict) -> list:
 #   global:                       : unused
 # -----------------------------------------------------------------------------
 def conv2variable(data_conf: str, data_orig: dict) -> list:
-    function_name = f"{Path(__file__).stem}({inspect.currentframe().f_code.co_name})"
-    debugout(function_name, 'Start', color.yellow, '')
+    frame = inspect.currentframe()
+    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
+    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, '')
+    debugout(function_name, 'Start', color.yellow, comment)
     # -------------------------------------------------------------------------
     dict_conf = dict()
     for i, line in enumerate(data_conf):

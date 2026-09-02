@@ -5,12 +5,15 @@ import subprocess
 
 # --- my library --------------------------------------------------------------
 from py_common.my_colors                import color
+from py_common.my_string                import omit_middle, generate_comment
 from py_common.my_debug                 import debugout
 
 # -----------------------------------------------------------------------------
 def run_subprocess(parameter: str):
-    function_name = f"{Path(__file__).stem}({inspect.currentframe().f_code.co_name})"
-    debugout(function_name, 'Start', color.yellow, '')
+    frame = inspect.currentframe()
+    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
+    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, f"{parameter}")
+    debugout(function_name, 'Start', color.yellow, comment)
     # -------------------------------------------------------------------------
     try:
         res = subprocess.run(parameter, check=True, capture_output=True, text=True)

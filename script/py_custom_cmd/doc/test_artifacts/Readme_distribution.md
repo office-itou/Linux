@@ -1,6 +1,6 @@
 # Data table
 
-* distribution data file (distribution.dat)
+* Distribution data(distribution.dat)
 
   |      version      |    name     |version_id|     code_name     |life| release  | support  |long_term |   rhel   |        kerne        |     note      |                           wallpaper                            |create_flag|sort_flag|
   |:------------------|:------------|:---------|:------------------|:---|:---------|:---------|:---------|:---------|:--------------------|:--------------|:---------------------------------------------------------------|:----------|:--------|
@@ -153,7 +153,8 @@
   |miraclelinux-9.0   |Miracle Linux|9.0       |-                  |EOL |2022-11-01|-         |-         |2022-05-17|5.14.0-70.el9        |-              |-                                                               |-          |0        |
   |miraclelinux-9.2   |Miracle Linux|9.2       |-                  |EOL |2023-10-05|-         |-         |2023-05-10|5.14.0-284.el9       |-              |-                                                               |-          |0        |
   |miraclelinux-9.4   |Miracle Linux|9.4       |Feige              |EOL |2024-09-02|-         |-         |2024-04-30|5.14.0-427.13.1.el9_4|-              |-                                                               |-          |0        |
-  |miraclelinux-9.6   |Miracle Linux|9.6       |Feige              |-   |2025-07-14|-         |-         |2025-xx-xx|5.14.0-570.16.1.el9_6|-              |-                                                               |-          |0        |
+  |miraclelinux-9.6   |Miracle Linux|9.6       |Feige              |EOL |2025-07-14|-         |-         |2025-xx-xx|5.14.0-570.16.1.el9_6|-              |-                                                               |-          |0        |
+  |miraclelinux-9.8   |Miracle Linux|9.8       |Feige              |-   |2026-07-15|-         |-         |2026-xx-xx|5.14.0               |-              |-                                                               |-          |0        |
   |opensuse-leap-15.0 |openSUSE     |15.0      |-                  |EOL |2018-05-25|2019-12-03|-         |-         |4.12                 |-              |-                                                               |-          |0        |
   |opensuse-leap-15.1 |openSUSE     |15.1      |-                  |EOL |2019-05-22|2021-01-31|-         |-         |4.12                 |-              |-                                                               |-          |0        |
   |opensuse-leap-15.2 |openSUSE     |15.2      |-                  |EOL |2020-07-02|2021-12-31|-         |-         |5.3.18               |-              |-                                                               |-          |0        |

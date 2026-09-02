@@ -42,16 +42,18 @@ class MediaData:
     create_flag:    str = ''
 
 class InfoMedia:
-    def __init__(self, path):
+    def __init__(self, path: str, info_conf :InfoConfiguration):
         self.data: MediaData = MediaData()
-        self.load(path)
+        self.load(path, info_conf)
 
-    def load(self, path: str):
+    def load(self, path: str, info_conf :InfoConfiguration):
         with open(path, 'r', encoding='utf-8') as f:
             load_data = json.load(f)
         self.data = [MediaData(**item) for item in load_data]
+        self.conv2data(info_conf)
 
-    def save(self, path: str):
+    def save(self, path: str, info_conf :InfoConfiguration):
+        self.conv2variable(info_conf)
         dict_data = asdict(self.data)
         with open(path, 'w', encoding='utf-8') as f:
             json.dump(dict_data, f, ensure_ascii=False, indent=4)

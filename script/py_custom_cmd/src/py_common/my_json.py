@@ -7,6 +7,7 @@ import re
 
 # --- my library --------------------------------------------------------------
 from py_common.my_colors                import color
+from py_common.my_string                import omit_middle, generate_comment
 from py_common.my_debug                 import debugout
 
 # -----------------------------------------------------------------------------
@@ -17,8 +18,10 @@ from py_common.my_debug                 import debugout
 #   global:                  : unused
 # -----------------------------------------------------------------------------
 def load_json(path: str) -> str:
-    function_name = f"{Path(__file__).stem}({inspect.currentframe().f_code.co_name})"
-    debugout(function_name, 'Start', color.yellow, '')
+    frame = inspect.currentframe()
+    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
+    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, f"{path}")
+    debugout(function_name, 'Start', color.yellow, comment)
     # -------------------------------------------------------------------------
     obj = None
     with open(path, 'r', encoding='utf-8') as f:
@@ -36,8 +39,10 @@ def load_json(path: str) -> str:
 #   global:                  : unused
 # -----------------------------------------------------------------------------
 def save_json(path: str, obj: str) -> str:
-    function_name = f"{Path(__file__).stem}({inspect.currentframe().f_code.co_name})"
-    debugout(function_name, 'Start', color.yellow, '')
+    frame = inspect.currentframe()
+    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
+    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, f"{path}")
+    debugout(function_name, 'Start', color.yellow, comment)
     # -------------------------------------------------------------------------
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(obj, f, ensure_ascii=False, indent=4)

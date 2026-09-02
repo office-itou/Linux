@@ -7,6 +7,7 @@ import re
 
 # --- my library --------------------------------------------------------------
 from py_common.my_colors                import color
+from py_common.my_string                import omit_middle, generate_comment
 from py_common.my_debug                 import debugout
 from py_common.my_infoweb               import InfoWeb, WebData
 from py_common.my_infofile              import InfoFile, FileData
@@ -67,8 +68,10 @@ def debug(info: WebFileData):
 #   global:                       : unused
 # -----------------------------------------------------------------------------
 async def get_info(session, target_regexp: str, target_path: str) -> InfoData:
-    function_name = f"{Path(__file__).stem}({inspect.currentframe().f_code.co_name})"
-    debugout(function_name, 'Start', color.yellow, '')
+    frame = inspect.currentframe()
+    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
+    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, f"{target_regexp}")
+    debugout(function_name, 'Start', color.yellow, comment)
     # -------------------------------------------------------------------------
     infoweb  = InfoWeb()
     infofile = InfoFile()

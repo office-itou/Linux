@@ -7,6 +7,7 @@ import magic                            # sudo apt-get install python3-magic
 
 # --- my library --------------------------------------------------------------
 from py_common.my_colors                import color
+from py_common.my_string                import omit_middle, generate_comment
 from py_common.my_message               import message_alert
 from py_common.my_debug                 import debugout
 from py_common.my_process               import run_subprocess
@@ -20,15 +21,19 @@ class FileData:
     volume:         str = ""
 
 class InfoFile:
-    def __init__(self):
-        self.data: FileData = FileData()
+    def __init__(self, data: FileData = None):
+        self.data: FileData = data if data is not None else FileData()
+
     def get_data(self) -> FileData:
         return self.data
+
     def get_info(self, target_path: str) -> FileData:
         self.data = get_info(target_path)
         return self.data
+
     def get_volume_uuid(device: str) -> str:
         return get_volume_uuid(device)
+
     def get_volume_label(device: str) -> str:
         return get_volume_label(device)
 
@@ -62,8 +67,10 @@ def get_volume_label(device):
 #   global:                       : unused
 # -----------------------------------------------------------------------------
 def get_info(target_path):
-    function_name = f"{Path(__file__).stem}({inspect.currentframe().f_code.co_name})"
-    debugout(function_name, 'Start', color.yellow, '')
+    frame = inspect.currentframe()
+    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
+    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, f"{target_path}")
+    debugout(function_name, 'Start', color.yellow, comment)
     # -------------------------------------------------------------------------
     data = FileData()
     path = Path(target_path)

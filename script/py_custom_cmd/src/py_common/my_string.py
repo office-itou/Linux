@@ -138,13 +138,34 @@ def spc_decode(list) -> str:
 #   return: text             : output
 #   global:                  : unused
 # -----------------------------------------------------------------------------
-def omit_middle(text, max_len=80, placeholder="...") -> str:
-    if count_width(re.sub(r"\x1b\[[0-9;]*[mG]", '', text)) <= max_len:
+def omit_middle(text, max_len=80, placeholder='..') -> str:
+    if (plain_len := count_width(re.sub(r"\x1b\[[0-9;]*[mG]", '', text))) <= max_len:
         return text
-    front_len  = (max_len - count_width(placeholder)) // 3
+    front_len  = (max_len - count_width(placeholder)) // 4
     back_len   = (max_len - count_width(placeholder)) - front_len
     front_part = text[:front_len]
     back_part  = text[-back_len:] if back_len > 0 else ""
     return front_part + placeholder + back_part
+
+# -----------------------------------------------------------------------------
+# descript: Omit the intermediate characters.
+#   input : text             : input
+#   input : max_len          : input
+#   input : placeholder      : input
+#   output:                  : unused
+#   return: text             : output
+#   global:                  : unused
+# -----------------------------------------------------------------------------
+def generate_comment(modu_name: str, func_name: str, para=''):
+    from py_common.my_message import colsize_func, colsize_mode, colsize_mesg
+    text_modu = re.sub(r"^[^.]+.", '', modu_name)
+    if (colsize_modu := count_width(text_modu)) > 20: colsize_modu = 20
+    if (colsize_call := count_width(func_name)) > 20: colsize_call = 20
+    colsize_para = colsize_mesg - (colsize_modu + colsize_call + 2)
+    text_modu = omit_middle(text_modu, colsize_modu)
+    text_func = omit_middle(func_name, colsize_call)
+    text_para = omit_middle(f":{para}", colsize_para) if para else ''
+    text_retn = f"{text_modu}({text_func}){text_para}"
+    return text_retn
 
 # --- eof ---------------------------------------------------------------------

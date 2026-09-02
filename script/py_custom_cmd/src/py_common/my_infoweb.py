@@ -15,7 +15,7 @@ import re
 # --- my library --------------------------------------------------------------
 from py_common.my_config                import infosystem
 from py_common.my_colors                import color
-from py_common.my_string                import eprint, omit_middle
+from py_common.my_string                import eprint, omit_middle, generate_comment
 from py_common.my_message               import message_warn, message_alert
 from py_common.my_debug                 import debugout
 
@@ -34,19 +34,28 @@ class WebData:
     output:         str = ""
 
 class InfoWeb:
-    def __init__(self):
-        self.data: WebData = WebData()
+    def __init__(self, data: WebData = None):
+        self.data: WebData = data if data is not None else WebData()
+
     def get_data(self) -> WebData:
         return self.data
-    def get_info(self, session, target_regexp: str, target_path: str) -> WebData:
-        self.data = get_info(session, target_regexp, target_path)
+
+    async def get_info(self, session, target_regexp: str, target_path: str) -> WebData:
+        self.data = await get_info(session, target_regexp, target_path)
         return self.data
-    def get_response(self, session, target_url: str) -> WebData:
-        self.data = get_response(session, target_url)
-    def get_header(self, session, target_url: str) -> WebData:
-        self.data = get_header(session, target_url)
-    def get_text(self, session, target_url: str) -> WebData:
-        self.data = get_text(session, target_url)
+
+    async def get_response(self, session, target_url: str) -> WebData:
+        self.data = await get_response(session, target_url)
+        return self.data
+
+    async def get_header(self, session, target_url: str) -> WebData:
+        self.data = await get_header(session, target_url)
+        return self.data
+
+    async def get_text(self, session, target_url: str) -> WebData:
+        self.data = await get_text(session, target_url)
+        return self.data
+
     def url_strip(self, data: str) -> str:
         return url_strip(data)
 
@@ -89,7 +98,7 @@ async def get_response(session, target_url: str) -> WebData:
     info = WebData()
     for r in range(3):
         try:
-            async with session(target_url, allow_redirects=True, headers=headers, timeout=10) as response:
+            async with session(target_url, allow_redirects=True, timeout=60) as response:
                 info.url = target_url
                 info.status = response.status if hasattr(response, 'status') else 0
                 info.reason = response.reason if hasattr(response, 'reason') else ''
@@ -134,8 +143,10 @@ async def get_response(session, target_url: str) -> WebData:
 #   global:                       : unused
 # -----------------------------------------------------------------------------
 async def get_header(session, target_url: str) -> WebData:
-    function_name = f"{Path(__file__).stem}({inspect.currentframe().f_code.co_name})"
-    debugout(function_name, 'Start', color.yellow, '')
+    frame = inspect.currentframe()
+    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
+    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, f"{target_url}")
+    debugout(function_name, 'Start', color.yellow, comment)
     # -------------------------------------------------------------------------
     info = await get_response(session.head, target_url)
     # --- return --------------------------------------------------------------
@@ -151,8 +162,10 @@ async def get_header(session, target_url: str) -> WebData:
 #   global:                       : unused
 # -----------------------------------------------------------------------------
 async def get_text(session, target_url: str) -> WebData:
-    function_name = f"{Path(__file__).stem}({inspect.currentframe().f_code.co_name})"
-    debugout(function_name, 'Start', color.yellow, '')
+    frame = inspect.currentframe()
+    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
+    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, f"{target_url}")
+    debugout(function_name, 'Start', color.yellow, comment)
     # -------------------------------------------------------------------------
     info = await get_response(session.get, target_url)
     # --- return --------------------------------------------------------------
@@ -169,8 +182,10 @@ async def get_text(session, target_url: str) -> WebData:
 #   global:                       : unused
 # -----------------------------------------------------------------------------
 async def get_info(session, target_regexp: str, target_path: str) -> WebData:
-    function_name = f"{Path(__file__).stem}({inspect.currentframe().f_code.co_name})"
-    debugout(function_name, 'Start', color.yellow, '')
+    frame = inspect.currentframe()
+    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
+    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, f"{target_regexp}")
+    debugout(function_name, 'Start', color.yellow, comment)
     # -------------------------------------------------------------------------
     data = WebData()
     target_url = target_regexp
@@ -234,13 +249,48 @@ async def get_info(session, target_regexp: str, target_path: str) -> WebData:
     if status == True:
         for i in range(5):
             data = await get_header(session, target_url)
-            if 200 <= data.status <= 299: break
+            if data.status == 200: break
             if data.status == 404: break
             message_warn(function_name, f"retry({i})")
             await asyncio.sleep(3)
-    data.regexp = target_regexp
-    data.url = target_url
-    data.output = target_path
+    # -------------------------------------------------------------------------
+    data.regexp = target_regexp if target_regexp else '-'
+    data.url = target_url if target_url else '-'
+    filename = re.sub(r"^.+/", '', target_url)
+    match filename:
+        case 'mini.iso':
+            match target_url:
+                # https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/netboot/mini.iso
+                # https://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/netboot/mini.iso
+                case s if re.match(r"^http(|s)://.+/(debian|ubuntu)/dists/.+$", s):
+                    arch = re.sub(r"/current/.+$", '', s)
+                    arch = re.sub(r"^.+/.+-", '', arch)
+                    code = re.sub(r"/main/.+$", '', s)
+                    code = re.sub(r"^.+/", '', code)
+                    code = re.sub(r"-.+$", '', code)
+                    filename = f"mini-{code}-{arch}.iso"
+                # https://d-i.debian.org/daily-images/amd64/daily/netboot/mini.iso
+                case s if re.match(r"^http(|s)://d-i.debian.org/daily-images/.+$", s):
+                    arch = re.sub(r"/daily/.+$", '', s)
+                    arch = re.sub(r"^.+/", '', arch)
+                    filename = f"mini-testing-daily-{arch}.iso"
+                case _:
+                    pass
+        # https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                 
+        # https://cdimage.debian.org/cdimage/daily-builds/daily/current/amd64/iso-cd/debian-testing-amd64-netinst.iso    
+        # https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso
+        case s if re.match(r"debian-testing-.+-netinst\.iso", s):
+            edtn = re.sub(r"^.+/cdimage/", '', target_url)
+            edtn = re.sub(r"-.+", '', edtn)
+            arch = re.sub(r"/iso-cd/.+$", '', target_url)
+            arch = re.sub(r"^.+/", '', arch)
+            bild = re.sub(r"/" + arch + r"/.+$", '', target_url)
+            bild = re.sub(r"^.+/", '', bild)
+            if bild: edtn = f"{edtn}-{bild}"
+            filename = re.sub(arch, f"{edtn}-{arch}", filename)
+        case _:
+            pass
+    data.output = str(Path(target_path).with_name(filename) if target_path and filename else '-')
     # --- return --------------------------------------------------------------
     debugout(function_name, 'Complete', color.yellow, '')
     return data

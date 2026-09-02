@@ -48,7 +48,7 @@ sys.path.append(str(libsdir))
 from py_common.my_config                import infosystem
 from py_common.my_colors                import color
 #from py_common.my_string               import eprint, count_width
-from py_common.my_string               import eprint
+from py_common.my_string                import eprint
 from py_common.my_message               import message_start, message_end, message_elapsed, message_debug, message_info, message_warn, message_alert
 from py_common.my_debug                 import debugout
 #from py_common.my_process              import run_subprocess

@@ -7,8 +7,13 @@ import re
 
 # --- my library --------------------------------------------------------------
 from py_common.my_colors                import color
+from py_common.my_string                import omit_middle, generate_comment
 from py_common.my_debug                 import debugout
 from py_common.my_json                  import load_json, save_json
+
+from py_common.my_common_cfg            import InfoConfiguration
+from py_common.my_distribution_dat      import InfoDistribution
+from py_common.my_media_dat             import InfoMedia
 
 # -----------------------------------------------------------------------------
 # descript: text file to list
@@ -18,8 +23,10 @@ from py_common.my_json                  import load_json, save_json
 #   global:                  : unused
 # -----------------------------------------------------------------------------
 def get_text2list(path: str) -> list:
-    function_name = f"{Path(__file__).stem}({inspect.currentframe().f_code.co_name})"
-    debugout(function_name, 'Start', color.yellow, '')
+    frame = inspect.currentframe()
+    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
+    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, f"{path}")
+    debugout(function_name, 'Start', color.yellow, comment)
     # -------------------------------------------------------------------------
     list_data = list()
     list_data = list(csv.DictReader(re.sub(r"[ \t]+", ",", line.strip()) for line in open(path, 'r', encoding='utf-8', newline='')))
@@ -38,8 +45,10 @@ def get_text2list(path: str) -> list:
 #   global:                  : unused
 # -----------------------------------------------------------------------------
 def put_list2text(path: str, list_data: list, format: str):
-    function_name = f"{Path(__file__).stem}({inspect.currentframe().f_code.co_name})"
-    debugout(function_name, 'Start', color.yellow, '')
+    frame = inspect.currentframe()
+    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
+    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, f"{path}")
+    debugout(function_name, 'Start', color.yellow, comment)
     # -------------------------------------------------------------------------
     dict_keys = dict()
     for key, value in list_data[0].items():
@@ -53,9 +62,11 @@ def put_list2text(path: str, list_data: list, format: str):
     debugout(function_name, 'Complete', color.yellow, '')
 
 # -----------------------------------------------------------------------------
-def conv_text2json(info_conf, info_dist, info_mdia):
-    function_name = f"{Path(__file__).stem}({inspect.currentframe().f_code.co_name})"
-    debugout(function_name, 'Start', color.yellow, '')
+def conv_text2json(info_conf: InfoConfiguration, info_dist: InfoDistribution, info_mdia: InfoMedia):
+    frame = inspect.currentframe()
+    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
+    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, '')
+    debugout(function_name, 'Start', color.yellow, comment)
     # -------------------------------------------------------------------------
     path_dist = info_conf.get('PATH_DIST')
     path_mdia = info_conf.get('PATH_MDIA')
@@ -69,9 +80,11 @@ def conv_text2json(info_conf, info_dist, info_mdia):
     debugout(function_name, 'Complete', color.yellow, '')
 
 # -----------------------------------------------------------------------------
-def conv_json2text(info_conf, info_dist, info_mdia):
-    function_name = f"{Path(__file__).stem}({inspect.currentframe().f_code.co_name})"
-    debugout(function_name, 'Start', color.yellow, '')
+def conv_json2text(info_conf: InfoConfiguration, info_dist: InfoDistribution, info_mdia: InfoMedia):
+    frame = inspect.currentframe()
+    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
+    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, '')
+    debugout(function_name, 'Start', color.yellow, comment)
     # -------------------------------------------------------------------------
     path_dist = info_conf.get('PATH_DIST')
     path_mdia = info_conf.get('PATH_MDIA')
