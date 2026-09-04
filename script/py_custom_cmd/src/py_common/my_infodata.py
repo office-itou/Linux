@@ -1,4 +1,5 @@
 # --- Python library ----------------------------------------------------------
+from typing                             import Any, Callable
 from dataclasses                        import dataclass, asdict
 from pathlib                            import Path
 import asyncio
@@ -6,6 +7,8 @@ import inspect
 import re
 
 # --- my library --------------------------------------------------------------
+from py_common.my_config                import infosystem
+from py_common.my_debug                 import debug_logger
 from py_common.my_colors                import color
 from py_common.my_string                import omit_middle, generate_comment
 from py_common.my_debug                 import debugout
@@ -33,6 +36,7 @@ class InfoData(InfoWeb, InfoFile):
         debug(self)
 
 # -----------------------------------------------------------------------------
+@debug_logger
 def debug(info: WebFileData):
     eprint("# --------------------------------------------------------------------------- #")
     data = info
@@ -67,19 +71,14 @@ def debug(info: WebFileData):
 #   return: WebFileData           : output
 #   global:                       : unused
 # -----------------------------------------------------------------------------
+@debug_logger
 async def get_info(session, target_regexp: str, target_path: str) -> InfoData:
-    frame = inspect.currentframe()
-    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
-    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, f"{target_regexp}")
-    debugout(function_name, 'Start', color.yellow, comment)
-    # -------------------------------------------------------------------------
     infoweb  = InfoWeb()
     infofile = InfoFile()
     data     = WebFileData()
     data.web  = await infoweb.get_info(session, target_regexp, target_path)
     data.file = infofile.get_info(target_path)
     # --- return --------------------------------------------------------------
-    debugout(function_name, 'Complete', color.yellow, '')
     return data
 
 # --- eof ---------------------------------------------------------------------

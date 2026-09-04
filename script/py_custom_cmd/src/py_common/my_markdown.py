@@ -1,12 +1,30 @@
+###############################################################################
+#
+#	markdown processing
+#
+#	developer   : J.Itou
+#	release     : 2026/09/03
+#
+#	history     :
+#	   data    version    developer    point
+#	---------- -------- -------------- ----------------------------------------
+#	2026/09/03 000.0000 J.Itou         first release
+#
+###############################################################################
+
 # --- Python library ----------------------------------------------------------
-from pathlib import Path
+from typing                             import Any, Callable
+from pathlib                            import Path
 import inspect
 import json
 import pandas as pd
 import re
+import copy
 import pprint
 
 # --- my library --------------------------------------------------------------
+from py_common.my_config                import infosystem
+from py_common.my_debug                 import debug_logger
 from py_common.my_colors                import color
 from py_common.my_string                import omit_middle, generate_comment, count_width
 from py_common.my_debug                 import debugout
@@ -18,16 +36,17 @@ from py_common.my_debug                 import debugout
 #   return: list             : output
 #   global:                  : unused
 # -----------------------------------------------------------------------------
+@debug_logger
 def spc_encode4md(data: list) -> list:
-    conv = data.copy()
-    for line in conv:
-        for key, value in line.items():
-            if not isinstance(value, str): break
-            value = re.sub('^`(http[|s]:[^ ]+)`', '\1', value)
-            value = re.sub(' ', '%20', value)
-            line[key] = value
-            eprint(line[key])
-#           line[key] = urllib.parse.unquote(value)
+    conv = copy.deepcopy(data)
+    for i, word in enumerate(conv):
+        if not isinstance(word, str):
+            continue
+        word = re.sub(r"^`([^`]+)`$", r"\1", word)
+        word = word.replace(" ", "%20")
+        word = word.replace(r":\_", ":_")
+        word = word.replace(r"\_:", "_:")
+        conv[i] = word
     return conv
 
 # -----------------------------------------------------------------------------
@@ -37,16 +56,17 @@ def spc_encode4md(data: list) -> list:
 #   return: list             : output
 #   global:                  : unused
 # -----------------------------------------------------------------------------
+@debug_logger
 def spc_decode4md_sub(data: list) -> list:
-    conv = data.copy()
-    for key, value in conv.items():
-        value = conv[key]
-        if not isinstance(value, str): break
-        value = re.sub('^(http[|s]:[^ ]+)', r"`\1`", value)
-        value = re.sub('%20', ' ', value)
-        value = re.sub(':_', r":\\_", value)
-        value = re.sub('_:', r"\\_:", value)
-        conv[key] = value
+    conv = copy.deepcopy(data)
+    for i, word in enumerate(conv):
+        if not isinstance(word, str):
+            continue
+        word = re.sub(r"^(https?:/[^ ]+)", r"`\1`", word)
+        word = word.replace("%20", " ")
+        word = word.replace(":_", r":\_")
+        word = word.replace("_:", r"\_:")
+        conv[i] = word
     return conv
 
 # -----------------------------------------------------------------------------
@@ -56,46 +76,30 @@ def spc_decode4md_sub(data: list) -> list:
 #   return: list             : output
 #   global:                  : unused
 # -----------------------------------------------------------------------------
+@debug_logger
 def spc_decode4md(data: list) -> list:
     url_pattern = re.compile(
-        r'^(?:http[s]?://)?'
-        r'(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+'
-        r'[a-zA-Z]{2,}'
+        r'^https?://(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}'
         r'(?:/[a-zA-Z0-9._~:/?#\[\]@!$&\'()*+,;=%-]*)?$'
     )
-    conv = list()
-    for line in data.copy():
-        for key in line.keys():
-            value = line[key]
-            if isinstance(value, str):
-                match = url_pattern.search(value)
-                if match:
-                    for group in match.group(0).splitlines():
-                        value = re.sub(f"({group})", r"`\1`", value)
-                value = re.sub('^(http[|s]:[^ ]+)', r"`\1`", value)
-                value = re.sub('%20', ' ', value)
-                value = re.sub(':_', r":\\_", value)
-                value = re.sub('_:', r"\\_:", value)
-                match = re.match('^#', value)
-                if match:
-                    value = f"`{value}`"
+    processed_data = copy.deepcopy(data)
+    for line in processed_data:
+        for key, value in line.items():
+            if not isinstance(value, str):
+                continue
+            if url_pattern.match(value):
+                value = f"`{value}`"
+            value = re.sub(r'^(https?:/[^ ]+)', r"`\1`", value)
+            value = value.replace('%20', ' ')
+            value = value.replace(':_', r':\_')
+            value = value.replace('_:', r'\_:')
+            if value.startswith('#'):
+                value = f"`{value}`"
             line[key] = value
-        conv.append(line)
-    return conv
-
-def spc_decode4md2(data: list) -> list:
-    conv = list()
-    if isinstance(data, dict):
-        eprint("dict")
-        conv.append(spc_decode4md_sub(data))
-    elif isinstance(data, list):
-        eprint("list")
-        for line in data:
-            conv.append(spc_decode4md_sub(line))
-    return conv
+    return processed_data
 
 # -----------------------------------------------------------------------------
-# descript: markdown output of json data
+# descript: markdown output of list data
 #   input : path             : unused
 #   input : title            : unused
 #   input : data             : unused
@@ -103,36 +107,79 @@ def spc_decode4md2(data: list) -> list:
 #   return:                  : unused
 #   global:                  : unused
 # -----------------------------------------------------------------------------
-def json2markdown(path: str, title: str, data: list):
-    frame = inspect.currentframe()
-    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
-    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, f"{path}")
-    debugout(function_name, 'Start', color.yellow, comment)
-    # -------------------------------------------------------------------------
-    text      = spc_decode4md(data.copy())
-    spc       = ' ' * 2
-    header    = ''
-    align     = ''
-    formats   = ''
+@debug_logger
+def list2markdown(path: str, title: str, data: list):
+    text = spc_decode4md(data.copy())
+    spc = " " * 2
+    header = ""
+    align = ""
     df = pd.DataFrame(text)
-    # --- header --------------------------------------------------------------
-    for name in df.columns.to_list():
-        cnt_name = count_width(name)
+    # --- get the width of each column ----------------------------------------
+    col_sizes = {}
+    for name in df.columns:
+        cnt_name = count_width(str(name))
         max_size = df[name].apply(lambda x: count_width(str(x))).max()
-        colsize  = max_size if max_size >= cnt_name else cnt_name
-        header  += f"|{name:^{colsize}}"
-        align   += '|:' + '-' * (colsize - 1)
-        formats += f"|{{{name}:<{colsize}}}"
-    header  += '|'
-    align   += '|'
-    formats += '|\n'
+        col_sizes[name] = max_size if max_size >= cnt_name else cnt_name
+    # --- header and divider line ---------------------------------------------
+    for name in df.columns:
+        colsize = col_sizes[name]
+        name_str = str(name)
+        pad_total = colsize - count_width(name_str)
+        pad_l = pad_total // 2
+        pad_r = pad_total - pad_l
+        header += f"|{' ' * pad_l}{name_str}{' ' * pad_r}"
+        align += "|:" + "-" * (colsize - 1)
+    header += "|"
+    align += "|"
     # --- data ----------------------------------------------------------------
-    md_text = f"# Data table\n\n* {title}\n\n{spc}{header}\n{spc}{align}\n"
+    md_rows = []
     for index, row in df.iterrows():
-        md_text += f"{spc}{formats}".format(**row)
-    with open(path, 'w', encoding='utf-8') as f:
+        row_text = ""
+        for name in df.columns:
+            colsize = col_sizes[name]
+            val_str = str(row[name])
+            pad_r = colsize - count_width(val_str)
+            row_text += f"|{val_str}{' ' * pad_r}"
+        row_text += "|"
+        md_rows.append(f"{spc}{row_text}")
+    # --- output --------------------------------------------------------------
+    md_text = f"# Data table\n\n* {title}\n\n{spc}{header}\n{spc}{align}\n"
+    md_text += "\n".join(md_rows) + "\n"
+    with open(path, "w", encoding="utf-8") as f:
         f.write(md_text)
-     # -------------------------------------------------------------------------
-    debugout(function_name, 'Complete', color.yellow, '')
+
+# -----------------------------------------------------------------------------
+# descript: list data output of markdown
+#   input : path             : unused
+#   input : title            : unused
+#   input : data             : unused
+#   output:                  : unused
+#   return:                  : unused
+#   global:                  : unused
+# -----------------------------------------------------------------------------
+def markdown2list(path: str) -> list:
+    table_rows = []
+    headers = []
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                line_str = line.strip()
+                if line_str.startswith("|") and line_str.endswith("|"):
+                    cells = [cell.strip() for cell in line_str.split("|")[1:-1]]
+                    if all(re.match(r"^:?-+:?$", c) for c in cells):
+                        continue
+                    if not headers:
+                        headers = cells
+                    else:
+                        row_dict = {}
+                        for i, head in enumerate(headers):
+                            row_dict[head] = cells[i] if i < len(cells) else ""
+                        table_rows.append(row_dict)
+                elif headers and table_rows:
+                    break
+        return table_rows
+    except FileNotFoundError:
+        print(f"Error: {path} not found")
+        return []
 
 # --- eof ---------------------------------------------------------------------

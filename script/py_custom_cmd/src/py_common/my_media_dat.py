@@ -1,12 +1,29 @@
+###############################################################################
+#
+#	media.dat I/O
+#
+#	developer   : J.Itou
+#	release     : 2026/09/03
+#
+#	history     :
+#	   data    version    developer    point
+#	---------- -------- -------------- ----------------------------------------
+#	2026/09/03 000.0000 J.Itou         first release
+#
+###############################################################################
+
 # --- Python library ----------------------------------------------------------
-from dataclasses    					import dataclass, asdict
+from typing                             import Any, Optional
+from dataclasses                        import dataclass, asdict, fields
 import json
 
 # --- my library --------------------------------------------------------------
-from py_common.my_config      			import infosystem
-from py_common.my_colors      			import color
-from py_common.my_markdown    			import json2markdown
-from py_common.my_common_cfg  			import InfoConfiguration
+from py_common.my_config                import infosystem
+from py_common.my_debug                 import debug_logger
+from py_common.my_colors                import color
+from py_common.my_string                import eprint, spc_decode, spc_encode
+from py_common.my_markdown              import list2markdown
+from py_common.my_common_cfg            import InfoConfiguration
 
 # -----------------------------------------------------------------------------
 @dataclass
@@ -42,42 +59,59 @@ class MediaData:
     create_flag:    str = ''
 
 class InfoMedia:
-    def __init__(self, path: str, info_conf :InfoConfiguration):
-        self.data: MediaData = MediaData()
-        self.load(path, info_conf)
+    def __init__(self, path: str = None, info_conf: Any = None):
+        self.data: list[MediaData] = []
+        self._valid_fields = {f.name for f in fields(MediaData)}
+        if path and info_conf:
+            self.load(path, info_conf)
 
-    def load(self, path: str, info_conf :InfoConfiguration):
+    def __getattr__(self, name: str) -> Any:
+        if name in self._valid_fields:
+            if self.data:
+                return getattr(self.data[0], name)
+            return ''
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+
+    def find(self, **kwargs) -> Optional[MediaData]:
+        for item in self.data:
+            match = True
+            for key, value in kwargs.items():
+                if getattr(item, key, None) != value:
+                    match = False
+                    break
+            if match:
+                return item
+
+    @debug_logger
+    def load(self, path: str, info_conf: InfoConfiguration) -> None:
         with open(path, 'r', encoding='utf-8') as f:
-            load_data = json.load(f)
-        self.data = [MediaData(**item) for item in load_data]
-        self.conv2data(info_conf)
+            raw_data = json.load(f)
+        decoded_data = spc_decode(raw_data)
+        converted_data = info_conf.conv2data(decoded_data)
+        self.data = converted_data
 
-    def save(self, path: str, info_conf :InfoConfiguration):
-        self.conv2variable(info_conf)
-        dict_data = asdict(self.data)
+    @debug_logger
+    def save(self, path: str, info_conf: InfoConfiguration) -> None:
+        converted_data = info_conf.conv2variable(self.data)
+        encoded_data = spc_encode(converted_data)
         with open(path, 'w', encoding='utf-8') as f:
-            json.dump(dict_data, f, ensure_ascii=False, indent=4)
+            json.dump(encoded_data, f, ensure_ascii=False, indent=4)
 
-    def from_json(self, str_data: str):
-        self.data = [MediaData(**item) for item in str_data]
+    def markdown(self, path: str, title: str) -> None:
+        list2markdown(path, title, self.data)
 
-    def to_json(self) -> str:
-        return [asdict(data) for data in self.data]
-
-    def markdown(self, path: str, title: str):
-        json2markdown(path, title, self.to_json())
-
-    def conv2data(self, info_conf :InfoConfiguration):
-        conv = info_conf.conv2data(self.data)
-        self.from_json(json.loads(conv))
-
-    def conv2variable(self, info_conf :InfoConfiguration):
-        conv = info_conf.conv2variable(self.data)
-        self.from_json(json.loads(conv))
-
-    def dump(self):
+    def dump(self) -> None:
         for line in self.data:
-            text = f"{str(line):.{infosystem.data.columns}s}"
+            text = f"{str(line):.{infosystem.columns}s}"
             eprint(f"{color.yellow}{text}{color.reset}")
+
+    def conv2data(self, info_conf: InfoConfiguration) -> None:
+        converted_data = info_conf.conv2data(self.data)
+        self.data = self._to_mediadata_list(converted_data)
+
+    def conv2variable(self, info_conf: InfoConfiguration) -> list[dict[str, Any]]:
+        return info_conf.conv2variable(self.data)
+
+#        dict_list = [asdict(item) for item in self.data]
 
 # --- eof ---------------------------------------------------------------------

@@ -1,13 +1,18 @@
 # --- Python library ----------------------------------------------------------
-from pathlib import Path
+from typing                             import Any, Callable
+from pathlib                            import Path
 import csv
 import inspect
 #import json
 import re
+from typing import Any
+from dataclasses import dataclass, asdict, is_dataclass
 
 # --- my library --------------------------------------------------------------
+from py_common.my_config                import infosystem
+from py_common.my_debug                 import debug_logger
 from py_common.my_colors                import color
-from py_common.my_string                import omit_middle, generate_comment
+from py_common.my_string                import spc_decode, spc_encode
 from py_common.my_debug                 import debugout
 from py_common.my_json                  import load_json, save_json
 
@@ -22,18 +27,12 @@ from py_common.my_media_dat             import InfoMedia
 #   return: data             : output
 #   global:                  : unused
 # -----------------------------------------------------------------------------
-def get_text2list(path: str) -> list:
-    frame = inspect.currentframe()
-    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
-    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, f"{path}")
-    debugout(function_name, 'Start', color.yellow, comment)
-    # -------------------------------------------------------------------------
-    list_data = list()
-    list_data = list(csv.DictReader(re.sub(r"[ \t]+", ",", line.strip()) for line in open(path, 'r', encoding='utf-8', newline='')))
-#    json_data = json.dumps(list_data, ensure_ascii=False)
-    # -------------------------------------------------------------------------
-    debugout(function_name, 'Complete', color.yellow, '')
-    return list_data
+@debug_logger
+def get_text2list(path: str) -> list[dict[str, str]]:
+    with open(path, 'r', encoding='utf-8', newline='') as f:
+        lines = (line.strip() for line in f if line.strip())
+        sanitized_lines = (re.sub(r"[ \t]+", ",", line) for line in lines)
+        return list(csv.DictReader(sanitized_lines))
 
 # -----------------------------------------------------------------------------
 # descript: list to text file
@@ -44,30 +43,30 @@ def get_text2list(path: str) -> list:
 #   return:                  : unused
 #   global:                  : unused
 # -----------------------------------------------------------------------------
-def put_list2text(path: str, list_data: list, format: str):
-    frame = inspect.currentframe()
-    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
-    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, f"{path}")
-    debugout(function_name, 'Start', color.yellow, comment)
-    # -------------------------------------------------------------------------
-    dict_keys = dict()
-    for key, value in list_data[0].items():
-        dict_keys[key] = key
-    text = [format.format(**dict_keys)]
-    for line in list_data:
-        text.append(format.format(**line))
+def clean_value(val):
+    if val is None or val == '':
+        return '-'
+    s = str(val)
+    return s.replace(' ', '%20').replace('`', '')
+
+@debug_logger
+def put_list2text(path: str, data: list, format_str: str) -> None:
+    if not data:
+        return
+    header_dict = {k: k for d in data for k in d}
+    cleaned_data_list = [
+        {k: clean_value(v) for k, v in d.items()} 
+        for d in data
+    ]
+    text_list = [
+        format_str.format(**header_dict)
+    ] + [format_str.format(**d) for d in cleaned_data_list]
     with open(path, 'w', encoding='utf-8') as f:
-        f.write(f"\n".join(text) + f"\n")
-    # -------------------------------------------------------------------------
-    debugout(function_name, 'Complete', color.yellow, '')
+        f.write("\n".join(text_list) + "\n")
 
 # -----------------------------------------------------------------------------
+@debug_logger
 def conv_text2json(info_conf: InfoConfiguration, info_dist: InfoDistribution, info_mdia: InfoMedia):
-    frame = inspect.currentframe()
-    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
-    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, '')
-    debugout(function_name, 'Start', color.yellow, comment)
-    # -------------------------------------------------------------------------
     path_dist = info_conf.get('PATH_DIST')
     path_mdia = info_conf.get('PATH_MDIA')
     # -------------------------------------------------------------------------
@@ -76,16 +75,10 @@ def conv_text2json(info_conf: InfoConfiguration, info_dist: InfoDistribution, in
     # -------------------------------------------------------------------------
     save_json(path_dist + '.json', list_dist)
     save_json(path_mdia + '.json', list_mdia)
-    # -------------------------------------------------------------------------
-    debugout(function_name, 'Complete', color.yellow, '')
 
 # -----------------------------------------------------------------------------
+@debug_logger
 def conv_json2text(info_conf: InfoConfiguration, info_dist: InfoDistribution, info_mdia: InfoMedia):
-    frame = inspect.currentframe()
-    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
-    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, '')
-    debugout(function_name, 'Start', color.yellow, comment)
-    # -------------------------------------------------------------------------
     path_dist = info_conf.get('PATH_DIST')
     path_mdia = info_conf.get('PATH_MDIA')
     fmat_dist = r"{version:<23} {name:<23} {version_id:<23} {code_name:<39} {life:<15} {release:<15} {support:<15} {long_term:<15} {rhel:<15} {kerne:<27} {note:<27} {wallpaper:<87} {create_flag:<11} {sort_flag:<11} "
@@ -96,7 +89,5 @@ def conv_json2text(info_conf: InfoConfiguration, info_dist: InfoDistribution, in
     # -------------------------------------------------------------------------
     put_list2text(path_dist, list_dist, fmat_dist)
     put_list2text(path_mdia, list_mdia, fmat_mdia)
-    # -------------------------------------------------------------------------
-    debugout(function_name, 'Complete', color.yellow, '')
 
 # --- eof ---------------------------------------------------------------------

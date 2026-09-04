@@ -53,7 +53,7 @@ from py_common.my_message               import message_start, message_end, messa
 from py_common.my_debug                 import debugout
 #from py_common.my_process              import run_subprocess
 #from py_common.my_json                 import load_json, save_json, get_text2json, put_json2text
-#from py_common.my_markdown             import json2markdown, spc_encode4md, spc_decode4md
+#from py_common.my_markdown             import list2markdown, spc_encode4md, spc_decode4md
 
 from py_common.my_common_cfg            import InfoConfiguration
 from py_common.my_distribution_dat      import InfoDistribution
@@ -80,10 +80,10 @@ def argsparser():
     except:
         pass
     else:
-        infosystem.data.args = args
-    if infosystem.data.args:
-        infosystem.data.debug    = infosystem.data.args.debug
-        infosystem.data.debugout = infosystem.data.args.debugout if infosystem.data.debug != True else True
+        infosystem.args = args
+    if infosystem.args:
+        infosystem.debug    = infosystem.args.debug
+        infosystem.debugout = infosystem.args.debugout if infosystem.debug != True else True
 
 # -----------------------------------------------------------------------------
 # descript: initialize
@@ -96,9 +96,9 @@ def initialize():
     function_name = inspect.currentframe().f_code.co_name
     debugout(Path(__file__).stem + '('+ function_name + ')', "Start", color.yellow, "")
     # -------------------------------------------------------------------------
-    if infosystem.data.debug == True:
+    if infosystem.debug == True:
         message_info(function_name, 'Debug mode on')
-    if infosystem.data.debugout == True:
+    if infosystem.debugout == True:
         message_info(function_name, 'Debugout mode on')
     # -------------------------------------------------------------------------
     debugout(Path(__file__).stem + '('+ function_name + ')', "Complete", color.yellow, "")
@@ -242,7 +242,7 @@ async def get_info() -> list:
 async def main():
     # --- check the executing user --------------------------------------------
     if os.geteuid() != 0:
-        eprint(f"{color.reset}{color.br_green}{infosystem.data.program_name}:\n{color.br_yellow} You have standard user privileges. {color.underline}Please run this with sudo.{color.reset}")
+        eprint(f"{color.reset}{color.br_green}{infosystem.program_name}:\n{color.br_yellow} You have standard user privileges. {color.underline}Please run this with sudo.{color.reset}")
         exit(1)
     # --- system parameters ---------------------------------------------------
     function_name = inspect.currentframe().f_code.co_name
@@ -253,7 +253,7 @@ async def main():
     message_start(function_name)
     # --- processing block ----------------------------------------------------
     argsparser()
-    if infosystem.data.args:
+    if infosystem.args:
         initialize()
         list_infodata = await get_info()
         generate_md_table(list_infodata)

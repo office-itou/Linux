@@ -1,14 +1,29 @@
+###############################################################################
+#
+#	json processing
+#
+#	developer   : J.Itou
+#	release     : 2026/09/03
+#
+#	history     :
+#	   data    version    developer    point
+#	---------- -------- -------------- ----------------------------------------
+#	2026/09/03 000.0000 J.Itou         first release
+#
+###############################################################################
+
 # --- Python library ----------------------------------------------------------
-from pathlib import Path
-import csv
-import inspect
+from typing                             import Any, Callable
+from pathlib                            import Path
 import json
-import re
+import inspect
 
 # --- my library --------------------------------------------------------------
+from py_common.my_config                import infosystem
+from py_common.my_debug                 import debug_logger
 from py_common.my_colors                import color
 from py_common.my_string                import omit_middle, generate_comment
-from py_common.my_debug                 import debugout
+from py_common.my_debug                 import debugout, debug_logger
 
 # -----------------------------------------------------------------------------
 # descript: load data in json format
@@ -17,18 +32,10 @@ from py_common.my_debug                 import debugout
 #   return: obj              : output
 #   global:                  : unused
 # -----------------------------------------------------------------------------
-def load_json(path: str) -> str:
-    frame = inspect.currentframe()
-    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
-    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, f"{path}")
-    debugout(function_name, 'Start', color.yellow, comment)
-    # -------------------------------------------------------------------------
-    obj = None
+@debug_logger
+def load_json(path: str) -> Any:
     with open(path, 'r', encoding='utf-8') as f:
-        obj = json.load(f)
-    # -------------------------------------------------------------------------
-    debugout(function_name, 'Complete', color.yellow, '')
-    return obj
+        return json.load(f)
 
 # -----------------------------------------------------------------------------
 # descript: save distridata in json format
@@ -38,15 +45,10 @@ def load_json(path: str) -> str:
 #   return:                  : output
 #   global:                  : unused
 # -----------------------------------------------------------------------------
-def save_json(path: str, obj: str) -> str:
-    frame = inspect.currentframe()
-    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
-    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, f"{path}")
-    debugout(function_name, 'Start', color.yellow, comment)
-    # -------------------------------------------------------------------------
+@debug_logger
+def save_json(path: str, obj: Any) -> None:
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(obj, f, ensure_ascii=False, indent=4)
-    # -------------------------------------------------------------------------
-    debugout(function_name, 'Complete', color.yellow, '')
 
 # --- eof ---------------------------------------------------------------------

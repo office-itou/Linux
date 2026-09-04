@@ -1,4 +1,5 @@
 # --- Python library ----------------------------------------------------------
+from typing                             import Any, Callable
 from dataclasses                        import dataclass, asdict
 from datetime                           import datetime, timezone
 from pathlib                            import Path
@@ -6,9 +7,11 @@ import inspect
 import magic                            # sudo apt-get install python3-magic
 
 # --- my library --------------------------------------------------------------
+from py_common.my_config                import infosystem
+from py_common.my_debug                 import debug_logger
 from py_common.my_colors                import color
 from py_common.my_string                import omit_middle, generate_comment
-from py_common.my_message               import message_alert
+from py_common.my_message               import message_alert, get_caller_name
 from py_common.my_debug                 import debugout
 from py_common.my_process               import run_subprocess
 
@@ -44,6 +47,7 @@ class InfoFile:
 #   return: uuid                  : output
 #   global:                       : unused
 # -----------------------------------------------------------------------------
+@debug_logger
 def get_volume_uuid(device):
     parameter = ['blkid', '-s', 'UUID', '-o', 'value', device]
     return run_subprocess(parameter)
@@ -55,6 +59,7 @@ def get_volume_uuid(device):
 #   return: label                 : output
 #   global:                       : unused
 # -----------------------------------------------------------------------------
+@debug_logger
 def get_volume_label(device):
     parameter = ['blkid', '-s', 'LABEL', '-o', 'value', device]
     return run_subprocess(parameter)
@@ -66,12 +71,8 @@ def get_volume_label(device):
 #   return: InfoFile              : output
 #   global:                       : unused
 # -----------------------------------------------------------------------------
+@debug_logger
 def get_info(target_path):
-    frame = inspect.currentframe()
-    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
-    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, f"{target_path}")
-    debugout(function_name, 'Start', color.yellow, comment)
-    # -------------------------------------------------------------------------
     data = FileData()
     path = Path(target_path)
     data.path = str(path.resolve())
@@ -83,9 +84,8 @@ def get_info(target_path):
         data.tmstamp = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc).isoformat()
         data.size    = path.stat().st_size
 #   else:
-#       message_alert(function_name, f"File not exist: {target_path}")
+#       message_alert(get_caller_name(), f"File not exist: {target_path}")
     # --- return --------------------------------------------------------------
-    debugout(function_name, 'Complete', color.yellow, '')
     return data
 
 # --- eof ---------------------------------------------------------------------

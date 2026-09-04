@@ -1,7 +1,24 @@
+###############################################################################
+#
+#	definitions
+#
+#	developer   : J.Itou
+#	release     : 2026/09/03
+#
+#	history     :
+#	   data    version    developer    point
+#	---------- -------- -------------- ----------------------------------------
+#	2026/09/03 000.0000 J.Itou         first release
+#
+###############################################################################
+
 # --- Python library ----------------------------------------------------------
+#from typing                             import Any, Callable
 from dataclasses                        import dataclass
 
 # --- my library --------------------------------------------------------------
+#from py_common.my_config                import infosystem
+#from py_common.my_debug                 import debug_logger
 
 # --- escape code -------------------------------------------------------------
 @dataclass

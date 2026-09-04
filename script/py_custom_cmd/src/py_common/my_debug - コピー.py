@@ -29,18 +29,17 @@ def debug_logger(func: Callable):
     def wrapper(*args, **kwargs):
         # --- get the caller's frame ------------------------------------------
         frame = inspect.currentframe().f_back
-        func_name = str(frame.f_code.co_name)
-        file_name = str(Path(frame.f_code.co_filename).stem)
-        modu_name = str(frame.f_globals.get('__name__'))
-        call_info = f"{modu_name}({func_name})"
+        caller_name = frame.f_code.co_name
+        module_name = frame.f_globals.get('__name__')
         # --- generation of function information and comments -----------------
-        comment = generate_comment(modu_name, func_name, '')
+        function_name = f"{Path(__file__).stem}({func.__name__})"
+        comment = generate_comment(module_name, caller_name, '')
         # --- start log -------------------------------------------------------
-        debugout(call_info, 'Start', color.yellow, comment)
+        debugout(function_name, 'Start', color.yellow, comment)
         # --- execute the original function processing ------------------------
         result = func(*args, **kwargs)
         # --- completion log --------------------------------------------------
-        debugout(call_info, 'Complete', color.yellow, '')
+        debugout(function_name, 'Complete', color.yellow, '')
         return result
     return wrapper
 
@@ -70,7 +69,7 @@ def debugout_scale(size: int):
 #   global: debugout_flag    : read
 # -----------------------------------------------------------------------------
 def debugout(function_name: str, mode: str, message_color:str, message: str):
-    if infosystem.debugout == False: return
+    if infosystem.data.debugout == False: return
     message_debug(function_name, mode, message_color, message)
 
 # --- eof ---------------------------------------------------------------------

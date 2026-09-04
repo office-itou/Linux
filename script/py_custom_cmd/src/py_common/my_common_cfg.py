@@ -1,180 +1,222 @@
+###############################################################################
+#
+#	common.cfg I/O
+#
+#	developer   : J.Itou
+#	release     : 2026/09/03
+#
+#	history     :
+#	   data    version    developer    point
+#	---------- -------- -------------- ----------------------------------------
+#	2026/09/03 000.0000 J.Itou         first release
+#
+###############################################################################
+
 # --- Python library ----------------------------------------------------------
-from dataclasses                        import dataclass, asdict
+from typing                             import Any, Optional
+from dataclasses                        import dataclass, asdict, fields
 from pathlib                            import Path
 import inspect
-import json
-import os
+#import json
+#import os
 import re
 import sys
 
 # --- my library --------------------------------------------------------------
 from py_common.my_config                import infosystem
+from py_common.my_debug                 import debug_logger
 from py_common.my_colors                import color
-from py_common.my_string                import omit_middle, generate_comment
+from py_common.my_string                import eprint, generate_comment
 from py_common.my_message               import message_alert
-from py_common.my_debug                 import debugout
-from py_common.my_markdown              import json2markdown
+from py_common.my_markdown              import list2markdown
 
 # -----------------------------------------------------------------------------
 @dataclass
 class ConfigurationData:
-    pass
+    key:            str = ''
+    value:          str = ''
+    comment:        str = ''
 
 class InfoConfiguration:
     def __init__(self):
-        self.data: ConfigurationData = ConfigurationData()
+        self.data: list[ConfigurationData] = []
+        self._valid_fields = {f.name for f in fields(ConfigurationData)}
         self.load()
 
-    def load(self):
-        self.data = load()
+    def __getattr__(self, name: str) -> Any:
+        if name in self._valid_fields:
+            if self.data:
+                return getattr(self.data[0], name)
+            return ''
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
 
-    def markdown(self, path: str, title: str):
-        json2markdown(path, title, self.data)
+    def find(self, **kwargs) -> Optional[ConfigurationData]:
+        for item in self.data:
+            match = True
+            for key, value in kwargs.items():
+                if getattr(item, key, None) != value:
+                    match = False
+                    break
+            if match:
+                return item
 
-    def conv2data(self, data: list) -> str:
-        return conv2data(self.data, data)
+    @debug_logger
+    def load(self) -> None:
+        raw_list = load()
+        self.data = [ConfigurationData(**item) for item in raw_list]
 
-    def conv2variable(self, data: list) -> str:
-        return conv2variable(self.data, data)
+    def load(self) -> None:
+        raw_list = load()
+        self.data = [ConfigurationData(**item) for item in raw_list]
 
-    def dump(self):
+    def markdown(self, path: str, title: str) -> None:
+        dict_list = [asdict(item) for item in self.data]
+        list2markdown(path, title, dict_list)
+
+    def dump(self) -> None:
         for line in self.data:
-            text = f"{str(line):.{infosystem.data.columns}s}"
+            text = f"{str(line):.{infosystem.columns}s}"
             eprint(f"{color.yellow}{text}{color.reset}")
 
-    def get(self, key) -> str:
-        result = next((data for data in self.data if data['key'] == key), None)
-        return result['value']
+    def conv2data(self, data: list) -> list:
+        dict_list = [asdict(item) for item in self.data]
+        return conv2data(dict_list, data)
 
+    def conv2variable(self, data: list) -> list:
+        dict_list = [asdict(item) for item in self.data]
+        return conv2variable(dict_list, data)
+
+    def get(self, key: str, default: str = '-') -> str:
+        result = next((item for item in self.data if item.key == key), None)
+        return result.value if result else default
 
 # -----------------------------------------------------------------------------
 # descript: load data in common.cfg
 #   input :                       : unused
 #   output:                       : unused
-#   return: json.dumps(dict_conf) : output
+#   return: list_conf             : output
 #   global:                       : unused
 # -----------------------------------------------------------------------------
-def load() -> dict:
-    frame = inspect.currentframe()
-    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
-    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, '')
-    debugout(function_name, 'Start', color.yellow, comment)
-    # -------------------------------------------------------------------------
-    dirs_data = '/srv/user/share/conf/_data'    # data file                                 : '/srv/user/share/conf/_data'
-    file_conf = 'common.cfg'                    # common configuration file
-    path_conf = ''                              # common configuration file
-    for dirs in ['.', dirs_data]:
+@debug_logger
+def load() -> list[dict[str, str]]:
+    dirs_data = '/srv/user/share/conf/_data'
+    file_conf = 'common.cfg'
+    path_conf = None
+    # --- file search ---------------------------------------------------------
+    for dirs in ('.', dirs_data):
         path = Path(dirs) / file_conf
-        if not path.exists():
-            continue
-        path_conf = path
-        break
+        if path.exists():
+            path_conf = path
+            break
     if not path_conf:
         message_alert(f"file not found: {file_conf}")
         sys.exit(1)
     # --- get setting items ---------------------------------------------------
-    list_conf = list()
-    for line in open(path_conf, 'r', encoding='utf-8'):
-        match = re.search('^[A-Z]', line)      # get parameter row
-        if not match:
-            continue
-        comnt = line
-        line  = re.sub(r"[\n|\r\n]$", '', line)     # remove lf or crlf
-        line  = re.sub('#.*$'       , '', line)     # remove comment
-        line  = re.sub(r"[ \t]+$"   , '', line)     # remove trailing whitespace
-        comnt = re.sub('^' + line   , '', comnt)    # get the comment
-        key   = re.sub('=.*$'       , '', line)     # get the key
-        value = re.sub(key + '='    , '', line)     # get the value
-        value = re.sub(r"^\""       , '', value)    # remove the first double quotation mark
-        value = re.sub(r"\"$"       , '', value)    # remove the last double quotation mark
-        list_conf.append({'key': key, 'value': value, 'comment': comnt.strip()})
+    list_conf = []
+    with open(path_conf, 'r', encoding='utf-8') as f:
+        for line in f:
+            if not re.match('^[A-Z]', line):
+                continue
+            # --- get comment block -------------------------------------------
+            line_raw = line.rstrip('\r\n')
+            if '#' in line_raw:
+                line_content, comnt = line_raw.split('#', 1)
+                comnt = f"# {comnt.strip()}"
+            else:
+                line_content, comnt = line_raw, ''
+            line_clean = line_content.rstrip()
+            if '=' not in line_clean:
+                continue
+            # --- get key and  value ------------------------------------------
+            key, value = line_clean.split('=', 1)
+            key = key.strip()
+            value = value.strip().strip('"')
     # --- convert setting items -----------------------------------------------
-    dict_conf = dict()
-    for i, line in enumerate(list_conf):
-        (k1, key), (k2, value), (k3, comnt) = line.items()
+            list_conf.append({'key': key, 'value': value, 'comment': comnt})
+    # --- convert setting items -----------------------------------------------
+    dict_conf = {}
+    pattern = re.compile(r':_([A-Z0-9_]+)_:')
+    for i, item in enumerate(list_conf):
+        key = item['key']
+        value = item['value']
         dict_conf[key] = value
-        while True:
-            match = re.search(':_[a-zA-Z0-9]+_[a-zA-Z0-9]+_:', value)
+        
+        for _ in range(10):
+            match = pattern.search(value)
             if not match:
                 break
-            match_text  = match.group()
-            match_key   = re.sub('^:_', '', match_text)
-            match_key   = re.sub('_:$', '', match_key)
-            match_value = dict_conf[match_key]
-            value = re.sub(':_' + match_key + '_:', match_value, value)
-        list_conf[i] = {'key': key, 'value': value, 'comment': comnt}
+            match_text = match.group(0)
+            match_key = match.group(1)
+            if match_key in dict_conf:
+                value = value.replace(match_text, dict_conf[match_key])
+            else:
+                break
+        # --- generate output data --------------------------------------------
+        list_conf[i] = {'key': key, 'value': value, 'comment': item['comment']}
     # --- return --------------------------------------------------------------
-    debugout(function_name, 'Complete', color.yellow, '')
     return list_conf
 
 # -----------------------------------------------------------------------------
 # descript: convert to data format
-#   input : data_conf             : input
-#   input : data_orig             : input
+#   input : list_conf             : input
+#   input : list_orig             : input
 #   output:                       : unused
-#   return: json.dumps(data_conv) : output
+#   return: list_conv             : output
 #   global:                       : unused
 # -----------------------------------------------------------------------------
-def conv2data(data_conf: str, data_orig: dict) -> list:
-    frame = inspect.currentframe()
-    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
-    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, '')
-    debugout(function_name, 'Start', color.yellow, comment)
-    # -------------------------------------------------------------------------
-    dict_conf = dict()
-    for i, line in enumerate(data_conf):
-        (k1, key), (k2, value), (k3, comnt) = line.items()
-        dict_conf[key] = value
-    data_conv = list()
-    for line in [asdict(d) for d in data_orig]:
-        for key, value in line.items():
-            while True:
-                match = re.search(':_[a-zA-Z0-9]+_[a-zA-Z0-9]+_:', value)
-                if not match:
-                    break
-                match_text = match.group()
-                match_key  = re.sub('^:_', '', match_text)
-                match_key  = re.sub('_:$', '', match_key)
-                value      = re.sub(':_' + match_key + '_:', dict_conf[match_key], value)
-            line[key] = value
-        data_conv.append(line)
+@debug_logger
+def conv2data(list_conf: list, list_orig: list) -> list:
+    dict_conf = {item['key']: item['value'] for item in list_conf}
+    list_conv = []
+    pattern = re.compile(r':_([A-Z0-9_]+)_:')
+    # --- convert -------------------------------------------------------------
+    for item in list_orig:
+        dict_orig = {}
+        for key, value in item.items():
+            if isinstance(value, str):
+                for _ in range(10):
+                    match = pattern.search(value)
+                    if not match:
+                        break
+                    match_text = match.group(0)
+                    match_key = match.group(1)
+                    if match_key in dict_conf:
+                        value = value.replace(match_text, dict_conf[match_key])
+                    else:
+                        break
+            dict_orig[key] = value
+        list_conv.append(dict_orig)
     # --- return --------------------------------------------------------------
-    debugout(function_name, 'Complete', color.yellow, '')
-    return json.dumps(data_conv, ensure_ascii=False)
+    return list_conv
 
 # -----------------------------------------------------------------------------
 # descript: convert to variable format
-#   input : data_conf             : input
-#   input : data_orig             : input
+#   input : list_conf             : input
+#   input : list_orig             : input
 #   output:                       : unused
-#   return: json.dumps(data_conv) : output
+#   return: list_conv             : output
 #   global:                       : unused
 # -----------------------------------------------------------------------------
-def conv2variable(data_conf: str, data_orig: dict) -> list:
-    frame = inspect.currentframe()
-    function_name = f"{Path(__file__).stem}({frame.f_code.co_name})"
-    comment = generate_comment(frame.f_globals.get('__name__'), frame.f_back.f_code.co_name, '')
-    debugout(function_name, 'Start', color.yellow, comment)
-    # -------------------------------------------------------------------------
-    dict_conf = dict()
-    for i, line in enumerate(data_conf):
-        (k1, key), (k2, value), (k3, comnt) = line.items()
-        dict_conf[key] = value
-    data_conv = list()
-    for line in [asdict(d) for d in data_orig]:
-        for key, value in line.items():
-            for conf_key in reversed(dict_conf):
-                match = re.search('DIRS_[a-zA-Z0-9]+', conf_key)
-                if not match:
-                    continue
-                match = re.search('^/', dict_conf[conf_key])
-                if not match:
-                    continue
-                value = re.sub(dict_conf[conf_key], ':_' + conf_key + '_:', value)
-            line[key] = value
-        data_conv.append(line)
+@debug_logger
+def conv2variable(list_conf: list, list_orig: list) -> list:
+    reverse_conf = {}
+    for item in list_conf:
+        key, value = item['key'], item['value']
+        if key.startswith('DIRS_') and isinstance(value, str) and value.startswith('/'):
+            reverse_conf[value] = f":_{key}_:"
+    sorted_paths = sorted(reverse_conf.keys(), key=len, reverse=True)
+    list_conv = []
+    # --- convert -------------------------------------------------------------
+    for item in list_orig:
+        dict_orig = {}
+        for key, value in item.items():
+            if isinstance(value, str):
+                for path in sorted_paths:
+                    if path in value:
+                        value = value.replace(path, reverse_conf[path])
+            dict_orig[key] = value
+        list_conv.append(dict_orig)
     # --- return --------------------------------------------------------------
-    debugout(function_name, 'Complete', color.yellow, '')
-    return json.dumps(data_conv, ensure_ascii=False)
+    return list_conv
 
 # --- eof ---------------------------------------------------------------------
