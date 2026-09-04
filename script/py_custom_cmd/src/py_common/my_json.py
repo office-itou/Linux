@@ -1,29 +1,25 @@
 ###############################################################################
 #
-#	json processing
+# 	json processing
 #
-#	developer   : J.Itou
-#	release     : 2026/09/03
+# 	developer   : J.Itou
+# 	release     : 2026/09/03
 #
-#	history     :
-#	   data    version    developer    point
-#	---------- -------- -------------- ----------------------------------------
-#	2026/09/03 000.0000 J.Itou         first release
+# 	history     :
+# 	   data    version    developer    point
+# 	---------- -------- -------------- ----------------------------------------
+# 	2026/09/03 000.0000 J.Itou         first release
 #
 ###############################################################################
 
 # --- Python library ----------------------------------------------------------
-from typing                             import Any, Callable
-from pathlib                            import Path
 import json
-import inspect
+from pathlib import Path
+from typing import Any
 
 # --- my library --------------------------------------------------------------
-from py_common.my_config                import infosystem
-from py_common.my_debug                 import debug_logger
-from py_common.my_colors                import color
-from py_common.my_string                import omit_middle, generate_comment
-from py_common.my_debug                 import debugout, debug_logger
+from py_common.my_debug import debug_logger
+
 
 # -----------------------------------------------------------------------------
 # descript: load data in json format
@@ -34,8 +30,9 @@ from py_common.my_debug                 import debugout, debug_logger
 # -----------------------------------------------------------------------------
 @debug_logger
 def load_json(path: str) -> Any:
-    with open(path, 'r', encoding='utf-8') as f:
+    with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
+
 
 # -----------------------------------------------------------------------------
 # descript: save distridata in json format
@@ -48,7 +45,8 @@ def load_json(path: str) -> Any:
 @debug_logger
 def save_json(path: str, obj: Any) -> None:
     Path(path).parent.mkdir(parents=True, exist_ok=True)
-    with open(path, 'w', encoding='utf-8') as f:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump(obj, f, ensure_ascii=False, indent=4)
+
 
 # --- eof ---------------------------------------------------------------------

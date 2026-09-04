@@ -1,33 +1,27 @@
 ###############################################################################
 #
-#	markdown processing
+# 	markdown processing
 #
-#	developer   : J.Itou
-#	release     : 2026/09/03
+# 	developer   : J.Itou
+# 	release     : 2026/09/03
 #
-#	history     :
-#	   data    version    developer    point
-#	---------- -------- -------------- ----------------------------------------
-#	2026/09/03 000.0000 J.Itou         first release
+# 	history     :
+# 	   data    version    developer    point
+# 	---------- -------- -------------- ----------------------------------------
+# 	2026/09/03 000.0000 J.Itou         first release
 #
 ###############################################################################
 
 # --- Python library ----------------------------------------------------------
-from typing                             import Any, Callable
-from pathlib                            import Path
-import inspect
-import json
-import pandas as pd
-import re
 import copy
-import pprint
+import re
+
+import pandas as pd
 
 # --- my library --------------------------------------------------------------
-from py_common.my_config                import infosystem
-from py_common.my_debug                 import debug_logger
-from py_common.my_colors                import color
-from py_common.my_string                import omit_middle, generate_comment, count_width
-from py_common.my_debug                 import debugout
+from py_common.my_debug import debug_logger
+from py_common.my_string import count_width
+
 
 # -----------------------------------------------------------------------------
 # descript: Encoding whitespace characters and html on a per-list basis
@@ -49,6 +43,7 @@ def spc_encode4md(data: list) -> list:
         conv[i] = word
     return conv
 
+
 # -----------------------------------------------------------------------------
 # descript: Decoding whitespace characters and html on a per-list basis (sub)
 #   input : list             : input
@@ -69,6 +64,7 @@ def spc_decode4md_sub(data: list) -> list:
         conv[i] = word
     return conv
 
+
 # -----------------------------------------------------------------------------
 # descript: Decoding whitespace characters and html on a per-list basis
 #   input : list             : input
@@ -79,8 +75,8 @@ def spc_decode4md_sub(data: list) -> list:
 @debug_logger
 def spc_decode4md(data: list) -> list:
     url_pattern = re.compile(
-        r'^https?://(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}'
-        r'(?:/[a-zA-Z0-9._~:/?#\[\]@!$&\'()*+,;=%-]*)?$'
+        r"^https?://(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}"
+        r"(?:/[a-zA-Z0-9._~:/?#\[\]@!$&\'()*+,;=%-]*)?$"
     )
     processed_data = copy.deepcopy(data)
     for line in processed_data:
@@ -89,14 +85,15 @@ def spc_decode4md(data: list) -> list:
                 continue
             if url_pattern.match(value):
                 value = f"`{value}`"
-            value = re.sub(r'^(https?:/[^ ]+)', r"`\1`", value)
-            value = value.replace('%20', ' ')
-            value = value.replace(':_', r':\_')
-            value = value.replace('_:', r'\_:')
-            if value.startswith('#'):
+            value = re.sub(r"^(https?:/[^ ]+)", r"`\1`", value)
+            value = value.replace("%20", " ")
+            value = value.replace(":_", r":\_")
+            value = value.replace("_:", r"\_:")
+            if value.startswith("#"):
                 value = f"`{value}`"
             line[key] = value
     return processed_data
+
 
 # -----------------------------------------------------------------------------
 # descript: markdown output of list data
@@ -119,7 +116,7 @@ def list2markdown(path: str, title: str, data: list):
     for name in df.columns:
         cnt_name = count_width(str(name))
         max_size = df[name].apply(lambda x: count_width(str(x))).max()
-        col_sizes[name] = max_size if max_size >= cnt_name else cnt_name
+        col_sizes[name] = max(max_size, cnt_name)
     # --- header and divider line ---------------------------------------------
     for name in df.columns:
         colsize = col_sizes[name]
@@ -147,6 +144,7 @@ def list2markdown(path: str, title: str, data: list):
     md_text += "\n".join(md_rows) + "\n"
     with open(path, "w", encoding="utf-8") as f:
         f.write(md_text)
+
 
 # -----------------------------------------------------------------------------
 # descript: list data output of markdown
@@ -181,5 +179,6 @@ def markdown2list(path: str) -> list:
     except FileNotFoundError:
         print(f"Error: {path} not found")
         return []
+
 
 # --- eof ---------------------------------------------------------------------

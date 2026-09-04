@@ -1,41 +1,40 @@
 ###############################################################################
 #
-#	common.cfg I/O
+# 	common.cfg I/O
 #
-#	developer   : J.Itou
-#	release     : 2026/09/03
+# 	developer   : J.Itou
+# 	release     : 2026/09/03
 #
-#	history     :
-#	   data    version    developer    point
-#	---------- -------- -------------- ----------------------------------------
-#	2026/09/03 000.0000 J.Itou         first release
+# 	history     :
+# 	   data    version    developer    point
+# 	---------- -------- -------------- ----------------------------------------
+# 	2026/09/03 000.0000 J.Itou         first release
 #
 ###############################################################################
 
 # --- Python library ----------------------------------------------------------
-from typing                             import Any, Optional
-from dataclasses                        import dataclass, asdict, fields
-from pathlib                            import Path
-import inspect
-#import json
-#import os
 import re
 import sys
+from dataclasses import asdict, dataclass, fields
+from pathlib import Path
+from typing import Any
 
 # --- my library --------------------------------------------------------------
-from py_common.my_config                import infosystem
-from py_common.my_debug                 import debug_logger
-from py_common.my_colors                import color
-from py_common.my_string                import eprint, generate_comment
-from py_common.my_message               import message_alert
-from py_common.my_markdown              import list2markdown
+from py_common.my_colors import color
+from py_common.my_config import infosystem
+from py_common.my_debug import debug_logger
+from py_common.my_markdown import list2markdown
+from py_common.my_message import message_alert
+from py_common.my_string import eprint
+
 
 # -----------------------------------------------------------------------------
 @dataclass
 class ConfigurationData:
-    key:            str = ''
-    value:          str = ''
-    comment:        str = ''
+    key: str = ""
+    value: str = ""
+    comment: str = ""
+
 
 class InfoConfiguration:
     def __init__(self):
@@ -47,10 +46,12 @@ class InfoConfiguration:
         if name in self._valid_fields:
             if self.data:
                 return getattr(self.data[0], name)
-            return ''
-        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+            return ""
+        raise AttributeError(
+            f"'{self.__class__.__name__}' object has no attribute '{name}'"
+        )
 
-    def find(self, **kwargs) -> Optional[ConfigurationData]:
+    def find(self, **kwargs) -> ConfigurationData | None:
         for item in self.data:
             match = True
             for key, value in kwargs.items():
@@ -65,17 +66,13 @@ class InfoConfiguration:
         raw_list = load()
         self.data = [ConfigurationData(**item) for item in raw_list]
 
-    def load(self) -> None:
-        raw_list = load()
-        self.data = [ConfigurationData(**item) for item in raw_list]
-
     def markdown(self, path: str, title: str) -> None:
         dict_list = [asdict(item) for item in self.data]
         list2markdown(path, title, dict_list)
 
     def dump(self) -> None:
         for line in self.data:
-            text = f"{str(line):.{infosystem.columns}s}"
+            text = f"{line!s:.{infosystem.columns}s}"
             eprint(f"{color.yellow}{text}{color.reset}")
 
     def conv2data(self, data: list) -> list:
@@ -86,9 +83,10 @@ class InfoConfiguration:
         dict_list = [asdict(item) for item in self.data]
         return conv2variable(dict_list, data)
 
-    def get(self, key: str, default: str = '-') -> str:
+    def get(self, key: str, default: str = "-") -> str:
         result = next((item for item in self.data if item.key == key), None)
         return result.value if result else default
+
 
 # -----------------------------------------------------------------------------
 # descript: load data in common.cfg
@@ -99,11 +97,11 @@ class InfoConfiguration:
 # -----------------------------------------------------------------------------
 @debug_logger
 def load() -> list[dict[str, str]]:
-    dirs_data = '/srv/user/share/conf/_data'
-    file_conf = 'common.cfg'
+    dirs_data = "/srv/user/share/conf/_data"
+    file_conf = "common.cfg"
     path_conf = None
     # --- file search ---------------------------------------------------------
-    for dirs in ('.', dirs_data):
+    for dirs in (".", dirs_data):
         path = Path(dirs) / file_conf
         if path.exists():
             path_conf = path
@@ -113,34 +111,34 @@ def load() -> list[dict[str, str]]:
         sys.exit(1)
     # --- get setting items ---------------------------------------------------
     list_conf = []
-    with open(path_conf, 'r', encoding='utf-8') as f:
+    with open(path_conf, "r", encoding="utf-8") as f:
         for line in f:
-            if not re.match('^[A-Z]', line):
+            if not re.match("^[A-Z]", line):
                 continue
             # --- get comment block -------------------------------------------
-            line_raw = line.rstrip('\r\n')
-            if '#' in line_raw:
-                line_content, comnt = line_raw.split('#', 1)
+            line_raw = line.rstrip("\r\n")
+            if "#" in line_raw:
+                line_content, comnt = line_raw.split("#", 1)
                 comnt = f"# {comnt.strip()}"
             else:
-                line_content, comnt = line_raw, ''
+                line_content, comnt = line_raw, ""
             line_clean = line_content.rstrip()
-            if '=' not in line_clean:
+            if "=" not in line_clean:
                 continue
             # --- get key and  value ------------------------------------------
-            key, value = line_clean.split('=', 1)
+            key, value = line_clean.split("=", 1)
             key = key.strip()
             value = value.strip().strip('"')
-    # --- convert setting items -----------------------------------------------
-            list_conf.append({'key': key, 'value': value, 'comment': comnt})
+            # --- convert setting items -----------------------------------------------
+            list_conf.append({"key": key, "value": value, "comment": comnt})
     # --- convert setting items -----------------------------------------------
     dict_conf = {}
-    pattern = re.compile(r':_([A-Z0-9_]+)_:')
+    pattern = re.compile(r":_([A-Z0-9_]+)_:")
     for i, item in enumerate(list_conf):
-        key = item['key']
-        value = item['value']
+        key = item["key"]
+        value = item["value"]
         dict_conf[key] = value
-        
+
         for _ in range(10):
             match = pattern.search(value)
             if not match:
@@ -152,9 +150,10 @@ def load() -> list[dict[str, str]]:
             else:
                 break
         # --- generate output data --------------------------------------------
-        list_conf[i] = {'key': key, 'value': value, 'comment': item['comment']}
+        list_conf[i] = {"key": key, "value": value, "comment": item["comment"]}
     # --- return --------------------------------------------------------------
     return list_conf
+
 
 # -----------------------------------------------------------------------------
 # descript: convert to data format
@@ -166,9 +165,9 @@ def load() -> list[dict[str, str]]:
 # -----------------------------------------------------------------------------
 @debug_logger
 def conv2data(list_conf: list, list_orig: list) -> list:
-    dict_conf = {item['key']: item['value'] for item in list_conf}
+    dict_conf = {item["key"]: item["value"] for item in list_conf}
     list_conv = []
-    pattern = re.compile(r':_([A-Z0-9_]+)_:')
+    pattern = re.compile(r":_([A-Z0-9_]+)_:")
     # --- convert -------------------------------------------------------------
     for item in list_orig:
         dict_orig = {}
@@ -189,6 +188,7 @@ def conv2data(list_conf: list, list_orig: list) -> list:
     # --- return --------------------------------------------------------------
     return list_conv
 
+
 # -----------------------------------------------------------------------------
 # descript: convert to variable format
 #   input : list_conf             : input
@@ -201,8 +201,8 @@ def conv2data(list_conf: list, list_orig: list) -> list:
 def conv2variable(list_conf: list, list_orig: list) -> list:
     reverse_conf = {}
     for item in list_conf:
-        key, value = item['key'], item['value']
-        if key.startswith('DIRS_') and isinstance(value, str) and value.startswith('/'):
+        key, value = item["key"], item["value"]
+        if key.startswith("DIRS_") and isinstance(value, str) and value.startswith("/"):
             reverse_conf[value] = f":_{key}_:"
     sorted_paths = sorted(reverse_conf.keys(), key=len, reverse=True)
     list_conv = []
@@ -218,5 +218,6 @@ def conv2variable(list_conf: list, list_orig: list) -> list:
         list_conv.append(dict_orig)
     # --- return --------------------------------------------------------------
     return list_conv
+
 
 # --- eof ---------------------------------------------------------------------
