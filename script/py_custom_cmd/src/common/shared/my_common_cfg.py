@@ -1,16 +1,4 @@
-###############################################################################
-#
-# 	common.cfg I/O
-#
-# 	developer   : J.Itou
-# 	release     : 2026/09/03
-#
-# 	history     :
-# 	   data    version    developer    point
-# 	---------- -------- -------------- ----------------------------------------
-# 	2026/09/03 000.0000 J.Itou         first release
-#
-###############################################################################
+"""common.cfg I/O"""
 
 # --- Python library ----------------------------------------------------------
 import re
@@ -20,26 +8,31 @@ from pathlib import Path
 from typing import Any
 
 # --- my library --------------------------------------------------------------
-from py_common.my_colors import color
-from py_common.my_config import infosystem
-from py_common.my_debug import debug_logger
-from py_common.my_markdown import list2markdown
-from py_common.my_message import message_alert
-from py_common.my_string import eprint
+from ..utils.my_colors import Color
+from ..utils.my_config import infosystem
+from ..utils.my_debug import debug_logger
+from ..utils.my_markdown import list2markdown
+from ..utils.my_message import message_alert
+from ..utils.my_string import eprint
 
 
 # -----------------------------------------------------------------------------
 @dataclass
 class ConfigurationData:
+    """common.cfg data class"""
+
     key: str = ""
     value: str = ""
     comment: str = ""
 
 
 class InfoConfiguration:
+    """common.cfg interface class"""
+
     def __init__(self):
-        self.data: list[ConfigurationData] = []
+        """Method for initializing the ConfigurationData class."""
         self._valid_fields = {f.name for f in fields(ConfigurationData)}
+        self.data: list[ConfigurationData] = []
         self.load()
 
     def __getattr__(self, name: str) -> Any:
@@ -52,40 +45,64 @@ class InfoConfiguration:
         )
 
     def find(self, **kwargs) -> ConfigurationData | None:
+        """Data search in common.cfg
+
+        Returns:
+            ConfigurationData | None: Search results for the key
+        """
         for item in self.data:
-            match = True
-            for key, value in kwargs.items():
-                if getattr(item, key, None) != value:
-                    match = False
-                    break
-            if match:
+            if all(getattr(item, key, None) == value for key, value in kwargs.items()):
                 return item
+        return None
 
     @debug_logger
     def load(self) -> None:
+        """Load file"""
         raw_list = load()
-        self.data = [ConfigurationData(**item) for item in raw_list]
+        self.data = [
+            ConfigurationData(**item) if isinstance(item, dict) else item
+            for item in raw_list
+        ]
 
-    def markdown(self, path: str, title: str) -> None:
+    def markdown(self, path_dest: str, md_title: str) -> None:
+        """Generating Markdown
+
+        Args:
+            path_dest (str): Destination path
+            md_title (str): Markdown title
+        """
         dict_list = [asdict(item) for item in self.data]
-        list2markdown(path, title, dict_list)
+        list2markdown(path_dest, md_title, dict_list)
 
     def dump(self) -> None:
+        """Data dump output"""
         for line in self.data:
             text = f"{line!s:.{infosystem.columns}s}"
-            eprint(f"{color.yellow}{text}{color.reset}")
+            eprint(f"{Color.yellow}{text}{Color.reset}")
 
     def conv2data(self, data: list) -> list:
+        """Convert actual data to variable names
+
+        Args:
+            data (list): Source
+
+        Returns:
+            list: Result
+        """
         dict_list = [asdict(item) for item in self.data]
         return conv2data(dict_list, data)
 
     def conv2variable(self, data: list) -> list:
+        """Convert variable names to actual data
+
+        Args:
+            data (list): Source
+
+        Returns:
+            list: Result
+        """
         dict_list = [asdict(item) for item in self.data]
         return conv2variable(dict_list, data)
-
-    def get(self, key: str, default: str = "-") -> str:
-        result = next((item for item in self.data if item.key == key), None)
-        return result.value if result else default
 
 
 # -----------------------------------------------------------------------------
@@ -205,8 +222,8 @@ def conv2variable(list_conf: list, list_orig: list) -> list:
         if key.startswith("DIRS_") and isinstance(value, str) and value.startswith("/"):
             reverse_conf[value] = f":_{key}_:"
     sorted_paths = sorted(reverse_conf.keys(), key=len, reverse=True)
-    list_conv = []
     # --- convert -------------------------------------------------------------
+    list_conv = []
     for item in list_orig:
         dict_orig = {}
         for key, value in item.items():

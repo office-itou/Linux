@@ -2,6 +2,8 @@
 
 # --- Python library ----------------------------------------------------------
 import os
+import sys
+import time
 
 # from aiohttp import ClientError, ClientTimeout
 # from bs4 import BeautifulSoup
@@ -24,49 +26,41 @@ import os
 # import re
 # import shutil
 # import subprocess
-import sys
-import time
-
-from py_common.my_argument import Argument
-from py_common.my_colors import color
-
 # import unicodedata
 # import __main__
 # --- my library --------------------------------------------------------------
-# from pathlib        import Path
-# import os
-# import sys
-# execusr = os.getenv('USER')
-# execusr = os.getenv('SUDO_USER', execusr)
-# homedir = os.getenv('HOME')
-# homedir = os.getenv('SUDO_HOME', homedir)
-# libsdir = '/linux/script/py_custom_cmd/src/'
-# libsdir = Path(homedir) / libsdir.strip('/')
-# sys.path.append(str(libsdir))
-from py_common.my_config import infosystem
-from py_common.my_debug import debug_logger
+# execusr = os.getenv("SUDO_USER", os.getenv("USER"))
+# homedir = os.getenv("SUDO_HOME") or os.getenv("HOME") or f"/home/{execusr}"
+# libsdir = Path(homedir) / "linux/script/py_custom_cmd/src"
+# if str(libsdir) not in sys.path:
+#    sys.path.append(str(libsdir))
+from common.utils.my_argument import Argument
+from common.utils.my_colors import Color
+from common.utils.my_config import infosystem
+from common.utils.my_debug import debug_logger
 
-# from py_common.my_string               import eprint, count_width
-from py_common.my_message import (
+# from common.utils.my_string               import eprint, count_width
+from common.utils.my_message import (
     get_caller_name,
     message_elapsed,
     message_end,
     message_info,
     message_start,
+    message_warn,
 )
 
-# from py_common.my_process              import run_subprocess
-# from py_common.my_fileio               import get_text2list, put_list2text, conv_text2json, conv_json2text
-# from py_common.my_json                 import load_json, save_json
-# from py_common.my_markdown             import list2markdown, spc_encode4md, spc_decode4md
+# from common.utils.my_process              import run_subprocess
+# from common.utils.my_fileio               import get_text2list, put_list2text, conv_text2json, conv_json2text
+# from common.utils.my_json                 import load_json, save_json
+# from common.utils.my_markdown             import list2markdown, spc_encode4md, spc_decode4md
 
-# from py_common.my_common_cfg           import InfoConfiguration
-# from py_common.my_distribution_dat     import InfoDistribution
-# from py_common.my_media_dat            import InfoMedia
+# from common.shared.my_common_cfg          import InfoConfiguration
+# from common.shared.my_distribution_dat    import InfoDistribution
+# from common.shared.my_media_dat           import InfoMedia
 
-# from py_common.my_infoweb              import Infoweb, get_webinfo
-# from py_common.my_infofile             import Infofile, get_fileinfo
-# from py_common.my_infodata             import Infodata, debug_info, get_infodata
+# from common.utils.my_infoweb              import Infoweb, get_webinfo
+# from common.utils.my_infofile             import Infofile, get_fileinfo
+# from common.utils.my_infodata             import Infodata, debug_info, get_infodata
 
 
 # -----------------------------------------------------------------------------
@@ -82,6 +76,8 @@ def initialize():
         message_info(get_caller_name(), "Debug mode on")
     if infosystem.debugout == True:
         message_info(get_caller_name(), "Debugout mode on")
+    message_info(get_caller_name(), f"exec user:{infosystem.data.exec_user}")
+    message_info(get_caller_name(), f"home dir :{infosystem.data.home_dir}")
     # -------------------------------------------------------------------------
 
 
@@ -96,8 +92,13 @@ def initialize():
 def main():
     # --- check the executing user --------------------------------------------
     if os.geteuid() != 0:
-        print(
-            f"{color.reset}{color.br_green}{infosystem.program_name}:\n{color.br_yellow} You have standard user privileges. {color.underline}Please run this with sudo.{color.reset}"
+        message_warn(
+            get_caller_name(),
+            "You have standard user privileges.",
+        )
+        message_warn(
+            get_caller_name(),
+            f"{Color.underline}Please run this with sudo.",
         )
         sys.exit(1)
     # --- elapsed start--------------------------------------------------------

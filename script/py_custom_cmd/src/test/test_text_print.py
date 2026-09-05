@@ -7,35 +7,32 @@ import time
 from pathlib import Path
 
 # --- my library --------------------------------------------------------------
+execusr = os.getenv("SUDO_USER", os.getenv("USER"))
+homedir = os.getenv("SUDO_HOME") or os.getenv("HOME") or f"/home/{execusr}"
+libsdir = Path(homedir) / "linux/script/py_custom_cmd/src"
+if str(libsdir) not in sys.path:
+    sys.path.append(str(libsdir))
 
-execusr = os.getenv("USER")
-execusr = os.getenv("SUDO_USER", execusr)
-homedir = os.getenv("HOME")
-homedir = os.getenv("SUDO_HOME", homedir)
-libsdir = "/linux/script/py_custom_cmd/src/"
-libsdir = Path(homedir) / libsdir.strip("/")
-sys.path.append(str(libsdir))
+from common.utils.my_argument import Argument
+from common.utils.my_colors import Color
 
-from py_common.my_argument import Argument
-from py_common.my_colors import color
-
-# from py_common.my_process              import run_subprocess
-# from py_common.my_json                 import load_json, save_json, get_text2json, put_json2text
-# from py_common.my_markdown             import list2markdown, spc_encode4md, spc_decode4md
-from py_common.my_config import infosystem
-from py_common.my_debug import debug_logger
-from py_common.my_message import (
+# from common.utils.my_process              import run_subprocess
+# from common.utils.my_json                 import load_json, save_json, get_text2json, put_json2text
+# from common.utils.my_markdown             import list2markdown, spc_encode4md, spc_decode4md
+from common.utils.my_config import infosystem
+from common.utils.my_debug import debug_logger
+from common.utils.my_message import (
     get_caller_name,
     message_elapsed,
     message_end,
     message_info,
     message_start,
 )
-from py_common.my_string import eprint
+from common.utils.my_string import eprint
 
-# from py_common.my_infoweb              import Infoweb, get_webinfo
-# from py_common.my_infofile             import Infofile, get_fileinfo
-# from py_common.my_infodata             import Infodata, debug_info, get_infodata
+# from common.utils.my_infoweb              import Infoweb, get_webinfo
+# from common.utils.my_infofile             import Infofile, get_fileinfo
+# from common.utils.my_infodata             import Infodata, debug_info, get_infodata
 
 
 # -----------------------------------------------------------------------------
@@ -64,14 +61,14 @@ def initialize():
 def test():
     strhalf = "1234567890123456798012345678901234567980"
     strwide = "１２３４５６７８９０１２３４５６７８９０"
-    strmixd = f"12345678901234567980{color.underline}１２３４５６７８９０"
-    strslid = f"12345678901234567980 {color.underline}１２３４５６７８９０"
+    strmixd = f"12345678901234567980{Color.underline}１２３４５６７８９０"
+    strslid = f"12345678901234567980 {Color.underline}１２３４５６７８９０"
 
     list_text = [
-        f"{color.reset}{strhalf}{color.green}{strhalf}{color.yellow}{strhalf}{color.red}{strhalf}{color.magenta}{strhalf}{color.reset}",
-        f"{color.reset}{strwide}{color.green}{strwide}{color.yellow}{strwide}{color.red}{strwide}{color.magenta}{strwide}{color.reset}",
-        f"{color.reset}{strhalf}{color.green}{strmixd}{color.yellow}{strwide}{color.red}{strwide}{color.magenta}{strwide}{color.reset}",
-        f"{color.reset}{strhalf}{color.green}{strslid}{color.yellow}{strwide}{color.red}{strwide}{color.magenta}{strwide}{color.reset}",
+        f"{Color.reset}{strhalf}{Color.green}{strhalf}{Color.yellow}{strhalf}{Color.red}{strhalf}{Color.magenta}{strhalf}{Color.reset}",
+        f"{Color.reset}{strwide}{Color.green}{strwide}{Color.yellow}{strwide}{Color.red}{strwide}{Color.magenta}{strwide}{Color.reset}",
+        f"{Color.reset}{strhalf}{Color.green}{strmixd}{Color.yellow}{strwide}{Color.red}{strwide}{Color.magenta}{strwide}{Color.reset}",
+        f"{Color.reset}{strhalf}{Color.green}{strslid}{Color.yellow}{strwide}{Color.red}{strwide}{Color.magenta}{strwide}{Color.reset}",
     ]
 
     for text in list_text:
@@ -90,7 +87,7 @@ def main():
     # --- check the executing user --------------------------------------------
     if os.geteuid() != 0:
         print(
-            f"{color.reset}{color.br_green}{infosystem.program_name}:\n{color.br_yellow} You have standard user privileges. {color.underline}Please run this with sudo.{color.reset}"
+            f"{Color.reset}{Color.br_green}{infosystem.program_name}:\n{Color.br_yellow} You have standard user privileges. {Color.underline}Please run this with sudo.{Color.reset}"
         )
         sys.exit(1)
     # --- elapsed start--------------------------------------------------------

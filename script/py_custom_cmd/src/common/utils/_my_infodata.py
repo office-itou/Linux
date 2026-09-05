@@ -2,10 +2,10 @@
 from dataclasses import dataclass
 
 # --- my library --------------------------------------------------------------
-from py_common.my_debug import debug_logger
-from py_common.my_infofile import FileData, InfoFile
-from py_common.my_infoweb import InfoWeb, WebData
-from py_common.my_string import eprint
+from .my_debug import debug_logger
+from .my_infofile import FileData, InfoFile
+from .my_infoweb import InfoWeb, WebData
+from .my_string import eprint
 
 
 # -----------------------------------------------------------------------------

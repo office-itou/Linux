@@ -1,36 +1,29 @@
-###############################################################################
-#
-# 	definitions
-#
-# 	developer   : J.Itou
-# 	release     : 2026/09/03
-#
-# 	history     :
-# 	   data    version    developer    point
-# 	---------- -------- -------------- ----------------------------------------
-# 	2026/09/03 000.0000 J.Itou         first release
-#
-###############################################################################
+"""Color code"""
 
 # --- Python library ----------------------------------------------------------
 # from typing import Any, Callable
 from dataclasses import dataclass
 
 # --- my library --------------------------------------------------------------
-# from py_common.my_config                import infosystem
-# from py_common.my_debug                 import debug_logger
+# from .my_config                import infosystem
+# from .my_debug                 import debug_logger
 
 
 # --- escape code -------------------------------------------------------------
 @dataclass
-class code:
+class Code:
+    """Control code class"""
+
     escape: str = "\x1b"
 
 
 # --- color code --------------------------------------------------------------
 # https://qiita.com/ko1nksm/items/095bdb8f0eca6d327233
 @dataclass
-class color:
+class Color(Code):
+    """Color code class"""
+
+    code = Code()
     reset: str = f"{code.escape}[0m"  # reset all attributes
     bold: str = f"{code.escape}[1m"  # (no comments)
     faint: str = f"{code.escape}[2m"  # (no comments)

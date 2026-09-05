@@ -1,18 +1,16 @@
+"""General-purpose utility package"""
+
 # --- my library --------------------------------------------------------------
-from py_common import (
+from . import (
     my_argument,
     my_colors,
-    my_common_cfg,
     my_config,
     my_debug,
-    my_distribution_dat,
     my_fileio,
-    my_infodata,
     my_infofile,
     my_infoweb,
     my_json,
     my_markdown,
-    my_media_dat,
     my_message,
     my_process,
     my_string,
@@ -21,18 +19,15 @@ from py_common import (
 __all__ = [
     "my_argument",
     "my_colors",
-    "my_common_cfg",
     "my_config",
     "my_debug",
-    "my_distribution_dat",
     "my_fileio",
-    "my_infodata",
     "my_infofile",
     "my_infoweb",
     "my_json",
     "my_markdown",
-    "my_media_dat",
     "my_message",
     "my_process",
     "my_string",
 ]
+# --- eof ---------------------------------------------------------------------

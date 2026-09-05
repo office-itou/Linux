@@ -5,8 +5,7 @@ import asyncio
 
 # import unicodedata
 # import __main__
-import glob
-
+# import glob
 # import csv
 # import dataclasses
 import os
@@ -14,22 +13,21 @@ import os
 # import magic # sudo apt-get install python3-magic
 # import pandas as pd
 # import re
-import shutil
-
+# import shutil
 # import subprocess
 import sys
 import time
 
 # from bs4 import BeautifulSoup
 # from dataclasses import dataclass
-# from dataclasses import dataclass, asdict
-from datetime import datetime
-
+# from dataclasses import asdict
+# from datetime import datetime
 # from datetime import datetime, timedelta
 # from datetime import datetime, timezone
 # from natsort import natsort_keygen
 from pathlib import Path
 
+# from zoneinfo import ZoneInfo
 # from tqdm import tqdm
 # from urllib.parse import urlparse
 import aiohttp  # sudo apt-get install python3-aiohttp
@@ -44,36 +42,31 @@ libsdir = "/linux/script/py_custom_cmd/src/"
 libsdir = Path(homedir) / libsdir.strip("/")
 sys.path.append(str(libsdir))
 
-from py_common.my_argument import Argument
-from py_common.my_colors import color
-from py_common.my_common_cfg import InfoConfiguration
-from py_common.my_config import infosystem
-from py_common.my_debug import debug_logger
-from py_common.my_distribution_dat import InfoDistribution
+from common.shared.my_common_cfg import InfoConfiguration
+from common.shared.my_distribution_dat import InfoDistribution
 
-# from py_common.my_process              import run_subprocess
-from py_common.my_fileio import (
-    conv_json2text,
-    conv_text2json,
-    put_list2text,
-)
-from py_common.my_infofile import InfoFile
-from py_common.my_infoweb import InfoWeb
+# from common.utils.my_markdown             import list2markdown, spc_encode4md, spc_decode4md
+from common.shared.my_media_dat import InfoMedia
+from common.shared.my_shared import Text_fmat
+from common.utils.my_argument import Argument
+from common.utils.my_colors import Color
+from common.utils.my_config import infosystem
+from common.utils.my_debug import debug_logger
 
-# from py_common.my_markdown             import list2markdown, spc_encode4md, spc_decode4md
-from py_common.my_media_dat import InfoMedia
+# from common.utils.my_process              import run_subprocess
+from common.utils.my_infofile import InfoFile
+from common.utils.my_infoweb import InfoWeb
 
-# from py_common.my_string               import eprint, count_width
-from py_common.my_message import (
+# from common.utils.my_string               import eprint, count_width
+from common.utils.my_message import (
     get_caller_name,
-    message_alert,
     message_elapsed,
     message_end,
     message_info,
     message_start,
 )
 
-# from py_common.my_infodata              import InfoData
+# from common.utils.my_infodata              import InfoData
 
 
 # -----------------------------------------------------------------------------
@@ -91,10 +84,10 @@ def initialize():
         message_info(get_caller_name(), "Debugout mode on")
     # -------------------------------------------------------------------------
     info_conf = InfoConfiguration()
-    path_dist = info_conf.get("PATH_DIST")
-    path_mdia = info_conf.get("PATH_MDIA")
-    info_dist = InfoDistribution(path_dist + ".json")
-    info_mdia = InfoMedia(path_mdia + ".json", info_conf)
+    path_dist = info_conf.find(key="PATH_DIST")
+    path_mdia = info_conf.find(key="PATH_MDIA")
+    info_dist = InfoDistribution(path_dist.value + ".json")
+    info_mdia = InfoMedia(path_mdia.value + ".json", info_conf)
     # -------------------------------------------------------------------------
     return info_conf, info_dist, info_mdia
 
@@ -107,17 +100,20 @@ def generate_md(
     info_dist: InfoDistribution,
     info_mdia: InfoMedia,
 ):
+    path_conf = info_conf.find(key="PATH_CONF")
+    path_dist = info_conf.find(key="PATH_DIST")
+    path_mdia = info_conf.find(key="PATH_MDIA")
     info_conf.markdown(
         Path(dirs) / "Readme_Configuration.md",
-        f"Configuration data({Path(info_conf.get('PATH_CONF')).name})",
+        f"Configuration data({Path(path_conf.value).name})",
     )
     info_dist.markdown(
         Path(dirs) / "Readme_Distribution.md",
-        f"Distribution data({Path(info_conf.get('PATH_DIST')).name})",
+        f"Distribution data({Path(path_dist.value).name})",
     )
     info_mdia.markdown(
         Path(dirs) / "Readme_Media.md",
-        f"Media data({Path(info_conf.get('PATH_MDIA')).name})",
+        f"Media data({Path(path_mdia.value).name})",
     )
 
 
@@ -126,46 +122,18 @@ def generate_md(
 def data_save(
     info_conf: InfoConfiguration, info_dist: InfoDistribution, info_mdia: InfoMedia
 ):
-    path_dist = info_conf.get("PATH_DIST")
-    path_mdia = info_conf.get("PATH_MDIA")
-    fmat_dist = r"{version:<23} {name:<23} {version_id:<23} {code_name:<39} {life:<15} {release:<15} {support:<15} {long_term:<15} {rhel:<15} {kerne:<27} {note:<27} {wallpaper:<87} {create_flag:<11} {sort_flag:<11} "
-    fmat_mdia = r"{type:<11} {entry_flag:<11} {entry_name:<39} {entry_disp:<39} {version:<23} {latest:<23} {release:<15} {support:<15} {web_regexp:<143} {web_path:<143} {web_tstamp:<47} {web_size:<15} {web_check:<47} {web_status:<15} {iso_path:<87} {iso_tstamp:<47} {iso_size:<15} {iso_volume:<43} {rmk_path:<87} {rmk_tstamp:<47} {rmk_size:<15} {rmk_volume:<43} {ldr_initrd:<87} {ldr_kernel:<87} {cfg_path:<87} {cfg_tstamp:<47} {lnk_path:<87} {options:<59} {create_flag:<11} "
+    path_dist = info_conf.find(key="PATH_DIST")
+    path_mdia = info_conf.find(key="PATH_MDIA")
     # -------------------------------------------------------------------------
-    paths_to_check = [
-        p
-        for p in [path_dist, f"{path_dist}.json", path_mdia, f"{path_mdia}.json"]
-        if p and p != ".json"
-    ]
-    for file_path_str in paths_to_check:
-        file_path = Path(file_path_str)
-        if file_path.exists() and file_path.is_file():
-            # --- backup ------------------------------------------------------
-            timestamp = datetime.now(tz=datetime.UTC).strftime("%Y%m%d%H%M%S_%f")
-            base_name = file_path.stem
-            ext = file_path.suffix
-            backup_path = file_path.with_name(f"{base_name}_{timestamp}{ext}")
-            shutil.copy2(file_path, backup_path)
-            # --- history -----------------------------------------------------
-            search_pattern = str(file_path.with_name(f"{base_name}_*{ext}"))
-            backups = glob.glob(search_pattern)
-            backups = [b for b in backups if b != str(file_path)]
-            backups.sort(key=os.path.getmtime)
-            # --- cleanup -----------------------------------------------------
-            while len(backups) > 3:
-                oldest_backup = backups.pop(0)
-                try:
-                    os.remove(oldest_backup)
-                except OSError as e:
-                    message_alert(
-                        get_caller_name(),
-                        f"Backup deletion failed: {oldest_backup} ({e})",
-                    )
+    info_dist.save(f"{path_dist.value}.json")
+    info_mdia.save(f"{path_mdia.value}.json", info_conf)
     # -------------------------------------------------------------------------
-    info_dist.save(f"{path_dist}.json")
-    info_mdia.save(f"{path_mdia}.json", info_conf)
-    # -------------------------------------------------------------------------
-    put_list2text(path_dist, info_dist.data, fmat_dist)
-    put_list2text(path_mdia, info_mdia.conv2variable(info_conf), fmat_mdia)
+    info_dist.put_list2text(path_dist.value, Text_fmat.dist)
+    info_mdia.put_list2text(
+        path_mdia.value,
+        Text_fmat.mdia,
+        info_conf,
+    )
 
 
 # -----------------------------------------------------------------------------
@@ -180,9 +148,13 @@ async def get_web_file_info(
         timeout=timeout, raise_for_status=False
     ) as session:
         for tget_mdia in info_mdia.data:
-            #            if tget_mdia.entry_flag != 'o' \
-            if tget_mdia.web_regexp == "-" or tget_mdia.iso_path == "-":
+            if (
+                tget_mdia.entry_flag != "o"
+                or tget_mdia.web_regexp == "-"
+                or tget_mdia.iso_path == "-"
+            ):
                 continue
+            message_info(get_caller_name(), tget_mdia.web_regexp, True)
             await info_web.get_info(session, tget_mdia.web_regexp, tget_mdia.iso_path)
             tget_mdia.web_path = info_web.data.url
             tget_mdia.web_tstamp = info_web.data.tmstamp
@@ -217,7 +189,7 @@ async def main():
     # --- check the executing user --------------------------------------------
     if os.geteuid() != 0:
         print(
-            f"{color.reset}{color.br_green}{infosystem.program_name}:\n{color.br_yellow} You have standard user privileges. {color.underline}Please run this with sudo.{color.reset}"
+            f"{Color.reset}{Color.br_green}{infosystem.program_name}:\n{Color.br_yellow} You have standard user privileges. {Color.underline}Please run this with sudo.{Color.reset}"
         )
         sys.exit(1)
     # --- elapsed start--------------------------------------------------------
@@ -241,9 +213,17 @@ async def main():
     if args:
         info_conf, info_dist, info_mdia = initialize()
         if infosystem.args.t2j == True:
-            conv_text2json(info_conf, info_dist, info_mdia)
+            path_dist = info_conf.find(key="PATH_DIST")
+            path_mdia = info_conf.find(key="PATH_MDIA")
+            info_dist.get_text2list(path_dist)
+            info_mdia.get_text2list(path_mdia, info_conf)
         if infosystem.args.j2t == True:
-            conv_json2text(info_conf, info_dist, info_mdia)
+            path_dist = info_conf.find(key="PATH_DIST")
+            path_mdia = info_conf.find(key="PATH_MDIA")
+            info_dist.get_text2list(f"{path_dist}.json")
+            info_mdia.get_text2list(f"{path_mdia}.json", info_conf)
+            info_dist.put_list2text(path_dist)
+            info_mdia.put_list2text(path_mdia, info_conf)
         if target := infosystem.args.info:
             if target == "a":
                 pass

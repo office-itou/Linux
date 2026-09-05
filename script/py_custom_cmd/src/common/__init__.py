@@ -1,8 +1,9 @@
-"""Project route"""
+"""Common package route"""
 
 # --- my library --------------------------------------------------------------
-from . import common
+from . import shared, utils
 
 __all__ = [
-    "common",
+    "shared",
+    "utils",
 ]

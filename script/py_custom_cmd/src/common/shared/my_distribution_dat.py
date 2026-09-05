@@ -17,12 +17,12 @@ import json
 from dataclasses import asdict, dataclass, fields
 from typing import Any
 
-from py_common.my_colors import color
-
 # --- my library --------------------------------------------------------------
-from py_common.my_config import infosystem
-from py_common.my_markdown import list2markdown
-from py_common.my_string import eprint, spc_decode, spc_encode
+from ..utils.my_colors import Color
+from ..utils.my_config import infosystem
+from ..utils.my_fileio import get_text2list, put_list2text
+from ..utils.my_markdown import list2markdown
+from ..utils.my_string import eprint, spc_decode, spc_encode
 
 
 # -----------------------------------------------------------------------------
@@ -46,8 +46,8 @@ class DistributionData:
 
 class InfoDistribution:
     def __init__(self, path: str | None = None):
-        self.data: list[DistributionData] = []
         self._valid_fields = {f.name for f in fields(DistributionData)}
+        self.data: list[DistributionData] = []
         if path:
             self.load(path)
 
@@ -62,22 +62,22 @@ class InfoDistribution:
 
     def find(self, **kwargs) -> DistributionData | None:
         for item in self.data:
-            match = True
-            for key, value in kwargs.items():
-                if getattr(item, key, None) != value:
-                    match = False
-                    break
-            if match:
+            if all(getattr(item, key, None) == value for key, value in kwargs.items()):
                 return item
+        return None
 
     def load(self, path: str) -> None:
         with open(path, "r", encoding="utf-8") as f:
             raw_data = json.load(f)
         decoded_data = spc_decode(raw_data)
-        self.data = decoded_data
+        self.data = [
+            DistributionData(**item) if isinstance(item, dict) else item
+            for item in decoded_data
+        ]
 
     def save(self, path: str):
-        encoded_data = spc_encode(self.data)
+        dict_list = [asdict(item) for item in self.data]
+        encoded_data = spc_encode(dict_list)
         with open(path, "w", encoding="utf-8") as f:
             json.dump(encoded_data, f, ensure_ascii=False, indent=4)
 
@@ -88,7 +88,18 @@ class InfoDistribution:
     def dump(self) -> None:
         for line in self.data:
             text = f"{line!s:.{infosystem.columns}s}"
-            eprint(f"{color.yellow}{text}{color.reset}")
+            eprint(f"{Color.yellow}{text}{Color.reset}")
+
+    def get_text2list(self, path: str) -> None:
+        list_data = get_text2list(path)
+        decoded_data = spc_decode(list_data)
+        self.data = [
+            DistributionData(**item) if isinstance(item, dict) else item
+            for item in decoded_data
+        ]
+
+    def put_list2text(self, path: str, fmat: str) -> None:
+        put_list2text(path, [asdict(item) for item in self.data], fmat)
 
 
 # --- eof ---------------------------------------------------------------------

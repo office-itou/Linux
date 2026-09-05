@@ -1,3 +1,5 @@
+"""Retrieves file information from the web."""
+
 # --- Python library ----------------------------------------------------------
 import asyncio
 import re
@@ -12,17 +14,19 @@ from typing import Any
 import aiohttp  # sudo apt-get install python3-aiohttp
 from bs4 import BeautifulSoup
 from natsort import natsort_keygen
-from py_common.my_colors import color
 
 # --- my library --------------------------------------------------------------
-from py_common.my_config import infosystem
-from py_common.my_debug import debug_logger, debugout
-from py_common.my_message import get_caller_name, message_alert, message_warn
+from .my_colors import Color
+from .my_config import infosystem
+from .my_debug import debug_logger, debugout
+from .my_message import get_caller_name, message_alert, message_warn
 
 
 # -----------------------------------------------------------------------------
 @dataclass
 class WebData:
+    """Web data class"""
+
     regexp: str = ""
     url: str = ""
     tmstamp: str = ""
@@ -36,6 +40,8 @@ class WebData:
 
 
 class InfoWeb:
+    """Web information class"""
+
     def __init__(self, data: WebData | None = None):
         self.data: WebData = data if data is not None else WebData()
 
@@ -81,16 +87,17 @@ BASE_HEADERS = {
 }
 
 
-# -----------------------------------------------------------------------------
-# descript: url stripping
-#   input : data                  : input
-#   output:                       : unused
-#   return: text                  : output
-#   global:                       : unused
-# -----------------------------------------------------------------------------
 @debug_logger
-def url_strip(data: str) -> str:
-    text = re.sub(r"[\n|\r\n]$", "", data)  # remove lf or crlf
+def url_strip(src_text: str) -> str:
+    """URL stripping
+
+    Args:
+        src_text (str): Source text
+
+    Returns:
+        str: Conversion text
+    """
+    text = re.sub(r"[\n|\r\n]$", "", src_text)  # remove lf or crlf
     text = re.sub(r"^\"", "", text)  # remove the first double quotation mark
     text = re.sub(r"\"$", "", text)  # remove the last double quotation mark
     text = re.sub(r"^/", "", text)  # remove the first '/'
@@ -98,16 +105,21 @@ def url_strip(data: str) -> str:
     return text
 
 
-# -----------------------------------------------------------------------------
-# descript: get response
-#   input : session               : input
-#   input : target_url            : input
-#   output:                       : unused
-#   return: WebData               : output
-#   global:                       : unused
-# -----------------------------------------------------------------------------
 @debug_logger
 async def get_response(request_func: Callable, target_url: str) -> WebData:
+    """Get response
+
+    Args:
+        request_func (Callable): Request function
+        target_url (str): Target URL
+
+    Raises:
+        SystemExit: aiohttp.ClientConnectorError, aiohttp.ClientResponseError,aiohttp.ClientError,asyncio.TimeoutError, ...
+
+
+    Returns:
+        WebData: Response data
+    """
     host_match = re.sub(r"http[s]*://([^/]+)/.*$", r"\1", target_url)
     req_url = target_url
     req_headers = BASE_HEADERS.copy()
@@ -153,49 +165,52 @@ async def get_response(request_func: Callable, target_url: str) -> WebData:
             message_alert(get_caller_name(), f"HTTP/Connection error: {e}")
             message_warn(get_caller_name(), f"retry({r}): {target_url}")
             await asyncio.sleep(1)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             message_alert(get_caller_name(), f"Fatal error: {e}")
             raise SystemExit
     return info
 
 
-# -----------------------------------------------------------------------------
-# descript: get header
-#   input : session               : input
-#   input : target_url            : input
-#   output:                       : unused
-#   return: WebData               : output
-#   global:                       : unused
-# -----------------------------------------------------------------------------
 @debug_logger
 async def get_header(session: aiohttp.ClientSession, target_url: str) -> WebData:
+    """Get header
+
+    Args:
+        session (aiohttp.ClientSession): Session object
+        target_url (str): Target URL
+
+    Returns:
+        WebData: Response data
+    """
     return await get_response(session.head, target_url)
 
 
-# -----------------------------------------------------------------------------
-# descript: get text
-#   input : session               : input
-#   input : target_url            : input
-#   output:                       : unused
-#   return: WebData               : output
-#   global:                       : unused
-# -----------------------------------------------------------------------------
 @debug_logger
 async def get_text(session: aiohttp.ClientSession, target_url: str) -> WebData:
+    """Get text
+
+    Args:
+        session (aiohttp.ClientSession): Session object
+        target_url (str): Target URL
+
+    Returns:
+        WebData: Response data
+    """
     return await get_response(session.get, target_url)
 
 
-# -----------------------------------------------------------------------------
-# descript: get web information data
-#   input : session               : input
-#   input : target_regexp         : input
-#   input : target_path           : input
-#   output:                       : unused
-#   return: WebData               : output
-#   global:                       : unused
-# -----------------------------------------------------------------------------
 @debug_logger
 async def get_info(session: Any, target_regexp: str, target_path: str) -> WebData:
+    """Get web information data
+
+    Args:
+        session (Any): Session
+        target_regexp (str): Target URL for regular expression
+        target_path (str): Target path
+
+    Returns:
+        WebData: Response data
+    """
     data = WebData()
     target_url = target_regexp
     match_dirs = ""
@@ -218,93 +233,93 @@ async def get_info(session: Any, target_regexp: str, target_path: str) -> WebDat
             debugout(
                 get_caller_name(only=False),
                 "Debugout",
-                color.yellow,
+                Color.yellow,
                 "# " + "-" * infosystem.columns + " #",
             )
             debugout(
                 get_caller_name(only=False),
                 "Debugout",
-                color.yellow,
+                Color.yellow,
                 f"target_regexp:[{target_regexp}]",
             )
             debugout(
                 get_caller_name(only=False),
                 "Debugout",
-                color.yellow,
+                Color.yellow,
                 f"target_url   :[{target_url}]",
             )
             debugout(
                 get_caller_name(only=False),
                 "Debugout",
-                color.yellow,
+                Color.yellow,
                 f"web.regexp   :[{data.regexp}]",
             )
             debugout(
                 get_caller_name(only=False),
                 "Debugout",
-                color.yellow,
+                Color.yellow,
                 f"web.url      :[{data.url}]",
             )
             debugout(
                 get_caller_name(only=False),
                 "Debugout",
-                color.yellow,
+                Color.yellow,
                 f"web.tmstamp  :[{data.tmstamp}]",
             )
             debugout(
                 get_caller_name(only=False),
                 "Debugout",
-                color.yellow,
+                Color.yellow,
                 f"web.size     :[{data.size}]",
             )
             debugout(
                 get_caller_name(only=False),
                 "Debugout",
-                color.yellow,
+                Color.yellow,
                 f"web.check    :[{data.check}]",
             )
             debugout(
                 get_caller_name(only=False),
                 "Debugout",
-                color.yellow,
+                Color.yellow,
                 f"web.status   :[{data.status}]",
             )
             debugout(
                 get_caller_name(only=False),
                 "Debugout",
-                color.yellow,
+                Color.yellow,
                 f"web.reason   :[{data.reason}]",
             )
             debugout(
                 get_caller_name(only=False),
                 "Debugout",
-                color.yellow,
+                Color.yellow,
                 f"web.mime     :[{data.mime}]",
             )
             if data.mime and "text" in data.mime:
                 debugout(
                     get_caller_name(only=False),
                     "Debugout",
-                    color.yellow,
+                    Color.yellow,
                     f"web.contents :[{data.contents}]",
                 )
             else:
                 debugout(
                     get_caller_name(only=False),
                     "Debugout",
-                    color.yellow,
+                    Color.yellow,
                     f"web.contents :error: mime({data.mime})",
                 )
             debugout(
                 get_caller_name(only=False),
                 "Debugout",
-                color.yellow,
+                Color.yellow,
                 f"web.output   :[{data.output}]",
             )
             debugout(
                 get_caller_name(only=False),
                 "Debugout",
-                color.yellow,
+                Color.yellow,
                 "# " + "-" * infosystem.columns + " #",
             )
             break
