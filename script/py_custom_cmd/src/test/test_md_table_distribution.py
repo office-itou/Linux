@@ -4,7 +4,6 @@
 
 # --- Python library ----------------------------------------------------------
 import os
-import re
 import sys
 import time
 from dataclasses import asdict
@@ -34,11 +33,11 @@ from pathlib import Path
 # import unicodedata
 # import __main__
 # --- my library --------------------------------------------------------------
-# execusr = os.getenv("SUDO_USER", os.getenv("USER"))
-# homedir = os.getenv("SUDO_HOME") or os.getenv("HOME") or f"/home/{execusr}"
-# libsdir = Path(homedir) / "linux/script/py_custom_cmd/src"
-# if str(libsdir) not in sys.path:
-#    sys.path.append(str(libsdir))
+execusr = os.getenv("SUDO_USER", os.getenv("USER"))
+homedir = os.getenv("SUDO_HOME") or os.getenv("HOME") or f"/home/{execusr}"
+libsdir = Path(homedir) / "linux/script/py_custom_cmd/src"
+if str(libsdir) not in sys.path:
+    sys.path.append(str(libsdir))
 from common.shared.my_common_cfg import InfoConfiguration
 from common.shared.my_distribution_dat import InfoDistribution
 from common.shared.my_media_dat import InfoMedia
@@ -46,7 +45,6 @@ from common.utils.my_argument import Argument
 from common.utils.my_colors import Color
 from common.utils.my_config import infosystem
 from common.utils.my_debug import debug_logger
-from common.utils.my_fileio import file_backup
 from common.utils.my_markdown import list2markdown
 from common.utils.my_message import (
     get_caller_name,
@@ -91,96 +89,46 @@ def initialize() -> tuple[InfoConfiguration, InfoDistribution, InfoMedia]:
 
 
 @debug_logger
-def put_menufile(
-    src_path: str, dst_path: str, info_conf: InfoConfiguration, pattern: re.Pattern
+def generate_markdown(
+    dst_dir: str,
+    info_conf: InfoConfiguration,
+    info_dist: InfoDistribution,
+    info_mdia: InfoMedia,
 ) -> None:
-    """Convert the source file and save it to the destination file.
+    """Generate markdown (Latest version of the distribution)
 
     Args:
-        src_path (str): Source path
-        dst_path (str): Destination path
-        info_conf (InfoConfiguration): common.cfg interface class
-        pattern (re.Pattern): re.Pattern
-    """
-    with open(src_path, "r", encoding="utf-8") as f:
-        content = f.read()
-        conv = pattern.sub(lambda m: info_conf.find(key=m.group(1)).value, content)
-        file_backup(dst_path)
-        with open(dst_path, "w", encoding="utf-8") as f:
-            f.write(conv)
-
-
-@debug_logger
-def generate_ipxe_menu(
-    info_conf: InfoConfiguration, info_dist: InfoDistribution, info_mdia: InfoMedia
-) -> None:
-    """Generate ipxe menu
-
-    Args:
+        dst_dir (str): Destination path
         info_conf (InfoConfiguration): common.cfg interface class
         info_dist (InfoDistribution): distribution.dat interface class
         info_mdia (InfoMedia): media.dat interface class
     """
-    path_template = Path(str(info_conf.find(key="DIRS_TMPL").value))
-    path_template_ipxe = path_template / "ipxe"
-    path_autexec = Path(str(info_conf.find(key="PATH_IPXE").value))
-    dir_ipxe = path_autexec.parent
-    template_files = [
-        file for file in path_template_ipxe.glob("*.ipxe") if file.is_file()
+    # path_conf = info_conf.find(key="PATH_CONF").value
+    path_dist = info_conf.find(key="PATH_DIST").value
+    # path_mdia = info_conf.find(key="PATH_MDIA").value
+    dst_path = Path(dst_dir) / "Readme_table_distribution.md"
+    md_title = f"Distribution data({Path(path_dist).name})"
+    distributions = [
+        "debian",
+        "ubuntu",
+        "fedora",
+        "centos",
+        "almalinux",
+        "rockylinux",
+        "miraclelinux",
+        "opensuse",
+        "windows",
+        "memtest86plus",
+        "winpe",
+        "ati2020",
     ]
-
-    pattern_value = r":_([A-Z0-9_]+)_:"
-    match_value = re.compile(pattern_value)
-    pattern_file = r"^[^_]+_([^.]+)\.ipxe"
-    match_file = re.compile(pattern_file)
-
-    for file in template_files:
-        match file.name:
-            case path_autexec.name:
-                dst_path = Path(dir_ipxe) / f"{file.name}.temp"
-                put_menufile(file, dst_path, info_conf, match_value)
-            case "menu.ipxe":
-                pass
-            case _ if match_file.match(file.name):
-                distribution = match_file.sub(r"\1", file.name)
-                print(f"distribution:{distribution}")
-                list_item = info_dist.sort(distribution, reverse=True)
-                print(f"list_item:{list_item}")
-            case _:
-                dst_path = Path(dir_ipxe) / "menu" / f"{file.name}.temp"
-                put_menufile(file, dst_path, info_conf, match_value)
-
-
-# autoexec.ipxe
-# booting.ipxe
-# menu.ipxe
-# menu_almalinux.ipxe
-# menu_centos.ipxe
-# menu_custom_live.ipxe
-# menu_debian.ipxe
-# menu_fedora.ipxe
-# menu_live.ipxe
-# menu_miraclelinux.ipxe
-# menu_opensuse.ipxe
-# menu_rockylinux.ipxe
-# menu_ubuntu.ipxe
-# menu_windows.ipxe
-
-
-# autoexec.ipxe
-# menu/booting.ipxe
-# menu/menu.ipxe
-# menu/menu_almalinux.ipxe
-# menu/menu_centos.ipxe
-# menu/menu_custom_live.ipxe
-# menu/menu_debian.ipxe
-# menu/menu_fedora.ipxe
-# menu/menu_live.ipxe
-# menu/menu_miraclelinux.ipxe
-# menu/menu_opensuse.ipxe
-# menu/menu_rockylinux.ipxe
-# menu/menu_ubuntu.ipxe
-# menu/menu_windows.ipxe
+    list_data = []
+    for distribution in distributions:
+        dict_list = [distribution]
+        list_item = info_dist.sort(distribution, reverse=True)
+        dict_list += [asdict(item) for item in list_item]
+        list_data.append(dict_list)
+    list2markdown(dst_path, md_title, list_data)
 
 
 @debug_logger
@@ -208,7 +156,8 @@ def main():
     args = arg_manager.parse()
     if args:
         info_conf, info_dist, info_mdia = initialize()
-        generate_ipxe_menu(info_conf, info_dist, info_mdia)
+        if dst_dir := infosystem.args.md:
+            generate_markdown(dst_dir, info_conf, info_dist, info_mdia)
     # --- termination process -------------------------------------------------
     message_end(get_caller_name())
     # --- elapsed end ---------------------------------------------------------

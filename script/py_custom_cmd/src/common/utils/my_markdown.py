@@ -78,43 +78,57 @@ def list2markdown(dst_path: str, md_title: str, src_data: list) -> None:
         md_title (str): Markdown title
         src_data (list): Source data
     """
-
-    text = spc_decode4md(src_data)
     spc = " " * 2
-    header = ""
-    align = ""
-    df = pd.DataFrame(text)
-    # --- get the width of each column ----------------------------------------
-    col_sizes = {}
-    for name in df.columns:
-        cnt_name = count_width(str(name))
-        max_size = df[name].apply(lambda x: count_width(str(x))).max()
-        col_sizes[name] = max(max_size, cnt_name)
-    # --- header and divider line ---------------------------------------------
-    for name in df.columns:
-        colsize = col_sizes[name]
-        name_str = str(name)
-        pad_total = colsize - count_width(name_str)
-        pad_l = pad_total // 2
-        pad_r = pad_total - pad_l
-        header += f"|{' ' * pad_l}{name_str}{' ' * pad_r}"
-        align += "|:" + "-" * (colsize - 1)
-    header += "|"
-    align += "|"
-    # --- data ----------------------------------------------------------------
-    md_rows = []
-    for index, row in df.iterrows():
-        row_text = ""
+
+    def generate(data: list):
+        text = spc_decode4md(data)
+        header = ""
+        align = ""
+        df = pd.DataFrame(text)
+        # --- get the width of each column ----------------------------------------
+        col_sizes = {}
+        for name in df.columns:
+            cnt_name = count_width(str(name))
+            max_size = df[name].apply(lambda x: count_width(str(x))).max()
+            col_sizes[name] = max(max_size, cnt_name)
+        # --- header and divider line ---------------------------------------------
         for name in df.columns:
             colsize = col_sizes[name]
-            val_str = str(row[name])
-            pad_r = colsize - count_width(val_str)
-            row_text += f"|{val_str}{' ' * pad_r}"
-        row_text += "|"
-        md_rows.append(f"{spc}{row_text}")
+            name_str = str(name)
+            pad_total = colsize - count_width(name_str)
+            pad_l = pad_total // 2
+            pad_r = pad_total - pad_l
+            header += f"|{' ' * pad_l}{name_str}{' ' * pad_r}"
+            align += "|:" + "-" * (colsize - 1)
+        header += "|"
+        align += "|"
+        # --- data ----------------------------------------------------------------
+        md_rows = []
+        for index, row in df.iterrows():
+            row_text = ""
+            for name in df.columns:
+                colsize = col_sizes[name]
+                val_str = str(row[name])
+                pad_r = colsize - count_width(val_str)
+                row_text += f"|{val_str}{' ' * pad_r}"
+            row_text += "|"
+            md_rows.append(f"{spc}{row_text}")
+        return (header, align, md_rows)
+
     # --- output --------------------------------------------------------------
-    md_text = f"# Data table\n\n* {md_title}\n\n{spc}{header}\n{spc}{align}\n"
-    md_text += "\n".join(md_rows) + "\n"
+    md_text = "# Data table\n"
+    if isinstance(src_data[0], list):
+        md_text += f"\n## {md_title}\n"
+        for data in src_data:
+            md_text += f"\n* <details><summary>{data[:1]}</summary>\n"
+            header, align, md_rows = generate(data[1:])
+            md_text += f"\n{spc}{header}\n{spc}{align}\n"
+            md_text += "\n".join(md_rows) + f"\n\n{spc}</details>\n"
+    else:
+        md_text += f"\n* {md_title}\n"
+        header, align, md_rows = generate(src_data)
+        md_text += f"\n{spc}{header}\n{spc}{align}\n"
+        md_text += "\n".join(md_rows) + "\n"
     file_backup(dst_path)
     with open(dst_path, "w", encoding="utf-8") as f:
         f.write(md_text)

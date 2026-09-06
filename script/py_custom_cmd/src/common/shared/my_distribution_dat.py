@@ -2,8 +2,13 @@
 
 # --- Python library ----------------------------------------------------------
 import json
+import re
 from dataclasses import asdict, dataclass, fields
+from operator import attrgetter
 from typing import Any
+
+from packaging.version import InvalidVersion
+from packaging.version import parse as parse_version
 
 # from packaging.version import InvalidVersion
 # from packaging.version import parse as parse_version
@@ -132,6 +137,67 @@ class InfoDistribution:
             format_str (str): Output format
         """
         put_list2text(dst_path, [asdict(item) for item in self.data], format_str)
+
+    def sort(
+        self, distribution: str = "", reverse: bool = False
+    ) -> list[DistributionData]:
+        """A wrapper that sorts and outputs the DistributionData class.
+
+        Args:
+            distribution (str, optional): Target distribution. Defaults to "".
+            reverse (bool, optional): Reverse off/on. Defaults to False.
+
+        Returns:
+            list[DistributionData]: DistributionData class
+        """
+        return sort_distribution_data(self.data, distribution, reverse)
+
+
+def sort_distribution_data(
+    data: DistributionData, distribution: str = "", reverse: bool = False
+) -> list[DistributionData]:
+    """Sort and output the DistributionData class.
+
+    Args:
+        data (DistributionData): Source data
+        distribution (str, optional): Target distribution. Defaults to "".
+        reverse (bool, optional): Reverse off/on. Defaults to False.
+
+    Returns:
+        list[DistributionData]: DistributionData class
+    """
+    match = re.compile(rf"^{re.escape(distribution)}(|-).+$")
+    selected_data = [item for item in data if match.match(item.version)]
+
+    def make_universal_sort_key(item):
+        v_str = item.version
+        if distribution and v_str.startswith(f"{distribution}-"):
+            v_str = v_str[len(distribution) + 1 :]
+        base_match = re.match(
+            r"^([a-zA-Z0-9_-]+?)-(?=\d|testing|sid|tumbleweed|x86|x64)", v_str
+        )
+        if base_match:
+            base_name = base_match.group(1)
+            version_part = v_str[len(base_name) + 1 :]
+        else:
+            base_name = ""
+            version_part = v_str
+        version_part = re.sub(
+            r"(\d+)h(\d+)", r"\1.\2", version_part, flags=re.IGNORECASE
+        )
+        num_match = re.search(r"(\d+(?:\.\d+)*\S*)", version_part)
+        if num_match:
+            try:
+                return (base_name, 2, parse_version(num_match.group(1)))
+            except InvalidVersion:
+                pass
+        if version_part:
+            return (base_name, 3, version_part)
+        return (base_name, 0, parse_version("0.0.0"))
+
+    step1 = sorted(selected_data, key=make_universal_sort_key, reverse=reverse)
+    sorted_datas = sorted(step1, key=attrgetter("sort_flag"), reverse=reverse)
+    return sorted_datas
 
 
 # --- eof ---------------------------------------------------------------------
