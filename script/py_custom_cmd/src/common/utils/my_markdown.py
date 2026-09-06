@@ -120,7 +120,7 @@ def list2markdown(dst_path: str, md_title: str, src_data: list) -> None:
     if isinstance(src_data[0], list):
         md_text += f"\n## {md_title}\n"
         for data in src_data:
-            md_text += f"\n* <details><summary>{data[:1]}</summary>\n"
+            md_text += f"\n* <details><summary>{data[:1][0]}</summary>\n"
             header, align, md_rows = generate(data[1:])
             md_text += f"\n{spc}{header}\n{spc}{align}\n"
             md_text += "\n".join(md_rows) + f"\n\n{spc}</details>\n"
