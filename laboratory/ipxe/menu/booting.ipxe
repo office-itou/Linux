@@ -1,0 +1,180 @@
+#!ipxe
+
+# --- Interactive form block --------------------------------------------------
+:menu
+clear openmenu
+#prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && goto reset ||
+goto input
+:setting
+set openmenu 1
+# --- Interactive form block (network parameters) -----------------------------
+:input
+set hostname ${hnameopt}
+set ethrname ${enameopt}
+set ipv4addr 192.168.1.1
+set ipv4mask 255.255.255.0
+set ipv4gway 192.168.1.254
+set ipv4nsvr 192.168.1.254
+form                                            Configure Network Options
+item hostname                                   Hostname
+item ethrname                                   Interface
+item ipv4addr                                   IPv4 address
+item ipv4mask                                   IPv4 netmask (example: 24 or 255.255.255.0)
+item ipv4gway                                   IPv4 gateway
+item ipv4nsvr                                   Name servers
+isset ${openmenu} && present ||
+# --- cidr -> netmask ---------------------------------------------------------
+isset ${ipv4mask} || goto reset
+#iseq ${ipv4mask}  0 && set ipv4mask 0.0.0.0 ||
+#iseq ${ipv4mask}  1 && set ipv4mask 128.0.0.0 ||
+#iseq ${ipv4mask}  2 && set ipv4mask 192.0.0.0 ||
+#iseq ${ipv4mask}  3 && set ipv4mask 224.0.0.0 ||
+#iseq ${ipv4mask}  4 && set ipv4mask 240.0.0.0 ||
+#iseq ${ipv4mask}  5 && set ipv4mask 248.0.0.0 ||
+#iseq ${ipv4mask}  6 && set ipv4mask 252.0.0.0 ||
+#iseq ${ipv4mask}  7 && set ipv4mask 254.0.0.0 ||
+iseq  ${ipv4mask}  8 && set ipv4mask 255.0.0.0 ||
+iseq  ${ipv4mask}  9 && set ipv4mask 255.128.0.0 ||
+iseq  ${ipv4mask} 10 && set ipv4mask 255.192.0.0 ||
+iseq  ${ipv4mask} 11 && set ipv4mask 255.224.0.0 ||
+iseq  ${ipv4mask} 12 && set ipv4mask 255.240.0.0 ||
+iseq  ${ipv4mask} 13 && set ipv4mask 255.248.0.0 ||
+iseq  ${ipv4mask} 14 && set ipv4mask 255.252.0.0 ||
+iseq  ${ipv4mask} 15 && set ipv4mask 255.254.0.0 ||
+iseq  ${ipv4mask} 16 && set ipv4mask 255.255.0.0 ||
+iseq  ${ipv4mask} 17 && set ipv4mask 255.255.128.0 ||
+iseq  ${ipv4mask} 18 && set ipv4mask 255.255.192.0 ||
+iseq  ${ipv4mask} 19 && set ipv4mask 255.255.224.0 ||
+iseq  ${ipv4mask} 20 && set ipv4mask 255.255.240.0 ||
+iseq  ${ipv4mask} 21 && set ipv4mask 255.255.248.0 ||
+iseq  ${ipv4mask} 22 && set ipv4mask 255.255.252.0 ||
+iseq  ${ipv4mask} 23 && set ipv4mask 255.255.254.0 ||
+iseq  ${ipv4mask} 24 && set ipv4mask 255.255.255.0 ||
+iseq  ${ipv4mask} 25 && set ipv4mask 255.255.255.128 ||
+iseq  ${ipv4mask} 26 && set ipv4mask 255.255.255.192 ||
+iseq  ${ipv4mask} 27 && set ipv4mask 255.255.255.224 ||
+iseq  ${ipv4mask} 28 && set ipv4mask 255.255.255.240 ||
+iseq  ${ipv4mask} 29 && set ipv4mask 255.255.255.248 ||
+iseq  ${ipv4mask} 30 && set ipv4mask 255.255.255.252 ||
+iseq  ${ipv4mask} 31 && set ipv4mask 255.255.255.254 ||
+iseq  ${ipv4mask} 32 && set ipv4mask 255.255.255.255 ||
+# --- netmask -> cidr ---------------------------------------------------------
+clear ipv4cidr
+iseq  ${ipv4mask}   0.0.0.0       && set ipv4cidr  0 ||
+iseq  ${ipv4mask} 128.0.0.0       && set ipv4cidr  1 ||
+iseq  ${ipv4mask} 192.0.0.0       && set ipv4cidr  2 ||
+iseq  ${ipv4mask} 224.0.0.0       && set ipv4cidr  3 ||
+iseq  ${ipv4mask} 240.0.0.0       && set ipv4cidr  4 ||
+iseq  ${ipv4mask} 248.0.0.0       && set ipv4cidr  5 ||
+iseq  ${ipv4mask} 252.0.0.0       && set ipv4cidr  6 ||
+iseq  ${ipv4mask} 254.0.0.0       && set ipv4cidr  7 ||
+iseq  ${ipv4mask} 255.0.0.0       && set ipv4cidr  8 ||
+iseq  ${ipv4mask} 255.128.0.0     && set ipv4cidr  9 ||
+iseq  ${ipv4mask} 255.192.0.0     && set ipv4cidr 10 ||
+iseq  ${ipv4mask} 255.224.0.0     && set ipv4cidr 11 ||
+iseq  ${ipv4mask} 255.240.0.0     && set ipv4cidr 12 ||
+iseq  ${ipv4mask} 255.248.0.0     && set ipv4cidr 13 ||
+iseq  ${ipv4mask} 255.252.0.0     && set ipv4cidr 14 ||
+iseq  ${ipv4mask} 255.254.0.0     && set ipv4cidr 15 ||
+iseq  ${ipv4mask} 255.255.0.0     && set ipv4cidr 16 ||
+iseq  ${ipv4mask} 255.255.128.0   && set ipv4cidr 17 ||
+iseq  ${ipv4mask} 255.255.192.0   && set ipv4cidr 18 ||
+iseq  ${ipv4mask} 255.255.224.0   && set ipv4cidr 19 ||
+iseq  ${ipv4mask} 255.255.240.0   && set ipv4cidr 20 ||
+iseq  ${ipv4mask} 255.255.248.0   && set ipv4cidr 21 ||
+iseq  ${ipv4mask} 255.255.252.0   && set ipv4cidr 22 ||
+iseq  ${ipv4mask} 255.255.254.0   && set ipv4cidr 23 ||
+iseq  ${ipv4mask} 255.255.255.0   && set ipv4cidr 24 ||
+iseq  ${ipv4mask} 255.255.255.128 && set ipv4cidr 25 ||
+iseq  ${ipv4mask} 255.255.255.192 && set ipv4cidr 26 ||
+iseq  ${ipv4mask} 255.255.255.224 && set ipv4cidr 27 ||
+iseq  ${ipv4mask} 255.255.255.240 && set ipv4cidr 28 ||
+iseq  ${ipv4mask} 255.255.255.248 && set ipv4cidr 29 ||
+iseq  ${ipv4mask} 255.255.255.252 && set ipv4cidr 30 ||
+iseq  ${ipv4mask} 255.255.255.254 && set ipv4cidr 31 ||
+iseq  ${ipv4mask} 255.255.255.255 && set ipv4cidr 32 ||
+isset ${ipv4cidr} || goto reset
+# --- network parameters ------------------------------------------------------
+iseq ${distribution} debian       && set nworkopt netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr}/${ipv4cidr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr} ||
+iseq ${distribution} ubuntu       && set nworkopt ip=${ipv4addr}:${rootserv}:${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:static:${ipv4nsvr} ||
+iseq ${distribution} fedora       && set nworkopt ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr} ||
+iseq ${distribution} centos       && set nworkopt ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr} ||
+iseq ${distribution} almalinux    && set nworkopt ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr} ||
+iseq ${distribution} rockylinux   && set nworkopt ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr} ||
+iseq ${distribution} miraclelinux && set nworkopt ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr} ||
+iseq ${distribution} opensuse     && set nworkopt netsetup=dhcp hostname=${hostname} ifcfg=${ethrname}=${ipv4addr}/${ipv4cidr},${ipv4gway},${ipv4nsvr},workgroup ||
+# --- Interactive form block (other parameters) -------------------------------
+set autoinst ${parmauto}
+set language ${languopt}
+set otherprm ${otheropt}
+set networks ${nworkopt}
+set debugprm ${debugopt}
+form                                            Configure Autoinstall Options
+item autoinst                                   Auto install
+item language                                   Language
+item networks                                   Network
+item otherprm                                   Other options
+item debugprm                                   Debug options
+isset ${openmenu} && present ||
+isset ${autoinst} && clear debugprm ||
+# --- check block -------------------------------------------------------------
+:check
+menu Select the next action
+item --gap --                                   Hostname: ------> ${hostname}
+item --gap --                                   Interface: -----> ${ethrname}
+item --gap --                                   IPv4 address: --> ${ipv4addr}/${ipv4cidr}
+item --gap --                                   IPv4 netmask: --> ${ipv4mask}
+item --gap --                                   IPv4 gateway: --> ${ipv4gway}
+item --gap --                                   Names ervers: --> ${ipv4nsvr}
+item --gap --                                   Auto instal: ---> ${autoinst}
+item --gap --                                   Language: ------> ${language}
+item --gap --                                   Network: -------> ${networks}
+item --gap --                                   Other options: -> ${otherprm}
+item --gap --                                   Debug options: -> ${debugprm}
+item --gap --
+item --gap --                                   [ Return menu ]
+item -- return                                  - Return
+item --gap --                                   [ Action ]
+item -- booting                                 - OS booting
+item -- setting                                 - Set parameters
+choose --timeout ${menu-timeout} --default ${menu-default} selected && goto ${selected}
+goto check
+# --- booting block -----------------------------------------------------------
+:booting
+set options ${autoinst} ${language} ${networks} ${otherprm} ${debugprm}
+echo ${messages}
+echo Loading boot files ...
+kernel ${kernlopt} ${options} || goto error
+initrd ${inirdopt} || goto error
+boot || goto error
+exit
+
+# --- system control ----------------------------------------------------------
+:shell
+echo "Booting iPXE shell ..."
+shell
+goto menu
+
+:shutdown
+echo "System shutting down ..."
+poweroff
+exit
+
+:restart
+echo "System rebooting ..."
+reboot
+exit
+
+:return
+echo "Return ..."
+chain ${ipxebase}/menu/menu.ipxe
+goto menu
+
+:exit
+exit
+
+:error
+prompt Press any key to continue
+exit
+
+# --- eof ---------------------------------------------------------------------

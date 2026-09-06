@@ -1,22 +1,12 @@
-###############################################################################
-#
-# 	distribution.dat I/O
-#
-# 	developer   : J.Itou
-# 	release     : 2026/09/03
-#
-# 	history     :
-# 	   data    version    developer    point
-# 	---------- -------- -------------- ----------------------------------------
-# 	2026/09/03 000.0000 J.Itou         first release
-#
-###############################################################################
+"""distribution.dat I/O"""
 
 # --- Python library ----------------------------------------------------------
 import json
 from dataclasses import asdict, dataclass, fields
 from typing import Any
 
+# from packaging.version import InvalidVersion
+# from packaging.version import parse as parse_version
 # --- my library --------------------------------------------------------------
 from ..utils.my_colors import Color
 from ..utils.my_config import infosystem
@@ -28,6 +18,8 @@ from ..utils.my_string import eprint, spc_decode, spc_encode
 # -----------------------------------------------------------------------------
 @dataclass
 class DistributionData:
+    """distribution.dat data class"""
+
     version: str = ""
     name: str = ""
     version_id: str = ""
@@ -45,11 +37,18 @@ class DistributionData:
 
 
 class InfoDistribution:
-    def __init__(self, path: str | None = None):
+    """distribution.dat interface class"""
+
+    def __init__(self, src_path: str | None = None):
+        """Method for initializing the DistributionData class.
+
+        Args:
+            src_path (str | None, optional): Source path. Defaults to None.
+        """
         self._valid_fields = {f.name for f in fields(DistributionData)}
         self.data: list[DistributionData] = []
-        if path:
-            self.load(path)
+        if src_path:
+            self.load(src_path)
 
     def __getattr__(self, name: str) -> Any:
         if name in self._valid_fields:
@@ -61,13 +60,23 @@ class InfoDistribution:
         )
 
     def find(self, **kwargs) -> DistributionData | None:
+        """Data search in distribution.dat
+
+        Returns:
+            DistributionData | None: Search results for the key
+        """
         for item in self.data:
             if all(getattr(item, key, None) == value for key, value in kwargs.items()):
                 return item
         return None
 
-    def load(self, path: str) -> None:
-        with open(path, "r", encoding="utf-8") as f:
+    def load(self, src_path: str) -> None:
+        """Load file
+
+        Args:
+            src_path (str): Source path
+        """
+        with open(src_path, "r", encoding="utf-8") as f:
             raw_data = json.load(f)
         decoded_data = spc_decode(raw_data)
         self.data = [
@@ -75,31 +84,54 @@ class InfoDistribution:
             for item in decoded_data
         ]
 
-    def save(self, path: str):
+    def save(self, dst_path: str):
+        """Save file
+
+        Args:
+            dst_path (str): Destination path
+        """
         dict_list = [asdict(item) for item in self.data]
         encoded_data = spc_encode(dict_list)
-        with open(path, "w", encoding="utf-8") as f:
+        with open(dst_path, "w", encoding="utf-8") as f:
             json.dump(encoded_data, f, ensure_ascii=False, indent=4)
 
-    def markdown(self, path: str, title: str) -> None:
+    def markdown(self, dst_path: str, md_title: str) -> None:
+        """Generating Markdown
+
+        Args:
+            dst_path (str): Destination path
+            md_title (str): Markdown title
+        """
         dict_list = [asdict(item) for item in self.data]
-        list2markdown(path, title, dict_list)
+        list2markdown(dst_path, md_title, dict_list)
 
     def dump(self) -> None:
+        """Data dump output"""
         for line in self.data:
             text = f"{line!s:.{infosystem.columns}s}"
             eprint(f"{Color.yellow}{text}{Color.reset}")
 
-    def get_text2list(self, path: str) -> None:
-        list_data = get_text2list(path)
+    def get_text2list(self, src_path: str) -> None:
+        """Text file to list
+
+        Args:
+            src_path (str): Source path
+        """
+        list_data = get_text2list(src_path)
         decoded_data = spc_decode(list_data)
         self.data = [
             DistributionData(**item) if isinstance(item, dict) else item
             for item in decoded_data
         ]
 
-    def put_list2text(self, path: str, fmat: str) -> None:
-        put_list2text(path, [asdict(item) for item in self.data], fmat)
+    def put_list2text(self, dst_path: str, format_str: str) -> None:
+        """list to text file
+
+        Args:
+            dst_path (str): Destination path
+            format_str (str): Output format
+        """
+        put_list2text(dst_path, [asdict(item) for item in self.data], format_str)
 
 
 # --- eof ---------------------------------------------------------------------

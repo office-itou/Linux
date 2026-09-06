@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+"""Template"""
+
 # --- Python library ----------------------------------------------------------
 import os
 import sys
@@ -63,15 +65,9 @@ from common.utils.my_message import (
 # from common.utils.my_infodata             import Infodata, debug_info, get_infodata
 
 
-# -----------------------------------------------------------------------------
-# descript: initialize
-#   input :                  : unused
-#   output:                  : unused
-#   return:                  : unused
-#   global:                  : unused
-# -----------------------------------------------------------------------------
 @debug_logger
 def initialize():
+    """Initialize"""
     if infosystem.debug == True:
         message_info(get_caller_name(), "Debug mode on")
     if infosystem.debugout == True:
@@ -81,15 +77,9 @@ def initialize():
     # -------------------------------------------------------------------------
 
 
-# -----------------------------------------------------------------------------
-# descript: main
-#   input :                  : unused
-#   output: stdout           : output
-#   return: exit             : output
-#   global:                  : unused
-# -----------------------------------------------------------------------------
 @debug_logger
 def main():
+    """Main"""
     # --- check the executing user --------------------------------------------
     if os.geteuid() != 0:
         message_warn(

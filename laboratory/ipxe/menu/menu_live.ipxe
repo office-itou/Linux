@@ -1,0 +1,151 @@
+#!ipxe
+
+# --- Menu block --------------------------------------------------------------
+:menu
+menu Select the OS type you want to boot
+item --gap --                                   [ Return menu ]
+item -- return                                  - Return
+item --gap --                                   [ Current (supported) ]
+item -- debian-live-13-gnome                    - Debian 13 Desktop gnome
+item -- debian-live-testing-gnome               - Debian testing Desktop gnome
+item -- debian-live-13-cinnamon                 - Debian 13 Desktop cinnamon
+item -- debian-live-testing-cinnamon            - Debian testing Desktop cinnamon
+item -- ubuntu-desktop-24.04                    - Ubuntu 24.04 Desktop
+item -- ubuntu-desktop-25.10                    - Ubuntu 25.10 Desktop
+item -- ubuntu-desktop-26.04                    - Ubuntu 26.04 Desktop
+item -- ubuntu-desktop-26.10                    - Ubuntu 26.10 Desktop
+item -- almalinux-live-10                       - Alma Linux 10 Live
+choose --timeout ${menu-timeout} --default ${menu-default} selected && goto ${selected}
+goto menu
+
+:debian-live-13-gnome
+set messages Loading Debian 13 Desktop gnome ...
+set isospath ${srvrhttp}/isos/linux/debian/debian-live-13.6.0-amd64-gnome.iso
+set imgsdirs ${srvrhttp}/imgs/debian-live-13-gnome
+goto booting-debian
+
+:debian-live-testing-gnome
+set messages Loading Debian testing Desktop gnome ...
+set isospath ${srvrhttp}/isos/linux/debian/debian-live-testing-amd64-gnome.iso
+set imgsdirs ${srvrhttp}/imgs/debian-live-testing-gnome
+goto booting-debian
+
+:debian-live-13-cinnamon
+set messages Loading Debian 13 Desktop cinnamon ...
+set isospath ${srvrhttp}/isos/linux/debian/debian-live-13.6.0-amd64-cinnamon.iso
+set imgsdirs ${srvrhttp}/imgs/debian-live-13-cinnamon
+goto booting-debian
+
+:debian-live-testing-cinnamon
+set messages Loading Debian testing Desktop cinnamon ...
+set isospath ${srvrhttp}/isos/linux/debian/debian-live-testing-amd64-cinnamon.iso
+set imgsdirs ${srvrhttp}/imgs/debian-live-testing-cinnamon
+goto booting-debian
+
+:ubuntu-desktop-24.04
+set messages Loading Ubuntu 24.04 Desktop ...
+set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/ubuntu-desktop-24.04
+set imgsdirs ${srvrhttp}/imgs/ubuntu-desktop-24.04
+goto booting-ubuntu
+
+:ubuntu-desktop-25.10
+set messages Loading Ubuntu 25.10 Desktop ...
+set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/ubuntu-desktop-25.10
+set imgsdirs ${srvrhttp}/imgs/ubuntu-desktop-25.10
+goto booting-ubuntu
+
+:ubuntu-desktop-26.04
+set messages Loading Ubuntu 26.04 Desktop ...
+set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/ubuntu-desktop-26.04
+set imgsdirs ${srvrhttp}/imgs/ubuntu-desktop-26.04
+goto booting-ubuntu
+
+:ubuntu-desktop-26.10
+set messages Loading Ubuntu 26.10 Desktop ...
+set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/ubuntu-desktop-26.10
+set imgsdirs ${srvrhttp}/imgs/ubuntu-desktop-26.10
+goto booting-ubuntu
+
+:almalinux-live-10
+set messages Loading Alma Linux 10 Live ...
+set isosfile AlmaLinux-10-latest-x86_64-Live-GNOME.iso
+set imgsdirs ${srvrhttp}/imgs/almalinux-live-10
+set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/almalinux-live-10
+goto booting-fedora
+
+:booting-debian
+set autoinst boot=live
+set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
+set networks dhcp
+set otheropt root=/dev/ram0 fetch=${isospath} --- quiet vga=788
+set kernlopt ${imgsdirs}/live/vmlinuz
+set inirdopt ${imgsdirs}/live/initrd.img
+goto booting
+
+:booting-ubuntu
+set autoinst boot=casper
+set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
+set networks ip=dhcp
+set otheropt netboot=nfs nfsroot=${exptdirs} network-config=disabled --- quiet vga=788
+set kernlopt ${imgsdirs}/casper/vmlinuz
+set inirdopt ${imgsdirs}/casper/initrd
+goto booting
+
+:booting-fedora
+set autoinst 
+set language 
+set networks ip=dhcp
+set otheropt root=live:nfs:${exptdirs}/LiveOS/squashfs.img rd.live.image rd.live.overlay.overlayfs=1 --- quiet vga=788
+set kernlopt ${imgsdirs}/images/pxeboot/vmlinuz
+set inirdopt ${imgsdirs}/images/pxeboot/initrd.img
+goto booting
+
+:booting
+prompt --key e --timeout ${optn-timeout} Press 'e' to open edit menu ... && set openmenu 1 ||
+set consoles dummy_console=tty0 dummy_console=ttyS0,9600
+set sulogins SYSTEMD_SULOGIN_FORCE=1 dummy_init=/sbin/sulogin
+set debugopt ${consoles} ${sulogins}
+form                                    Configure Autoinstall Options
+item autoinst                           Auto install
+item language                           Language
+item networks                           Network
+item otheropt                           Other options
+item debugopt                           Debug options
+isset ${openmenu} && present ||
+set options ${autoinst} ${language} ${networks} ${otheropt} ${debugopt}
+echo ${messages}
+echo Loading boot files ...
+kernel ${kernlopt} ${options} || goto error
+initrd ${inirdopt} || goto error
+boot || goto error
+exit
+
+# --- system control ----------------------------------------------------------
+:shell
+echo "Booting iPXE shell ..."
+shell
+goto menu
+
+:shutdown
+echo "System shutting down ..."
+poweroff
+exit
+
+:restart
+echo "System rebooting ..."
+reboot
+exit
+
+:return
+echo "Return ..."
+chain ${ipxebase}/menu/menu.ipxe
+goto menu
+
+:exit
+exit
+
+:error
+prompt Press any key to continue
+exit
+
+# --- eof ---------------------------------------------------------------------

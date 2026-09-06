@@ -1,0 +1,95 @@
+#!ipxe
+
+# --- Menu block --------------------------------------------------------------
+# https://en.opensuse.org/openSUSE:Roadmap
+set edition server
+:menu
+menu Select the OS type you want to boot
+item --gap --                                   [ Return menu ]
+item -- return                                  - Return
+item --gap --                                   [ Edition ]
+item -- server                                  - Server
+item -- desktop                                 - Desktop
+item --gap --                                   [ Development ]
+item -- 16.1                                    - openSUSE ${edition} 16.1
+item --gap --                                   [ Current (supported) ]
+item -- 16.0                                    - openSUSE ${edition} 16.0
+#item --gap --                                  [ End of life (unsupported) ]
+choose --default ${selected} selected || goto menu
+iseq ${selected} return  && goto return  ||
+iseq ${selected} server  && goto edition ||
+iseq ${selected} desktop && goto edition ||
+isset ${selected} && goto opensuse-leap-${selected} ||
+goto menu
+
+:edition
+iseq ${selected} server  && set edition server ||
+iseq ${selected} desktop && set edition desktop ||
+goto menu
+
+:opensuse-leap-16.1
+:opensuse-leap-16.0
+clear vers
+set vers ${selected}
+isset ${vers} || goto menu
+iseq ${edition} server  && goto opensuse-leap-server ||
+iseq ${edition} desktop && goto opensuse-leap-desktop ||
+goto menu
+
+:opensuse-leap-server
+set messages Loading openSUSE ${vers} Server ...
+set parmauto live.password=install inst.auto=${srvrhttp}/conf/agama/autoinst_leap-${vers}.json
+set imgsdirs ${srvrhttp}/imgs/opensuse-leap-netinst-${vers}
+set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/opensuse-leap-netinst-${vers}
+goto opensuse-leap-common
+
+:opensuse-leap-desktop
+set messages Loading openSUSE ${vers} Desktop ...
+set parmauto live.password=install inst.auto=${srvrhttp}/conf/agama/autoinst_leap-${vers}_desktop.json
+set imgsdirs ${srvrhttp}/imgs/opensuse-leap-netinst-${vers}
+set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/opensuse-leap-netinst-${vers}
+goto opensuse-leap-common
+
+:opensuse-leap-common
+set kernlopt ${imgsdirs}/boot/x86_64/loader/linux
+set inirdopt ${imgsdirs}/boot/x86_64/loader/initrd
+set hnameopt sv-opensuse.workgroup
+set enameopt ens160
+set languopt language=ja_JP
+set otheropt root=live:${srvrhttp}/isos/linux/opensuse/Leap-${vers}-online-installer-x86_64.install.iso --- quiet vga=788
+set consoles dummy_console=tty0 dummy_console=ttyS0,9600
+set sulogins SYSTEMD_SULOGIN_FORCE=1 dummy_init=/sbin/sulogin
+set debugopt ${consoles} ${sulogins}
+echo "Loading menu/booting.ipxe ..."
+chain --autofree --replace ${ipxebase}/menu/booting.ipxe && exit ||
+goto menu
+
+# --- system control ----------------------------------------------------------
+:shell
+echo "Booting iPXE shell ..."
+shell
+goto menu
+
+:shutdown
+echo "System shutting down ..."
+poweroff
+exit
+
+:restart
+echo "System rebooting ..."
+reboot
+exit
+
+:return
+echo "Return ..."
+chain ${ipxebase}/menu/menu.ipxe
+goto menu
+
+:exit
+exit
+
+:error
+prompt Press any key to continue
+exit
+
+# --- eof ---------------------------------------------------------------------

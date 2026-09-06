@@ -99,7 +99,7 @@ class InfoConfiguration:
             data (list): Source
 
         Returns:
-            list: Result
+            list: Conversion data
         """
         dict_list = [asdict(item) for item in self.data]
         return conv2variable(dict_list, data)

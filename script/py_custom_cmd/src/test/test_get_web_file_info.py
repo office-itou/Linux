@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+"""Test web/file information"""
+
 # --- Python library ----------------------------------------------------------
 import asyncio
 
@@ -44,9 +46,9 @@ sys.path.append(str(libsdir))
 
 from common.shared.my_common_cfg import InfoConfiguration
 from common.shared.my_distribution_dat import InfoDistribution
+from common.shared.my_media_dat import InfoMedia
 
 # from common.utils.my_markdown             import list2markdown, spc_encode4md, spc_decode4md
-from common.shared.my_media_dat import InfoMedia
 from common.shared.my_shared import Text_fmat
 from common.utils.my_argument import Argument
 from common.utils.my_colors import Color
@@ -69,15 +71,13 @@ from common.utils.my_message import (
 # from common.utils.my_infodata              import InfoData
 
 
-# -----------------------------------------------------------------------------
-# descript: initialize
-#   input :                  : unused
-#   output:                  : unused
-#   return:                  : unused
-#   global:                  : unused
-# -----------------------------------------------------------------------------
 @debug_logger
-def initialize():
+def initialize() -> tuple[InfoConfiguration, InfoDistribution, InfoMedia]:
+    """Initialize
+
+    Returns:
+        tuple[InfoConfiguration, InfoDistribution, InfoMedia]: info_conf, info_dist, info_mdia
+    """
     if infosystem.debug == True:
         message_info(get_caller_name(), "Debug mode on")
     if infosystem.debugout == True:
@@ -92,36 +92,49 @@ def initialize():
     return info_conf, info_dist, info_mdia
 
 
-# -----------------------------------------------------------------------------
 @debug_logger
 def generate_md(
-    dirs: str,
+    dst_dir: str,
     info_conf: InfoConfiguration,
     info_dist: InfoDistribution,
     info_mdia: InfoMedia,
 ):
+    """Generate markdown
+
+    Args:
+        dst_dir (str): Destination path
+        info_conf (InfoConfiguration): common.cfg interface class
+        info_dist (InfoDistribution): distribution.dat interface class
+        info_mdia (InfoMedia): media.dat interface class
+    """
     path_conf = info_conf.find(key="PATH_CONF")
     path_dist = info_conf.find(key="PATH_DIST")
     path_mdia = info_conf.find(key="PATH_MDIA")
     info_conf.markdown(
-        Path(dirs) / "Readme_Configuration.md",
+        Path(dst_dir) / "Readme_Configuration.md",
         f"Configuration data({Path(path_conf.value).name})",
     )
     info_dist.markdown(
-        Path(dirs) / "Readme_Distribution.md",
+        Path(dst_dir) / "Readme_Distribution.md",
         f"Distribution data({Path(path_dist.value).name})",
     )
     info_mdia.markdown(
-        Path(dirs) / "Readme_Media.md",
+        Path(dst_dir) / "Readme_Media.md",
         f"Media data({Path(path_mdia.value).name})",
     )
 
 
-# -----------------------------------------------------------------------------
 @debug_logger
 def data_save(
     info_conf: InfoConfiguration, info_dist: InfoDistribution, info_mdia: InfoMedia
 ):
+    """Data save
+
+    Args:
+        info_conf (InfoConfiguration): common.cfg interface class
+        info_dist (InfoDistribution): distribution.dat interface class
+        info_mdia (InfoMedia): media.dat interface class
+    """
     path_dist = info_conf.find(key="PATH_DIST")
     path_mdia = info_conf.find(key="PATH_MDIA")
     # -------------------------------------------------------------------------
@@ -140,7 +153,17 @@ def data_save(
 @debug_logger
 async def get_web_file_info(
     info_conf: InfoConfiguration, info_dist: InfoDistribution, info_mdia: InfoMedia
-):
+) -> InfoMedia:
+    """Get web/file information data
+
+    Args:
+        info_conf (InfoConfiguration): common.cfg interface class
+        info_dist (InfoDistribution): distribution.dat interface class
+        info_mdia (InfoMedia): media.dat interface class
+
+    Returns:
+        InfoMedia: media.dat interface class
+    """
     info_web = InfoWeb()
     info_file = InfoFile()
     timeout = ClientTimeout(total=60, sock_connect=10, sock_read=30)
@@ -186,6 +209,7 @@ async def get_web_file_info(
 # -----------------------------------------------------------------------------
 @debug_logger
 async def main():
+    """Main"""
     # --- check the executing user --------------------------------------------
     if os.geteuid() != 0:
         print(

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+"""Test text output"""
+
 # --- Python library ----------------------------------------------------------
 import os
 import sys
@@ -35,30 +37,18 @@ from common.utils.my_string import eprint
 # from common.utils.my_infodata             import Infodata, debug_info, get_infodata
 
 
-# -----------------------------------------------------------------------------
-# descript: initialize
-#   input :                  : unused
-#   output:                  : unused
-#   return:                  : unused
-#   global:                  : unused
-# -----------------------------------------------------------------------------
 @debug_logger
 def initialize():
+    """Initialize"""
     if infosystem.debug == True:
         message_info(get_caller_name(), "Debug mode on")
     if infosystem.debugout == True:
         message_info(get_caller_name(), "Debugout mode on")
 
 
-# -----------------------------------------------------------------------------
-# descript: test
-#   input :                  : unused
-#   output:                  : unused
-#   return:                  : unused
-#   global:                  : unused
-# -----------------------------------------------------------------------------
 @debug_logger
 def test():
+    """Test"""
     strhalf = "1234567890123456798012345678901234567980"
     strwide = "１２３４５６７８９０１２３４５６７８９０"
     strmixd = f"12345678901234567980{Color.underline}１２３４５６７８９０"
@@ -75,15 +65,9 @@ def test():
         eprint(text, infosystem.columns)
 
 
-# -----------------------------------------------------------------------------
-# descript: main
-#   input :                  : unused
-#   output: stdout           : output
-#   return: exit             : output
-#   global:                  : unused
-# -----------------------------------------------------------------------------
 @debug_logger
 def main():
+    """Main"""
     # --- check the executing user --------------------------------------------
     if os.geteuid() != 0:
         print(
