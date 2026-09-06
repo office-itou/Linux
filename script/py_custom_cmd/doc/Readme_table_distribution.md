@@ -2,7 +2,7 @@
 
 ## Distribution data(distribution.dat)
 
-* <details><summary>['debian']</summary>
+* <details><summary>debian</summary>
 
   |   version    | name |version_id|code_name|life| release  | support  |long_term |rhel|kerne|     note      |                           wallpaper                            |create_flag|sort_flag|
   |:-------------|:-----|:---------|:--------|:---|:---------|:---------|:---------|:---|:----|:--------------|:---------------------------------------------------------------|:----------|:--------|
@@ -31,7 +31,7 @@
 
   </details>
 
-* <details><summary>['ubuntu']</summary>
+* <details><summary>ubuntu</summary>
 
   |  version   | name |version_id|    code_name    |life| release  | support  |long_term |rhel|   kerne    |note|                  wallpaper                  |create_flag|sort_flag|
   |:-----------|:-----|:---------|:----------------|:---|:---------|:---------|:---------|:---|:-----------|:---|:--------------------------------------------|:----------|:--------|
@@ -83,7 +83,7 @@
 
   </details>
 
-* <details><summary>['fedora']</summary>
+* <details><summary>fedora</summary>
 
   | version | name |version_id|code_name|life| release  | support  |long_term|rhel|kerne|note|wallpaper|create_flag|sort_flag|
   |:--------|:-----|:---------|:--------|:---|:---------|:---------|:--------|:---|:----|:---|:--------|:----------|:--------|
@@ -110,7 +110,7 @@
 
   </details>
 
-* <details><summary>['centos']</summary>
+* <details><summary>centos</summary>
 
   |    version     |    name     |version_id|code_name|life| release  | support  |long_term|   rhel   |   kerne   |note|wallpaper|create_flag|sort_flag|
   |:---------------|:------------|:---------|:--------|:---|:---------|:---------|:--------|:---------|:----------|:---|:--------|:----------|:--------|
@@ -132,7 +132,7 @@
 
   </details>
 
-* <details><summary>['almalinux']</summary>
+* <details><summary>almalinux</summary>
 
   |   version    |  name   |version_id|     code_name     |life| release  |support|long_term|   rhel   |     kerne     |note|               wallpaper                |create_flag|sort_flag|
   |:-------------|:--------|:---------|:------------------|:---|:---------|:------|:--------|:---------|:--------------|:---|:---------------------------------------|:----------|:--------|
@@ -159,7 +159,7 @@
 
   </details>
 
-* <details><summary>['rockylinux']</summary>
+* <details><summary>rockylinux</summary>
 
   |    version    |   name    |version_id|  code_name   |life| release  |support|long_term|   rhel   |     kerne     |note|wallpaper|create_flag|sort_flag|
   |:--------------|:----------|:---------|:-------------|:---|:---------|:------|:--------|:---------|:--------------|:---|:--------|:----------|:--------|
@@ -186,7 +186,7 @@
 
   </details>
 
-* <details><summary>['miraclelinux']</summary>
+* <details><summary>miraclelinux</summary>
 
   |     version     |    name     |version_id|code_name|life| release  |support|long_term|   rhel   |        kerne        |note|wallpaper|create_flag|sort_flag|
   |:----------------|:------------|:---------|:--------|:---|:---------|:------|:--------|:---------|:--------------------|:---|:--------|:----------|:--------|
@@ -202,7 +202,7 @@
 
   </details>
 
-* <details><summary>['opensuse']</summary>
+* <details><summary>opensuse</summary>
 
   |      version      |  name  |version_id|code_name|life| release  | support  |long_term|rhel| kerne |note|wallpaper|create_flag|sort_flag|
   |:------------------|:-------|:---------|:--------|:---|:---------|:---------|:--------|:---|:------|:---|:--------|:----------|:--------|
@@ -219,7 +219,7 @@
 
   </details>
 
-* <details><summary>['windows']</summary>
+* <details><summary>windows</summary>
 
   |    version    | name  |version_id|code_name|life| release  | support  |long_term|rhel|kerne|note|wallpaper|create_flag|sort_flag|
   |:--------------|:------|:---------|:--------|:---|:---------|:---------|:--------|:---|:----|:---|:--------|:----------|:--------|
@@ -230,7 +230,7 @@
 
   </details>
 
-* <details><summary>['memtest86plus']</summary>
+* <details><summary>memtest86plus</summary>
 
   |     version      |   name   |version_id|code_name|life| release  | support  |long_term|rhel|kerne|note|wallpaper|create_flag|sort_flag|
   |:-----------------|:---------|:---------|:--------|:---|:---------|:---------|:--------|:---|:----|:---|:--------|:----------|:--------|
@@ -240,7 +240,7 @@
 
   </details>
 
-* <details><summary>['winpe']</summary>
+* <details><summary>winpe</summary>
 
   | version |name |version_id|code_name|life| release  | support  |long_term|rhel|kerne|note|wallpaper|create_flag|sort_flag|
   |:--------|:----|:---------|:--------|:---|:---------|:---------|:--------|:---|:----|:---|:--------|:----------|:--------|
@@ -249,7 +249,7 @@
 
   </details>
 
-* <details><summary>['ati2020']</summary>
+* <details><summary>ati2020</summary>
 
   | version  | name  |version_id|code_name|life| release  | support  |long_term|rhel|kerne|note|wallpaper|create_flag|sort_flag|
   |:---------|:------|:---------|:--------|:---|:---------|:---------|:--------|:---|:----|:---|:--------|:----------|:--------|
