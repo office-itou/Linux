@@ -1,5 +1,4 @@
-filename = "autoexec.ipxe"
-script = r"""#!ipxe
+#!ipxe
 
 # --- Configure graphical console ---------------------------------------------
 
@@ -23,7 +22,7 @@ ifconf --configurator ipv6 ||
 
 # --- Set the IP address of the PXE boot server -------------------------------
 clear srvraddr
-isset ${66} && set srvraddr ${66} || set srvraddr :_SRVR_ADDR_:
+isset ${66} && set srvraddr ${66} || set srvraddr 192.168.1.11
 
 # --- Set the parameters. -----------------------------------------------------
 set srvrhttp http://${srvraddr}
@@ -38,4 +37,32 @@ isset ${menu-default} || set menu-default exit
 # --- chain -------------------------------------------------------------------
 chain ${ipxebase}/menu/menu.ipxe
 
-"""
+# --- system control ----------------------------------------------------------
+:shell
+echo "Booting iPXE shell ..."
+shell
+goto menu
+
+:shutdown
+echo "System shutting down ..."
+poweroff
+exit
+
+:restart
+echo "System rebooting ..."
+reboot
+exit
+
+:return
+echo "Return ..."
+chain ${ipxebase}/menu/menu.ipxe
+goto menu
+
+:exit
+exit
+
+:error
+prompt Press any key to continue
+exit
+
+# --- eof ---------------------------------------------------------------------

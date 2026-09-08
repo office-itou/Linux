@@ -7,13 +7,13 @@ import os
 import re
 import sys
 import time
-from dataclasses import asdict
 from pathlib import Path
 
 # from aiohttp import ClientError, ClientTimeout
 # from bs4 import BeautifulSoup
 # from dataclasses import dataclass
 # from dataclasses import dataclass, asdict
+# from dataclasses import asdict
 # from datetime import datetime
 # from datetime import datetime, timedelta
 # from datetime import datetime, timezone
@@ -31,6 +31,7 @@ from pathlib import Path
 # import re
 # import shutil
 # import subprocess
+# import textwrap
 # import unicodedata
 # import __main__
 # --- my library --------------------------------------------------------------
@@ -39,17 +40,23 @@ from pathlib import Path
 # libsdir = Path(homedir) / "linux/script/py_custom_cmd/src"
 # if str(libsdir) not in sys.path:
 #    sys.path.append(str(libsdir))
-from common.shared.my_common_cfg import InfoConfiguration
-from common.shared.my_distribution_dat import InfoDistribution
+from common.shared.my_common_cfg import (
+    InfoConfiguration,
+)
+from common.shared.my_distribution_dat import (
+    InfoDistribution,
+    sort_distribution_data,
+    sort_distribution_name,
+)
 from common.shared.my_media_dat import InfoMedia
 from common.utils.my_argument import Argument
 from common.utils.my_colors import Color
 from common.utils.my_config import infosystem
 from common.utils.my_debug import debug_logger
 from common.utils.my_fileio import file_backup
-from common.utils.my_markdown import list2markdown
 from common.utils.my_message import (
     get_caller_name,
+    message_alert,
     message_elapsed,
     message_end,
     message_info,
@@ -90,97 +97,105 @@ def initialize() -> tuple[InfoConfiguration, InfoDistribution, InfoMedia]:
     return info_conf, info_dist, info_mdia
 
 
-@debug_logger
-def put_menufile(
-    src_path: str, dst_path: str, info_conf: InfoConfiguration, pattern: re.Pattern
-) -> None:
-    """Convert the source file and save it to the destination file.
-
-    Args:
-        src_path (str): Source path
-        dst_path (str): Destination path
-        info_conf (InfoConfiguration): common.cfg interface class
-        pattern (re.Pattern): re.Pattern
-    """
-    with open(src_path, "r", encoding="utf-8") as f:
-        content = f.read()
-        conv = pattern.sub(lambda m: info_conf.find(key=m.group(1)).value, content)
+def generate_ipxe_menu_file(
+    src_path: Path,
+    dst_path: Path,
+    info_conf: InfoConfiguration,
+    info_dist: InfoDistribution,
+):
+    target_distribution = re.sub(r"^[^_]+_([^.]+)\.ipxe", r"\1", src_path.name)
+    if target_distribution == "windows":
+        query_version = r"^(windows-|winpe-|ati[0-9]{4}|memtest86plus-).+$"
+    else:
+        query_version = rf"^{target_distribution}-.+$"
+    queries = [{"version": query_version}, {"life": r"^(?!EOL).*$"}]
+    find_results = info_dist.findregexp(queries)
+    sort_results = sort_distribution_data(find_results, "", reverse=True)
+    # def sort_distribution_data(data: DistributionData, distribution: str = "", reverse: bool = False) -> list[DistributionData]:
+    # -------------------------------------------------------------------------
+    pattern = r":_([A-Z0-9_]+)_:"
+    match = re.compile(pattern)
+    try:
+        with open(src_path, "r", encoding="utf-8") as f:
+            conv_dist = match.sub(
+                lambda m: str(info_conf.find(key=m.group(1)).value), f.read()
+            )
+    except Exception as e:  # noqa: BLE001
+        message_alert(get_caller_name(), f"Fatal error: {e}")
+        raise SystemExit
+    # -------------------------------------------------------------------------
+    item_width = 47
+    item_data = []
+    for read_line in conv_dist.splitlines():
+        if r"<items>" in read_line:  # --- items -------------------------------
+            for data_dist in sort_results:
+                goto_name = re.sub(
+                    r" ", "_", f"{data_dist.name}-{data_dist.version_id}"
+                )
+                item_text = f"{f'item -- {goto_name}':<{item_width}} - {data_dist.name} ${{edition}} {data_dist.version_id}"
+                if data_dist.code_name != "-":
+                    item_text += rf" ({data_dist.code_name})"
+                item_data.append(item_text)
+        elif r"<goto selection>" in read_line:
+            for data_dist in sort_results:
+                goto_name = re.sub(
+                    r" ", "_", f"{data_dist.name}-{data_dist.version_id}"
+                )
+                item_text = rf"{f'iseq ${{selected}} {goto_name}':<{item_width}} && goto {data_dist.name}-{data_dist.version_id}"
+                item_data.append(item_text)
+        elif r"<goto target>" in read_line:
+            for data_dist in sort_results:
+                goto_name = re.sub(
+                    r" ", "_", f"{data_dist.name}-{data_dist.version_id}"
+                )
+                item_text = rf":{goto_name}"
+                item_data.append(item_text)
+        elif r"<code selection>" in read_line:
+            for data_dist in sort_results:
+                goto_name = re.sub(
+                    r" ", "_", f"{data_dist.name}-{data_dist.version_id}"
+                )
+                item_text = rf"{f'iseq ${{selected}} {goto_name}':<{item_width}} && set vers {data_dist.version_id} ||"
+                item_data.append(item_text)
+        else:
+            item_data.append(read_line)
+    # -------------------------------------------------------------------------
+    try:
         file_backup(dst_path)
-        with open(dst_path, "w", encoding="utf-8") as f:
-            f.write(conv)
+        dst_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(dst_path, "w", encoding="utf-8", newline="\n") as f:
+            f.write("\n".join(item_data) + "\n")
+            f.flush()
+            os.fsync(f.fileno())
+    except OSError as e:
+        message_alert(get_caller_name(), f"Fatal error: {e}")
+        raise SystemExit
+    except Exception as e:  # noqa: BLE001
+        message_alert(get_caller_name(), f"Fatal error: {e}")
+        raise SystemExit
+    if not dst_path.exists:
+        message_alert(get_caller_name(), f"failed: {dst_path}")
 
 
 @debug_logger
 def generate_ipxe_menu(
     info_conf: InfoConfiguration, info_dist: InfoDistribution, info_mdia: InfoMedia
 ) -> None:
-    """Generate ipxe menu
-
-    Args:
-        info_conf (InfoConfiguration): common.cfg interface class
-        info_dist (InfoDistribution): distribution.dat interface class
-        info_mdia (InfoMedia): media.dat interface class
-    """
-    path_template = Path(str(info_conf.find(key="DIRS_TMPL").value))
-    path_template_ipxe = path_template / "ipxe"
+    # -------------------------------------------------------------------------
     path_autexec = Path(str(info_conf.find(key="PATH_IPXE").value))
-    dir_ipxe = path_autexec.parent
-    template_files = [
-        file for file in path_template_ipxe.glob("*.ipxe") if file.is_file()
-    ]
-
-    pattern_value = r":_([A-Z0-9_]+)_:"
-    match_value = re.compile(pattern_value)
-    pattern_file = r"^[^_]+_([^.]+)\.ipxe"
-    match_file = re.compile(pattern_file)
-
-    for file in template_files:
-        match file.name:
-            case path_autexec.name:
-                dst_path = Path(dir_ipxe) / f"{file.name}.temp"
-                put_menufile(file, dst_path, info_conf, match_value)
-            case "menu.ipxe":
-                pass
-            case _ if match_file.match(file.name):
-                distribution = match_file.sub(r"\1", file.name)
-                print(f"distribution:{distribution}")
-                list_item = info_dist.sort(distribution, reverse=True)
-                print(f"list_item:{list_item}")
-            case _:
-                dst_path = Path(dir_ipxe) / "menu" / f"{file.name}.temp"
-                put_menufile(file, dst_path, info_conf, match_value)
-
-
-# autoexec.ipxe
-# booting.ipxe
-# menu.ipxe
-# menu_almalinux.ipxe
-# menu_centos.ipxe
-# menu_custom_live.ipxe
-# menu_debian.ipxe
-# menu_fedora.ipxe
-# menu_live.ipxe
-# menu_miraclelinux.ipxe
-# menu_opensuse.ipxe
-# menu_rockylinux.ipxe
-# menu_ubuntu.ipxe
-# menu_windows.ipxe
-
-
-# autoexec.ipxe
-# menu/booting.ipxe
-# menu/menu.ipxe
-# menu/menu_almalinux.ipxe
-# menu/menu_centos.ipxe
-# menu/menu_custom_live.ipxe
-# menu/menu_debian.ipxe
-# menu/menu_fedora.ipxe
-# menu/menu_live.ipxe
-# menu/menu_miraclelinux.ipxe
-# menu/menu_opensuse.ipxe
-# menu/menu_rockylinux.ipxe
-# menu/menu_ubuntu.ipxe
-# menu/menu_windows.ipxe
+    path_ipxe_dir = path_autexec.parent
+    path_tplt_ipxe_dir = Path(str(info_conf.find(key="DIRS_TMPL").value)) / "ipxe"
+    list_tplt_files = sort_distribution_name(
+        [file for file in path_tplt_ipxe_dir.glob(r"*.ipxe") if file.is_file()]
+    )
+    # -------------------------------------------------------------------------
+    for src_path in list_tplt_files:
+        if src_path.name == path_autexec.name:
+            dst_path = path_ipxe_dir / src_path.name
+        else:
+            dst_path = path_ipxe_dir / "menu" / src_path.name
+        message_info(get_caller_name(), str(dst_path))
+        generate_ipxe_menu_file(src_path, dst_path, info_conf, info_dist)
 
 
 @debug_logger

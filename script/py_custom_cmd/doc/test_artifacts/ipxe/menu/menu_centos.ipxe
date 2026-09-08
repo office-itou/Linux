@@ -1,5 +1,4 @@
-filename = "menu_centos.ipxe"
-script = r"""#!ipxe
+#!ipxe
 
 # --- Menu block --------------------------------------------------------------
 # https://en.wikipedia.org/wiki/CentOS_Stream
@@ -11,32 +10,24 @@ item -- return                                  - Return
 item --gap --                                   [ Edition ]
 item -- server                                  - Server
 item -- desktop                                 - Desktop
-#item --gap --                                  [ Development ]
-item --gap --                                   [ Current (supported) ]
-item -- 10                                      - CentOS Stream ${edition} 10
-item --  9                                      - CentOS Stream ${edition} 9
-item --  8                                      - CentOS Stream ${edition} 8
-#item --gap --                                  [ End of life (unsupported) ]
-choose --default ${selected} selected || goto menu
-iseq ${selected} return  && goto return  ||
-iseq ${selected} server  && goto edition ||
-iseq ${selected} desktop && goto edition ||
-isset ${selected} && goto centos-${selected} ||
+item -- CentOS_Stream-10                        - CentOS Stream ${edition} 10 (Coughlan)
+item -- CentOS_Stream-9                         - CentOS Stream ${edition} 9
+choose --default ${selected} selected           || goto menu
+iseq ${selected} return                         && goto return         ||
+iseq ${selected} server                         && set edition server  ||
+iseq ${selected} desktop                        && set edition desktop ||
+iseq ${selected} CentOS_Stream-10               && goto CentOS Stream-10
+iseq ${selected} CentOS_Stream-9                && goto CentOS Stream-9
 goto menu
 
-:edition
-iseq ${selected} server  && set edition server ||
-iseq ${selected} desktop && set edition desktop ||
-goto menu
-
-:centos-10
-:centos-9
-:centos-8
+:CentOS_Stream-10
+:CentOS_Stream-9
 clear vers
-set vers ${selected}
-isset ${vers} || goto menu
-iseq ${edition} server  && goto centos-server ||
-iseq ${edition} desktop && goto centos-desktop ||
+iseq ${selected} CentOS_Stream-10               && set vers 10 ||
+iseq ${selected} CentOS_Stream-9                && set vers 9 ||
+isset ${vers}                                   || goto menu
+iseq ${edition} server                          && goto centos-server  ||
+iseq ${edition} desktop                         && goto centos-desktop ||
 goto menu
 
 :centos-server
@@ -67,4 +58,32 @@ echo "Loading menu/booting.ipxe ..."
 chain --autofree --replace ${ipxebase}/menu/booting.ipxe && exit ||
 goto menu
 
-"""
+# --- system control ----------------------------------------------------------
+:shell
+echo "Booting iPXE shell ..."
+shell
+goto menu
+
+:shutdown
+echo "System shutting down ..."
+poweroff
+exit
+
+:restart
+echo "System rebooting ..."
+reboot
+exit
+
+:return
+echo "Return ..."
+chain ${ipxebase}/menu/menu.ipxe
+goto menu
+
+:exit
+exit
+
+:error
+prompt Press any key to continue
+exit
+
+# --- eof ---------------------------------------------------------------------

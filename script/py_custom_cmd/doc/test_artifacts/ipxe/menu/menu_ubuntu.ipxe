@@ -10,17 +10,49 @@ item -- return                                  - Return
 item --gap --                                   [ Edition ]
 item -- server                                  - Server
 item -- desktop                                 - Desktop
-# <items>
+item -- Ubuntu-26.10                            - Ubuntu ${edition} 26.10 (Stonking Stingray)
+item -- Ubuntu-26.04                            - Ubuntu ${edition} 26.04 (Resolute Raccoon)
+item -- Ubuntu-24.04                            - Ubuntu ${edition} 24.04 (Noble Numbat)
+item -- Ubuntu-22.04                            - Ubuntu ${edition} 22.04 (Jammy Jellyfish)
+item -- Ubuntu-20.04                            - Ubuntu ${edition} 20.04 (Focal Fossa)
+item -- Ubuntu-18.04                            - Ubuntu ${edition} 18.04 (Bionic Beaver)
+item -- Ubuntu-16.04                            - Ubuntu ${edition} 16.04 (Xenial Xerus)
+item -- Ubuntu-14.04                            - Ubuntu ${edition} 14.04 (Trusty Tahr)
+item -- Ubuntu-12.04                            - Ubuntu ${edition} 12.04 (Precise Pangolin)
 choose --default ${selected} selected           || goto menu
 iseq ${selected} return                         && goto return         ||
 iseq ${selected} server                         && set edition server  ||
 iseq ${selected} desktop                        && set edition desktop ||
-# <goto selection>
+iseq ${selected} Ubuntu-26.10                   && goto Ubuntu-26.10
+iseq ${selected} Ubuntu-26.04                   && goto Ubuntu-26.04
+iseq ${selected} Ubuntu-24.04                   && goto Ubuntu-24.04
+iseq ${selected} Ubuntu-22.04                   && goto Ubuntu-22.04
+iseq ${selected} Ubuntu-20.04                   && goto Ubuntu-20.04
+iseq ${selected} Ubuntu-18.04                   && goto Ubuntu-18.04
+iseq ${selected} Ubuntu-16.04                   && goto Ubuntu-16.04
+iseq ${selected} Ubuntu-14.04                   && goto Ubuntu-14.04
+iseq ${selected} Ubuntu-12.04                   && goto Ubuntu-12.04
 goto menu
 
-# <goto target>
+:Ubuntu-26.10
+:Ubuntu-26.04
+:Ubuntu-24.04
+:Ubuntu-22.04
+:Ubuntu-20.04
+:Ubuntu-18.04
+:Ubuntu-16.04
+:Ubuntu-14.04
+:Ubuntu-12.04
 clear vers
-# <code selection>
+iseq ${selected} Ubuntu-26.10                   && set vers 26.10 ||
+iseq ${selected} Ubuntu-26.04                   && set vers 26.04 ||
+iseq ${selected} Ubuntu-24.04                   && set vers 24.04 ||
+iseq ${selected} Ubuntu-22.04                   && set vers 22.04 ||
+iseq ${selected} Ubuntu-20.04                   && set vers 20.04 ||
+iseq ${selected} Ubuntu-18.04                   && set vers 18.04 ||
+iseq ${selected} Ubuntu-16.04                   && set vers 16.04 ||
+iseq ${selected} Ubuntu-14.04                   && set vers 14.04 ||
+iseq ${selected} Ubuntu-12.04                   && set vers 12.04 ||
 isset ${vers}                                   || goto menu
 iseq ${edition} server                          && goto ubuntu-server  ||
 iseq ${edition} desktop                         && goto ubuntu-desktop ||

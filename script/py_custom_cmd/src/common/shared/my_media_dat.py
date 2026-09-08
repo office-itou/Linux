@@ -75,16 +75,26 @@ class InfoMedia:
             f"'{self.__class__.__name__}' object has no attribute '{name}'"
         )
 
-    def find(self, **kwargs) -> MediaData | None:
+    def finds(self, **kwargs) -> list[MediaData] | None:
         """Data search in media.dat
 
         Returns:
-            MediaData | None: Search results for the key
+            list[MediaData] | None: Search results for the key
         """
+        results = []
         for item in self.data:
             if all(getattr(item, key, None) == value for key, value in kwargs.items()):
-                return item
-        return None
+                results.append(item)
+        return results
+
+    def find(self, **kwargs) -> MediaData | None:
+        """Data search in distribution.dat
+
+        Returns:
+            MediaData | None: Search results for the key(The first one)
+        """
+        results = self.finds(**kwargs)
+        return results[0]
 
     @debug_logger
     def load(self, src_path: str, info_conf: InfoConfiguration) -> None:

@@ -1,5 +1,4 @@
-filename = "menu_custom_live.ipxe"
-script = r"""#!ipxe
+#!ipxe
 
 # --- Menu block --------------------------------------------------------------
 :menu
@@ -60,4 +59,32 @@ initrd ${inirdopt} || goto error
 boot || goto error
 exit
 
-"""
+# --- system control ----------------------------------------------------------
+:shell
+echo "Booting iPXE shell ..."
+shell
+goto menu
+
+:shutdown
+echo "System shutting down ..."
+poweroff
+exit
+
+:restart
+echo "System rebooting ..."
+reboot
+exit
+
+:return
+echo "Return ..."
+chain ${ipxebase}/menu/menu.ipxe
+goto menu
+
+:exit
+exit
+
+:error
+prompt Press any key to continue
+exit
+
+# --- eof ---------------------------------------------------------------------

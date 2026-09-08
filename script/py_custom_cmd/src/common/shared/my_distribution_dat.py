@@ -19,8 +19,43 @@ from ..utils.my_fileio import get_text2list, put_list2text
 from ..utils.my_markdown import list2markdown
 from ..utils.my_string import eprint, spc_decode, spc_encode
 
-
 # -----------------------------------------------------------------------------
+LIFE_MAP = {
+    "-": "Current (supported)",
+    "elts": "Extended Long-Term Support",
+    "lts": "Long-Term Support",
+    "eol": "End Of Life (unsupported)",
+    "esm": "Expanded Security Maintenance",
+    "esu": "Extended Security Updates",
+}
+
+ORDERED_DISTRIBUTIONS = [
+    "debian",
+    "ubuntu",
+    "fedora",
+    "centos-stream",
+    "centos",
+    "almalinux",
+    "rockylinux",
+    "miraclelinux",
+    "opensuse",
+    "windows",
+    "winpe",
+    "ati",
+    "memtest86plus",
+]
+
+ORDERED_KEYS = [
+    "Development",
+    "Current (supported)",
+    "Long-Term Support",
+    "Extended Long-Term Support",
+    "Extended Security Updates",
+    "Expanded Security Maintenance",
+    "End Of Life (unsupported)",
+]
+
+
 @dataclass
 class DistributionData:
     """distribution.dat data class"""
@@ -64,16 +99,50 @@ class InfoDistribution:
             f"'{self.__class__.__name__}' object has no attribute '{name}'"
         )
 
-    def find(self, **kwargs) -> DistributionData | None:
+    def findregexp(
+        self, queries: list[dict[str, str]]
+    ) -> list[DistributionData] | None:
+        """Data search in distribution.dat(Supports regular expressions)
+
+        Args:
+            queries (list[dict[str, str]]): Query
+
+        Returns:
+            list[DistributionData] | None: Search results for the query
+        """
+        list_results = []
+        for data in self.data:
+            match = True
+            for query in queries:
+                for key, value in query.items():
+                    attr_val = getattr(data, key, "")
+                    if not re.search(value, attr_val):
+                        match = False
+                        break
+            if match:
+                list_results.append(data)
+        return list_results
+
+    def finds(self, **kwargs) -> list[DistributionData] | None:
         """Data search in distribution.dat
 
         Returns:
-            DistributionData | None: Search results for the key
+            list[DistributionData] | None: Search results for the key
         """
+        results = []
         for item in self.data:
             if all(getattr(item, key, None) == value for key, value in kwargs.items()):
-                return item
-        return None
+                results.append(item)
+        return results
+
+    def find(self, **kwargs) -> DistributionData | None:
+        """Data search in distribution.dat(The first one)
+
+        Returns:
+            DistributionData | None: Search results for the key(The first one)
+        """
+        results = self.finds(**kwargs)
+        return results[0]
 
     def load(self, src_path: str) -> None:
         """Load file
@@ -198,6 +267,27 @@ def sort_distribution_data(
     step1 = sorted(selected_data, key=make_universal_sort_key, reverse=reverse)
     sorted_datas = sorted(step1, key=attrgetter("sort_flag"), reverse=reverse)
     return sorted_datas
+
+
+def sort_distribution_name(data: list) -> list:
+    """Sort and output the DistributionData class.
+
+    Args:
+        data (list): Source data
+
+    Returns:
+        list: Result
+    """
+
+    max_index = len(ORDERED_DISTRIBUTIONS)
+
+    def get_sort_key(key):
+        for index, pattern in enumerate(ORDERED_DISTRIBUTIONS):
+            if re.search(pattern, str(key)):
+                return index
+        return max_index
+
+    return [item for item in sorted(data, key=get_sort_key)]
 
 
 # --- eof ---------------------------------------------------------------------

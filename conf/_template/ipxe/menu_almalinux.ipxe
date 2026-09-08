@@ -10,32 +10,20 @@ item -- return                                  - Return
 item --gap --                                   [ Edition ]
 item -- server                                  - Server
 item -- desktop                                 - Desktop
-#item --gap --                                  [ Development ]
-item --gap --                                   [ Current (supported) ]
-item -- 10                                      - AlmaLinux ${edition} 10
-item --  9                                      - AlmaLinux ${edition} 9
-item --  8                                      - AlmaLinux ${edition} 8
-#item --gap --                                  [ End of life (unsupported) ]
-choose --default ${selected} selected || goto menu
-iseq ${selected} return  && goto return  ||
-iseq ${selected} server  && goto edition ||
-iseq ${selected} desktop && goto edition ||
-isset ${selected} && goto almalinux-${selected} ||
+# <items>
+choose --default ${selected} selected           || goto menu
+iseq ${selected} return                         && goto return         ||
+iseq ${selected} server                         && set edition server  ||
+iseq ${selected} desktop                        && set edition desktop ||
+# <goto selection>
 goto menu
 
-:edition
-iseq ${selected} server  && set edition server ||
-iseq ${selected} desktop && set edition desktop ||
-goto menu
-
-:almalinux-10
-:almalinux-9
-:almalinux-8
+# <goto target>
 clear vers
-set vers ${selected}
-isset ${vers} || goto menu
-iseq ${edition} server  && goto almalinux-server ||
-iseq ${edition} desktop && goto almalinux-desktop ||
+# <code selection>
+isset ${vers}                                   || goto menu
+iseq ${edition} server                          && goto almalinux-server  ||
+iseq ${edition} desktop                         && goto almalinux-desktop ||
 goto menu
 
 :almalinux-server

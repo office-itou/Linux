@@ -2,7 +2,6 @@
 
 # --- Python library ----------------------------------------------------------
 import csv
-import glob
 import os
 import re
 import shutil
@@ -46,10 +45,15 @@ def file_backup(src_path: str) -> None:
         ext = file_path.suffix
         backup_path = file_path.with_name(f"{base_name}_{timestamp}{ext}")
         shutil.copy2(src_path, backup_path)
-        # --- history -----------------------------------------------------
-        search_pattern = str(file_path.with_name(f"{base_name}_*{ext}"))
-        backups = glob.glob(search_pattern)
-        backups = [b for b in backups if b != str(src_path)]
+        # --- history & cleanup -------------------------------------------
+        all_files = file_path.parent.glob(f"{base_name}_*{ext}")
+        pattern = re.compile(
+            rf"^{re.escape(base_name)}_\d{{14}}_\d{{6}}{re.escape(ext)}$"
+        )
+        backups = []
+        for f in all_files:
+            if pattern.match(f.name):
+                backups.append(str(f))
         backups.sort(key=os.path.getmtime)
         # --- cleanup -----------------------------------------------------
         while len(backups) > 3:

@@ -10,17 +10,49 @@ item -- return                                  - Return
 item --gap --                                   [ Edition ]
 item -- server                                  - Server
 item -- desktop                                 - Desktop
-# <items>
+item -- Debian-sid                              - Debian ${edition} sid (SID)
+item -- Debian-testing                          - Debian ${edition} testing (Testing)
+item -- Debian-15.0                             - Debian ${edition} 15.0 (Duke)
+item -- Debian-14.0                             - Debian ${edition} 14.0 (Forky)
+item -- Debian-13.0                             - Debian ${edition} 13.0 (Trixie)
+item -- Debian-12.0                             - Debian ${edition} 12.0 (Bookworm)
+item -- Debian-11.0                             - Debian ${edition} 11.0 (Bullseye)
+item -- Debian-10.0                             - Debian ${edition} 10.0 (Buster)
+item -- Debian-9.0                              - Debian ${edition} 9.0 (Stretch)
 choose --default ${selected} selected           || goto menu
 iseq ${selected} return                         && goto return         ||
 iseq ${selected} server                         && set edition server  ||
 iseq ${selected} desktop                        && set edition desktop ||
-# <goto selection>
+iseq ${selected} Debian-sid                     && goto Debian-sid
+iseq ${selected} Debian-testing                 && goto Debian-testing
+iseq ${selected} Debian-15.0                    && goto Debian-15.0
+iseq ${selected} Debian-14.0                    && goto Debian-14.0
+iseq ${selected} Debian-13.0                    && goto Debian-13.0
+iseq ${selected} Debian-12.0                    && goto Debian-12.0
+iseq ${selected} Debian-11.0                    && goto Debian-11.0
+iseq ${selected} Debian-10.0                    && goto Debian-10.0
+iseq ${selected} Debian-9.0                     && goto Debian-9.0
 goto menu
 
-# <goto target>
+:Debian-sid
+:Debian-testing
+:Debian-15.0
+:Debian-14.0
+:Debian-13.0
+:Debian-12.0
+:Debian-11.0
+:Debian-10.0
+:Debian-9.0
 clear vers
-# <code selection>
+iseq ${selected} Debian-sid                     && set vers sid ||
+iseq ${selected} Debian-testing                 && set vers testing ||
+iseq ${selected} Debian-15.0                    && set vers 15.0 ||
+iseq ${selected} Debian-14.0                    && set vers 14.0 ||
+iseq ${selected} Debian-13.0                    && set vers 13.0 ||
+iseq ${selected} Debian-12.0                    && set vers 12.0 ||
+iseq ${selected} Debian-11.0                    && set vers 11.0 ||
+iseq ${selected} Debian-10.0                    && set vers 10.0 ||
+iseq ${selected} Debian-9.0                     && set vers 9.0 ||
 isset ${vers}                                   || goto menu
 iseq ${edition} server                          && goto debian-server  ||
 iseq ${edition} desktop                         && goto debian-desktop ||

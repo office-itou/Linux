@@ -230,16 +230,6 @@
 
   </details>
 
-* <details><summary>memtest86plus</summary>
-
-  |     version      |   name   |version_id|code_name|life| release  | support  |long_term|rhel|kerne|note|wallpaper|create_flag|sort_flag|
-  |:-----------------|:---------|:---------|:--------|:---|:---------|:---------|:--------|:---|:----|:---|:--------|:----------|:--------|
-  |memtest86plus-8.10|Memtest86+|8.10      |-        |-   |2026-05-16|20xx-xx-xx|-        |-   |-    |-   |-        |-          |0        |
-  |memtest86plus-8.00|Memtest86+|8.00      |-        |-   |2025-11-24|20xx-xx-xx|-        |-   |-    |-   |-        |-          |0        |
-  |memtest86plus-7.20|Memtest86+|7.20      |-        |EOL |2024-11-12|20xx-xx-xx|-        |-   |-    |-   |-        |-          |0        |
-
-  </details>
-
 * <details><summary>winpe</summary>
 
   | version |name |version_id|code_name|life| release  | support  |long_term|rhel|kerne|note|wallpaper|create_flag|sort_flag|
@@ -255,5 +245,15 @@
   |:---------|:------|:---------|:--------|:---|:---------|:---------|:--------|:---|:----|:---|:--------|:----------|:--------|
   |ati2020x86|ATI2020|2020x86   |-        |-   |20xx-xx-xx|20xx-xx-xx|-        |-   |-    |-   |-        |-          |0        |
   |ati2020x64|ATI2020|2020x64   |-        |-   |20xx-xx-xx|20xx-xx-xx|-        |-   |-    |-   |-        |-          |0        |
+
+  </details>
+
+* <details><summary>memtest86plus</summary>
+
+  |     version      |   name   |version_id|code_name|life| release  | support  |long_term|rhel|kerne|note|wallpaper|create_flag|sort_flag|
+  |:-----------------|:---------|:---------|:--------|:---|:---------|:---------|:--------|:---|:----|:---|:--------|:----------|:--------|
+  |memtest86plus-8.10|Memtest86+|8.10      |-        |-   |2026-05-16|20xx-xx-xx|-        |-   |-    |-   |-        |-          |0        |
+  |memtest86plus-8.00|Memtest86+|8.00      |-        |-   |2025-11-24|20xx-xx-xx|-        |-   |-    |-   |-        |-          |0        |
+  |memtest86plus-7.20|Memtest86+|7.20      |-        |EOL |2024-11-12|20xx-xx-xx|-        |-   |-    |-   |-        |-          |0        |
 
   </details>

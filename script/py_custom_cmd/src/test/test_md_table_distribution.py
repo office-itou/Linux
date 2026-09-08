@@ -39,7 +39,7 @@ libsdir = Path(homedir) / "linux/script/py_custom_cmd/src"
 if str(libsdir) not in sys.path:
     sys.path.append(str(libsdir))
 from common.shared.my_common_cfg import InfoConfiguration
-from common.shared.my_distribution_dat import InfoDistribution
+from common.shared.my_distribution_dat import InfoDistribution, list_distributions
 from common.shared.my_media_dat import InfoMedia
 from common.utils.my_argument import Argument
 from common.utils.my_colors import Color
@@ -108,22 +108,8 @@ def generate_markdown(
     # path_mdia = info_conf.find(key="PATH_MDIA").value
     dst_path = Path(dst_dir) / "Readme_table_distribution.md"
     md_title = f"Distribution data({Path(path_dist).name})"
-    distributions = [
-        "debian",
-        "ubuntu",
-        "fedora",
-        "centos",
-        "almalinux",
-        "rockylinux",
-        "miraclelinux",
-        "opensuse",
-        "windows",
-        "memtest86plus",
-        "winpe",
-        "ati2020",
-    ]
     list_data = []
-    for distribution in distributions:
+    for distribution in list_distributions:
         dict_list = [distribution]
         list_item = info_dist.sort(distribution, reverse=True)
         dict_list += [asdict(item) for item in list_item]

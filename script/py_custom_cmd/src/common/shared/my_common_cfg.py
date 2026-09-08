@@ -44,16 +44,26 @@ class InfoConfiguration:
             f"'{self.__class__.__name__}' object has no attribute '{name}'"
         )
 
-    def find(self, **kwargs) -> ConfigurationData | None:
+    def finds(self, **kwargs) -> list[ConfigurationData] | None:
         """Data search in common.cfg
 
         Returns:
-            ConfigurationData | None: Search results for the key
+            list[ConfigurationData] | None: Search results for the key
         """
+        results = []
         for item in self.data:
             if all(getattr(item, key, None) == value for key, value in kwargs.items()):
-                return item
-        return None
+                results.append(item)
+        return results
+
+    def find(self, **kwargs) -> ConfigurationData | None:
+        """Data search in distribution.dat
+
+        Returns:
+            ConfigurationData | None: Search results for the key(The first one)
+        """
+        results = self.finds(**kwargs)
+        return results[0]
 
     @debug_logger
     def load(self) -> None:
@@ -181,7 +191,7 @@ def load() -> list[dict[str, str]]:
 #   global:                       : unused
 # -----------------------------------------------------------------------------
 @debug_logger
-def conv2data(list_conf: list, list_orig: list) -> list:
+def conv2data(list_conf: list[ConfigurationData], list_orig: list) -> list:
     dict_conf = {item["key"]: item["value"] for item in list_conf}
     list_conv = []
     pattern = re.compile(r":_([A-Z0-9_]+)_:")
@@ -215,7 +225,7 @@ def conv2data(list_conf: list, list_orig: list) -> list:
 #   global:                       : unused
 # -----------------------------------------------------------------------------
 @debug_logger
-def conv2variable(list_conf: list, list_orig: list) -> list:
+def conv2variable(list_conf: list[ConfigurationData], list_orig: list) -> list:
     reverse_conf = {}
     for item in list_conf:
         key, value = item["key"], item["value"]

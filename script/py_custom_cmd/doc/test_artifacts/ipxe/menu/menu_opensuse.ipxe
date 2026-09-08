@@ -10,17 +10,25 @@ item -- return                                  - Return
 item --gap --                                   [ Edition ]
 item -- server                                  - Server
 item -- desktop                                 - Desktop
-# <items>
+item -- openSUSE-tumbleweed                     - openSUSE ${edition} tumbleweed
+item -- openSUSE-16.1                           - openSUSE ${edition} 16.1
+item -- openSUSE-16.0                           - openSUSE ${edition} 16.0
 choose --default ${selected} selected           || goto menu
 iseq ${selected} return                         && goto return         ||
 iseq ${selected} server                         && set edition server  ||
 iseq ${selected} desktop                        && set edition desktop ||
-# <goto selection>
+iseq ${selected} openSUSE-tumbleweed            && goto openSUSE-tumbleweed
+iseq ${selected} openSUSE-16.1                  && goto openSUSE-16.1
+iseq ${selected} openSUSE-16.0                  && goto openSUSE-16.0
 goto menu
 
-# <goto target>
+:openSUSE-tumbleweed
+:openSUSE-16.1
+:openSUSE-16.0
 clear vers
-# <code selection>
+iseq ${selected} openSUSE-tumbleweed            && set vers tumbleweed ||
+iseq ${selected} openSUSE-16.1                  && set vers 16.1 ||
+iseq ${selected} openSUSE-16.0                  && set vers 16.0 ||
 isset ${vers}                                   || goto menu
 iseq ${vers} tumbleweed                         && goto opensuse-tumbleweed   ||
 iseq ${edition} server                          && goto opensuse-leap-server  ||

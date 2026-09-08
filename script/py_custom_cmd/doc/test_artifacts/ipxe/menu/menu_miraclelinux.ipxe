@@ -1,42 +1,32 @@
-filename = "menu_miraclelinux.ipxe"
-script = r"""#!ipxe
+#!ipxe
 
 # --- Menu block --------------------------------------------------------------
 # https://www.miraclelinux.com/
 set edition server
-:menu
 menu Select the OS type you want to boot
 item --gap --                                   [ Return menu ]
 item -- return                                  - Return
 item --gap --                                   [ Edition ]
 item -- server                                  - Server
 item -- desktop                                 - Desktop
-#item --gap --                                  [ Development ]
-item --gap --                                   [ Current (supported) ]
-#item -- 10                                     - MIRACLE LINUX ${edition} 10
-item --  9                                      - MIRACLE LINUX ${edition} 9
-item --  8                                      - MIRACLE LINUX ${edition} 8
-#item --gap --                                  [ End of life (unsupported) ]
-choose --default ${selected} selected || goto menu
-iseq ${selected} return  && goto return  ||
-iseq ${selected} server  && goto edition ||
-iseq ${selected} desktop && goto edition ||
-isset ${selected} && goto miraclelinux-${selected} ||
+item -- Miracle_Linux-9.8                       - Miracle Linux ${edition} 9.8 (Feige)
+item -- Miracle_Linux-8.10                      - Miracle Linux ${edition} 8.10 (Peony)
+choose --default ${selected} selected           || goto menu
+iseq ${selected} return                         && goto return         ||
+iseq ${selected} server                         && set edition server  ||
+iseq ${selected} desktop                        && set edition desktop ||
+iseq ${selected} Miracle_Linux-9.8              && goto Miracle Linux-9.8
+iseq ${selected} Miracle_Linux-8.10             && goto Miracle Linux-8.10
 goto menu
 
-:edition
-iseq ${selected} server  && set edition server ||
-iseq ${selected} desktop && set edition desktop ||
-goto menu
-
-:miraclelinux-10
-:miraclelinux-9
-:miraclelinux-8
+:Miracle_Linux-9.8
+:Miracle_Linux-8.10
 clear vers
-set vers ${selected}
-isset ${vers} || goto menu
-iseq ${edition} server  && goto miraclelinux-server ||
-iseq ${edition} desktop && goto miraclelinux-desktop ||
+iseq ${selected} Miracle_Linux-9.8              && set vers 9.8 ||
+iseq ${selected} Miracle_Linux-8.10             && set vers 8.10 ||
+isset ${vers}                                   || goto menu
+iseq ${edition} server                          && goto miraclelinux-server  ||
+iseq ${edition} desktop                         && goto miraclelinux-desktop ||
 goto menu
 
 :miraclelinux-server
@@ -67,4 +57,32 @@ echo "Loading menu/booting.ipxe ..."
 chain --autofree --replace ${ipxebase}/menu/booting.ipxe && exit ||
 goto menu
 
-"""
+# --- system control ----------------------------------------------------------
+:shell
+echo "Booting iPXE shell ..."
+shell
+goto menu
+
+:shutdown
+echo "System shutting down ..."
+poweroff
+exit
+
+:restart
+echo "System rebooting ..."
+reboot
+exit
+
+:return
+echo "Return ..."
+chain ${ipxebase}/menu/menu.ipxe
+goto menu
+
+:exit
+exit
+
+:error
+prompt Press any key to continue
+exit
+
+# --- eof ---------------------------------------------------------------------

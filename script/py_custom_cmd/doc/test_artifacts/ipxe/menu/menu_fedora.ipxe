@@ -1,7 +1,7 @@
 #!ipxe
 
 # --- Menu block --------------------------------------------------------------
-# https://wiki.rockylinux.org/rocky/version/
+# https://en.wikipedia.org/wiki/Fedora_Linux_release_history
 set edition server
 :menu
 menu Select the OS type you want to boot
@@ -10,40 +10,52 @@ item -- return                                  - Return
 item --gap --                                   [ Edition ]
 item -- server                                  - Server
 item -- desktop                                 - Desktop
-# <items>
+item -- Fedora-46                               - Fedora ${edition} 46
+item -- Fedora-45                               - Fedora ${edition} 45
+item -- Fedora-44                               - Fedora ${edition} 44
+item -- Fedora-43                               - Fedora ${edition} 43
 choose --default ${selected} selected           || goto menu
 iseq ${selected} return                         && goto return         ||
 iseq ${selected} server                         && set edition server  ||
 iseq ${selected} desktop                        && set edition desktop ||
-# <goto selection>
+iseq ${selected} Fedora-46                      && goto Fedora-46
+iseq ${selected} Fedora-45                      && goto Fedora-45
+iseq ${selected} Fedora-44                      && goto Fedora-44
+iseq ${selected} Fedora-43                      && goto Fedora-43
 goto menu
 
-# <goto target>
+:Fedora-46
+:Fedora-45
+:Fedora-44
+:Fedora-43
 clear vers
-# <code selection>
+iseq ${selected} Fedora-46                      && set vers 46 ||
+iseq ${selected} Fedora-45                      && set vers 45 ||
+iseq ${selected} Fedora-44                      && set vers 44 ||
+iseq ${selected} Fedora-43                      && set vers 43 ||
 isset ${vers}                                   || goto menu
-iseq ${edition} server                          && goto rockylinux-server  ||
-iseq ${edition} desktop                         && goto rockylinux-desktop ||
+iseq ${edition} server                          && goto fedora-server  ||
+iseq ${edition} desktop                         && goto fedora-desktop ||
 goto menu
 
-:rockylinux-server
-set messages Loading Rocky Linux ${vers} Server ...
-set parmauto inst.ks=${srvrhttp}/conf/kickstart/ks_rockylinux-${vers}_net.cfg
-set imgsdirs ${srvrhttp}/imgs/rockylinux-netinst-${vers}
-set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/rockylinux-netinst-${vers}
-goto rockylinux-common
+:fedora-server
+set messages Loading Fedora ${vers} Server ...
+set parmauto inst.ks=${srvrhttp}/conf/kickstart/ks_fedora-${vers}_net.cfg
+set imgsdirs ${srvrhttp}/imgs/fedora-netinst-${vers}
+set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/fedora-netinst-${vers}
+goto fedora-common
 
-:rockylinux-desktop
-set messages Loading Rocky Linux ${vers} Desktop ...
-set parmauto inst.ks=${srvrhttp}/conf/kickstart/ks_rockylinux-${vers}_net_desktop.cfg
-set imgsdirs ${srvrhttp}/imgs/rockylinux-netinst-${vers}
-set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/rockylinux-netinst-${vers}
-goto rockylinux-common
+:fedora-desktop
+set messages Loading Fedora ${vers} Desktop ...
+set parmauto inst.ks=${srvrhttp}/conf/kickstart/ks_fedora-${vers}_net_desktop.cfg
+set imgsdirs ${srvrhttp}/imgs/fedora-netinst-${vers}
+set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/fedora-netinst-${vers}
+goto fedora-common
 
-:rockylinux-common
+:fedora-common
 set kernlopt ${imgsdirs}/images/pxeboot/vmlinuz
 set inirdopt ${imgsdirs}/images/pxeboot/initrd.img
-set hnameopt sv-rockylinux.workgroup
+set hnameopt sv-fedora.workgroup
 set enameopt ens160
 set languopt locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106 language=ja_JP
 set otheropt inst.repo=nfs:${exptdirs} --- quiet vga=788

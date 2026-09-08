@@ -1,5 +1,4 @@
-filename = "booting.ipxe"
-script = r"""#!ipxe
+#!ipxe
 
 # --- Interactive form block --------------------------------------------------
 :menu
@@ -12,10 +11,10 @@ set openmenu 1
 :input
 set hostname ${hnameopt}
 set ethrname ${enameopt}
-set ipv4addr :_IPV4_ADDR_:
-set ipv4mask :_IPV4_MASK_:
-set ipv4gway :_IPV4_GWAY_:
-set ipv4nsvr :_IPV4_NSVR_:
+set ipv4addr 192.168.1.1
+set ipv4mask 255.255.255.0
+set ipv4gway 192.168.1.254
+set ipv4nsvr 192.168.1.254
 form                                            Configure Network Options
 item hostname                                   Hostname
 item ethrname                                   Interface
@@ -150,4 +149,32 @@ initrd ${inirdopt} || goto error
 boot || goto error
 exit
 
-"""
+# --- system control ----------------------------------------------------------
+:shell
+echo "Booting iPXE shell ..."
+shell
+goto menu
+
+:shutdown
+echo "System shutting down ..."
+poweroff
+exit
+
+:restart
+echo "System rebooting ..."
+reboot
+exit
+
+:return
+echo "Return ..."
+chain ${ipxebase}/menu/menu.ipxe
+goto menu
+
+:exit
+exit
+
+:error
+prompt Press any key to continue
+exit
+
+# --- eof ---------------------------------------------------------------------
