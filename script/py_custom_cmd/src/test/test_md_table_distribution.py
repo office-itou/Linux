@@ -9,29 +9,6 @@ import time
 from dataclasses import asdict
 from pathlib import Path
 
-# from aiohttp import ClientError, ClientTimeout
-# from bs4 import BeautifulSoup
-# from dataclasses import dataclass
-# from dataclasses import dataclass, asdict
-# from datetime import datetime
-# from datetime import datetime, timedelta
-# from datetime import datetime, timezone
-# from natsort import natsort_keygen
-# from pathlib import Path
-# from tqdm import tqdm
-# from urllib.parse import urlparse
-# import aiohttp # sudo apt-get install python3-aiohttp
-# import asyncio
-# import csv
-# import dataclasses
-# import json
-# import magic # sudo apt-get install python3-magic
-# import pandas as pd
-# import re
-# import shutil
-# import subprocess
-# import unicodedata
-# import __main__
 # --- my library --------------------------------------------------------------
 execusr = os.getenv("SUDO_USER", os.getenv("USER"))
 homedir = os.getenv("SUDO_HOME") or os.getenv("HOME") or f"/home/{execusr}"
@@ -39,7 +16,7 @@ libsdir = Path(homedir) / "linux/script/py_custom_cmd/src"
 if str(libsdir) not in sys.path:
     sys.path.append(str(libsdir))
 from common.shared.my_common_cfg import InfoConfiguration
-from common.shared.my_distribution_dat import InfoDistribution, list_distributions
+from common.shared.my_distribution_dat import ORDERED_DISTRIBUTIONS, InfoDistribution
 from common.shared.my_media_dat import InfoMedia
 from common.utils.my_argument import Argument
 from common.utils.my_colors import Color
@@ -55,17 +32,6 @@ from common.utils.my_message import (
     message_warn,
 )
 
-# from common.utils.my_string import count_width, eprint
-
-# from common.utils.my_process              import run_subprocess
-# from common.utils.my_fileio               import get_text2list, put_list2text, conv_text2json, conv_json2text
-# from common.utils.my_json                 import load_json, save_json
-# from common.utils.my_markdown             import list2markdown, spc_encode4md, spc_decode4md
-
-# from common.utils.my_infoweb              import Infoweb, get_webinfo
-# from common.utils.my_infofile             import Infofile, get_fileinfo
-# from common.utils.my_infodata             import Infodata, debug_info, get_infodata
-
 
 @debug_logger
 def initialize() -> tuple[InfoConfiguration, InfoDistribution, InfoMedia]:
@@ -80,10 +46,10 @@ def initialize() -> tuple[InfoConfiguration, InfoDistribution, InfoMedia]:
         message_info(get_caller_name(), "Debugout mode on")
     # -------------------------------------------------------------------------
     info_conf = InfoConfiguration()
-    path_dist = info_conf.find(key="PATH_DIST")
-    path_mdia = info_conf.find(key="PATH_MDIA")
-    info_dist = InfoDistribution(path_dist.value + ".json")
-    info_mdia = InfoMedia(path_mdia.value + ".json", info_conf)
+    path_dist = Path(info_conf.find(key="PATH_DIST").value)
+    path_mdia = Path(info_conf.find(key="PATH_MDIA").value)
+    info_dist = InfoDistribution(path_dist.with_name(path_dist.name + ".json"))
+    info_mdia = InfoMedia(path_mdia.with_name(path_mdia.name + ".json"))
     # -------------------------------------------------------------------------
     return info_conf, info_dist, info_mdia
 
@@ -106,15 +72,15 @@ def generate_markdown(
     # path_conf = info_conf.find(key="PATH_CONF").value
     path_dist = info_conf.find(key="PATH_DIST").value
     # path_mdia = info_conf.find(key="PATH_MDIA").value
-    dst_path = Path(dst_dir) / "Readme_table_distribution.md"
+    path_dest = Path(dst_dir) / "Readme_table_distribution.md"
     md_title = f"Distribution data({Path(path_dist).name})"
     list_data = []
-    for distribution in list_distributions:
+    for distribution in ORDERED_DISTRIBUTIONS:
+        list_sort = info_dist.sort(distribution, reverse=True)
         dict_list = [distribution]
-        list_item = info_dist.sort(distribution, reverse=True)
-        dict_list += [asdict(item) for item in list_item]
+        dict_list += [asdict(item) for item in list_sort]
         list_data.append(dict_list)
-    list2markdown(dst_path, md_title, list_data)
+    list2markdown(path_dest, md_title, list_data)
 
 
 @debug_logger

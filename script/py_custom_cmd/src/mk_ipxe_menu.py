@@ -9,40 +9,13 @@ import sys
 import time
 from pathlib import Path
 
-# from aiohttp import ClientError, ClientTimeout
-# from bs4 import BeautifulSoup
-# from dataclasses import dataclass
-# from dataclasses import dataclass, asdict
-# from dataclasses import asdict
-# from datetime import datetime
-# from datetime import datetime, timedelta
-# from datetime import datetime, timezone
-# from natsort import natsort_keygen
-# from pathlib import Path
-# from tqdm import tqdm
-# from urllib.parse import urlparse
-# import aiohttp # sudo apt-get install python3-aiohttp
-# import asyncio
-# import csv
-# import dataclasses
-# import json
-# import magic # sudo apt-get install python3-magic
-# import pandas as pd
-# import re
-# import shutil
-# import subprocess
-# import textwrap
-# import unicodedata
-# import __main__
 # --- my library --------------------------------------------------------------
 # execusr = os.getenv("SUDO_USER", os.getenv("USER"))
 # homedir = os.getenv("SUDO_HOME") or os.getenv("HOME") or f"/home/{execusr}"
 # libsdir = Path(homedir) / "linux/script/py_custom_cmd/src"
 # if str(libsdir) not in sys.path:
 #    sys.path.append(str(libsdir))
-from common.shared.my_common_cfg import (
-    InfoConfiguration,
-)
+from common.shared.my_common_cfg import InfoConfiguration
 from common.shared.my_distribution_dat import (
     InfoDistribution,
     sort_distribution_data,
@@ -53,27 +26,15 @@ from common.utils.my_argument import Argument
 from common.utils.my_colors import Color
 from common.utils.my_config import infosystem
 from common.utils.my_debug import debug_logger
-from common.utils.my_fileio import file_backup
+from common.utils.my_fileio import file_read, file_write
 from common.utils.my_message import (
     get_caller_name,
-    message_alert,
     message_elapsed,
     message_end,
     message_info,
     message_start,
     message_warn,
 )
-
-# from common.utils.my_string import count_width, eprint
-
-# from common.utils.my_process              import run_subprocess
-# from common.utils.my_fileio               import get_text2list, put_list2text, conv_text2json, conv_json2text
-# from common.utils.my_json                 import load_json, save_json
-# from common.utils.my_markdown             import list2markdown, spc_encode4md, spc_decode4md
-
-# from common.utils.my_infoweb              import Infoweb, get_webinfo
-# from common.utils.my_infofile             import Infofile, get_fileinfo
-# from common.utils.my_infodata             import Infodata, debug_info, get_infodata
 
 
 @debug_logger
@@ -89,21 +50,21 @@ def initialize() -> tuple[InfoConfiguration, InfoDistribution, InfoMedia]:
         message_info(get_caller_name(), "Debugout mode on")
     # -------------------------------------------------------------------------
     info_conf = InfoConfiguration()
-    path_dist = info_conf.find(key="PATH_DIST")
-    path_mdia = info_conf.find(key="PATH_MDIA")
-    info_dist = InfoDistribution(path_dist.value + ".json")
-    info_mdia = InfoMedia(path_mdia.value + ".json", info_conf)
+    path_dist = info_conf.get_path(key="PATH_DIST")
+    path_mdia = info_conf.get_path(key="PATH_MDIA")
+    info_dist = InfoDistribution(path_dist.with_name(path_dist.name + ".json"))
+    info_mdia = InfoMedia(path_mdia.with_name(path_mdia.name + ".json"))
     # -------------------------------------------------------------------------
     return info_conf, info_dist, info_mdia
 
 
 def generate_ipxe_menu_file(
-    src_path: Path,
-    dst_path: Path,
+    path_src: Path,
+    path_dest: Path,
     info_conf: InfoConfiguration,
     info_dist: InfoDistribution,
 ):
-    target_distribution = re.sub(r"^[^_]+_([^.]+)\.ipxe", r"\1", src_path.name)
+    target_distribution = re.sub(r"^[^_]+_([^.]+)\.ipxe", r"\1", path_src.name)
     if target_distribution == "windows":
         query_version = r"^(windows-|winpe-|ati[0-9]{4}|memtest86plus-).+$"
     else:
@@ -111,18 +72,13 @@ def generate_ipxe_menu_file(
     queries = [{"version": query_version}, {"life": r"^(?!EOL).*$"}]
     find_results = info_dist.findregexp(queries)
     sort_results = sort_distribution_data(find_results, "", reverse=True)
-    # def sort_distribution_data(data: DistributionData, distribution: str = "", reverse: bool = False) -> list[DistributionData]:
     # -------------------------------------------------------------------------
     pattern = r":_([A-Z0-9_]+)_:"
     match = re.compile(pattern)
-    try:
-        with open(src_path, "r", encoding="utf-8") as f:
-            conv_dist = match.sub(
-                lambda m: str(info_conf.find(key=m.group(1)).value), f.read()
-            )
-    except Exception as e:  # noqa: BLE001
-        message_alert(get_caller_name(), f"Fatal error: {e}")
-        raise SystemExit
+    read_data = file_read(path_src)
+    conv_dist = match.sub(
+        lambda m: str(info_conf.find(key=m.group(1)).value), read_data
+    )
     # -------------------------------------------------------------------------
     item_width = 47
     item_data = []
@@ -160,21 +116,8 @@ def generate_ipxe_menu_file(
         else:
             item_data.append(read_line)
     # -------------------------------------------------------------------------
-    try:
-        file_backup(dst_path)
-        dst_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(dst_path, "w", encoding="utf-8", newline="\n") as f:
-            f.write("\n".join(item_data) + "\n")
-            f.flush()
-            os.fsync(f.fileno())
-    except OSError as e:
-        message_alert(get_caller_name(), f"Fatal error: {e}")
-        raise SystemExit
-    except Exception as e:  # noqa: BLE001
-        message_alert(get_caller_name(), f"Fatal error: {e}")
-        raise SystemExit
-    if not dst_path.exists:
-        message_alert(get_caller_name(), f"failed: {dst_path}")
+    write_data = "\n".join(item_data) + "\n"
+    file_write(path_dest, write_data, text=True, backup=True)
 
 
 @debug_logger
@@ -189,13 +132,13 @@ def generate_ipxe_menu(
         [file for file in path_tplt_ipxe_dir.glob(r"*.ipxe") if file.is_file()]
     )
     # -------------------------------------------------------------------------
-    for src_path in list_tplt_files:
-        if src_path.name == path_autexec.name:
-            dst_path = path_ipxe_dir / src_path.name
+    for path_src in list_tplt_files:
+        if path_src.name == path_autexec.name:
+            path_dest = path_ipxe_dir / path_src.name
         else:
-            dst_path = path_ipxe_dir / "menu" / src_path.name
-        message_info(get_caller_name(), str(dst_path))
-        generate_ipxe_menu_file(src_path, dst_path, info_conf, info_dist)
+            path_dest = path_ipxe_dir / "menu" / path_src.name
+        message_info(get_caller_name(), str(path_dest))
+        generate_ipxe_menu_file(path_src, path_dest, info_conf, info_dist)
 
 
 @debug_logger

@@ -8,7 +8,7 @@ import pandas as pd
 
 # --- my library --------------------------------------------------------------
 from .my_debug import debug_logger
-from .my_fileio import file_backup
+from .my_fileio import file_read, file_write
 from .my_string import count_width
 
 
@@ -117,7 +117,7 @@ def list2markdown(dst_path: str, md_title: str, src_data: list) -> None:
 
     # --- output --------------------------------------------------------------
     md_text = "# Data table\n"
-    if isinstance(src_data[0], list):
+    if src_data and isinstance(src_data[0], list):
         md_text += f"\n## {md_title}\n"
         for data in src_data:
             md_text += f"\n* <details><summary>{data[:1][0]}</summary>\n"
@@ -129,9 +129,7 @@ def list2markdown(dst_path: str, md_title: str, src_data: list) -> None:
         header, align, md_rows = generate(src_data)
         md_text += f"\n{spc}{header}\n{spc}{align}\n"
         md_text += "\n".join(md_rows) + "\n"
-    file_backup(dst_path)
-    with open(dst_path, "w", encoding="utf-8") as f:
-        f.write(md_text)
+    file_write(dst_path, md_text, text=True, backup=True)
 
 
 # -----------------------------------------------------------------------------
@@ -144,30 +142,25 @@ def markdown2list(src_path: str) -> list:
     Returns:
         list: Destination data
     """
-
     table_rows = []
     headers = []
-    try:
-        with open(src_path, "r", encoding="utf-8") as f:
-            for line in f:
-                line_str = line.strip()
-                if line_str.startswith("|") and line_str.endswith("|"):
-                    cells = [cell.strip() for cell in line_str.split("|")[1:-1]]
-                    if all(re.match(r"^:?-+:?$", c) for c in cells):
-                        continue
-                    if not headers:
-                        headers = cells
-                    else:
-                        row_dict = {}
-                        for i, head in enumerate(headers):
-                            row_dict[head] = cells[i] if i < len(cells) else ""
-                        table_rows.append(row_dict)
-                elif headers and table_rows:
-                    break
-        return table_rows
-    except FileNotFoundError:
-        print(f"Error: {src_path} not found")
-        return []
+    read_data = file_read(src_path)
+    for line in read_data:
+        line_str = line.strip()
+        if line_str.startswith("|") and line_str.endswith("|"):
+            cells = [cell.strip() for cell in line_str.split("|")[1:-1]]
+            if all(re.match(r"^:?-+:?$", c) for c in cells):
+                continue
+            if not headers:
+                headers = cells
+            else:
+                row_dict = {}
+                for i, head in enumerate(headers):
+                    row_dict[head] = cells[i] if i < len(cells) else ""
+                table_rows.append(row_dict)
+        elif headers and table_rows:
+            break
+    return table_rows
 
 
 # --- eof ---------------------------------------------------------------------

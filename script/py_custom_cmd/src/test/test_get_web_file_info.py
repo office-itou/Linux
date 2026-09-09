@@ -4,34 +4,11 @@
 
 # --- Python library ----------------------------------------------------------
 import asyncio
-
-# import unicodedata
-# import __main__
-# import glob
-# import csv
-# import dataclasses
 import os
-
-# import magic # sudo apt-get install python3-magic
-# import pandas as pd
-# import re
-# import shutil
-# import subprocess
 import sys
 import time
-
-# from bs4 import BeautifulSoup
-# from dataclasses import dataclass
-# from dataclasses import asdict
-# from datetime import datetime
-# from datetime import datetime, timedelta
-# from datetime import datetime, timezone
-# from natsort import natsort_keygen
 from pathlib import Path
 
-# from zoneinfo import ZoneInfo
-# from tqdm import tqdm
-# from urllib.parse import urlparse
 import aiohttp  # sudo apt-get install python3-aiohttp
 from aiohttp import ClientTimeout
 
@@ -43,23 +20,17 @@ homedir = os.getenv("SUDO_HOME", homedir)
 libsdir = "/linux/script/py_custom_cmd/src/"
 libsdir = Path(homedir) / libsdir.strip("/")
 sys.path.append(str(libsdir))
-
 from common.shared.my_common_cfg import InfoConfiguration
 from common.shared.my_distribution_dat import InfoDistribution
 from common.shared.my_media_dat import InfoMedia
-
-# from common.utils.my_markdown             import list2markdown, spc_encode4md, spc_decode4md
 from common.shared.my_shared import Text_fmat
 from common.utils.my_argument import Argument
 from common.utils.my_colors import Color
 from common.utils.my_config import infosystem
 from common.utils.my_debug import debug_logger
-
-# from common.utils.my_process              import run_subprocess
+from common.utils.my_error import handle_fatal_error
 from common.utils.my_infofile import InfoFile
 from common.utils.my_infoweb import InfoWeb
-
-# from common.utils.my_string               import eprint, count_width
 from common.utils.my_message import (
     get_caller_name,
     message_elapsed,
@@ -67,8 +38,6 @@ from common.utils.my_message import (
     message_info,
     message_start,
 )
-
-# from common.utils.my_infodata              import InfoData
 
 
 @debug_logger
@@ -84,10 +53,10 @@ def initialize() -> tuple[InfoConfiguration, InfoDistribution, InfoMedia]:
         message_info(get_caller_name(), "Debugout mode on")
     # -------------------------------------------------------------------------
     info_conf = InfoConfiguration()
-    path_dist = info_conf.find(key="PATH_DIST")
-    path_mdia = info_conf.find(key="PATH_MDIA")
-    info_dist = InfoDistribution(path_dist.value + ".json")
-    info_mdia = InfoMedia(path_mdia.value + ".json", info_conf)
+    path_dist = info_conf.get_path(key="PATH_DIST")
+    path_mdia = info_conf.get_path(key="PATH_MDIA")
+    info_dist = InfoDistribution(path_dist.with_name(path_dist.name + ".json"))
+    info_mdia = InfoMedia(path_mdia.with_name(path_mdia.name + ".json"), info_conf)
     # -------------------------------------------------------------------------
     return info_conf, info_dist, info_mdia
 
@@ -107,20 +76,20 @@ def generate_md(
         info_dist (InfoDistribution): distribution.dat interface class
         info_mdia (InfoMedia): media.dat interface class
     """
-    path_conf = info_conf.find(key="PATH_CONF")
-    path_dist = info_conf.find(key="PATH_DIST")
-    path_mdia = info_conf.find(key="PATH_MDIA")
+    path_conf = info_conf.get_path(key="PATH_CONF")
+    path_dist = info_conf.get_path(key="PATH_DIST")
+    path_mdia = info_conf.get_path(key="PATH_MDIA")
     info_conf.markdown(
         Path(dst_dir) / "Readme_Configuration.md",
-        f"Configuration data({Path(path_conf.value).name})",
+        f"Configuration data({path_conf.name})",
     )
     info_dist.markdown(
         Path(dst_dir) / "Readme_Distribution.md",
-        f"Distribution data({Path(path_dist.value).name})",
+        f"Distribution data({path_dist.name})",
     )
     info_mdia.markdown(
         Path(dst_dir) / "Readme_Media.md",
-        f"Media data({Path(path_mdia.value).name})",
+        f"Media data({path_mdia.name})",
     )
 
 
@@ -135,15 +104,15 @@ def data_save(
         info_dist (InfoDistribution): distribution.dat interface class
         info_mdia (InfoMedia): media.dat interface class
     """
-    path_dist = info_conf.find(key="PATH_DIST")
-    path_mdia = info_conf.find(key="PATH_MDIA")
+    path_dist = info_conf.get_path(key="PATH_DIST")
+    path_mdia = info_conf.get_path(key="PATH_MDIA")
     # -------------------------------------------------------------------------
-    info_dist.save(f"{path_dist.value}.json")
-    info_mdia.save(f"{path_mdia.value}.json", info_conf)
+    info_dist.save(path_dist.with_name(path_dist.name + ".json"))
+    info_mdia.save(path_mdia.with_name(path_mdia.name + ".json"), info_conf)
     # -------------------------------------------------------------------------
-    info_dist.put_list2text(path_dist.value, Text_fmat.dist)
+    info_dist.put_list2text(path_dist, Text_fmat.dist)
     info_mdia.put_list2text(
-        path_mdia.value,
+        path_mdia,
         Text_fmat.mdia,
         info_conf,
     )
@@ -200,73 +169,110 @@ async def get_web_file_info(
     return info_mdia.data
 
 
-# -----------------------------------------------------------------------------
-# descript: main
-#   input :                  : unused
-#   output: stdout           : output
-#   return: exit             : output
-#   global:                  : unused
-# -----------------------------------------------------------------------------
 @debug_logger
 async def main():
     """Main"""
-    # --- check the executing user --------------------------------------------
-    if os.geteuid() != 0:
-        print(
-            f"{Color.reset}{Color.br_green}{infosystem.program_name}:\n{Color.br_yellow} You have standard user privileges. {Color.underline}Please run this with sudo.{Color.reset}"
+    caller = get_caller_name()
+    try:
+        # --- check the executing user --------------------------------------------
+        if os.geteuid() != 0:
+            print(
+                f"{Color.reset}{Color.br_green}{infosystem.program_name}:\n{Color.br_yellow} You have standard user privileges. {Color.underline}Please run this with sudo.{Color.reset}"
+            )
+            sys.exit(1)
+        # --- elapsed start--------------------------------------------------------
+        start = time.perf_counter()
+        # --- startup process -----------------------------------------------------
+        message_start(get_caller_name())
+        # --- processing block ----------------------------------------------------
+        arg_manager = Argument()
+        arg_manager.add(
+            "--debugdump",
+            help="Debug dump mode for common datas",
+            default=["conf", "dist", "mdia"],
+            nargs="*",
+            type=str,
         )
-        sys.exit(1)
-    # --- elapsed start--------------------------------------------------------
-    start = time.perf_counter()
-    # --- startup process -----------------------------------------------------
-    message_start(get_caller_name())
-    # --- processing block ----------------------------------------------------
-    arg_manager = Argument()
-    arg_manager.add(
-        "--t2j", help="Text -> json convert", default=False, action="store_true"
-    )
-    arg_manager.add(
-        "--j2t", help="json -> Text convert", default=False, action="store_true"
-    )
-    arg_manager.add("--md", help="json -> Markdown generate", default="", type=str)
-    arg_manager.add(
-        "--info", help="Get ISO file information for web", default="", type=str
-    )
-    arg_manager.add("--save", help="Save data", default=False, action="store_true")
-    args = arg_manager.parse()
-    if args:
-        info_conf, info_dist, info_mdia = initialize()
-        if infosystem.args.t2j == True:
-            path_dist = info_conf.find(key="PATH_DIST")
-            path_mdia = info_conf.find(key="PATH_MDIA")
-            info_dist.get_text2list(path_dist)
-            info_mdia.get_text2list(path_mdia, info_conf)
-        if infosystem.args.j2t == True:
-            path_dist = info_conf.find(key="PATH_DIST")
-            path_mdia = info_conf.find(key="PATH_MDIA")
-            info_dist.get_text2list(f"{path_dist}.json")
-            info_mdia.get_text2list(f"{path_mdia}.json", info_conf)
-            info_dist.put_list2text(path_dist)
-            info_mdia.put_list2text(path_mdia, info_conf)
-        if target := infosystem.args.info:
-            if target == "a":
-                pass
-            await get_web_file_info(info_conf, info_dist, info_mdia)
-            generate_md("./", info_conf, info_dist, info_mdia)
-            data_save(info_conf, info_dist, info_mdia)
-        if dirs := infosystem.args.md:
-            generate_md(dirs, info_conf, info_dist, info_mdia)
-        if infosystem.args.save == True:
-            data_save(info_conf, info_dist, info_mdia)
-    # --- termination process -------------------------------------------------
-    message_end(get_caller_name())
-    # --- elapsed end ---------------------------------------------------------
-    end = time.perf_counter()
-    elapsed = end - start
-    message_elapsed(get_caller_name(), elapsed)
-    # --- exit ----------------------------------------------------------------
-    sys.exit(0)
-    # -------------------------------------------------------------------------
+        arg_manager.add(
+            "--t2j", help="Text -> json convert", default=False, action="store_true"
+        )
+        arg_manager.add(
+            "--j2t", help="json -> Text convert", default=False, action="store_true"
+        )
+        arg_manager.add("--md", help="json -> Markdown generate", default="", type=str)
+        arg_manager.add(
+            "--info", help="Get ISO file information for web", default="", type=str
+        )
+        arg_manager.add("--save", help="Save data", default=False, action="store_true")
+        args = arg_manager.parse()
+        if args:
+            info_conf, info_dist, info_mdia = initialize()
+            path_dist = info_conf.get_path(key="PATH_DIST")
+            path_mdia = info_conf.get_path(key="PATH_MDIA")
+            if (targets := infosystem.args.debugdump) is not None:
+                if not targets:
+                    targets = ["conf", "dist", "mdia"]
+                print(f"{Color.br_yellow}{'=' * 80}{Color.reset}")
+                for target in targets:
+                    print(f"{Color.br_yellow}{'-' * 80}{Color.reset}")
+                    match target:
+                        case "conf":
+                            info_conf.dump(cut=False)
+                        case "dist":
+                            info_dist.dump(cut=False)
+                        case "mdia":
+                            info_mdia.dump(cut=False)
+                        case _:
+                            pass
+                    print(f"{Color.br_yellow}{'-' * 80}{Color.reset}")
+                print(f"{Color.br_yellow}{'=' * 80}{Color.reset}")
+                sys.exit(0)
+                # -----------------------------------------------------------------
+                info_dist.get_text2list(path_dist)
+                info_mdia.get_text2list(path_mdia, info_conf)
+                print(f"{Color.br_yellow}{'=' * 80}{Color.reset}")
+                info_dist.dump(cut=False)
+                print(f"{Color.br_yellow}{'-' * 80}{Color.reset}")
+                info_mdia.dump(cut=False)
+                print(f"{Color.br_yellow}{'=' * 80}{Color.reset}")
+                # -----------------------------------------------------------------
+            if infosystem.args.t2j == True:
+                info_dist.get_text2list(path_dist)
+                info_mdia.get_text2list(path_mdia, info_conf)
+                info_dist.save(path_dist.with_name(path_dist.name + ".json"))
+                info_mdia.save(path_mdia.with_name(path_mdia.name + ".json"), info_conf)
+            if infosystem.args.j2t == True:
+                info_dist.get_text2list(path_dist.with_name(path_dist.name + ".json"))
+                info_mdia.get_text2list(
+                    path_mdia.with_name(path_mdia.name + ".json"), info_conf
+                )
+                info_dist.put_list2text(path_dist, Text_fmat.dist)
+                info_mdia.put_list2text(
+                    path_mdia,
+                    Text_fmat.mdia,
+                    info_conf,
+                )
+            if target := infosystem.args.info:
+                if target == "a":
+                    pass
+                await get_web_file_info(info_conf, info_dist, info_mdia)
+                generate_md("./", info_conf, info_dist, info_mdia)
+                data_save(info_conf, info_dist, info_mdia)
+            if dirs := infosystem.args.md:
+                generate_md(dirs, info_conf, info_dist, info_mdia)
+            if infosystem.args.save == True:
+                data_save(info_conf, info_dist, info_mdia)
+        # --- termination process -------------------------------------------------
+        message_end(get_caller_name())
+        # --- elapsed end ---------------------------------------------------------
+        end = time.perf_counter()
+        elapsed = end - start
+        message_elapsed(get_caller_name(), elapsed)
+        # --- exit ----------------------------------------------------------------
+        sys.exit(0)
+        # -------------------------------------------------------------------------
+    except (OSError, Exception) as e:  # noqa: BLE001
+        handle_fatal_error(caller, e)
 
 
 if __name__ == "__main__":

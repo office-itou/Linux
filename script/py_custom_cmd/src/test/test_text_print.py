@@ -17,10 +17,6 @@ if str(libsdir) not in sys.path:
 
 from common.utils.my_argument import Argument
 from common.utils.my_colors import Color
-
-# from common.utils.my_process              import run_subprocess
-# from common.utils.my_json                 import load_json, save_json, get_text2json, put_json2text
-# from common.utils.my_markdown             import list2markdown, spc_encode4md, spc_decode4md
 from common.utils.my_config import infosystem
 from common.utils.my_debug import debug_logger
 from common.utils.my_message import (
@@ -31,10 +27,6 @@ from common.utils.my_message import (
     message_start,
 )
 from common.utils.my_string import eprint
-
-# from common.utils.my_infoweb              import Infoweb, get_webinfo
-# from common.utils.my_infofile             import Infofile, get_fileinfo
-# from common.utils.my_infodata             import Infodata, debug_info, get_infodata
 
 
 @debug_logger

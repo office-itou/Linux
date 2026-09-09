@@ -1,16 +1,19 @@
 """media.dat I/O"""
 
 # --- Python library ----------------------------------------------------------
-import json
-from dataclasses import asdict, dataclass, fields
+from dataclasses import dataclass, fields
+from pathlib import Path
 from typing import Any
 
 # --- my library --------------------------------------------------------------
 from ..utils.my_colors import Color
 from ..utils.my_config import infosystem
 from ..utils.my_debug import debug_logger
+from ..utils.my_error import handle_fatal_error
 from ..utils.my_fileio import get_text2list, put_list2text
+from ..utils.my_json import json_load, json_save
 from ..utils.my_markdown import list2markdown
+from ..utils.my_message import get_caller_name
 from ..utils.my_string import eprint, spc_decode, spc_encode
 from .my_common_cfg import InfoConfiguration
 
@@ -54,17 +57,16 @@ class MediaData:
 class InfoMedia:
     """media.dat interface class"""
 
-    def __init__(self, src_path: str | None = None, info_conf: Any | None = None):
+    @debug_logger
+    def __init__(self, path_src: Path, info_conf: InfoConfiguration):
         """Method for initializing the MediaData class.
-
         Args:
-            src_path (str | None, optional): Source path. Defaults to None.
-            info_conf (Any | None, optional): common.cfg interface class. Defaults to None.
+            path_src (Path, optional): Source path. Defaults to None.
+            info_conf (Any, optional): common.cfg interface class. Defaults to None.
         """
         self._valid_fields = {f.name for f in fields(MediaData)}
         self.data: list[MediaData] = []
-        if src_path and info_conf:
-            self.load(src_path, info_conf)
+        self.load(path_src, info_conf)
 
     def __getattr__(self, name: str) -> Any:
         if name in self._valid_fields:
@@ -77,7 +79,6 @@ class InfoMedia:
 
     def finds(self, **kwargs) -> list[MediaData] | None:
         """Data search in media.dat
-
         Returns:
             list[MediaData] | None: Search results for the key
         """
@@ -89,7 +90,6 @@ class InfoMedia:
 
     def find(self, **kwargs) -> MediaData | None:
         """Data search in distribution.dat
-
         Returns:
             MediaData | None: Search results for the key(The first one)
         """
@@ -97,86 +97,102 @@ class InfoMedia:
         return results[0]
 
     @debug_logger
-    def load(self, src_path: str, info_conf: InfoConfiguration) -> None:
+    def load(self, path_src: Path, info_conf: InfoConfiguration) -> None:
         """Load file
-
         Args:
-            src_path (str): Source path
+            path_src (Path): Source path
             info_conf (InfoConfiguration): common.cfg interface class
         """
-        with open(src_path, "r", encoding="utf-8") as f:
-            raw_data = json.load(f)
+        raw_data = json_load(path_src)
         decoded_data = spc_decode(raw_data)
         converted_data = info_conf.conv2data(decoded_data)
         self.data = [
-            MediaData(**item) if isinstance(item, dict) else item
+            MediaData(**converted_data)
+            if isinstance(converted_data, dict)
+            else MediaData(item)
             for item in converted_data
         ]
 
     @debug_logger
-    def save(self, dst_path: str, info_conf: InfoConfiguration) -> None:
+    def save(self, path_dest: Path, info_conf: InfoConfiguration) -> None:
         """Save file
-
         Args:
-            dst_path (str): Destination path
+            path_dest (str): Destination path
             info_conf (InfoConfiguration): common.cfg interface class
         """
-        dict_list = [asdict(item) for item in self.data]
-        converted_data = info_conf.conv2variable(dict_list)
+        # dict_list = [asdict(item) for item in self.data]
+        converted_data = info_conf.conv2variable(self.data)
         encoded_data = spc_encode(converted_data)
-        with open(dst_path, "w", encoding="utf-8") as f:
-            json.dump(encoded_data, f, ensure_ascii=False, indent=4)
+        json_save(path_dest, encoded_data)
 
-    def markdown(self, dst_path: str, md_title: str) -> None:
+    @debug_logger
+    def markdown(self, path_dest: Path, md_title: str) -> None:
         """Generating Markdown
-
         Args:
-            dst_path (str): Destination path
+            path_dest (str): Destination path
             md_title (str): Markdown title
         """
-        dict_list = [asdict(item) for item in self.data]
-        list2markdown(dst_path, md_title, dict_list)
+        # dict_list = [asdict(item) for item in self.data]
+        list2markdown(path_dest, md_title, self.data)
 
-    def dump(self) -> None:
+    @debug_logger
+    def dump(self, cut: bool = True) -> None:
         """Data dump output"""
         for line in self.data:
-            text = f"{line!s:.{infosystem.columns}s}"
+            text = f"{line!s:.{infosystem.columns}s}" if cut else line
             eprint(f"{Color.yellow}{text}{Color.reset}")
 
-    def get_text2list(self, src_path: str, info_conf: InfoConfiguration) -> None:
-        """Text file to list
+    @debug_logger
+    def import_text(self, path_src: Path) -> None:
+        caller = get_caller_name()
+        try:
+            pass
+        except (OSError, Exception) as e:  # noqa: BLE001
+            handle_fatal_error(caller, e)
 
+    @debug_logger
+    def export_text(self, path_dest: Path, format_str: str) -> None:
+        caller = get_caller_name()
+        try:
+            pass
+        except (OSError, Exception) as e:  # noqa: BLE001
+            handle_fatal_error(caller, e)
+
+    @debug_logger
+    def get_text2list(self, path_src: Path, info_conf: InfoConfiguration) -> None:
+        """Text file to list
         Args:
-            src_path (str): Source path
+            path_src (str): Source path
             info_conf (InfoConfiguration): common.cfg interface class
         """
-        list_data = get_text2list(src_path)
+        list_data = get_text2list(path_src)
         decoded_data = spc_decode(list_data)
         converted_data = info_conf.conv2data(decoded_data)
         self.data = [
-            MediaData(**item) if isinstance(item, dict) else item
+            MediaData(**converted_data) if isinstance(converted_data, dict) else item
             for item in converted_data
         ]
 
+    @debug_logger
     def put_list2text(
-        self, dst_path: str, format_str: str, info_conf: InfoConfiguration
+        self, path_dest: Path, format_str: str, info_conf: InfoConfiguration
     ) -> None:
         """list to text file
-
         Args:
-            dst_path (str): Destination path
+            path_dest (str): Destination path
             format_str (str): Output format
             info_conf (InfoConfiguration): common.cfg interface class
         """
+        # [asdict(item) for item in self.conv2variable(info_conf)],
         put_list2text(
-            dst_path,
-            [asdict(item) for item in self.conv2variable(info_conf)],
+            path_dest,
+            self.conv2variable(info_conf),
             format_str,
         )
 
+    @debug_logger
     def conv2data(self, info_conf: InfoConfiguration) -> None:
         """Convert actual data to variable names
-
         Args:
             info_conf (InfoConfiguration): common.cfg interface class
         """
@@ -185,21 +201,20 @@ class InfoMedia:
             self.data = self._to_mediadata_list(converted_data)
         else:
             self.data = [
-                MediaData(**item) if isinstance(item, dict) else item
+                MediaData(**converted_data) if isinstance(converted_data) else item
                 for item in converted_data
             ]
 
+    @debug_logger
     def conv2variable(self, info_conf: InfoConfiguration) -> list[dict[str, Any]]:
         """Convert variable names to actual data
-
         Args:
             info_conf (InfoConfiguration): common.cfg interface class
-
         Returns:
             list[dict[str, Any]]: Conversion data
         """
-        dict_list = [asdict(item) for item in self.data]
-        converted_data = info_conf.conv2variable(dict_list)
+        # dict_list = [asdict(item) for item in self.data]
+        converted_data = info_conf.conv2variable(self.data)
         if hasattr(self, "_to_mediadata_list"):
             list_data = self._to_mediadata_list(converted_data)
         else:
@@ -211,5 +226,4 @@ class InfoMedia:
 
 
 #        dict_list = [asdict(item) for item in self.data]
-
 # --- eof ---------------------------------------------------------------------
