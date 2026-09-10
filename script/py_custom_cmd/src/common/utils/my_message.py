@@ -2,13 +2,14 @@
 
 # --- Python library ----------------------------------------------------------
 import inspect
+import re
 from datetime import datetime, timedelta
 from pathlib import Path
 
 # --- my library --------------------------------------------------------------
 from .my_colors import Color
 from .my_config import infosystem
-from .my_string import eprint, omit_middle
+from .my_string import count_width, eprint, omit_middle
 
 # colsize_func = 30 if infosystem.columns < 80 else 40 if infosystem.columns < 100 else 50
 colsize_mode = 8
@@ -170,6 +171,35 @@ def get_caller_name(only: bool = True) -> str:
     # modu_name = str(frame.f_globals.get("__name__"))
     call_info = func_name if only == True else f"{file_name}({func_name})"
     return call_info
+
+
+def generate_comment(modu_name: str, func_name: str, para: str = "") -> str:
+    """Omit the intermediate characters.
+
+    Args:
+        modu_name (str): Module name
+        func_name (str): Function name
+        para (str, optional): Parameter. Defaults to "".
+
+    Returns:
+        str: Comment message
+    """
+    from .my_message import colsize_mesg
+
+    front_part = ""
+    colsize_para = colsize_mesg
+    if modu_name:
+        text_modu = re.sub(r"^[^.]+.", "", modu_name)
+        colsize_modu = min(count_width(text_modu), 20)
+        colsize_call = min(count_width(func_name), 20)
+        colsize_para -= colsize_modu + colsize_call + 2
+        text_modu = omit_middle(text_modu, colsize_modu)
+        text_func = omit_middle(func_name, colsize_call)
+        front_part = f"{text_modu}({text_func}):"
+    text_para = ""
+    if para:
+        text_para = omit_middle(f"{para}", colsize_para)
+    return f"{front_part}{text_para}"
 
 
 # --- eof ---------------------------------------------------------------------

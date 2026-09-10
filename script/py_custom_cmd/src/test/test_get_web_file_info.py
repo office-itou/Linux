@@ -55,6 +55,7 @@ def initialize() -> tuple[InfoConfiguration, InfoDistribution, InfoMedia]:
     info_conf = InfoConfiguration()
     path_dist = info_conf.get_path(key="PATH_DIST")
     path_mdia = info_conf.get_path(key="PATH_MDIA")
+    sys.exit(0)
     info_dist = InfoDistribution(path_dist.with_name(path_dist.name + ".json"))
     info_mdia = InfoMedia(path_mdia.with_name(path_mdia.name + ".json"), info_conf)
     # -------------------------------------------------------------------------
@@ -170,6 +171,77 @@ async def get_web_file_info(
 
 
 @debug_logger
+def debugdump(
+    targets: list,
+    info_conf: InfoConfiguration,
+    info_dist: InfoDistribution,
+    info_mdia: InfoMedia,
+) -> None:
+    if not targets:
+        targets = ["conf", "dist", "mdia"]
+    print(f"{Color.br_yellow}{'=' * 80}{Color.reset}")
+    for target in targets:
+        print(f"{Color.br_yellow}{'-' * 80}{Color.reset}")
+        match target:
+            case "conf":
+                info_conf.dump(cut=False)
+            case "dist":
+                info_dist.dump(cut=False)
+            case "mdia":
+                info_mdia.dump(cut=False)
+            case _:
+                pass
+        print(f"{Color.br_yellow}{'-' * 80}{Color.reset}")
+    print(f"{Color.br_yellow}{'=' * 80}{Color.reset}")
+
+
+@debug_logger
+def initarg() -> None:
+    arg_manager = Argument()
+    list_args = [
+        {
+            "arg": "--debugdump",
+            "help": "Debug dump mode for common datas",
+            "default": None,
+            "nargs": "*",
+            "action": Argument.DefaultListAction,
+            "type": "str",
+        },
+        {
+            "arg": "--t2j",
+            "help": "Text -> json convert",
+            "action": "store_true",
+        },
+        {
+            "arg": "--j2t",
+            "help": "Text -> json convert",
+            "action": "store_true",
+        },
+        {
+            "arg": "--md",
+            "help": "json -> Markdown generate",
+            "default": "",
+            "type": "str",
+        },
+        {
+            "arg": "--info",
+            "help": "Get ISO file information for web",
+            "default": "",
+            "type": "str",
+        },
+        {
+            "arg": "--save",
+            "help": "Save data",
+            "action": "store_true",
+        },
+    ]
+    for line_arg in list_args:
+        arg_name = line_arg.pop("arg")
+        arg_manager.add(arg_name, **line_arg)
+    infosystem.args = arg_manager.parse()
+
+
+@debug_logger
 async def main():
     """Main"""
     caller = get_caller_name()
@@ -185,67 +257,25 @@ async def main():
         # --- startup process -----------------------------------------------------
         message_start(get_caller_name())
         # --- processing block ----------------------------------------------------
-        arg_manager = Argument()
-        arg_manager.add(
-            "--debugdump",
-            help="Debug dump mode for common datas",
-            default=["conf", "dist", "mdia"],
-            nargs="*",
-            type=str,
-        )
-        arg_manager.add(
-            "--t2j", help="Text -> json convert", default=False, action="store_true"
-        )
-        arg_manager.add(
-            "--j2t", help="json -> Text convert", default=False, action="store_true"
-        )
-        arg_manager.add("--md", help="json -> Markdown generate", default="", type=str)
-        arg_manager.add(
-            "--info", help="Get ISO file information for web", default="", type=str
-        )
-        arg_manager.add("--save", help="Save data", default=False, action="store_true")
-        args = arg_manager.parse()
-        if args:
+        initarg()
+        if infosystem.args:
             info_conf, info_dist, info_mdia = initialize()
             path_dist = info_conf.get_path(key="PATH_DIST")
             path_mdia = info_conf.get_path(key="PATH_MDIA")
             if (targets := infosystem.args.debugdump) is not None:
-                if not targets:
-                    targets = ["conf", "dist", "mdia"]
-                print(f"{Color.br_yellow}{'=' * 80}{Color.reset}")
-                for target in targets:
-                    print(f"{Color.br_yellow}{'-' * 80}{Color.reset}")
-                    match target:
-                        case "conf":
-                            info_conf.dump(cut=False)
-                        case "dist":
-                            info_dist.dump(cut=False)
-                        case "mdia":
-                            info_mdia.dump(cut=False)
-                        case _:
-                            pass
-                    print(f"{Color.br_yellow}{'-' * 80}{Color.reset}")
-                print(f"{Color.br_yellow}{'=' * 80}{Color.reset}")
-                sys.exit(0)
-                # -----------------------------------------------------------------
-                info_dist.get_text2list(path_dist)
-                info_mdia.get_text2list(path_mdia, info_conf)
-                print(f"{Color.br_yellow}{'=' * 80}{Color.reset}")
-                info_dist.dump(cut=False)
-                print(f"{Color.br_yellow}{'-' * 80}{Color.reset}")
-                info_mdia.dump(cut=False)
-                print(f"{Color.br_yellow}{'=' * 80}{Color.reset}")
-                # -----------------------------------------------------------------
+                debugdump(targets, info_conf, info_dist, info_mdia)
             if infosystem.args.t2j == True:
                 info_dist.get_text2list(path_dist)
                 info_mdia.get_text2list(path_mdia, info_conf)
                 info_dist.save(path_dist.with_name(path_dist.name + ".json"))
                 info_mdia.save(path_mdia.with_name(path_mdia.name + ".json"), info_conf)
             if infosystem.args.j2t == True:
-                info_dist.get_text2list(path_dist.with_name(path_dist.name + ".json"))
-                info_mdia.get_text2list(
-                    path_mdia.with_name(path_mdia.name + ".json"), info_conf
-                )
+                info_dist.load(path_dist.with_name(path_dist.name + ".json"))
+                info_mdia.load(path_mdia.with_name(path_mdia.name + ".json"), info_conf)
+                # print(f"{Color.br_yellow}{'-' * 80}{Color.reset}")
+                # info_dist.dump()
+                # info_mdia.dump()
+                # print(f"{Color.br_yellow}{'-' * 80}{Color.reset}")
                 info_dist.put_list2text(path_dist, Text_fmat.dist)
                 info_mdia.put_list2text(
                     path_mdia,

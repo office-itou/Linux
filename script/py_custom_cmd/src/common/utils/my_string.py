@@ -150,48 +150,6 @@ def eprint(src_text: str, max_width: int = 0, wrap: bool = False):
     print(f"{reset_code}{display_text}{reset_code}")
 
 
-def spc_encode(src_list: list) -> list:
-    """Encoding whitespace characters on a per-list basis
-
-    Args:
-        src_list (list): Source data
-
-    Returns:
-        list: Conversion data
-    """
-    conv_list = []
-    for item in src_list:
-        conv_dict = {}
-        for key, value in item.items():
-            if isinstance(value, str):
-                value = value.replace(" ", "%20")
-            if not value:
-                value = "-"
-            conv_dict[key] = value
-        conv_list.append(conv_dict)
-    return conv_list
-
-
-def spc_decode(src_list: list) -> list:
-    """Decoding whitespace characters on a per-list basis
-
-    Args:
-        src_list (list): Source data
-
-    Returns:
-        list: Conversion data
-    """
-    conv_list = []
-    for item in src_list:
-        conv_dict = {}
-        for key, value in item.items():
-            if isinstance(value, str):
-                value = value.replace("%20", " ")
-            conv_dict[key] = value
-        conv_list.append(conv_dict)
-    return conv_list
-
-
 def omit_middle(src_text: str, max_len: int = 80, placeholder: str = "..") -> str:
     """Omit the intermediate characters.
 
@@ -219,35 +177,6 @@ def omit_middle(src_text: str, max_len: int = 80, placeholder: str = "..") -> st
         else ""
     )
     return f"{front_part[0]}{placeholder}{back_part[0]}"
-
-
-def generate_comment(modu_name: str, func_name: str, para: str = "") -> str:
-    """Omit the intermediate characters.
-
-    Args:
-        modu_name (str): Module name
-        func_name (str): Function name
-        para (str, optional): Parameter. Defaults to "".
-
-    Returns:
-        str: Comment message
-    """
-    from .my_message import colsize_mesg
-
-    front_part = ""
-    colsize_para = colsize_mesg
-    if modu_name:
-        text_modu = re.sub(r"^[^.]+.", "", modu_name)
-        colsize_modu = min(count_width(text_modu), 20)
-        colsize_call = min(count_width(func_name), 20)
-        colsize_para -= colsize_modu + colsize_call + 2
-        text_modu = omit_middle(text_modu, colsize_modu)
-        text_func = omit_middle(func_name, colsize_call)
-        front_part = f"{text_modu}({text_func}):"
-    text_para = ""
-    if para:
-        text_para = omit_middle(f"{para}", colsize_para)
-    return f"{front_part}{text_para}"
 
 
 # --- eof ---------------------------------------------------------------------

@@ -12,6 +12,12 @@ class Argument:
     """argparse wrapper class."""
 
     # -------------------------------------------------------------------------
+    class DefaultListAction(argparse.Action):
+        def __call__(self, parser, namespace, values, option_string=None):
+            values = values if values else []
+            setattr(namespace, self.dest, values)
+
+    # -------------------------------------------------------------------------
     def __init__(self):
         """Method for initializing the Argument class."""
         self.parser = argparse.ArgumentParser(allow_abbrev=False)
@@ -22,14 +28,16 @@ class Argument:
         self.args = None
 
     # -------------------------------------------------------------------------
-    def add(self, *args, **kwargs):
+    def add(self, name: str, **kwargs):
         """Method for adding command-line arguments.
 
         Args:
-            *args: Arguments for `add_argument`
+            name (str): Arguments for `add_argument`
             **kwargs: Arguments for `add_argument`
         """
-        self.parser.add_argument(*args, **kwargs)
+        if kwargs.get("type") == "str":
+            kwargs["type"] = str
+        self.parser.add_argument(name, **kwargs)
 
     # -------------------------------------------------------------------------
     def parse(self):

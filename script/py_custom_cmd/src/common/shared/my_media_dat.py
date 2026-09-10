@@ -1,6 +1,7 @@
 """media.dat I/O"""
 
 # --- Python library ----------------------------------------------------------
+import re
 from dataclasses import dataclass, fields
 from pathlib import Path
 from typing import Any
@@ -9,13 +10,11 @@ from typing import Any
 from ..utils.my_colors import Color
 from ..utils.my_config import infosystem
 from ..utils.my_debug import debug_logger
-from ..utils.my_error import handle_fatal_error
-from ..utils.my_fileio import get_text2list, put_list2text
 from ..utils.my_json import json_load, json_save
 from ..utils.my_markdown import list2markdown
-from ..utils.my_message import get_caller_name
-from ..utils.my_string import eprint, spc_decode, spc_encode
+from ..utils.my_string import eprint
 from .my_common_cfg import InfoConfiguration
+from .my_convert import get_text2list, put_list2text, spc_decode, spc_encode
 
 
 # -----------------------------------------------------------------------------
@@ -58,59 +57,28 @@ class InfoMedia:
     """media.dat interface class"""
 
     @debug_logger
-    def __init__(self, path_src: Path, info_conf: InfoConfiguration):
+    def __init__(self, path_src: Path, info_conf: InfoConfiguration) -> None:
         """Method for initializing the MediaData class.
         Args:
             path_src (Path, optional): Source path. Defaults to None.
             info_conf (Any, optional): common.cfg interface class. Defaults to None.
         """
         self._valid_fields = {f.name for f in fields(MediaData)}
-        self.data: list[MediaData] = []
         self.load(path_src, info_conf)
 
     def __getattr__(self, name: str) -> Any:
         if name in self._valid_fields:
-            if self.data:
-                return getattr(self.data[0], name)
-            return ""
+            return getattr(self.data[0], name) if self.data else ""
         raise AttributeError(
             f"'{self.__class__.__name__}' object has no attribute '{name}'"
         )
 
-    def finds(self, **kwargs) -> list[MediaData] | None:
-        """Data search in media.dat
-        Returns:
-            list[MediaData] | None: Search results for the key
-        """
-        results = []
-        for item in self.data:
-            if all(getattr(item, key, None) == value for key, value in kwargs.items()):
-                results.append(item)
-        return results
-
-    def find(self, **kwargs) -> MediaData | None:
-        """Data search in distribution.dat
-        Returns:
-            MediaData | None: Search results for the key(The first one)
-        """
-        results = self.finds(**kwargs)
-        return results[0]
-
     @debug_logger
     def load(self, path_src: Path, info_conf: InfoConfiguration) -> None:
-        """Load file
-        Args:
-            path_src (Path): Source path
-            info_conf (InfoConfiguration): common.cfg interface class
-        """
-        raw_data = json_load(path_src)
-        decoded_data = spc_decode(raw_data)
-        converted_data = info_conf.conv2data(decoded_data)
-        self.data = [
-            MediaData(**converted_data)
-            if isinstance(converted_data, dict)
-            else MediaData(item)
-            for item in converted_data
+        """Load file"""
+        self.data: list[MediaData] = [
+            MediaData(**d) if isinstance(d, dict) else d
+            for d in info_conf.conv2data(spc_decode(json_load(path_src)))
         ]
 
     @debug_logger
@@ -120,43 +88,70 @@ class InfoMedia:
             path_dest (str): Destination path
             info_conf (InfoConfiguration): common.cfg interface class
         """
-        # dict_list = [asdict(item) for item in self.data]
-        converted_data = info_conf.conv2variable(self.data)
-        encoded_data = spc_encode(converted_data)
-        json_save(path_dest, encoded_data)
+        json_save(path_dest, spc_encode(info_conf.conv2variable(self.data)))
 
     @debug_logger
-    def markdown(self, path_dest: Path, md_title: str) -> None:
+    def findregexp(self, queries: list[dict[str, str]]) -> list[MediaData] | None:
+        """Data search in common.cfg (Supports regular expressions)
+
+        Args:
+            queries (list[dict[str, str]]): Query
+
+        Returns:
+            list[DistributionData] | None: Search results for the query
+        """
+        list_results = []
+        compiled_queries = [
+            (q_key, re.compile(q_pattern))
+            for query in queries
+            for q_key, q_pattern in query.items()
+        ]
+        for class_data in self.data:
+            for q_key, pattern in compiled_queries:
+                target_str = getattr(class_data, q_key, None)
+                if target_str and pattern.search(target_str):
+                    list_results.append(class_data)
+                    break
+        return list_results
+
+    @debug_logger
+    def finds(self, **kwargs) -> list[MediaData] | None:
+        """Data search in common.cfg
+
+        Returns:
+            list[DistributionData] | None: Search results for the key
+        """
+        return [
+            item
+            for item in self.data
+            if all(getattr(item, key, None) == value for key, value in kwargs.items())
+        ]
+
+    @debug_logger
+    def find(self, **kwargs) -> list[MediaData] | None:
+        """_summary_
+
+        Returns:
+            list[DistributionData] | None: Search results for the key(The first one)
+        """
+        results = self.finds(**kwargs)
+        return results[0] if results else None
+
+    @debug_logger
+    def markdown(self, path_dest: str, md_title: str) -> None:
         """Generating Markdown
         Args:
             path_dest (str): Destination path
             md_title (str): Markdown title
         """
-        # dict_list = [asdict(item) for item in self.data]
-        list2markdown(path_dest, md_title, self.data)
+        list2markdown(path_dest, md_title, [item.__dict__ for item in self.data])
 
     @debug_logger
-    def dump(self, cut: bool = True) -> None:
+    def dump(self, wrap: bool = False) -> None:
         """Data dump output"""
         for line in self.data:
-            text = f"{line!s:.{infosystem.columns}s}" if cut else line
+            text = line if wrap else f"{line!s:.{infosystem.columns}s}"
             eprint(f"{Color.yellow}{text}{Color.reset}")
-
-    @debug_logger
-    def import_text(self, path_src: Path) -> None:
-        caller = get_caller_name()
-        try:
-            pass
-        except (OSError, Exception) as e:  # noqa: BLE001
-            handle_fatal_error(caller, e)
-
-    @debug_logger
-    def export_text(self, path_dest: Path, format_str: str) -> None:
-        caller = get_caller_name()
-        try:
-            pass
-        except (OSError, Exception) as e:  # noqa: BLE001
-            handle_fatal_error(caller, e)
 
     @debug_logger
     def get_text2list(self, path_src: Path, info_conf: InfoConfiguration) -> None:
@@ -167,11 +162,7 @@ class InfoMedia:
         """
         list_data = get_text2list(path_src)
         decoded_data = spc_decode(list_data)
-        converted_data = info_conf.conv2data(decoded_data)
-        self.data = [
-            MediaData(**converted_data) if isinstance(converted_data, dict) else item
-            for item in converted_data
-        ]
+        self.data = info_conf.conv2data(decoded_data)
 
     @debug_logger
     def put_list2text(
@@ -196,14 +187,7 @@ class InfoMedia:
         Args:
             info_conf (InfoConfiguration): common.cfg interface class
         """
-        converted_data = info_conf.conv2data(self.data)
-        if hasattr(self, "_to_mediadata_list"):
-            self.data = self._to_mediadata_list(converted_data)
-        else:
-            self.data = [
-                MediaData(**converted_data) if isinstance(converted_data) else item
-                for item in converted_data
-            ]
+        return info_conf.conv2data(self.data)
 
     @debug_logger
     def conv2variable(self, info_conf: InfoConfiguration) -> list[dict[str, Any]]:
@@ -225,5 +209,4 @@ class InfoMedia:
         return list_data
 
 
-#        dict_list = [asdict(item) for item in self.data]
 # --- eof ---------------------------------------------------------------------

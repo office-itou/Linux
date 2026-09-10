@@ -1,7 +1,6 @@
 """File I/O processing"""
 
 # --- Python library ----------------------------------------------------------
-import csv
 import os
 import re
 import shutil
@@ -133,46 +132,6 @@ def file_backup(path_src: Path) -> None:
                 os.remove(oldest_backup)
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(caller, e)
-
-
-@debug_logger
-def get_text2list(src_path: str) -> list[dict[str, str]]:
-    """Text file to list
-
-    Args:
-        src_path (str): Source path
-
-    Returns:
-        list[dict[str, str]]: Conversion data
-    """
-    read_data = file_read(src_path)
-    lines = (line.strip() for line in read_data.splitlines() if line.strip())
-    sanitized_lines = (re.sub(r"[ \t]+", ",", line) for line in lines)
-    return list(csv.DictReader(sanitized_lines))
-
-
-@debug_logger
-def put_list2text(dst_path: str, src_data: list, format_str: str) -> None:
-    """list to text file
-
-    Args:
-        dst_path (str): Destination path
-        src_data (list): Source data
-        format_str (str): Output format
-    """
-    if not src_data:
-        return
-    print(f"src_data:{src_data}")
-    header_dict = {k: k for d in src_data for k in d}
-    cleaned_data_list = [
-        {k: str(v).replace(" ", "%20").replace("`", "") for k, v in d.items()}
-        for d in src_data
-    ]
-    text_list = [format_str.format(**header_dict)] + [
-        format_str.format(**d) for d in cleaned_data_list
-    ]
-    write_data = "\n".join(text_list) + "\n"
-    file_write(dst_path, write_data, text=True, backup=True)
 
 
 # --- eof ---------------------------------------------------------------------

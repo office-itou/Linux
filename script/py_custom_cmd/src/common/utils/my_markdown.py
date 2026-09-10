@@ -1,7 +1,6 @@
 """Markdown processing"""
 
 # --- Python library ----------------------------------------------------------
-import copy
 import re
 
 import pandas as pd
@@ -10,62 +9,6 @@ import pandas as pd
 from .my_debug import debug_logger
 from .my_fileio import file_read, file_write
 from .my_string import count_width
-
-
-# -----------------------------------------------------------------------------
-@debug_logger
-def spc_encode4md(src_list_data: list) -> list:
-    """Encoding whitespace characters and html on a per-list basis
-
-    Args:
-        src_list_data (list): Source data
-
-    Returns:
-        list: Conversion data
-    """
-    conv_list_data = copy.deepcopy(src_list_data)
-    for i, word in enumerate(conv_list_data):
-        if not isinstance(word, str):
-            continue
-        word = re.sub(r"^`([^`]+)`$", r"\1", word)
-        word = word.replace(" ", "%20")
-        word = word.replace(r":\_", ":_")
-        word = word.replace(r"\_:", "_:")
-        conv_list_data[i] = word
-    return conv_list_data
-
-
-# -----------------------------------------------------------------------------
-@debug_logger
-def spc_decode4md(src_list_data: list[dict]) -> list:
-    """Decoding whitespace characters and html on a per-list basis
-
-    Args:
-        src_list_data (list[dict]): Source data
-
-    Returns:
-        list: Conversion data
-    """
-    url_pattern = re.compile(
-        r"^https?://(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}"
-        r"(?:/[a-zA-Z0-9._~:/?#\[\]@!$&\'()*+,;=%-]*)?$"
-    )
-    conv_list_data = []
-    for item in src_list_data:
-        dict_orig = {}
-        for key, value in item.items():
-            if isinstance(value, str):
-                if url_pattern.match(value):
-                    value = f"`{value}`"
-                value = re.sub(r"^(https?:/[^ ]+)", r"`\1`", value)
-                value = value.replace("%20", " ")
-                value = value.replace(":_", r":\_")
-                value = value.replace("_:", r"\_:")
-                if value.startswith("#"):
-                    value = f"`{value}`"
-            dict_orig[key] = value
-        conv_list_data.append(dict_orig)
-    return conv_list_data
 
 
 # -----------------------------------------------------------------------------
@@ -79,12 +22,31 @@ def list2markdown(dst_path: str, md_title: str, src_data: list) -> None:
         src_data (list): Source data
     """
     spc = " " * 2
+    url_pattern = re.compile(
+        r"^https?://(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}"
+        r"(?:/[a-zA-Z0-9._~:/?#\[\]@!$&\'()*+,;=%-]*)?$"
+    )
+    comment_pattern = re.compile(r"^#.*$")
+    # addr_pattern = re.compile(r"^[A-Z0-9]+_ADDR$")
+    # ip_pattern = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
 
-    def generate(data: list):
-        text = spc_decode4md(data)
-        header = ""
-        align = ""
-        df = pd.DataFrame(text)
+    def conversion_url(list_data: list) -> list:
+        conv_list_data = []
+        for dict_data in list_data:
+            dict_orig = {
+                key: f"`{value}`"
+                if (
+                    isinstance(value, str)
+                    and (url_pattern.match(value) or comment_pattern.match(value))
+                )
+                else value
+                for key, value in dict_data.items()
+            }
+            conv_list_data.append(dict_orig)
+        return conv_list_data
+
+    def generate(list_data: list):
+        df = pd.DataFrame(conversion_url(list_data))
         # --- get the width of each column ----------------------------------------
         col_sizes = {}
         for name in df.columns:
@@ -92,6 +54,8 @@ def list2markdown(dst_path: str, md_title: str, src_data: list) -> None:
             max_size = df[name].apply(lambda x: count_width(str(x))).max()
             col_sizes[name] = max(max_size, cnt_name)
         # --- header and divider line ---------------------------------------------
+        header = ""
+        align = ""
         for name in df.columns:
             colsize = col_sizes[name]
             name_str = str(name)

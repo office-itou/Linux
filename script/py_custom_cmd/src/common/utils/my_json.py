@@ -9,7 +9,7 @@ from typing import Any
 from .my_debug import debug_logger
 from .my_error import handle_fatal_error
 from .my_fileio import file_read, file_write
-from .my_message import get_caller_name
+from .my_message import get_caller_name, message_alert
 
 
 # -----------------------------------------------------------------------------
@@ -28,6 +28,7 @@ def json_load(src_path: Path) -> Any:
         read_data = file_read(src_path)
         return json.loads(read_data)
     except (OSError, Exception) as e:  # noqa: BLE001
+        message_alert(caller, f"target file: {src_path}")
         handle_fatal_error(caller, e)
 
 
@@ -45,6 +46,7 @@ def json_save(dst_path: Path, src_data: Any) -> None:
         write_data = json.dumps(src_data, ensure_ascii=False, indent=4)
         file_write(dst_path, write_data, text=True, backup=True)
     except (OSError, Exception) as e:  # noqa: BLE001
+        message_alert(caller, f"target file: {dst_path}")
         handle_fatal_error(caller, e)
 
 

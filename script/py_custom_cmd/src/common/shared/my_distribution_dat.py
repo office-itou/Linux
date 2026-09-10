@@ -14,12 +14,10 @@ from packaging.version import parse as parse_version
 from ..utils.my_colors import Color
 from ..utils.my_config import infosystem
 from ..utils.my_debug import debug_logger
-from ..utils.my_error import handle_fatal_error
-from ..utils.my_fileio import get_text2list, put_list2text
 from ..utils.my_json import json_load, json_save
 from ..utils.my_markdown import list2markdown
-from ..utils.my_message import get_caller_name
-from ..utils.my_string import eprint, spc_decode, spc_encode
+from ..utils.my_string import eprint
+from .my_convert import get_text2list, put_list2text, spc_decode, spc_encode
 
 # -----------------------------------------------------------------------------
 LIFE_MAP = {
@@ -80,78 +78,27 @@ class InfoDistribution:
     """distribution.dat interface class"""
 
     @debug_logger
-    def __init__(self, path_src: Path):
+    def __init__(self, path_src: Path) -> None:
         """Method for initializing the DistributionData class.
         Args:
             path_src (Path, optional): Source path. Defaults to None.
         """
         self._valid_fields = {f.name for f in fields(DistributionData)}
-        self.data: list[DistributionData] = []
         self.load(path_src)
 
     def __getattr__(self, name: str) -> Any:
         if name in self._valid_fields:
-            if self.data:
-                return getattr(self.data[0], name)
-            return ""
+            return getattr(self.data[0], name) if self.data else ""
         raise AttributeError(
             f"'{self.__class__.__name__}' object has no attribute '{name}'"
         )
 
-    def findregexp(
-        self, queries: list[dict[str, str]]
-    ) -> list[DistributionData] | None:
-        """Data search in distribution.dat(Supports regular expressions)
-        Args:
-            queries (list[dict[str, str]]): Query
-        Returns:
-            list[DistributionData] | None: Search results for the query
-        """
-        list_results = []
-        for data in self.data:
-            match = True
-            for query in queries:
-                for key, value in query.items():
-                    attr_val = getattr(data, key, "")
-                    if not re.search(value, attr_val):
-                        match = False
-                        break
-            if match:
-                list_results.append(data)
-        return list_results
-
-    def finds(self, **kwargs) -> list[DistributionData] | None:
-        """Data search in distribution.dat
-        Returns:
-            list[DistributionData] | None: Search results for the key
-        """
-        results = []
-        for item in self.data:
-            if all(getattr(item, key, None) == value for key, value in kwargs.items()):
-                results.append(item)
-        return results
-
-    def find(self, **kwargs) -> DistributionData | None:
-        """Data search in distribution.dat(The first one)
-        Returns:
-            DistributionData | None: Search results for the key(The first one)
-        """
-        results = self.finds(**kwargs)
-        return results[0]
-
     @debug_logger
     def load(self, path_src: Path) -> None:
-        """Load file
-        Args:
-            path_src (Path): Source path
-        """
-        raw_data = json_load(path_src)
-        decoded_data = spc_decode(raw_data)
-        self.data = [
-            DistributionData(**decoded_data)
-            if isinstance(decoded_data, dict)
-            else DistributionData(item)
-            for item in decoded_data
+        """Load file"""
+        self.data: list[DistributionData] = [
+            DistributionData(**d) if isinstance(d, dict) else d
+            for d in spc_decode(json_load(path_src))
         ]
 
     @debug_logger
@@ -160,42 +107,72 @@ class InfoDistribution:
         Args:
             path_dest (Path): Destination path
         """
-        # dict_list = [asdict(item) for item in self.data]
-        encoded_data = spc_encode(self.data)
-        json_save(path_dest, encoded_data)
+        json_save(path_dest, spc_encode(self.data))
 
     @debug_logger
-    def markdown(self, path_dest: Path, md_title: str) -> None:
+    def findregexp(
+        self, queries: list[dict[str, str]]
+    ) -> list[DistributionData] | None:
+        """Data search in common.cfg (Supports regular expressions)
+
+        Args:
+            queries (list[dict[str, str]]): Query
+
+        Returns:
+            list[DistributionData] | None: Search results for the query
+        """
+        list_results = []
+        compiled_queries = [
+            (q_key, re.compile(q_pattern))
+            for query in queries
+            for q_key, q_pattern in query.items()
+        ]
+        for class_data in self.data:
+            for q_key, pattern in compiled_queries:
+                target_str = getattr(class_data, q_key, None)
+                if target_str and pattern.search(target_str):
+                    list_results.append(class_data)
+                    break
+        return list_results
+
+    @debug_logger
+    def finds(self, **kwargs) -> list[DistributionData] | None:
+        """Data search in common.cfg
+
+        Returns:
+            list[DistributionData] | None: Search results for the key
+        """
+        return [
+            item
+            for item in self.data
+            if all(getattr(item, key, None) == value for key, value in kwargs.items())
+        ]
+
+    @debug_logger
+    def find(self, **kwargs) -> list[DistributionData] | None:
+        """_summary_
+
+        Returns:
+            list[DistributionData] | None: Search results for the key(The first one)
+        """
+        results = self.finds(**kwargs)
+        return results[0] if results else None
+
+    @debug_logger
+    def markdown(self, path_dest: str, md_title: str) -> None:
         """Generating Markdown
         Args:
-            path_dest (Path): Destination path
+            path_dest (str): Destination path
             md_title (str): Markdown title
         """
-        # dict_list = [asdict(item) for item in self.data]
-        list2markdown(path_dest, md_title, self.data)
+        list2markdown(path_dest, md_title, [item.__dict__ for item in self.data])
 
     @debug_logger
-    def dump(self, cut: bool = True) -> None:
+    def dump(self, wrap: bool = False) -> None:
         """Data dump output"""
         for line in self.data:
-            text = f"{line!s:.{infosystem.columns}s}" if cut else line
+            text = line if wrap else f"{line!s:.{infosystem.columns}s}"
             eprint(f"{Color.yellow}{text}{Color.reset}")
-
-    @debug_logger
-    def import_text(self, path_src: Path) -> None:
-        caller = get_caller_name()
-        try:
-            pass
-        except (OSError, Exception) as e:  # noqa: BLE001
-            handle_fatal_error(caller, e)
-
-    @debug_logger
-    def export_text(self, path_dest: Path, format_str: str) -> None:
-        caller = get_caller_name()
-        try:
-            pass
-        except (OSError, Exception) as e:  # noqa: BLE001
-            handle_fatal_error(caller, e)
 
     @debug_logger
     def get_text2list(self, path_src: Path) -> None:
@@ -204,11 +181,7 @@ class InfoDistribution:
             path_src (Path): Source path
         """
         list_data = get_text2list(path_src)
-        decoded_data = spc_decode(list_data)
-        self.data = [
-            DistributionData(**decoded_data) if isinstance(decoded_data, dict) else item
-            for item in decoded_data
-        ]
+        self.data = spc_decode(list_data)
 
     @debug_logger
     def put_list2text(self, path_dest: Path, format_str: str) -> None:

@@ -2,8 +2,7 @@
 
 # --- Python library ----------------------------------------------------------
 import re
-import sys
-from dataclasses import asdict, dataclass, fields
+from dataclasses import dataclass, fields
 from pathlib import Path
 from typing import Any
 
@@ -28,52 +27,79 @@ class ConfigurationData:
     comment: str = ""
 
 
+@debug_logger
 class InfoConfiguration:
     """common.cfg interface class"""
 
     @debug_logger
-    def __init__(self):
+    def __init__(self) -> None:
         """Method for initializing the ConfigurationData class."""
         self._valid_fields = {f.name for f in fields(ConfigurationData)}
-        self.data: list[ConfigurationData] = []
         self.load()
 
+    @debug_logger
     def __getattr__(self, name: str) -> Any:
         if name in self._valid_fields:
-            if self.data:
-                return getattr(self.data[0], name)
-            return ""
+            return getattr(self.data[0], name) if self.data else ""
         raise AttributeError(
             f"'{self.__class__.__name__}' object has no attribute '{name}'"
         )
 
-    def finds(self, **kwargs) -> list[ConfigurationData] | None:
-        """Data search in common.cfg
-        Returns:
-            list[ConfigurationData] | None: Search results for the key
-        """
-        results = []
-        for item in self.data:
-            if all(getattr(item, key, None) == value for key, value in kwargs.items()):
-                results.append(item)
-        return results
-
-    def find(self, **kwargs) -> ConfigurationData | None:
-        """Data search in distribution.dat
-        Returns:
-            ConfigurationData | None: Search results for the key(The first one)
-        """
-        results = self.finds(**kwargs)
-        return results[0]
-
     @debug_logger
     def load(self) -> None:
         """Load file"""
-        raw_list = load()
-        self.data = [
-            ConfigurationData(**item) if isinstance(item, dict) else item
-            for item in raw_list
+        self.data: list[ConfigurationData] = [
+            ConfigurationData(**d) if isinstance(d, dict) else d for d in load()
         ]
+
+    @debug_logger
+    def findregexp(
+        self, queries: list[dict[str, str]]
+    ) -> list[ConfigurationData] | None:
+        """Data search in common.cfg (Supports regular expressions)
+
+        Args:
+            queries (list[dict[str, str]]): Query
+
+        Returns:
+            list[ConfigurationData] | None: Search results for the query
+        """
+        list_results = []
+        compiled_queries = [
+            (q_key, re.compile(q_pattern))
+            for query in queries
+            for q_key, q_pattern in query.items()
+        ]
+        for class_data in self.data:
+            for q_key, pattern in compiled_queries:
+                target_str = getattr(class_data, q_key, None)
+                if target_str and pattern.search(target_str):
+                    list_results.append(class_data)
+                    break
+        return list_results
+
+    @debug_logger
+    def finds(self, **kwargs) -> list[ConfigurationData] | None:
+        """Data search in common.cfg
+
+        Returns:
+            list[ConfigurationData] | None: Search results for the key
+        """
+        return [
+            item
+            for item in self.data
+            if all(getattr(item, key, None) == value for key, value in kwargs.items())
+        ]
+
+    @debug_logger
+    def find(self, **kwargs) -> list[ConfigurationData] | None:
+        """_summary_
+
+        Returns:
+            list[ConfigurationData] | None: Search results for the key(The first one)
+        """
+        results = self.finds(**kwargs)
+        return results[0] if results else None
 
     @debug_logger
     def markdown(self, path_dest: str, md_title: str) -> None:
@@ -82,14 +108,13 @@ class InfoConfiguration:
             path_dest (str): Destination path
             md_title (str): Markdown title
         """
-        dict_list = [asdict(item) for item in self.data]
-        list2markdown(path_dest, md_title, dict_list)
+        list2markdown(path_dest, md_title, [item.__dict__ for item in self.data])
 
     @debug_logger
-    def dump(self, cut: bool = True) -> None:
+    def dump(self, wrap: bool = False) -> None:
         """Data dump output"""
         for line in self.data:
-            text = f"{line!s:.{infosystem.columns}s}" if cut else line
+            text = line if wrap else f"{line!s:.{infosystem.columns}s}"
             eprint(f"{Color.yellow}{text}{Color.reset}")
 
     @debug_logger
@@ -100,8 +125,7 @@ class InfoConfiguration:
         Returns:
             list: Result
         """
-        dict_list = [asdict(item) for item in self.data]
-        return conv2data(dict_list, data)
+        return conv2data([item.__dict__ for item in self.data], data)
 
     @debug_logger
     def conv2variable(self, data: list) -> list:
@@ -111,26 +135,18 @@ class InfoConfiguration:
         Returns:
             list: Conversion data
         """
-        dict_list = [asdict(item) for item in self.data]
-        return conv2variable(dict_list, data)
-
-    @debug_logger
-    def get_path(self, key: str) -> Path:
-        """Gets the key path.
-        Args:
-            key (str): Key
-        Returns:
-            Path: Path
-        """
-        return Path(self.find(key=key).value)
+        return conv2variable([item.__dict__ for item in self.data], data)
 
 
-@debug_logger
-def load() -> list[dict[str, str]]:
+# -----------------------------------------------------------------------------
+def load() -> list[ConfigurationData] | None:
     """load data in common.cfg
 
+    Raises:
+        SystemExit: raise SystemExit from e
+
     Returns:
-        list[dict[str, str]]: list_conf
+        list[ConfigurationData] | None: list[ConfigurationData]
     """
     caller = get_caller_name()
     try:
@@ -145,42 +161,35 @@ def load() -> list[dict[str, str]]:
                 break
         if not path_conf:
             message_alert(caller, f"file not found: {file_conf}")
-            sys.exit(1)
+            raise SystemExit(1)
         # --- get setting items ---------------------------------------------------
         data_dist = file_read(path_conf)
-        pattern = re.compile(r'^(\w+)="([^"]*)"\s*(?:#\s*(.*))?$')
-        list_conf = []
+        line_pattern = re.compile(r'^(\w+)="([^"]*)"\s*(?:(#\s*.*))?$')
+        var_pattern = re.compile(r":_([A-Z0-9_]+)_:")
+        dict_conf: dict[str, str] = {}
+        list_conf: list[ConfigurationData] = []
         for line in data_dist.splitlines():
             line_raw = line.strip()
-            if not re.match("^[A-Z]", line_raw):
+            if not line_raw or not line_raw[0].isupper():
                 continue
-            # --- convert ---------------------------------------------------------
-            match = pattern.match(line_raw)
-            if match:
-                var_name = match.group(1)  # Variable Name
-                value = match.group(2)  # Setting Value
-                comment = match.group(3)  # Comment (None if not applicable)
-                list_conf.append({"key": var_name, "value": value, "comment": comment})
-        # --- convert setting items -----------------------------------------------
-        pattern = re.compile(r":_([A-Z0-9_]+)_:")
-        dict_conf = {}
-        for i, item in enumerate(list_conf):
-            key = item["key"]
-            value = item["value"]
-            comment = item["comment"]
-            dict_conf[key] = value
-            for _ in range(10):
-                match = pattern.search(value)
-                if not match:
-                    break
-                match_text = match.group(0)
-                match_key = match.group(1)
-                if match_key in dict_conf:
-                    value = value.replace(match_text, dict_conf[match_key])
-                else:
-                    break
-            # --- generate output data --------------------------------------------
-            list_conf[i] = {"key": key, "value": value, "comment": item["comment"]}
+            if match := line_pattern.match(line_raw):
+                key = match.group(1)
+                value = match.group(2)
+                comment = match.group(3) or ""
+                for _ in range(10):
+                    if var_match := var_pattern.search(value):
+                        match_text = var_match.group(0)
+                        match_key = var_match.group(1)
+                        if match_key in dict_conf:
+                            value = value.replace(match_text, dict_conf[match_key])
+                        else:
+                            break
+                    else:
+                        break
+                dict_conf[key] = value
+                list_conf.append(
+                    ConfigurationData(key=key, value=value, comment=comment)
+                )
         # --- return --------------------------------------------------------------
         return list_conf
     except (OSError, Exception) as e:  # noqa: BLE001

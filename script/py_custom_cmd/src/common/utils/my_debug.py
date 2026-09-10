@@ -8,8 +8,7 @@ from collections.abc import Callable
 # --- my library --------------------------------------------------------------
 from .my_colors import Color
 from .my_config import infosystem
-from .my_message import message_debug
-from .my_string import generate_comment
+from .my_message import generate_comment, message_debug
 
 
 # -----------------------------------------------------------------------------
