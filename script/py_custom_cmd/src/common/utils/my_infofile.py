@@ -71,13 +71,6 @@ def get_volume_label(device: str) -> str:
     return run_subprocess(parameter)
 
 
-# -----------------------------------------------------------------------------
-# descript: get web information data
-#   input : target_path           : input
-#   output:                       : unused
-#   return: InfoFile              : output
-#   global:                       : unused
-# -----------------------------------------------------------------------------
 @debug_logger
 def get_info(target_path: str) -> FileData:
     """Get file information data

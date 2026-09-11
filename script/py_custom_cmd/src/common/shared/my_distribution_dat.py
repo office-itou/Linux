@@ -96,9 +96,10 @@ class InfoDistribution:
     @debug_logger
     def load(self, path_src: Path) -> None:
         """Load file"""
+        raw_data = json_load(path_src)
+        decoded_data = spc_decode(raw_data)
         self.data: list[DistributionData] = [
-            DistributionData(**d) if isinstance(d, dict) else d
-            for d in spc_decode(json_load(path_src))
+            DistributionData(**d) if isinstance(d, dict) else d for d in decoded_data
         ]
 
     @debug_logger
@@ -107,7 +108,9 @@ class InfoDistribution:
         Args:
             path_dest (Path): Destination path
         """
-        json_save(path_dest, spc_encode(self.data))
+        data_dicts = [d.__dict__ if hasattr(d, "__dict__") else d for d in self.data]
+        encoded_data = spc_encode(data_dicts)
+        json_save(path_dest, encoded_data)
 
     @debug_logger
     def findregexp(
@@ -165,7 +168,8 @@ class InfoDistribution:
             path_dest (str): Destination path
             md_title (str): Markdown title
         """
-        list2markdown(path_dest, md_title, [item.__dict__ for item in self.data])
+        data_dicts = [d.__dict__ if hasattr(d, "__dict__") else d for d in self.data]
+        list2markdown(path_dest, md_title, data_dicts)
 
     @debug_logger
     def dump(self, wrap: bool = False) -> None:
@@ -180,8 +184,11 @@ class InfoDistribution:
         Args:
             path_src (Path): Source path
         """
-        list_data = get_text2list(path_src)
-        self.data = spc_decode(list_data)
+        raw_data = get_text2list(path_src)
+        decoded_data = spc_decode(raw_data)
+        self.data: list[DistributionData] = [
+            DistributionData(**d) if isinstance(d, dict) else d for d in decoded_data
+        ]
 
     @debug_logger
     def put_list2text(self, path_dest: Path, format_str: str) -> None:
@@ -190,7 +197,9 @@ class InfoDistribution:
             path_dest (Path): Destination path
             format_str (str): Output format
         """
-        put_list2text(path_dest, self.data, format_str)
+        data_dicts = [d.__dict__ if hasattr(d, "__dict__") else d for d in self.data]
+        encoded_data = spc_encode(data_dicts)
+        put_list2text(path_dest, encoded_data, format_str)
         # put_list2text(path_dest, [asdict(item) for item in self.data], format_str)
 
     @debug_logger

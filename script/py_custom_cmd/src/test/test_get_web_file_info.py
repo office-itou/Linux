@@ -55,7 +55,6 @@ def initialize() -> tuple[InfoConfiguration, InfoDistribution, InfoMedia]:
     info_conf = InfoConfiguration()
     path_dist = info_conf.get_path(key="PATH_DIST")
     path_mdia = info_conf.get_path(key="PATH_MDIA")
-    sys.exit(0)
     info_dist = InfoDistribution(path_dist.with_name(path_dist.name + ".json"))
     info_mdia = InfoMedia(path_mdia.with_name(path_mdia.name + ".json"), info_conf)
     # -------------------------------------------------------------------------
@@ -142,9 +141,9 @@ async def get_web_file_info(
     ) as session:
         for tget_mdia in info_mdia.data:
             if (
-                tget_mdia.entry_flag != "o"
-                or tget_mdia.web_regexp == "-"
-                or tget_mdia.iso_path == "-"
+                tget_mdia.entry_flag == ""
+                or not tget_mdia.web_regexp
+                or not tget_mdia.iso_path
             ):
                 continue
             message_info(get_caller_name(), tget_mdia.web_regexp, True)
@@ -184,11 +183,11 @@ def debugdump(
         print(f"{Color.br_yellow}{'-' * 80}{Color.reset}")
         match target:
             case "conf":
-                info_conf.dump(cut=False)
+                info_conf.dump(wrap=True)
             case "dist":
-                info_dist.dump(cut=False)
+                info_dist.dump(wrap=True)
             case "mdia":
-                info_mdia.dump(cut=False)
+                info_mdia.dump(wrap=True)
             case _:
                 pass
         print(f"{Color.br_yellow}{'-' * 80}{Color.reset}")
@@ -276,16 +275,30 @@ async def main():
                 # info_dist.dump()
                 # info_mdia.dump()
                 # print(f"{Color.br_yellow}{'-' * 80}{Color.reset}")
-                info_dist.put_list2text(path_dist, Text_fmat.dist)
-                info_mdia.put_list2text(
-                    path_mdia,
-                    Text_fmat.mdia,
-                    info_conf,
-                )
+                # info_dist.put_list2text(path_dist, Text_fmat.dist)
+                # info_mdia.put_list2text(                    path_mdia,                    Text_fmat.mdia,                    info_conf,                )
             if target := infosystem.args.info:
                 if target == "a":
                     pass
                 await get_web_file_info(info_conf, info_dist, info_mdia)
+                # -------------------------------------------------------------
+                dirs_rmak = info_conf.get_path("DIRS_RMAK")
+                for data_mdia in info_mdia.data:
+                    if data_mdia.cfg_path:
+                        path_psed = Path(data_mdia.cfg_path)
+                        preseed = (
+                            ""
+                            if data_mdia.cfg_path.endswith("/")
+                            else path_psed.parent.name
+                        )
+                        if preseed and data_mdia.iso_path:
+                            path_isos = Path(data_mdia.iso_path).resolve()
+                            path_file = (
+                                dirs_rmak
+                                / f"{path_isos.stem}_{preseed}{path_isos.suffix}"
+                            )
+                            data_mdia.rmk_path = str(path_file.resolve())
+                # -------------------------------------------------------------
                 generate_md("./", info_conf, info_dist, info_mdia)
                 data_save(info_conf, info_dist, info_mdia)
             if dirs := infosystem.args.md:

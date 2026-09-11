@@ -23,11 +23,15 @@ def spc_encode(src_list: list) -> list:
     for item in src_list:
         conv_dict = {}
         for key, value in item.items():
+            if not value:
+                value = "-"
+            if isinstance(value, (int, float)):
+                value = str(value)
             if isinstance(value, str):
                 value = value.replace(" ", "%20")
                 value = value.strip("`")
-            if not value:
-                value = "-"
+                if value.endswith("/"):
+                    value = value + "-"
             conv_dict[key] = value
         conv_list.append(conv_dict)
     return conv_list
@@ -47,8 +51,8 @@ def spc_decode(src_list: list) -> list:
         conv_dict = {}
         for key, value in item.items():
             if isinstance(value, str):
-                value = value.replace("%20", " ")
-                value = re.sub(r"^-$", "", value) if key != "entry_flag" else value
+                value = value.replace("%20", " ").strip("-")
+                # value = re.sub(r"^-$", "", value) if key != "entry_flag" else value
             conv_dict[key] = value
         conv_list.append(conv_dict)
     return conv_list
@@ -67,6 +71,8 @@ def spc_encode4md(src_list_data: list) -> list:
     """
     conv_list_data = copy.deepcopy(src_list_data)
     for i, word in enumerate(conv_list_data):
+        if isinstance(word, (int, float)):
+            word = str(word)
         if not isinstance(word, str):
             continue
         word = re.sub(r"^`([^`]+)`$", r"\1", word)
@@ -137,12 +143,10 @@ def put_list2text(dst_path: str, src_data: list, format_str: str) -> None:
     """
     if not src_data:
         return
-    header_dict = {k: k for d in src_data for k in d}
-    cleaned_data_list = spc_encode(
-        [{k: str(v) for k, v in d.items()} for d in src_data]
-    )
+    header_dict = {k: k for d in src_data for k, v in d.items()}
+    data_dicts = [d.__dict__ if hasattr(d, "__dict__") else d for d in src_data]
     text_list = [format_str.format(**header_dict)] + [
-        format_str.format(**d) for d in cleaned_data_list
+        format_str.format(**d) for d in data_dicts
     ]
     write_data = "\n".join(text_list) + "\n"
     file_write(dst_path, write_data, text=True, backup=True)

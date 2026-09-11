@@ -76,9 +76,11 @@ class InfoMedia:
     @debug_logger
     def load(self, path_src: Path, info_conf: InfoConfiguration) -> None:
         """Load file"""
+        raw_data = json_load(path_src)
+        decoded_data = spc_decode(raw_data)
+        converted_data = info_conf.conv2data(decoded_data)
         self.data: list[MediaData] = [
-            MediaData(**d) if isinstance(d, dict) else d
-            for d in info_conf.conv2data(spc_decode(json_load(path_src)))
+            MediaData(**d) if isinstance(d, dict) else d for d in converted_data
         ]
 
     @debug_logger
@@ -88,7 +90,10 @@ class InfoMedia:
             path_dest (str): Destination path
             info_conf (InfoConfiguration): common.cfg interface class
         """
-        json_save(path_dest, spc_encode(info_conf.conv2variable(self.data)))
+        data_dicts = [d.__dict__ if hasattr(d, "__dict__") else d for d in self.data]
+        converted_data = info_conf.conv2variable(data_dicts)
+        encoded_data = spc_encode(converted_data)
+        json_save(path_dest, encoded_data)
 
     @debug_logger
     def findregexp(self, queries: list[dict[str, str]]) -> list[MediaData] | None:
@@ -144,7 +149,8 @@ class InfoMedia:
             path_dest (str): Destination path
             md_title (str): Markdown title
         """
-        list2markdown(path_dest, md_title, [item.__dict__ for item in self.data])
+        data_dicts = [d.__dict__ if hasattr(d, "__dict__") else d for d in self.data]
+        list2markdown(path_dest, md_title, data_dicts)
 
     @debug_logger
     def dump(self, wrap: bool = False) -> None:
@@ -160,9 +166,12 @@ class InfoMedia:
             path_src (str): Source path
             info_conf (InfoConfiguration): common.cfg interface class
         """
-        list_data = get_text2list(path_src)
-        decoded_data = spc_decode(list_data)
-        self.data = info_conf.conv2data(decoded_data)
+        raw_data = get_text2list(path_src)
+        decoded_data = spc_decode(raw_data)
+        converted_data = info_conf.conv2data(decoded_data)
+        self.data: list[MediaData] = [
+            MediaData(**d) if isinstance(d, dict) else d for d in converted_data
+        ]
 
     @debug_logger
     def put_list2text(
@@ -174,12 +183,10 @@ class InfoMedia:
             format_str (str): Output format
             info_conf (InfoConfiguration): common.cfg interface class
         """
-        # [asdict(item) for item in self.conv2variable(info_conf)],
-        put_list2text(
-            path_dest,
-            self.conv2variable(info_conf),
-            format_str,
-        )
+        data_dicts = [d.__dict__ if hasattr(d, "__dict__") else d for d in self.data]
+        converted_data = info_conf.conv2variable(data_dicts)
+        encoded_data = spc_encode(converted_data)
+        put_list2text(path_dest, encoded_data, format_str)
 
     @debug_logger
     def conv2data(self, info_conf: InfoConfiguration) -> None:

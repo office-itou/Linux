@@ -76,15 +76,15 @@ class InfoWeb:
         return url_strip(data)
 
 
-BASE_HEADERS = {
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-    "Accept-Encoding": "gzip, deflate, br, zstd",
-    "Accept-Language": "ja,en;q=0.9,en-GB;q=0.8,en-US;q=0.7,ja-JP;q=0.6",
-    "Cache-Control": "max-age=0",
-    "Connection": "keep-alive",
-    "Content-Security-Policy": "upgrade-insecure-requests",
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36 Edg/152.0.0.0",
-}
+# BASE_HEADERS = {
+#    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+#    "Accept-Encoding": "gzip, deflate, br, zstd",
+#    "Accept-Language": "ja,en;q=0.9,en-GB;q=0.8,en-US;q=0.7,ja-JP;q=0.6",
+#    "Cache-Control": "max-age=0",
+#    "Connection": "keep-alive",
+#    "Content-Security-Policy": "upgrade-insecure-requests",
+#    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36 Edg/152.0.0.0",
+# }
 
 
 @debug_logger
@@ -120,10 +120,13 @@ async def get_response(request_func: Callable, target_url: str) -> WebData:
     Returns:
         WebData: Response data
     """
-    host_match = re.sub(r"http[s]*://([^/]+)/.*$", r"\1", target_url)
+    if not target_url:
+        message_alert(get_caller_name(), f"Target URL error: [{target_url}]")
+        return
+    # host_match = re.sub(r"http[s]*://([^/]+)/.*$", r"\1", target_url)
     req_url = target_url
-    req_headers = BASE_HEADERS.copy()
-    req_headers["Host"] = host_match if host_match else req_headers["Host"]
+    # req_headers = BASE_HEADERS.copy()
+    # req_headers["Host"] = host_match if host_match else req_headers["Host"]
     req_headers = ""
     info = WebData()
     for r in range(3):
@@ -163,10 +166,12 @@ async def get_response(request_func: Callable, target_url: str) -> WebData:
             asyncio.TimeoutError,
         ) as e:
             message_alert(get_caller_name(), f"HTTP/Connection error: {e}")
-            message_warn(get_caller_name(), f"retry({r}): {target_url}")
+            message_warn(get_caller_name(), f"retry({r}): [{target_url}]")
             await asyncio.sleep(1)
         except Exception as e:  # noqa: BLE001
             message_alert(get_caller_name(), f"Fatal error: {e}")
+            # message_warn(get_caller_name(), f"retry({r}): {target_url}")
+            # await asyncio.sleep(1)
             raise SystemExit
     return info
 
@@ -227,101 +232,18 @@ async def get_info(session: Any, target_regexp: str, target_path: str) -> WebDat
         if match_rear:
             match_ptrn = match_ptrn + "/"
         target_url = match_dirs
-        data = await get_text(session, target_url)
+        for r in range(5):
+            if not target_url:
+                message_warn(get_caller_name(), f"failed: {target_regexp}")
+                break
+            data = await get_text(session, target_url)
+            if data.status in (200, 404):
+                break
+            message_warn(get_caller_name(), f"retry({r}): [{target_url}]")
+            await asyncio.sleep(3)
         if data.status != 200:
             status = False
-            debugout(
-                get_caller_name(only=False),
-                "Debugout",
-                Color.yellow,
-                "# " + "-" * infosystem.columns + " #",
-            )
-            debugout(
-                get_caller_name(only=False),
-                "Debugout",
-                Color.yellow,
-                f"target_regexp:[{target_regexp}]",
-            )
-            debugout(
-                get_caller_name(only=False),
-                "Debugout",
-                Color.yellow,
-                f"target_url   :[{target_url}]",
-            )
-            debugout(
-                get_caller_name(only=False),
-                "Debugout",
-                Color.yellow,
-                f"web.regexp   :[{data.regexp}]",
-            )
-            debugout(
-                get_caller_name(only=False),
-                "Debugout",
-                Color.yellow,
-                f"web.url      :[{data.url}]",
-            )
-            debugout(
-                get_caller_name(only=False),
-                "Debugout",
-                Color.yellow,
-                f"web.tmstamp  :[{data.tmstamp}]",
-            )
-            debugout(
-                get_caller_name(only=False),
-                "Debugout",
-                Color.yellow,
-                f"web.size     :[{data.size}]",
-            )
-            debugout(
-                get_caller_name(only=False),
-                "Debugout",
-                Color.yellow,
-                f"web.check    :[{data.check}]",
-            )
-            debugout(
-                get_caller_name(only=False),
-                "Debugout",
-                Color.yellow,
-                f"web.status   :[{data.status}]",
-            )
-            debugout(
-                get_caller_name(only=False),
-                "Debugout",
-                Color.yellow,
-                f"web.reason   :[{data.reason}]",
-            )
-            debugout(
-                get_caller_name(only=False),
-                "Debugout",
-                Color.yellow,
-                f"web.mime     :[{data.mime}]",
-            )
-            if data.mime and "text" in data.mime:
-                debugout(
-                    get_caller_name(only=False),
-                    "Debugout",
-                    Color.yellow,
-                    f"web.contents :[{data.contents}]",
-                )
-            else:
-                debugout(
-                    get_caller_name(only=False),
-                    "Debugout",
-                    Color.yellow,
-                    f"web.contents :error: mime({data.mime})",
-                )
-            debugout(
-                get_caller_name(only=False),
-                "Debugout",
-                Color.yellow,
-                f"web.output   :[{data.output}]",
-            )
-            debugout(
-                get_caller_name(only=False),
-                "Debugout",
-                Color.yellow,
-                "# " + "-" * infosystem.columns + " #",
-            )
+            web_debugout(target_regexp, target_url, data)
             break
         match_url = []
         soup = BeautifulSoup(data.contents, "html.parser")
@@ -343,43 +265,152 @@ async def get_info(session: Any, target_regexp: str, target_path: str) -> WebDat
         target_url = target_url + "/" + match_url[0]
         if match_rear:
             target_url = target_url + match_rear
+    # --- web file information ------------------------------------------------
     if status:
-        for i in range(5):
+        for r in range(5):
+            if not target_url:
+                message_warn(get_caller_name(), f"failed: {target_regexp}")
+                break
             data = await get_header(session, target_url)
             if data.status in (200, 404):
                 break
-            message_warn(get_caller_name(), f"retry({i})")
+            message_warn(get_caller_name(), f"retry({r}): [{target_url}]")
             await asyncio.sleep(3)
-    data.regexp = target_regexp if target_regexp else "-"
-    data.url = target_url if target_url else "-"
+    data.regexp = target_regexp if target_regexp else ""
+    data.url = target_url if target_url else ""
+    data.check = datetime.now(timezone.utc).isoformat(timespec="microseconds")
+    # --- output file information ---------------------------------------------
+    # https://deb.debian.org/debian/dists/trixie/main/installer-amd64/current/images/netboot/mini.iso
+    RE_DEB_UBU = re.compile(
+        r"^https?://.+/(debian|ubuntu)/dists/[^/]+/main/installer-([^/]+)/current/"
+    )
+    # https://d-i.debian.org/daily-images/amd64/daily/netboot/mini.iso
+    RE_DAILY = re.compile(r"^https?://d-i\.debian.org/daily-images/([^/]+)/daily/")
+    # https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso
+    # https://cdimage.debian.org/cdimage/daily-builds/daily/current/amd64/iso-cd/debian-testing-amd64-netinst.iso
+    # https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso
+    RE_NETINST = re.compile(
+        r"^https?://[^/]+/cdimage/([^/]+)/(?:daily/)?(.+/)?([^/]+)/iso-cd/"
+    )
     filename = re.sub(r"^.+/", "", target_url)
     match filename:
         case "mini.iso":
-            if re.match(r"^http(|s)://.+/(debian|ubuntu)/dists/.+$", target_url):
-                arch = re.sub(r"/current/.+$", "", target_url)
-                arch = re.sub(r"^.+/.+-", "", arch)
-                code = re.sub(r"/main/.+$", "", target_url)
-                code = re.sub(r"^.+/", "", code)
-                code = re.sub(r"-.+$", "", code)
+            if m := RE_DEB_UBU.match(target_url):
+                code = target_url.split("/dists/")[1].split("/")[0]
+                arch = m.group(2)
                 filename = f"mini-{code}-{arch}.iso"
-            elif re.match(r"^http(|s)://d-i.debian.org/daily-images/.+$", target_url):
-                arch = re.sub(r"/daily/.+$", "", target_url)
-                arch = re.sub(r"^.+/", "", arch)
+            elif m := RE_DAILY.match(target_url):
+                arch = m.group(1)
                 filename = f"mini-testing-daily-{arch}.iso"
-        case s if re.match(r"debian-testing-.+-netinst\.iso", s):
-            edtn = re.sub(r"^.+/cdimage/", "", target_url)
-            edtn = re.sub(r"-.+", "", edtn)
-            arch = re.sub(r"/iso-cd/.+$", "", target_url)
-            arch = re.sub(r"^.+/", "", arch)
-            bild = re.sub(r"/" + arch + r"/.+$", "", target_url)
-            bild = re.sub(r"^.+/", "", bild)
-            if bild:
-                edtn = f"{edtn}-{bild}"
-            filename = re.sub(arch, f"{edtn}-{arch}", filename)
+        case s if m := re.match(r"debian-testing-.+-netinst\.iso", s):
+            if m := RE_NETINST.match(target_url):
+                edtn = m.group(1)
+                bild = m.group(2)
+                arch = m.group(3)
+                if bild:
+                    edtn = f"{edtn}-{bild.strip('/').replace('/', '-')}"
+                filename = filename.replace(arch, f"{edtn}-{arch}", 1)
     data.output = str(
-        Path(target_path).with_name(filename) if target_path and filename else "-"
+        Path(target_path).with_name(filename) if target_path and filename else ""
     )
+    # --- return --------------------------------------------------------------
     return data
+
+
+@debug_logger
+def web_debugout(target_regexp: str, target_url: str, data: WebData()) -> None:
+    debugout(
+        get_caller_name(only=False),
+        "Debugout",
+        Color.yellow,
+        "# " + "-" * infosystem.columns + " #",
+    )
+    debugout(
+        get_caller_name(only=False),
+        "Debugout",
+        Color.yellow,
+        f"target_regexp:[{target_regexp}]",
+    )
+    debugout(
+        get_caller_name(only=False),
+        "Debugout",
+        Color.yellow,
+        f"target_url   :[{target_url}]",
+    )
+    debugout(
+        get_caller_name(only=False),
+        "Debugout",
+        Color.yellow,
+        f"web.regexp   :[{data.regexp}]",
+    )
+    debugout(
+        get_caller_name(only=False),
+        "Debugout",
+        Color.yellow,
+        f"web.url      :[{data.url}]",
+    )
+    debugout(
+        get_caller_name(only=False),
+        "Debugout",
+        Color.yellow,
+        f"web.tmstamp  :[{data.tmstamp}]",
+    )
+    debugout(
+        get_caller_name(only=False),
+        "Debugout",
+        Color.yellow,
+        f"web.size     :[{data.size}]",
+    )
+    debugout(
+        get_caller_name(only=False),
+        "Debugout",
+        Color.yellow,
+        f"web.check    :[{data.check}]",
+    )
+    debugout(
+        get_caller_name(only=False),
+        "Debugout",
+        Color.yellow,
+        f"web.status   :[{data.status}]",
+    )
+    debugout(
+        get_caller_name(only=False),
+        "Debugout",
+        Color.yellow,
+        f"web.reason   :[{data.reason}]",
+    )
+    debugout(
+        get_caller_name(only=False),
+        "Debugout",
+        Color.yellow,
+        f"web.mime     :[{data.mime}]",
+    )
+    if data.mime and "text" in data.mime:
+        debugout(
+            get_caller_name(only=False),
+            "Debugout",
+            Color.yellow,
+            f"web.contents :[{data.contents}]",
+        )
+    else:
+        debugout(
+            get_caller_name(only=False),
+            "Debugout",
+            Color.yellow,
+            f"web.contents :error: mime({data.mime})",
+        )
+    debugout(
+        get_caller_name(only=False),
+        "Debugout",
+        Color.yellow,
+        f"web.output   :[{data.output}]",
+    )
+    debugout(
+        get_caller_name(only=False),
+        "Debugout",
+        Color.yellow,
+        "# " + "-" * infosystem.columns + " #",
+    )
 
 
 # --- eof ---------------------------------------------------------------------

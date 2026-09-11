@@ -137,6 +137,17 @@ class InfoConfiguration:
         """
         return conv2variable([item.__dict__ for item in self.data], data)
 
+    @debug_logger
+    def get_path(self, key: str) -> Path:
+        """Gets the key path.
+        Args:
+            key (str): Key
+        Returns:
+            Path: Path
+        """
+        find_path = self.find(key=key).value
+        return Path(find_path).resolve() if find_path else None
+
 
 # -----------------------------------------------------------------------------
 def load() -> list[ConfigurationData] | None:
