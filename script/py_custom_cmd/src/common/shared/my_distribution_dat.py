@@ -87,6 +87,17 @@ class InfoDistribution:
         self.load(path_src)
 
     def __getattr__(self, name: str) -> Any:
+        """Special methods
+
+        Args:
+            name (str): Attribute name
+
+        Raises:
+            AttributeError: AttributeError
+
+        Returns:
+            Any: Attribute value [(self.data[0], name) or ""]
+        """
         if name in self._valid_fields:
             return getattr(self.data[0], name) if self.data else ""
         raise AttributeError(
@@ -95,7 +106,11 @@ class InfoDistribution:
 
     @debug_logger
     def load(self, path_src: Path) -> None:
-        """Load file"""
+        """Load file
+
+        Args:
+            path_src (Path): Source path
+        """
         raw_data = json_load(path_src)
         decoded_data = spc_decode(raw_data)
         self.data: list[DistributionData] = [
@@ -116,7 +131,7 @@ class InfoDistribution:
     def findregexp(
         self, queries: list[dict[str, str]]
     ) -> list[DistributionData] | None:
-        """Data search in common.cfg (Supports regular expressions)
+        """Search for the data class within self.data. (Supports regular expressions)
 
         Args:
             queries (list[dict[str, str]]): Query
@@ -140,7 +155,7 @@ class InfoDistribution:
 
     @debug_logger
     def finds(self, **kwargs) -> list[DistributionData] | None:
-        """Data search in common.cfg
+        """Search for the data class within self.data.
 
         Returns:
             list[DistributionData] | None: Search results for the key
@@ -153,10 +168,10 @@ class InfoDistribution:
 
     @debug_logger
     def find(self, **kwargs) -> list[DistributionData] | None:
-        """_summary_
+        """Search for the data class within self.data. (The first one)
 
         Returns:
-            list[DistributionData] | None: Search results for the key(The first one)
+            list[DistributionData] | None: Search results for the key (The first one)
         """
         results = self.finds(**kwargs)
         return results[0] if results else None
@@ -173,7 +188,11 @@ class InfoDistribution:
 
     @debug_logger
     def dump(self, wrap: bool = False) -> None:
-        """Data dump output"""
+        """Data dump output
+
+        Args:
+            wrap (bool, optional): Toggle text wrapping. Defaults to False.
+        """
         for line in self.data:
             text = line if wrap else f"{line!s:.{infosystem.columns}s}"
             eprint(f"{Color.yellow}{text}{Color.reset}")

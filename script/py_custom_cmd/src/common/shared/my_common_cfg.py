@@ -39,6 +39,17 @@ class InfoConfiguration:
 
     @debug_logger
     def __getattr__(self, name: str) -> Any:
+        """Special methods
+
+        Args:
+            name (str): Attribute name
+
+        Raises:
+            AttributeError: AttributeError
+
+        Returns:
+            Any: Attribute value [(self.data[0], name) or ""]
+        """
         if name in self._valid_fields:
             return getattr(self.data[0], name) if self.data else ""
         raise AttributeError(
@@ -56,7 +67,7 @@ class InfoConfiguration:
     def findregexp(
         self, queries: list[dict[str, str]]
     ) -> list[ConfigurationData] | None:
-        """Data search in common.cfg (Supports regular expressions)
+        """Search for the data class within self.data. (Supports regular expressions)
 
         Args:
             queries (list[dict[str, str]]): Query
@@ -80,7 +91,7 @@ class InfoConfiguration:
 
     @debug_logger
     def finds(self, **kwargs) -> list[ConfigurationData] | None:
-        """Data search in common.cfg
+        """Search for the data class within self.data.
 
         Returns:
             list[ConfigurationData] | None: Search results for the key
@@ -93,10 +104,10 @@ class InfoConfiguration:
 
     @debug_logger
     def find(self, **kwargs) -> list[ConfigurationData] | None:
-        """_summary_
+        """Search for the data class within self.data. (The first one)
 
         Returns:
-            list[ConfigurationData] | None: Search results for the key(The first one)
+            list[ConfigurationData] | None: Search results for the key (The first one)
         """
         results = self.finds(**kwargs)
         return results[0] if results else None
@@ -112,7 +123,11 @@ class InfoConfiguration:
 
     @debug_logger
     def dump(self, wrap: bool = False) -> None:
-        """Data dump output"""
+        """Data dump output
+
+        Args:
+            wrap (bool, optional): Toggle text wrapping. Defaults to False.
+        """
         for line in self.data:
             text = line if wrap else f"{line!s:.{infosystem.columns}s}"
             eprint(f"{Color.yellow}{text}{Color.reset}")

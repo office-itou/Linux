@@ -67,6 +67,17 @@ class InfoMedia:
         self.load(path_src, info_conf)
 
     def __getattr__(self, name: str) -> Any:
+        """Special methods
+
+        Args:
+            name (str): Attribute name
+
+        Raises:
+            AttributeError: AttributeError
+
+        Returns:
+            Any: Attribute value [(self.data[0], name) or ""]
+        """
         if name in self._valid_fields:
             return getattr(self.data[0], name) if self.data else ""
         raise AttributeError(
@@ -75,7 +86,12 @@ class InfoMedia:
 
     @debug_logger
     def load(self, path_src: Path, info_conf: InfoConfiguration) -> None:
-        """Load file"""
+        """Load file
+
+        Args:
+            path_src (Path): Source path
+            info_conf (InfoConfiguration): common.cfg interface class
+        """
         raw_data = json_load(path_src)
         decoded_data = spc_decode(raw_data)
         converted_data = info_conf.conv2data(decoded_data)
@@ -86,6 +102,7 @@ class InfoMedia:
     @debug_logger
     def save(self, path_dest: Path, info_conf: InfoConfiguration) -> None:
         """Save file
+
         Args:
             path_dest (str): Destination path
             info_conf (InfoConfiguration): common.cfg interface class
@@ -97,7 +114,7 @@ class InfoMedia:
 
     @debug_logger
     def findregexp(self, queries: list[dict[str, str]]) -> list[MediaData] | None:
-        """Data search in common.cfg (Supports regular expressions)
+        """Search for the data class within self.data. (Supports regular expressions)
 
         Args:
             queries (list[dict[str, str]]): Query
@@ -121,7 +138,7 @@ class InfoMedia:
 
     @debug_logger
     def finds(self, **kwargs) -> list[MediaData] | None:
-        """Data search in common.cfg
+        """Search for the data class within self.data.Data search in common.cfg
 
         Returns:
             list[DistributionData] | None: Search results for the key
@@ -134,10 +151,10 @@ class InfoMedia:
 
     @debug_logger
     def find(self, **kwargs) -> list[MediaData] | None:
-        """_summary_
+        """Search for the data class within self.data. (The first one)
 
         Returns:
-            list[DistributionData] | None: Search results for the key(The first one)
+            list[DistributionData] | None: Search results for the key (The first one)
         """
         results = self.finds(**kwargs)
         return results[0] if results else None
@@ -154,7 +171,11 @@ class InfoMedia:
 
     @debug_logger
     def dump(self, wrap: bool = False) -> None:
-        """Data dump output"""
+        """Data dump output
+
+        Args:
+            wrap (bool, optional): Toggle text wrapping. Defaults to False.
+        """
         for line in self.data:
             text = line if wrap else f"{line!s:.{infosystem.columns}s}"
             eprint(f"{Color.yellow}{text}{Color.reset}")
