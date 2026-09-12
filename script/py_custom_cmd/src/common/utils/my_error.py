@@ -19,13 +19,13 @@ def handle_fatal_error(caller: str, e: Exception) -> None:
     Raises:
         SystemExit: System exit
     """
-    summary = traceback.extract_tb(e.__traceback__)[-1]
+    _summary = traceback.extract_tb(e.__traceback__)[-1]
     message_alert(caller, f"Fatal error: {e}")
     if isinstance(e, OSError):
-        message_alert(caller, f"line number: {summary.lineno}")
+        message_alert(caller, f"line number: {_summary.lineno}")
     else:
-        message_alert(caller, f"file name  : {summary.filename}")
-        message_alert(caller, f"line number: {summary.lineno}")
+        message_alert(caller, f"file name  : {_summary.filename}")
+        message_alert(caller, f"line number: {_summary.lineno}")
     raise SystemExit from e
 
 

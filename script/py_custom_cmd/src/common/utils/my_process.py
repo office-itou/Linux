@@ -25,7 +25,7 @@ def run_subprocess(*args, **kwargs) -> str:
     kwargs["capture_output"] = True
     kwargs["text"] = True
     try:
-        res = subprocess.run(*args, **kwargs)  # noqa: PLW1510
+        _res = subprocess.run(*args, **kwargs)  # noqa: PLW1510
     except subprocess.CalledProcessError as e:
         message_alert(
             get_caller_name(),
@@ -39,7 +39,7 @@ def run_subprocess(*args, **kwargs) -> str:
         )
         raise SystemExit
     # -------------------------------------------------------------------------
-    return str(res.stdout.strip())
+    return str(_res.stdout.strip())
 
 
 # --- eof ---------------------------------------------------------------------

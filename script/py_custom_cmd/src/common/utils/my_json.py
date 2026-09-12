@@ -23,31 +23,31 @@ def json_load(src_path: Path) -> Any:
     Returns:
         Any: data
     """
-    caller = get_caller_name()
+    _caller = get_caller_name()
     try:
-        read_data = file_read(src_path)
-        return json.loads(read_data)
+        _read_data = file_read(src_path)
+        return json.loads(_read_data)
     except (OSError, Exception) as e:  # noqa: BLE001
-        message_alert(caller, f"target file: {src_path}")
-        handle_fatal_error(caller, e)
+        message_alert(_caller, f"target file: {src_path}")
+        handle_fatal_error(_caller, e)
 
 
 # -----------------------------------------------------------------------------
 @debug_logger
-def json_save(dst_path: Path, src_data: Any) -> None:
+def json_save(dest_path: Path, src_data: Any) -> None:
     """Save distridata in json format
 
     Args:
-        dst_path (Path): Destination path
+        dest_path (Path): Destination path
         src_data (Any): Source data
     """
-    caller = get_caller_name()
+    _caller = get_caller_name()
     try:
-        write_data = json.dumps(src_data, ensure_ascii=False, indent=4)
-        file_write(dst_path, write_data, text=True, backup=True)
+        _write_data = json.dumps(src_data, ensure_ascii=False, indent=4)
+        file_write(dest_path, _write_data, text=True, backup=True)
     except (OSError, Exception) as e:  # noqa: BLE001
-        message_alert(caller, f"target file: {dst_path}")
-        handle_fatal_error(caller, e)
+        message_alert(_caller, f"target file: {dest_path}")
+        handle_fatal_error(_caller, e)
 
 
 # --- eof ---------------------------------------------------------------------

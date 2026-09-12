@@ -81,21 +81,21 @@ def get_info(target_path: str) -> FileData:
     Returns:
         FileData: File information
     """
-    data = FileData()
-    path = Path(target_path)
-    data.path = str(path.resolve())
-    if path.exists():
-        kind = magic.from_file(data.path, mime=True)
-        if kind and kind == "application/x-iso9660-image":
-            data.volume = get_volume_label(data.path)
-        data.tmstamp = datetime.fromtimestamp(
-            path.stat().st_mtime, tz=timezone.utc
+    _data = FileData()
+    _path = Path(target_path)
+    _data.path = str(_path.resolve())
+    if _path.exists():
+        _kind = magic.from_file(_data.path, mime=True)
+        if _kind and _kind == "application/x-iso9660-image":
+            _data.volume = get_volume_label(_data.path)
+        _data.tmstamp = datetime.fromtimestamp(
+            _path.stat().st_mtime, tz=timezone.utc
         ).isoformat()
-        data.size = path.stat().st_size
+        _data.size = _path.stat().st_size
     #   else:
     #       message_alert(get_caller_name(), f"File not exist: {target_path}")
     # --- return --------------------------------------------------------------
-    return data
+    return _data
 
 
 # --- eof ---------------------------------------------------------------------

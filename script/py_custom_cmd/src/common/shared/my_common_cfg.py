@@ -1,12 +1,16 @@
+from __future__ import annotations
+
 """common.cfg I/O"""
 
 # --- Python library ----------------------------------------------------------
 import re
 from dataclasses import dataclass, fields
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 # --- my library --------------------------------------------------------------
+if TYPE_CHECKING:
+    from ..shared.my_media_dat import MediaData
 from ..utils.my_colors import Color
 from ..utils.my_config import infosystem
 from ..utils.my_debug import debug_logger
@@ -64,62 +68,73 @@ class InfoConfiguration:
         ]
 
     @debug_logger
-    def findregexp(
-        self, queries: list[dict[str, str]]
-    ) -> list[ConfigurationData] | None:
+    def findregexp(self, queries: list[dict[str, str]]) -> list[ConfigurationData]:
         """Search for the data class within self.data. (Supports regular expressions)
 
         Args:
             queries (list[dict[str, str]]): Query
 
         Returns:
-            list[ConfigurationData] | None: Search results for the query
+            list[ConfigurationData]: Search results for the query
         """
-        list_results = []
-        compiled_queries = [
-            (q_key, re.compile(q_pattern))
-            for query in queries
-            for q_key, q_pattern in query.items()
+        _results: list[ConfigurationData] = []
+        _compiled_queries = [
+            (_q_key, re.compile(_q_pattern))
+            for _query in queries
+            for _q_key, _q_pattern in _query.items()
         ]
-        for class_data in self.data:
-            for q_key, pattern in compiled_queries:
-                target_str = getattr(class_data, q_key, None)
-                if target_str and pattern.search(target_str):
-                    list_results.append(class_data)
+        for _class_data in self.data:
+            for _q_key, _pattern in _compiled_queries:
+                _target_str = getattr(_class_data, _q_key, None)
+                if _target_str and _pattern.search(_target_str):
+                    _results.append(_class_data)
                     break
-        return list_results
+        return _results
 
     @debug_logger
-    def finds(self, **kwargs) -> list[ConfigurationData] | None:
+    def finds(self, **kwargs) -> list[ConfigurationData]:
         """Search for the data class within self.data.
 
         Returns:
-            list[ConfigurationData] | None: Search results for the key
+            list[ConfigurationData]: Search results for the key
         """
+        MISSING = object()
         return [
-            item
-            for item in self.data
-            if all(getattr(item, key, None) == value for key, value in kwargs.items())
+            _class_data
+            for _class_data in self.data
+            if all(
+                getattr(_class_data, _key, MISSING) == _value
+                for _key, _value in kwargs.items()
+            )
         ]
 
     @debug_logger
-    def find(self, **kwargs) -> list[ConfigurationData] | None:
+    def find(self, **kwargs) -> ConfigurationData:
         """Search for the data class within self.data. (The first one)
 
         Returns:
-            list[ConfigurationData] | None: Search results for the key (The first one)
+            list: Search results for the key (The first one)
         """
-        results = self.finds(**kwargs)
-        return results[0] if results else None
+        MISSING = object()
+        return next(
+            _class_data
+            for _class_data in self.data
+            if all(
+                getattr(_class_data, _key, MISSING) == _value
+                for _key, _value in kwargs.items()
+            )
+        )
 
     @debug_logger
-    def markdown(self, path_dest: str, md_title: str) -> None:
+    def markdown(self, dest_path: str, md_title: str) -> None:
         """Generating Markdown
         Args:
-            path_dest (str): Destination path
+            dest_path (str): Destination path
             md_title (str): Markdown title
         """
-        list2markdown(path_dest, md_title, [item.__dict__ for item in self.data])
+        list2markdown(
+            dest_path, md_title, [_class_data.__dict__ for _class_data in self.data]
+        )
 
     @debug_logger
     def dump(self, wrap: bool = False) -> None:
@@ -128,29 +143,31 @@ class InfoConfiguration:
         Args:
             wrap (bool, optional): Toggle text wrapping. Defaults to False.
         """
-        for line in self.data:
-            text = line if wrap else f"{line!s:.{infosystem.columns}s}"
-            eprint(f"{Color.yellow}{text}{Color.reset}")
+        for _class_data in self.data:
+            _text = _class_data if wrap else f"{_class_data!s:.{infosystem.columns}s}"
+            eprint(f"{Color.yellow}{_text}{Color.reset}")
 
     @debug_logger
-    def conv2data(self, data: list) -> list:
+    def conv2data(self, src_data: list[MediaData]) -> list[MediaData]:
         """Convert actual data to variable names
         Args:
-            data (list): Source
+            src_data (list): Source data
         Returns:
             list: Result
         """
-        return conv2data([item.__dict__ for item in self.data], data)
+        return conv2data([_class_data.__dict__ for _class_data in self.data], src_data)
 
     @debug_logger
-    def conv2variable(self, data: list) -> list:
+    def conv2variable(self, src_data: list[MediaData]) -> list[MediaData]:
         """Convert variable names to actual data
         Args:
-            data (list): Source
+            src_data (list): Source data
         Returns:
             list: Conversion data
         """
-        return conv2variable([item.__dict__ for item in self.data], data)
+        return conv2variable(
+            [_class_data.__dict__ for _class_data in self.data], src_data
+        )
 
     @debug_logger
     def get_path(self, key: str) -> Path:
@@ -160,19 +177,21 @@ class InfoConfiguration:
         Returns:
             Path: Path
         """
-        find_path = self.find(key=key).value
-        return Path(find_path).resolve() if find_path else None
+        _path_str = self.find(key=key).value
+        if not _path_str:
+            raise ValueError(f"No such key '{key}'")
+        return Path(_path_str).resolve()
 
 
 # -----------------------------------------------------------------------------
-def load() -> list[ConfigurationData] | None:
+def load() -> list[ConfigurationData]:
     """load data in common.cfg
 
     Raises:
         SystemExit: raise SystemExit from e
 
     Returns:
-        list[ConfigurationData] | None: list[ConfigurationData]
+        list[ConfigurationData]: list[ConfigurationData]
     """
     caller = get_caller_name()
     try:

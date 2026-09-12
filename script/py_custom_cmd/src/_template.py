@@ -13,11 +13,7 @@ import time
 # libsdir = Path(homedir) / "linux/script/py_custom_cmd/src"
 # if str(libsdir) not in sys.path:
 #    sys.path.append(str(libsdir))
-from common.shared.my_common_cfg import InfoConfiguration
-from common.shared.my_distribution_dat import (
-    InfoDistribution,
-)
-from common.shared.my_media_dat import InfoMedia
+from common.shared.my_shared import InfoCommon
 from common.utils.my_argument import Argument
 from common.utils.my_colors import Color
 from common.utils.my_config import infosystem
@@ -42,13 +38,9 @@ def initialize():
     message_info(get_caller_name(), f"exec user:{infosystem.data.exec_user}")
     message_info(get_caller_name(), f"home dir :{infosystem.data.home_dir}")
     # -------------------------------------------------------------------------
-    info_conf = InfoConfiguration()
-    path_dist = info_conf.get_path(key="PATH_DIST")
-    path_mdia = info_conf.get_path(key="PATH_MDIA")
-    info_dist = InfoDistribution(path_dist.with_name(path_dist.name + ".json"))
-    info_mdia = InfoMedia(path_mdia.with_name(path_mdia.name + ".json"))
+    info_comm = InfoCommon()
     # -------------------------------------------------------------------------
-    return info_conf, info_dist, info_mdia
+    return info_comm
 
 
 @debug_logger
@@ -64,7 +56,7 @@ def main():
             get_caller_name(),
             f"{Color.underline}Please run this with sudo.",
         )
-        sys.exit(1)
+        return 1
     # --- elapsed start--------------------------------------------------------
     start = time.perf_counter()
     # --- startup process -----------------------------------------------------
@@ -74,7 +66,11 @@ def main():
     #   arg_manager.add('--add', type=str, help='add args')
     args = arg_manager.parse()
     if args:
-        info_conf, info_dist, info_mdia = initialize()  # noqa: RUF059
+        info_comm = initialize()
+        print(f"dir(info_comm):{dir(info_comm)}")
+        print(f"info_comm.path.conf:{info_comm.conf.json}")
+        print(f"info_comm.path.dist:{info_comm.dist.json}")
+        print(f"info_comm.path.mdia:{info_comm.mdia.json}")
     # --- termination process -------------------------------------------------
     message_end(get_caller_name())
     # --- elapsed end ---------------------------------------------------------
@@ -82,11 +78,11 @@ def main():
     elapsed = end - start
     message_elapsed(get_caller_name(), elapsed)
     # --- exit ----------------------------------------------------------------
-    sys.exit(0)
+    return 0
     # -------------------------------------------------------------------------
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
 
 # --- eof ---------------------------------------------------------------------

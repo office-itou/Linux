@@ -14,11 +14,11 @@ from .my_message import get_caller_name, message_alert
 
 
 @debug_logger
-def file_read(path_src: Path, text: bool = True) -> str | bytes:
+def file_read(src_path: Path, text: bool = True) -> str | bytes:
     """File read (line break codes in text files are standardized to "\n")
 
     Args:
-        path_src (Path): Source path
+        src_path (Path): Source path
         text (bool, optional): Read mode. Defaults to True.
 
     Raises:
@@ -28,20 +28,20 @@ def file_read(path_src: Path, text: bool = True) -> str | bytes:
     Returns:
         str| bytes: Result
     """
-    caller = get_caller_name()
+    _caller = get_caller_name()
     try:
-        path_src = path_src.resolve()
-        mode = "r" if text else "rb"
-        encoding = "utf-8" if text else None
-        with open(path_src, mode=mode, encoding=encoding, newline=None) as f:
+        _src_path = src_path.resolve()
+        _mode = "r" if text else "rb"
+        _encoding = "utf-8" if text else None
+        with open(src_path, mode=_mode, encoding=_encoding, newline=None) as f:
             return f.read()
     except (OSError, Exception) as e:  # noqa: BLE001
-        handle_fatal_error(caller, e)
+        handle_fatal_error(_caller, e)
 
 
 @debug_logger
 def file_write(
-    path_dest: Path,
+    dest_path: Path,
     data: str | bytes | None = None,
     text: bool = True,
     backup: bool = False,
@@ -49,7 +49,7 @@ def file_write(
     """File write (line break codes in text files are standardized to "\n")
 
     Args:
-        path_dest (Path): Destination path
+        dest_path (Path): Destination path
         data (str | bytes | None, optional): Output data. Defaults to None.
         text (bool, optional): Write mode. Defaults to True.
         backup (bool, optional): Backup mode. Defaults to False.
@@ -58,72 +58,72 @@ def file_write(
         SystemExit: OSError
         SystemExit: Exception
     """
-    caller = get_caller_name()
+    _caller = get_caller_name()
     try:
-        path_dest = path_dest.resolve()
-        mode = "w" if text else "wb"
-        encoding = "utf-8" if text else None
-        newline = "\n" if text else None
+        _dest_path = dest_path.resolve()
+        _mode = "w" if text else "wb"
+        _encoding = "utf-8" if text else None
+        _newline = "\n" if text else None
         if data is None:
             data = "" if text else b""
-        path_dest.parent.mkdir(parents=True, exist_ok=True)
+        dest_path.parent.mkdir(parents=True, exist_ok=True)
         if backup:
-            file_backup(path_dest)
-        with open(path_dest, mode=mode, encoding=encoding, newline=newline) as f:
+            file_backup(dest_path)
+        with open(dest_path, mode=_mode, encoding=_encoding, newline=_newline) as f:
             f.write(data)
             f.flush()
             os.fsync(f.fileno())
-        if not path_dest.exists():
-            message_alert(get_caller_name(), f"failed: {path_dest}")
+        if not dest_path.exists():
+            message_alert(get_caller_name(), f"failed: {dest_path}")
     except (OSError, Exception) as e:  # noqa: BLE001
-        handle_fatal_error(caller, e)
+        handle_fatal_error(_caller, e)
 
 
 @debug_logger
-def file_copy(path_src: Path, path_dest: Path, backup: bool = False) -> None:
+def file_copy(src_path: Path, dest_path: Path, backup: bool = False) -> None:
     """File copy
 
     Args:
-        path_src (Path): Source path
-        path_dest (Path): Destination path
+        src_path (Path): Source path
+        dest_path (Path): Destination path
         backup (bool, optional): Backup. Defaults to False.
     """
-    caller = get_caller_name()
+    _caller = get_caller_name()
     try:
-        path_dest = path_dest.resolve()
-        path_dest.parent.mkdir(parents=True, exist_ok=True)
+        dest_path = dest_path.resolve()
+        dest_path.parent.mkdir(parents=True, exist_ok=True)
         if bool == True:
-            file_backup(path_dest)
-            shutil.copy2(path_src, path_dest)
+            file_backup(dest_path)
+            shutil.copy2(src_path, dest_path)
     except (OSError, Exception) as e:  # noqa: BLE001
-        handle_fatal_error(caller, e)
+        handle_fatal_error(_caller, e)
 
 
 @debug_logger
-def file_backup(path_src: Path) -> None:
+def file_backup(src_path: Path) -> None:
     """File backup
 
     Args:
         src_path (Path): Source path
     """
-    caller = get_caller_name()
+    _caller = get_caller_name()
     try:
-        path_src = path_src.resolve()
-        if path_src.exists() and path_src.is_file():
+        src_path = src_path.resolve()
+        if src_path.exists() and src_path.is_file():
             # --- backup ------------------------------------------------------
-            timestamp = datetime.now().astimezone().strftime("%Y%m%d%H%M%S_%f")
-            base_name = path_src.stem
-            ext = path_src.suffix
-            backup_path = path_src.with_name(f"{base_name}_{timestamp}{ext}")
-            shutil.copy2(path_src, backup_path)
+            _timestamp = datetime.now().astimezone().strftime("%Y%m%d%H%M%S_%f")
+            _base_name = src_path.stem
+            _ext = src_path.suffix
+            _backup_path = src_path.with_name(f"{_base_name}_{_timestamp}{_ext}")
+            shutil.copy2(src_path, _backup_path)
             # --- history & cleanup -------------------------------------------
-            all_files = path_src.parent.glob(f"{base_name}_*{ext}")
-            pattern = re.compile(
-                rf"^{re.escape(base_name)}_\d{{14}}_\d{{6}}{re.escape(ext)}$"
+            _all_files = src_path.parent.glob(f"{_base_name}_*{_ext}")
+            _pattern = re.compile(
+                rf"^{re.escape(_base_name)}_\d{{14}}_\d{{6}}{re.escape(_ext)}$"
             )
             backups = []
-            for f in all_files:
-                if pattern.match(f.name):
+            for f in _all_files:
+                if _pattern.match(f.name):
                     backups.append(str(f))
             backups.sort(key=os.path.getmtime)
             # --- cleanup -----------------------------------------------------
@@ -131,7 +131,7 @@ def file_backup(path_src: Path) -> None:
                 oldest_backup = backups.pop(0)
                 os.remove(oldest_backup)
     except (OSError, Exception) as e:  # noqa: BLE001
-        handle_fatal_error(caller, e)
+        handle_fatal_error(_caller, e)
 
 
 # --- eof ---------------------------------------------------------------------

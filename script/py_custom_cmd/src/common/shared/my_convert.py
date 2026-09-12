@@ -10,110 +10,52 @@ from ..utils.my_debug import debug_logger
 from ..utils.my_fileio import file_read, file_write
 
 
-def spc_encode(src_list: list) -> list:
+def spc_encode(src_datas: list) -> list:
     """Encoding whitespace characters on a per-list basis
 
     Args:
-        src_list (list): Source data
+        src_datas (list): Source data
 
     Returns:
         list: Conversion data
     """
-    conv_list = []
-    for item in src_list:
-        conv_dict = {}
-        for key, value in item.items():
-            if not value:
-                value = "-"
-            if isinstance(value, (int, float)):
-                value = str(value)
-            if isinstance(value, str):
-                value = value.replace(" ", "%20")
-                value = value.strip("`")
-                if value.endswith("/"):
-                    value = value + "-"
-            conv_dict[key] = value
-        conv_list.append(conv_dict)
-    return conv_list
+    _converted_data = []
+    for _src_data in src_datas:
+        _converted_dicts = {}
+        for _key, _value in _src_data.items():
+            if not _value:
+                _value = "-"
+            if isinstance(_value, (int, float)):
+                _value = str(_value)
+            if isinstance(_value, str):
+                _value = _value.replace(" ", "%20")
+                _value = _value.strip("`")
+                if _value.endswith("/"):
+                    _value = _value + "-"
+            _converted_dicts[_key] = _value
+        _converted_data.append(_converted_dicts)
+    return _converted_data
 
 
-def spc_decode(src_list: list) -> list:
+def spc_decode(src_datas: list) -> list:
     """Decoding whitespace characters on a per-list basis
 
     Args:
-        src_list (list): Source data
+        src_data (list): Source data
 
     Returns:
         list: Conversion data
     """
-    conv_list = []
-    for item in src_list:
-        conv_dict = {}
-        for key, value in item.items():
-            if isinstance(value, str):
-                value = value.replace("%20", " ").strip("-")
-                # value = re.sub(r"^-$", "", value) if key != "entry_flag" else value
-            conv_dict[key] = value
-        conv_list.append(conv_dict)
-    return conv_list
-
-
-# -----------------------------------------------------------------------------
-@debug_logger
-def spc_encode4md(src_list_data: list) -> list:
-    """Encoding whitespace characters and html on a per-list basis
-
-    Args:
-        src_list_data (list): Source data
-
-    Returns:
-        list: Conversion data
-    """
-    conv_list_data = copy.deepcopy(src_list_data)
-    for i, word in enumerate(conv_list_data):
-        if isinstance(word, (int, float)):
-            word = str(word)
-        if not isinstance(word, str):
-            continue
-        word = re.sub(r"^`([^`]+)`$", r"\1", word)
-        word = word.replace(" ", "%20")
-        word = word.replace(r":\_", ":_")
-        word = word.replace(r"\_:", "_:")
-        conv_list_data[i] = word
-    return conv_list_data
-
-
-# -----------------------------------------------------------------------------
-@debug_logger
-def spc_decode4md(src_list_data: list[dict]) -> list:
-    """Decoding whitespace characters and html on a per-list basis
-
-    Args:
-        src_list_data (list[dict]): Source data
-
-    Returns:
-        list: Conversion data
-    """
-    url_pattern = re.compile(
-        r"^https?://(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}"
-        r"(?:/[a-zA-Z0-9._~:/?#\[\]@!$&\'()*+,;=%-]*)?$"
-    )
-    conv_list_data = []
-    for item in src_list_data:
-        dict_orig = {}
-        for key, value in item.items():
-            if isinstance(value, str):
-                if url_pattern.match(value):
-                    value = f"`{value}`"
-                value = re.sub(r"^(https?:/[^ ]+)", r"`\1`", value)
-                value = value.replace("%20", " ")
-                value = value.replace(":_", r":\_")
-                value = value.replace("_:", r"\_:")
-                if value.startswith("#"):
-                    value = f"`{value}`"
-            dict_orig[key] = value
-        conv_list_data.append(dict_orig)
-    return conv_list_data
+    _converted_data = []
+    for _src_data in src_datas:
+        _converted_dicts = {}
+        if hasattr(_src_data, "items"):
+            for _key, _value in _src_data.items():
+                if isinstance(_value, str):
+                    _value = _value.replace("%20", " ").strip("-")
+                _converted_dicts[_key] = _value
+        _converted_data.append(_converted_dicts)
+    return _converted_data
 
 
 @debug_logger
@@ -126,14 +68,14 @@ def get_text2list(src_path: str) -> list[dict[str, str]]:
     Returns:
         list[dict[str, str]]: Conversion data
     """
-    read_data = file_read(src_path)
-    lines = (line.strip() for line in read_data.splitlines() if line.strip())
-    sanitized_lines = (re.sub(r"[ \t]+", ",", line) for line in lines)
-    return list(csv.DictReader(sanitized_lines))
+    _read_data = file_read(src_path)
+    _lines = (l.strip() for l in _read_data.splitlines() if l.strip())
+    _sanitized_lines = (re.sub(r"[ \t]+", ",", l) for l in _lines)
+    return list(csv.DictReader(_sanitized_lines))
 
 
 @debug_logger
-def put_list2text(dst_path: str, src_data: list, format_str: str) -> None:
+def put_list2text(dst_path: str, src_datas: list, format_str: str) -> None:
     """list to text file
 
     Args:
@@ -141,15 +83,15 @@ def put_list2text(dst_path: str, src_data: list, format_str: str) -> None:
         src_data (list): Source data
         format_str (str): Output format
     """
-    if not src_data:
+    if not src_datas:
         return
-    header_dict = {k: k for d in src_data for k, v in d.items()}
-    data_dicts = [d.__dict__ if hasattr(d, "__dict__") else d for d in src_data]
-    text_list = [format_str.format(**header_dict)] + [
-        format_str.format(**d) for d in data_dicts
+    _header_dict = {k: k for d in src_datas for k, v in d.items()}
+    _data_dicts = [d.__dict__ if hasattr(d, "__dict__") else d for d in src_datas]
+    _text_list = [format_str.format(**_header_dict)] + [
+        format_str.format(**d) for d in _data_dicts
     ]
-    write_data = "\n".join(text_list) + "\n"
-    file_write(dst_path, write_data, text=True, backup=True)
+    _write_data = "\n".join(_text_list) + "\n"
+    file_write(dst_path, _write_data, text=True, backup=True)
 
 
 # --- eof ---------------------------------------------------------------------

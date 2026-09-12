@@ -11,13 +11,18 @@ from packaging.version import InvalidVersion
 from packaging.version import parse as parse_version
 
 # --- my library --------------------------------------------------------------
+from ..shared.my_convert import (
+    get_text2list,
+    put_list2text,
+    spc_decode,
+    spc_encode,
+)
 from ..utils.my_colors import Color
 from ..utils.my_config import infosystem
 from ..utils.my_debug import debug_logger
 from ..utils.my_json import json_load, json_save
 from ..utils.my_markdown import list2markdown
 from ..utils.my_string import eprint
-from .my_convert import get_text2list, put_list2text, spc_decode, spc_encode
 
 # -----------------------------------------------------------------------------
 LIFE_MAP = {
@@ -78,13 +83,13 @@ class InfoDistribution:
     """distribution.dat interface class"""
 
     @debug_logger
-    def __init__(self, path_src: Path) -> None:
+    def __init__(self, src_path: Path) -> None:
         """Method for initializing the DistributionData class.
         Args:
-            path_src (Path, optional): Source path. Defaults to None.
+            src_path (Path, optional): Source path. Defaults to None.
         """
         self._valid_fields = {f.name for f in fields(DistributionData)}
-        self.load(path_src)
+        self.load(src_path)
 
     def __getattr__(self, name: str) -> Any:
         """Special methods
@@ -105,86 +110,96 @@ class InfoDistribution:
         )
 
     @debug_logger
-    def load(self, path_src: Path) -> None:
+    def load(self, src_path: Path) -> None:
         """Load file
 
         Args:
-            path_src (Path): Source path
+            src_path (Path): Source path
         """
-        raw_data = json_load(path_src)
-        decoded_data = spc_decode(raw_data)
+        _raw_data = json_load(src_path) if src_path.exists() else [{None}]
+        _decoded_data = spc_decode(_raw_data)
         self.data: list[DistributionData] = [
-            DistributionData(**d) if isinstance(d, dict) else d for d in decoded_data
+            DistributionData(**d) if isinstance(d, dict) else d for d in _decoded_data
         ]
 
     @debug_logger
-    def save(self, path_dest: Path) -> None:
+    def save(self, dest_path: Path) -> None:
         """Save file
         Args:
-            path_dest (Path): Destination path
+            dest_path (Path): Destination path
         """
-        data_dicts = [d.__dict__ if hasattr(d, "__dict__") else d for d in self.data]
-        encoded_data = spc_encode(data_dicts)
-        json_save(path_dest, encoded_data)
+        _data_dicts = [d.__dict__ if hasattr(d, "__dict__") else d for d in self.data]
+        _encoded_data = spc_encode(_data_dicts)
+        json_save(dest_path, _encoded_data)
 
     @debug_logger
-    def findregexp(
-        self, queries: list[dict[str, str]]
-    ) -> list[DistributionData] | None:
+    def findregexp(self, queries: list[dict[str, str]]) -> list[DistributionData]:
         """Search for the data class within self.data. (Supports regular expressions)
 
         Args:
             queries (list[dict[str, str]]): Query
 
         Returns:
-            list[DistributionData] | None: Search results for the query
+            list[DistributionData]: Search results for the query
         """
-        list_results = []
-        compiled_queries = [
-            (q_key, re.compile(q_pattern))
-            for query in queries
-            for q_key, q_pattern in query.items()
+        _results: list[DistributionData] = []
+        _compiled_queries = [
+            (_q_key, re.compile(_q_pattern))
+            for _query in queries
+            for _q_key, _q_pattern in _query.items()
         ]
-        for class_data in self.data:
-            for q_key, pattern in compiled_queries:
-                target_str = getattr(class_data, q_key, None)
-                if target_str and pattern.search(target_str):
-                    list_results.append(class_data)
+        for _class_data in self.data:
+            for _q_key, _pattern in _compiled_queries:
+                _target_str = getattr(_class_data, _q_key, None)
+                if _target_str and _pattern.search(_target_str):
+                    _results.append(_class_data)
                     break
-        return list_results
+        return _results
 
     @debug_logger
-    def finds(self, **kwargs) -> list[DistributionData] | None:
+    def finds(self, **kwargs) -> list[DistributionData]:
         """Search for the data class within self.data.
 
         Returns:
-            list[DistributionData] | None: Search results for the key
+            list[DistributionData]: Search results for the key
         """
+        MISSING = object()
         return [
-            item
-            for item in self.data
-            if all(getattr(item, key, None) == value for key, value in kwargs.items())
+            _class_data
+            for _class_data in self.data
+            if all(
+                getattr(_class_data, _key, MISSING) == _value
+                for _key, _value in kwargs.items()
+            )
         ]
 
     @debug_logger
-    def find(self, **kwargs) -> list[DistributionData] | None:
+    def find(self, **kwargs) -> list[DistributionData]:
         """Search for the data class within self.data. (The first one)
 
         Returns:
-            list[DistributionData] | None: Search results for the key (The first one)
+            list[DistributionData]: Search results for the key (The first one)
         """
-        results = self.finds(**kwargs)
-        return results[0] if results else None
+        MISSING = object()
+        return next(
+            _class_data
+            for _class_data in self.data
+            if all(
+                getattr(_class_data, _key, MISSING) == _value
+                for _key, _value in kwargs.items()
+            )
+        )
 
     @debug_logger
-    def markdown(self, path_dest: str, md_title: str) -> None:
+    def markdown(self, dest_path: str, md_title: str) -> None:
         """Generating Markdown
         Args:
-            path_dest (str): Destination path
+            dest_path (str): Destination path
             md_title (str): Markdown title
         """
-        data_dicts = [d.__dict__ if hasattr(d, "__dict__") else d for d in self.data]
-        list2markdown(path_dest, md_title, data_dicts)
+        list2markdown(
+            dest_path, md_title, [_class_data.__dict__ for _class_data in self.data]
+        )
 
     @debug_logger
     def dump(self, wrap: bool = False) -> None:
@@ -193,33 +208,32 @@ class InfoDistribution:
         Args:
             wrap (bool, optional): Toggle text wrapping. Defaults to False.
         """
-        for line in self.data:
-            text = line if wrap else f"{line!s:.{infosystem.columns}s}"
-            eprint(f"{Color.yellow}{text}{Color.reset}")
+        for _class_data in self.data:
+            _text = _class_data if wrap else f"{_class_data!s:.{infosystem.columns}s}"
+            eprint(f"{Color.yellow}{_text}{Color.reset}")
 
     @debug_logger
-    def get_text2list(self, path_src: Path) -> None:
+    def get_text2list(self, src_path: Path) -> None:
         """Text file to list
         Args:
-            path_src (Path): Source path
+            src_path (Path): Source path
         """
-        raw_data = get_text2list(path_src)
-        decoded_data = spc_decode(raw_data)
+        _raw_data = get_text2list(src_path)
+        _decoded_data = spc_decode(_raw_data)
         self.data: list[DistributionData] = [
-            DistributionData(**d) if isinstance(d, dict) else d for d in decoded_data
+            DistributionData(**d) if isinstance(d, dict) else d for d in _decoded_data
         ]
 
     @debug_logger
-    def put_list2text(self, path_dest: Path, format_str: str) -> None:
+    def put_list2text(self, dest_path: Path, format_str: str) -> None:
         """list to text file
         Args:
-            path_dest (Path): Destination path
+            dest_path (Path): Destination path
             format_str (str): Output format
         """
-        data_dicts = [d.__dict__ if hasattr(d, "__dict__") else d for d in self.data]
-        encoded_data = spc_encode(data_dicts)
-        put_list2text(path_dest, encoded_data, format_str)
-        # put_list2text(path_dest, [asdict(item) for item in self.data], format_str)
+        _data_dicts = [d.__dict__ if hasattr(d, "__dict__") else d for d in self.data]
+        _encoded_data = spc_encode(_data_dicts)
+        put_list2text(dest_path, _encoded_data, format_str)
 
     @debug_logger
     def sort(

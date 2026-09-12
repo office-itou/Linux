@@ -17,8 +17,8 @@ def count_full_width(src_text: str) -> int:
     Returns:
         int: Count
     """
-    plain_text = re.sub(r"\x1b\[[0-9;]*[mG]", "", src_text)
-    return sum(1 for c in plain_text if unicodedata.east_asian_width(c) in "FWA")
+    _plain_text = re.sub(r"\x1b\[[0-9;]*[mG]", "", src_text)
+    return sum(1 for c in _plain_text if unicodedata.east_asian_width(c) in "FWA")
 
 
 def count_half_width(src_text: str) -> int:
@@ -30,8 +30,8 @@ def count_half_width(src_text: str) -> int:
     Returns:
         int: Count
     """
-    plain_text = re.sub(r"\x1b\[[0-9;]*[mG]", "", src_text)
-    return sum(1 for c in plain_text if not unicodedata.east_asian_width(c) in "FWA")
+    _plain_text = re.sub(r"\x1b\[[0-9;]*[mG]", "", src_text)
+    return sum(1 for c in _plain_text if not unicodedata.east_asian_width(c) in "FWA")
 
 
 def count_width(src_text: str) -> int:
@@ -43,8 +43,8 @@ def count_width(src_text: str) -> int:
     Returns:
         int: Count
     """
-    plain_text = re.sub(r"\x1b\[[0-9;]*[mG]", "", src_text)
-    return sum(get_char_width(c) for c in plain_text)
+    _plain_text = re.sub(r"\x1b\[[0-9;]*[mG]", "", src_text)
+    return sum(get_char_width(c) for c in _plain_text)
 
 
 def get_char_width(src_char: str) -> int:
@@ -73,64 +73,64 @@ def split_by_width(
     Returns:
         list: _description_
     """
-    ansi_pattern = re.compile(r"(\x1b\[[0-9;]*[mG])")
-    tokens = ansi_pattern.split(src_text)
+    _ansi_pattern = re.compile(r"(\x1b\[[0-9;]*[mG])")
+    _tokens = _ansi_pattern.split(src_text)
     # --- omit=True -----------------------------------------------------------
     if omit:
         if from_back:
-            tokens.reverse()
-        result_tokens = []
-        current_width = 0
-        for token in tokens:
-            if not token:
+            _tokens.reverse()
+        _result_tokens = []
+        _current_width = 0
+        for _token in _tokens:
+            if not _token:
                 continue
-            if ansi_pattern.match(token):
-                result_tokens.append(token)
+            if _ansi_pattern.match(_token):
+                _result_tokens.append(_token)
                 continue
-            chars = list(token)
+            _chars = list(_token)
             if from_back:
-                chars.reverse()
-            for char in chars:
-                w = get_char_width(char)
-                if current_width + w > max_width:
+                _chars.reverse()
+            for _char in _chars:
+                _char_width = get_char_width(_char)
+                if _current_width + _char_width > max_width:
                     break
-                result_tokens.append(char)
-                current_width += w
+                _result_tokens.append(_char)
+                _current_width += _char_width
             else:
                 continue
             break
         if from_back:
-            result_tokens.reverse()
-        return ["".join(result_tokens)] if result_tokens else []
+            _result_tokens.reverse()
+        return ["".join(_result_tokens)] if _result_tokens else []
     # --- omit=False ----------------------------------------------------------
-    lines = []
-    current_line = []
-    current_width = 0
-    active_escapes = []
-    for token in tokens:
-        if not token:
+    _lines = []
+    _current_line = []
+    _current_width = 0
+    _active_escapes = []
+    for _token in _tokens:
+        if not _token:
             continue
-        if ansi_pattern.match(token):
-            current_line.append(token)
-            if token == "\x1b[0m":
-                active_escapes.clear()
+        if _ansi_pattern.match(_token):
+            _current_line.append(_token)
+            if _token == "\x1b[0m":
+                _active_escapes.clear()
             else:
-                active_escapes.append(token)
+                _active_escapes.append(_token)
             continue
-        for char in token:
-            w = get_char_width(char)
-            if current_width + w > max_width:
-                if active_escapes:
-                    current_line.append("\x1b[0m")
-                lines.append("".join(current_line))
-                current_line = list(active_escapes) + [char]
-                current_width = w
+        for _char in _token:
+            _char_width = get_char_width(_char)
+            if _current_width + _char_width > max_width:
+                if _active_escapes:
+                    _current_line.append("\x1b[0m")
+                _lines.append("".join(_current_line))
+                _current_line = list(_active_escapes) + [_char]
+                _current_width = _char_width
             else:
-                current_line.append(char)
-                current_width += w
-    if current_line:
-        lines.append("".join(current_line))
-    return lines
+                _current_line.append(_char)
+                _current_width += _char_width
+    if _current_line:
+        _lines.append("".join(_current_line))
+    return _lines
 
 
 def eprint(src_text: str, max_width: int = 0, wrap: bool = False):
@@ -141,13 +141,11 @@ def eprint(src_text: str, max_width: int = 0, wrap: bool = False):
         max_width (int, optional): Max width. Defaults to 0.
         wrap (bool, optional): Wrap. Defaults to False.
     """
-    reset_code = Color.reset if Color.reset else "\x1b[0m"
-    display_text = src_text
-    if max_width > 0:
-        lines = split_by_width(src_text, max_width)
-        if lines:
-            display_text = "\n".join(lines) if wrap else lines[0]
-    print(f"{reset_code}{display_text}{reset_code}")
+    _reset_code = Color.reset if Color.reset else "\x1b[0m"
+    _display_text = src_text
+    if max_width > 0 and (_lines := split_by_width(src_text, max_width)):
+        _display_text = "\n".join(_lines) if wrap else _lines[0]
+    print(f"{_reset_code}{_display_text}{_reset_code}")
 
 
 def omit_middle(src_text: str, max_len: int = 80, placeholder: str = "..") -> str:
@@ -161,22 +159,22 @@ def omit_middle(src_text: str, max_len: int = 80, placeholder: str = "..") -> st
     Returns:
         str: _description_
     """
-    text_orig = str(src_text)
+    _orig_text = str(src_text)
     if count_width(src_text) <= max_len:
-        return text_orig
-    ph_width = count_width(placeholder)
-    available_width = max_len - ph_width
-    if available_width <= 0:
+        return _orig_text
+    _ph_width = count_width(placeholder)
+    _available_width = max_len - _ph_width
+    if _available_width <= 0:
         return split_by_width(placeholder, max_len, from_back=False, omit=True)
-    front_width = available_width // 2
-    back_width = available_width - front_width
-    front_part = split_by_width(text_orig, front_width, from_back=False, omit=True)
-    back_part = (
-        split_by_width(text_orig, back_width, from_back=True, omit=True)
-        if back_width > 0
+    _front_width = _available_width // 2
+    _back_width = _available_width - _front_width
+    _front_part = split_by_width(_orig_text, _front_width, from_back=False, omit=True)
+    _back_part = (
+        split_by_width(_orig_text, _back_width, from_back=True, omit=True)
+        if _back_width > 0
         else ""
     )
-    return f"{front_part[0]}{placeholder}{back_part[0]}"
+    return f"{_front_part[0]}{placeholder}{_back_part[0]}"
 
 
 # --- eof ---------------------------------------------------------------------

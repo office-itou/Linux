@@ -13,87 +13,87 @@ from .my_string import count_width
 
 # -----------------------------------------------------------------------------
 @debug_logger
-def list2markdown(dst_path: str, md_title: str, src_data: list) -> None:
+def list2markdown(dest_path: str, md_title: str, src_datas: list) -> None:
     """Markdown output of list data
 
     Args:
-        dst_path (str): Destination path
+        dest_path (str): Destination path
         md_title (str): Markdown title
         src_data (list): Source data
     """
-    spc = " " * 2
-    url_pattern = re.compile(
+    _spc_str = " " * 2
+    _url_pattern = re.compile(
         r"^https?://(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}"
         r"(?:/[a-zA-Z0-9._~:/?#\[\]@!$&\'()*+,;=%-]*)?$"
     )
-    comment_pattern = re.compile(r"^#.*$")
-    # addr_pattern = re.compile(r"^[A-Z0-9]+_ADDR$")
-    # ip_pattern = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
+    _comment_pattern = re.compile(r"^#.*$")
+    # _addr_pattern = re.compile(r"^[A-Z0-9]+_ADDR$")
+    # _ip_pattern = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
 
-    def conversion_url(list_data: list) -> list:
-        conv_list_data = []
-        for dict_data in list_data:
-            dict_orig = {
-                key: f"`{value}`"
+    def _conversion_url(list_data: list) -> list:
+        _conv_list_data = []
+        for _dict_data in list_data:
+            _dict_orig = {
+                _key: f"`{_value}`"
                 if (
-                    isinstance(value, str)
-                    and (url_pattern.match(value) or comment_pattern.match(value))
+                    isinstance(_value, str)
+                    and (_url_pattern.match(_value) or _comment_pattern.match(_value))
                 )
-                else value
-                for key, value in dict_data.items()
+                else _value
+                for _key, _value in _dict_data.items()
             }
-            conv_list_data.append(dict_orig)
-        return conv_list_data
+            _conv_list_data.append(_dict_orig)
+        return _conv_list_data
 
-    def generate(list_data: list):
-        df = pd.DataFrame(conversion_url(list_data))
+    def _generate(list_data: list):
+        _df = pd.DataFrame(_conversion_url(list_data))
         # --- get the width of each column ----------------------------------------
-        col_sizes = {}
-        for name in df.columns:
-            cnt_name = count_width(str(name))
-            max_size = df[name].apply(lambda x: count_width(str(x))).max()
-            col_sizes[name] = max(max_size, cnt_name)
+        _col_sizes = {}
+        for _name in _df.columns:
+            _cnt_name = count_width(str(_name))
+            _max_size = _df[_name].apply(lambda x: count_width(str(x))).max()
+            _col_sizes[_name] = max(_max_size, _cnt_name)
         # --- header and divider line ---------------------------------------------
-        header = ""
-        align = ""
-        for name in df.columns:
-            colsize = col_sizes[name]
-            name_str = str(name)
-            pad_total = colsize - count_width(name_str)
-            pad_l = pad_total // 2
-            pad_r = pad_total - pad_l
-            header += f"|{' ' * pad_l}{name_str}{' ' * pad_r}"
-            align += "|:" + "-" * (colsize - 1)
-        header += "|"
-        align += "|"
+        _header = ""
+        _align = ""
+        for _name in _df.columns:
+            _colsize = _col_sizes[_name]
+            _name_str = str(_name)
+            _pad_total = _colsize - count_width(_name_str)
+            _pad_l = _pad_total // 2
+            _pad_r = _pad_total - _pad_l
+            _header += f"|{' ' * _pad_l}{_name_str}{' ' * _pad_r}"
+            _align += "|:" + "-" * (_colsize - 1)
+        _header += "|"
+        _align += "|"
         # --- data ----------------------------------------------------------------
-        md_rows = []
-        for index, row in df.iterrows():
-            row_text = ""
-            for name in df.columns:
-                colsize = col_sizes[name]
-                val_str = str(row[name])
-                pad_r = colsize - count_width(val_str)
-                row_text += f"|{val_str}{' ' * pad_r}"
-            row_text += "|"
-            md_rows.append(f"{spc}{row_text}")
-        return (header, align, md_rows)
+        _md_rows = []
+        for _index, _row in _df.iterrows():
+            _row_text = ""
+            for _name in _df.columns:
+                _colsize = _col_sizes[_name]
+                _val_str = str(_row[_name])
+                _pad_r = _colsize - count_width(_val_str)
+                _row_text += f"|{_val_str}{' ' * _pad_r}"
+            _row_text += "|"
+            _md_rows.append(f"{_spc_str}{_row_text}")
+        return (_header, _align, _md_rows)
 
     # --- output --------------------------------------------------------------
-    md_text = "# Data table\n"
-    if src_data and isinstance(src_data[0], list):
-        md_text += f"\n## {md_title}\n"
-        for data in src_data:
-            md_text += f"\n* <details><summary>{data[:1][0]}</summary>\n"
-            header, align, md_rows = generate(data[1:])
-            md_text += f"\n{spc}{header}\n{spc}{align}\n"
-            md_text += "\n".join(md_rows) + f"\n\n{spc}</details>\n"
+    _md_text = "# Data table\n"
+    if src_datas and isinstance(src_datas[0], list):
+        _md_text += f"\n## {md_title}\n"
+        for _data in src_datas:
+            _md_text += f"\n* <details><summary>{_data[:1][0]}</summary>\n"
+            _header, _align, _md_rows = _generate(_data[1:])
+            _md_text += f"\n{_spc_str}{_header}\n{_spc_str}{_align}\n"
+            _md_text += "\n".join(_md_rows) + f"\n\n{_spc_str}</details>\n"
     else:
-        md_text += f"\n* {md_title}\n"
-        header, align, md_rows = generate(src_data)
-        md_text += f"\n{spc}{header}\n{spc}{align}\n"
-        md_text += "\n".join(md_rows) + "\n"
-    file_write(dst_path, md_text, text=True, backup=True)
+        _md_text += f"\n* {md_title}\n"
+        _header, _align, _md_rows = _generate(src_datas)
+        _md_text += f"\n{_spc_str}{_header}\n{_spc_str}{_align}\n"
+        _md_text += "\n".join(_md_rows) + "\n"
+    file_write(dest_path, _md_text, text=True, backup=True)
 
 
 # -----------------------------------------------------------------------------
@@ -106,25 +106,25 @@ def markdown2list(src_path: str) -> list:
     Returns:
         list: Destination data
     """
-    table_rows = []
-    headers = []
-    read_data = file_read(src_path)
-    for line in read_data:
-        line_str = line.strip()
-        if line_str.startswith("|") and line_str.endswith("|"):
-            cells = [cell.strip() for cell in line_str.split("|")[1:-1]]
-            if all(re.match(r"^:?-+:?$", c) for c in cells):
+    _table_rows = []
+    _headers = []
+    _read_data = file_read(src_path)
+    for _line in _read_data:
+        _line_str = _line.strip()
+        if _line_str.startswith("|") and _line_str.endswith("|"):
+            _cells = [_cell.strip() for _cell in _line_str.split("|")[1:-1]]
+            if all(re.match(r"^:?-+:?$", c) for c in _cells):
                 continue
-            if not headers:
-                headers = cells
+            if not _headers:
+                _headers = _cells
             else:
-                row_dict = {}
-                for i, head in enumerate(headers):
-                    row_dict[head] = cells[i] if i < len(cells) else ""
-                table_rows.append(row_dict)
-        elif headers and table_rows:
+                _row_dict = {}
+                for i, _head in enumerate(_headers):
+                    _row_dict[_head] = _cells[i] if i < len(_cells) else ""
+                _table_rows.append(_row_dict)
+        elif _headers and _table_rows:
             break
-    return table_rows
+    return _table_rows
 
 
 # --- eof ---------------------------------------------------------------------

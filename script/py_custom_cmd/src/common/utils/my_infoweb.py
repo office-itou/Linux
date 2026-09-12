@@ -97,12 +97,9 @@ def url_strip(src_text: str) -> str:
     Returns:
         str: Conversion text
     """
-    text = re.sub(r"[\n|\r\n]$", "", src_text)  # remove lf or crlf
-    text = re.sub(r"^\"", "", text)  # remove the first double quotation mark
-    text = re.sub(r"\"$", "", text)  # remove the last double quotation mark
-    text = re.sub(r"^/", "", text)  # remove the first '/'
-    text = re.sub(r"/$", "", text)  # remove the last '/'
-    return text
+    _text = src_text.rstrip("\r\n")
+    _text = _text.strip('"/')
+    return _text
 
 
 @debug_logger
