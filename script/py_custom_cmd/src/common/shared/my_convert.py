@@ -1,9 +1,7 @@
 """File I/O processing"""
 
 # --- Python library ----------------------------------------------------------
-import copy
 import csv
-import re
 
 # --- my library --------------------------------------------------------------
 from ..utils.my_debug import debug_logger
@@ -69,9 +67,27 @@ def get_text2list(src_path: str) -> list[dict[str, str]]:
         list[dict[str, str]]: Conversion data
     """
     _read_data = file_read(src_path)
-    _lines = (l.strip() for l in _read_data.splitlines() if l.strip())
-    _sanitized_lines = (re.sub(r"[ \t]+", ",", l) for l in _lines)
-    return list(csv.DictReader(_sanitized_lines))
+    _lines = [l.strip() for l in _read_data.splitlines() if l.strip()]
+    if not _lines:
+        return []
+    # -------------------------------------------------------------------------
+    header_reader = csv.reader([_lines[0]], delimiter=" ", skipinitialspace=True)
+    headers = next(header_reader, [])
+    # -------------------------------------------------------------------------
+    result = []
+    data_reader = csv.reader(_lines[1:], delimiter=" ", skipinitialspace=True)
+    for row in data_reader:
+        if not row:
+            continue
+        # ---------------------------------------------------------------------
+        row_dict = {}
+        for i, header in enumerate(headers):
+            if i < len(row):
+                row_dict[header] = row[i]
+            else:
+                row_dict[header] = ""
+        result.append(row_dict)
+    return result
 
 
 @debug_logger
