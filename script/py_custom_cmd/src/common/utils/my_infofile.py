@@ -86,7 +86,12 @@ def get_info(target_path: str) -> FileData:
     _data.path = str(_path.resolve())
     if _path.exists():
         _kind = magic.from_file(_data.path, mime=True)
-        if _kind and _kind == "application/x-iso9660-image":
+        if _kind and _kind == (
+            "application/x-iso9660-image",
+            "application/octet-stream",
+            "application/vnd.efi.iso",
+            "application/x-cd-image",
+        ):
             _data.volume = get_volume_label(_data.path)
         _data.tmstamp = datetime.fromtimestamp(
             _path.stat().st_mtime, tz=timezone.utc

@@ -2,23 +2,26 @@
 
 # --- Python library ----------------------------------------------------------
 import asyncio
+import fnmatch
+import posixpath
 import re
+
+# import traceback
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
-# from tqdm import tqdm
-# from urllib.parse import urlparse
 import aiohttp  # sudo apt-get install python3-aiohttp
 from bs4 import BeautifulSoup
 from natsort import natsort_keygen
 
 # --- my library --------------------------------------------------------------
 from .my_colors import Color
-from .my_config import infosystem
-from .my_debug import debug_logger, debugout
+from .my_debug import debug_logger
+from .my_error import handle_fatal_error
 from .my_message import get_caller_name, message_alert, message_warn
 
 
@@ -27,387 +30,336 @@ from .my_message import get_caller_name, message_alert, message_warn
 class WebData:
     """Web data class"""
 
-    regexp: str = ""
-    url: str = ""
-    tmstamp: str = ""
-    size: int = 0
-    check: str = ""
-    status: int = 0
+    search_url: str = ""
+    exclude_url: str = ""
+    request_url: str = ""
+    response_url: str = ""
+    time_stamp: str = ""
+    file_size: str = ""
+    check_date: str = ""
+    status: str = ""
     reason: str = ""
     mime: str = ""
     contents: str = ""
-    output: str = ""
+    local_file: str = ""
 
 
 class InfoWeb:
     """Web information class"""
 
-    def __init__(self, data: WebData | None = None):
-        self.data: WebData = data if data is not None else WebData()
+    @debug_logger
+    def __init__(self) -> None:
+        self.data: list[WebData] = []
 
-    def get_data(self) -> WebData:
+    def __getattr__(self, name: str) -> Any:
+        if name in self._valid_fields:
+            return getattr(self.data[0], name) if self.data else ""
+        raise AttributeError(
+            f"'{self.__class__.__name__}' object has no attribute '{name}'"
+        )
+
+    @debug_logger
+    def get_data(self) -> list[WebData]:
         return self.data
 
-    async def get_info(
-        self, session: aiohttp.ClientSession, target_regexp: str, target_path: str
-    ) -> WebData:
-        self.data = await get_info(session, target_regexp, target_path)
-        return self.data
-
-    async def get_response(
-        self, session: aiohttp.ClientSession, target_url: str
-    ) -> WebData:
-        self.data = await get_response(session.get, target_url)
-        return self.data
-
-    async def get_header(
-        self, session: aiohttp.ClientSession, target_url: str
-    ) -> WebData:
-        self.data = await get_header(session, target_url)
-        return self.data
-
-    async def get_text(
-        self, session: aiohttp.ClientSession, target_url: str
-    ) -> WebData:
-        self.data = await get_text(session, target_url)
-        return self.data
-
-    def url_strip(self, data: str) -> str:
-        return url_strip(data)
-
-
-# BASE_HEADERS = {
-#    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-#    "Accept-Encoding": "gzip, deflate, br, zstd",
-#    "Accept-Language": "ja,en;q=0.9,en-GB;q=0.8,en-US;q=0.7,ja-JP;q=0.6",
-#    "Cache-Control": "max-age=0",
-#    "Connection": "keep-alive",
-#    "Content-Security-Policy": "upgrade-insecure-requests",
-#    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36 Edg/152.0.0.0",
-# }
-
-
-@debug_logger
-def url_strip(src_text: str) -> str:
-    """URL stripping
-
-    Args:
-        src_text (str): Source text
-
-    Returns:
-        str: Conversion text
-    """
-    _text = src_text.rstrip("\r\n")
-    _text = _text.strip('"/')
-    return _text
-
-
-@debug_logger
-async def get_response(request_func: Callable, target_url: str) -> WebData:
-    """Get response
-
-    Args:
-        request_func (Callable): Request function
-        target_url (str): Target URL
-
-    Raises:
-        SystemExit: aiohttp.ClientConnectorError, aiohttp.ClientResponseError,aiohttp.ClientError,asyncio.TimeoutError, ...
-
-
-    Returns:
-        WebData: Response data
-    """
-    if not target_url:
-        message_alert(get_caller_name(), f"Target URL error: [{target_url}]")
-        return
-    # host_match = re.sub(r"http[s]*://([^/]+)/.*$", r"\1", target_url)
-    req_url = target_url
-    # req_headers = BASE_HEADERS.copy()
-    # req_headers["Host"] = host_match if host_match else req_headers["Host"]
-    req_headers = ""
-    info = WebData()
-    for r in range(3):
+    @debug_logger
+    async def get_response(self, request_func: Callable, request_url: str) -> WebData:
+        _caller = get_caller_name()
         try:
             async with request_func(
-                req_url, headers=req_headers, allow_redirects=True, timeout=60
+                request_url, allow_redirects=True, timeout=60
             ) as response:
-                info.url = response.url if hasattr(response, "url") else ""
-                info.status = response.status if hasattr(response, "status") else 0
-                info.reason = response.reason if hasattr(response, "reason") else ""
-                content_length = response.headers.get("Content-Length")
-                info.size = (
-                    int(content_length)
-                    if content_length and content_length.isdigit()
+                _web_data = WebData()
+                _web_data.search_url = ""
+                _web_data.exclude_url = ""
+                _web_data.request_url = request_url
+                _web_data.response_url = (
+                    response.url if hasattr(response, "url") else ""
+                )
+                _web_data.time_stamp = (
+                    datetime.strptime(
+                        response.headers.get("Last-Modified"),
+                        "%a, %d %b %Y %H:%M:%S %Z",
+                    )
+                    .replace(tzinfo=timezone.utc)
+                    .isoformat()
+                    if response.headers.get("Last-Modified")
+                    else ""
+                )
+                _web_data.file_size = (
+                    response.headers.get("Content-Length")
+                    if response.headers.get("Content-Length")
                     else 0
                 )
-                last_mod = response.headers.get("Last-Modified")
-                if last_mod:
-                    try:
-                        info.tmstamp = (
-                            datetime.strptime(last_mod, "%a, %d %b %Y %H:%M:%S %Z")
-                            .replace(tzinfo=timezone.utc)
-                            .isoformat()
-                        )
-                    except ValueError:
-                        info.tmstamp = last_mod
-                info.mime = response.headers.get("content-type", "")
-                info.contents = (
+                _web_data.check_date = datetime.now(timezone.utc).isoformat(
+                    timespec="microseconds"
+                )
+                _web_data.status = response.status if hasattr(response, "status") else 0
+                _web_data.reason = (
+                    response.reason if hasattr(response, "reason") else ""
+                )
+                _web_data.mime = response.headers.get("content-type", "")
+                _web_data.contents = (
                     await response.text() if hasattr(response, "text") else ""
                 )
-                response.raise_for_status()
-                break
-        except (
-            aiohttp.ClientConnectorError,
-            aiohttp.ClientResponseError,
-            aiohttp.ClientError,
-            asyncio.TimeoutError,
-        ) as e:
-            message_alert(get_caller_name(), f"HTTP/Connection error: {e}")
-            message_warn(get_caller_name(), f"retry({r}): [{target_url}]")
-            await asyncio.sleep(1)
-        except Exception as e:  # noqa: BLE001
-            message_alert(get_caller_name(), f"Fatal error: {e}")
-            # message_warn(get_caller_name(), f"retry({r}): {target_url}")
-            # await asyncio.sleep(1)
-            raise SystemExit
-    return info
+                _web_data.local_file = ""
+                # try:
+                # except ValueError as e:
+                #    _summary = traceback.extract_tb(e.__traceback__)[-1]
+                #    message_alert(_caller, f"file name  : {_summary.filename}")
+                #    message_alert(_caller, f"line number: {_summary.lineno}")
+                #    # pass
+                return _web_data
+        except (aiohttp, asyncio) as e:
+            message_alert(_caller, f"HTTP/Connection error: {e}")
+        except (OSError, Exception) as e:  # noqa: BLE001
+            handle_fatal_error(_caller, e)
+
+    @debug_logger
+    async def get_header(
+        self, session: aiohttp.ClientSession, request_url: str
+    ) -> WebData:
+        return await self.get_response(session.head, request_url)
+
+    @debug_logger
+    async def get_text(
+        self, session: aiohttp.ClientSession, request_url: str
+    ) -> WebData:
+        return await self.get_response(session.get, request_url)
+
+    @debug_logger
+    async def get_info(
+        self,
+        session: aiohttp.ClientSession,
+        request_urls: str,
+        local_file: str,
+        exclude_urls: str = "",
+    ) -> list[WebData]:
+        self.data = await get_infoweb(session, request_urls, local_file, exclude_urls)
+        return self.data
 
 
-@debug_logger
-async def get_header(session: aiohttp.ClientSession, target_url: str) -> WebData:
-    """Get header
+def _compile_exclude_regex(exclude_url: str) -> re.Pattern | None:
+    """Compiling exclusion patterns"""
+    if not exclude_url:
+        return None
+    # -------------------------------------------------------------------------
+    _translated_patterns = []
+    for s in exclude_url.split(","):
+        s = s.strip()
+        if not s:
+            continue
+        # ---- patterns with wildcards ----------------------------------------
+        _range_match_with_wildcard = re.match(r"^(\d+)-(\d+)\.(.*)$", s)
+        # ---- pattern with only numeric ranges ---------------------------
+        _range_match_pure_num = re.match(r"^(\d+)-(\d+)$", s)
+        # ---------------------------------------------------------------------
+        if _range_match_with_wildcard:
+            _start = int(_range_match_with_wildcard.group(1))
+            _end = int(_range_match_with_wildcard.group(2))
+            _remain = _range_match_with_wildcard.group(3)
+            for _num in range(_start, _end + 1):
+                _regex_str = fnmatch.translate(f"{_num}.{_remain}")
+                _translated_patterns.append(f"(?:{_regex_str})")
+            continue
+        elif _range_match_pure_num:
+            _start = int(_range_match_pure_num.group(1))
+            _end = int(_range_match_pure_num.group(2))
+            for _num in range(_start, _end + 1):
+                _regex_str = f"^{_num}$"
+                _translated_patterns.append(f"(?:{_regex_str})")
+            continue
+        # ---- hybrid processing ----------------------------------------------
+        if any(_char in s for _char in "()|?+"):
+            _regex_str = s
+        else:
+            _regex_str = fnmatch.translate(s)
+        # ---------------------------------------------------------------------
+        _translated_patterns.append(f"(?:{_regex_str})")
+    # -------------------------------------------------------------------------
+    return re.compile("|".join(_translated_patterns)) if _translated_patterns else None
 
-    Args:
-        session (aiohttp.ClientSession): Session object
-        target_url (str): Target URL
 
-    Returns:
-        WebData: Response data
-    """
-    return await get_response(session.head, target_url)
-
-
-@debug_logger
-async def get_text(session: aiohttp.ClientSession, target_url: str) -> WebData:
-    """Get text
-
-    Args:
-        session (aiohttp.ClientSession): Session object
-        target_url (str): Target URL
-
-    Returns:
-        WebData: Response data
-    """
-    return await get_response(session.get, target_url)
-
-
-@debug_logger
-async def get_info(session: Any, target_regexp: str, target_path: str) -> WebData:
-    """Get web information data
-
-    Args:
-        session (Any): Session
-        target_regexp (str): Target URL for regular expression
-        target_path (str): Target path
-
-    Returns:
-        WebData: Response data
-    """
-    data = WebData()
-    target_url = target_regexp
-    match_dirs = ""
-    match_ptrn = ""
-    match_rear = ""
-    status = True
+async def _expand_regexp_urls(
+    info_web: InfoWeb,
+    session: aiohttp.ClientSession,
+    search_url: str,
+    exclude_url: re.Pattern | None,
+    latest: bool = True,
+) -> list[str]:
+    """Hierarchical expansion of URL regular expressions"""
+    _caller = get_caller_name()
+    _regex_pattern = re.compile(r"(\[[^\]]+\]|\([^)]+\))[+*?]?")
+    _current_urls = [search_url]
+    # -------------------------------------------------------------------------
     while True:
-        match = re.search(r"[^/ \t]*\[[^/ \t]+\][^/ \t]*", target_url)
-        if not match:
-            break
-        match_dirs = url_strip(target_url[0 : match.start()])
-        match_ptrn = url_strip(match.group())
-        match_rear = url_strip(target_url[match.end() :])
-        if match_rear:
-            match_ptrn = match_ptrn + "/"
-        target_url = match_dirs
-        for r in range(5):
-            if not target_url:
-                message_warn(get_caller_name(), f"failed: {target_regexp}")
-                break
-            data = await get_text(session, target_url)
-            if data.status in (200, 404):
-                break
-            message_warn(get_caller_name(), f"retry({r}): [{target_url}]")
-            await asyncio.sleep(3)
-        if data.status != 200:
-            status = False
-            web_debugout(target_regexp, target_url, data)
-            break
-        match_url = []
-        soup = BeautifulSoup(data.contents, "html.parser")
-        for a in soup.find_all("a"):
-            href = a.get("href")
-            if not href:
+        _next_urls = []
+        _has_any_regex = False
+        # ---------------------------------------------------------------------
+        for _url in _current_urls:
+            # print(f"{Color.blue}request_url:{_url}{Color.reset}")
+            # -----------------------------------------------------------------
+            _match_regex = _regex_pattern.search(_url)
+            if not _match_regex:
+                _next_urls.append(_url)
                 continue
-            match_href = re.match(f"{match_ptrn}", href)
-            if not match_href:
+            # -----------------------------------------------------------------
+            _has_any_regex = True
+            _match_start = _match_regex.start()
+            _match_end = _match_regex.end()
+            # -----------------------------------------------------------------
+            _last_slash_idx = _url[:_match_start].rfind("/")
+            _match_before = _url[:_last_slash_idx] if _last_slash_idx > 0 else ""
+            # -----------------------------------------------------------------
+            _first_slash_idx = _url[_match_end:].find("/")
+            if _first_slash_idx >= 0:
+                _absolute_after_idx = _match_end + _first_slash_idx
+                _match_after = _url[_absolute_after_idx:]
+                _match_inside = _url[_last_slash_idx + 1 : _absolute_after_idx].strip(
+                    "/"
+                )
+            else:
+                _match_after = ""
+                _match_inside = _url[_last_slash_idx + 1 :].strip("/")
+            # -----------------------------------------------------------------
+            _match_before = _match_before.rstrip("/")
+            _match_after = _match_after.lstrip("/")
+            # --- Retrieving HTML text and retrying ---------------------------
+            # print(f"{Color.br_cyan}_match_before:{_match_before}{Color.reset}")
+            for r in range(5):
+                _web_data = await info_web.get_text(session, _match_before)
+                if _web_data.status in (200, 404):
+                    break
+                message_warn(_caller, f"retry({r}): [{_match_before}]")
+                await asyncio.sleep(3)
+            if _web_data.status != 200:
+                message_warn(_caller, f"{_web_data.request_url}({_web_data.status})")
                 continue
-            match_url.append(match_href.group())
-        if not match_url:
-            status = False
-            message_warn(
-                get_caller_name(), f"No matching links found for pattern: {match_ptrn}"
-            )
+            # print(f"{Color.br_yellow}{_web_data.request_url}({_web_data.status}){Color.reset}")
+            # -----------------------------------------------------------------
+            _web_data.search_url = search_url
+            _web_data.exclude_url = exclude_url
+            # -----------------------------------------------------------------
+            _name_pattern = re.compile(rf"^{_match_inside}$")
+            _soup = BeautifulSoup(_web_data.contents, "html.parser")
+            # -----------------------------------------------------------------
+            for a in _soup.find_all("a", href=True):
+                _href = a["href"]
+                # -------------------------------------------------------------
+                if not _href or _href.startswith(("/", "../")):
+                    continue
+                # -------------------------------------------------------------
+                _href_clean = _href.lstrip("./").strip("/")
+                # -------------------------------------------------------------
+                if exclude_url and exclude_url.search(_href_clean):
+                    continue
+                # -------------------------------------------------------------
+                if _name_pattern.match(_href_clean):
+                    _joined_url = _match_before + "/" + _href_clean
+                    if _match_after or _href.endswith("/"):
+                        _joined_url += "/"
+                    if _match_after:
+                        _joined_url += _match_after
+                    _next_urls.append(_joined_url)
+        # ---------------------------------------------------------------------
+        # print(f"{Color.br_blue}{_next_urls}{Color.reset}")
+        if latest and _next_urls:
+            _next_urls.sort(key=natsort_keygen(), reverse=True)
+            _next_urls = [_next_urls[0]]
+        _current_urls = _next_urls
+        # print(f"{Color.br_blue}{_next_urls}{Color.reset}")
+        if not _has_any_regex:
             break
-        match_url.sort(key=natsort_keygen(), reverse=True)
-        target_url = target_url + "/" + match_url[0]
-        if match_rear:
-            target_url = target_url + match_rear
-    # --- web file information ------------------------------------------------
-    if status:
-        for r in range(5):
-            if not target_url:
-                message_warn(get_caller_name(), f"failed: {target_regexp}")
-                break
-            data = await get_header(session, target_url)
-            if data.status in (200, 404):
-                break
-            message_warn(get_caller_name(), f"retry({r}): [{target_url}]")
-            await asyncio.sleep(3)
-    data.regexp = target_regexp if target_regexp else ""
-    data.url = target_url if target_url else ""
-    data.check = datetime.now(timezone.utc).isoformat(timespec="microseconds")
-    # --- output file information ---------------------------------------------
-    # https://deb.debian.org/debian/dists/trixie/main/installer-amd64/current/images/netboot/mini.iso
-    RE_DEB_UBU = re.compile(
-        r"^https?://.+/(debian|ubuntu)/dists/[^/]+/main/installer-([^/]+)/current/"
-    )
-    # https://d-i.debian.org/daily-images/amd64/daily/netboot/mini.iso
-    RE_DAILY = re.compile(r"^https?://d-i\.debian.org/daily-images/([^/]+)/daily/")
-    # https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso
-    # https://cdimage.debian.org/cdimage/daily-builds/daily/current/amd64/iso-cd/debian-testing-amd64-netinst.iso
-    # https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso
-    RE_NETINST = re.compile(
-        r"^https?://[^/]+/cdimage/([^/]+)/(?:daily/)?(.+/)?([^/]+)/iso-cd/"
-    )
-    filename = re.sub(r"^.+/", "", target_url)
-    match filename:
-        case "mini.iso":
-            if m := RE_DEB_UBU.match(target_url):
-                code = target_url.split("/dists/")[1].split("/")[0]
-                arch = m.group(2)
-                filename = f"mini-{code}-{arch}.iso"
-            elif m := RE_DAILY.match(target_url):
-                arch = m.group(1)
-                filename = f"mini-testing-daily-{arch}.iso"
-        case s if m := re.match(r"debian-testing-.+-netinst\.iso", s):
-            if m := RE_NETINST.match(target_url):
-                edtn = m.group(1)
-                bild = m.group(2)
-                arch = m.group(3)
-                if bild:
-                    edtn = f"{edtn}-{bild.strip('/').replace('/', '-')}"
-                filename = filename.replace(arch, f"{edtn}-{arch}", 1)
-    data.output = str(
-        Path(target_path).with_name(filename) if target_path and filename else ""
-    )
-    # --- return --------------------------------------------------------------
-    return data
+    # -------------------------------------------------------------------------
+    return _current_urls
 
 
 @debug_logger
-def web_debugout(target_regexp: str, target_url: str, data: WebData()) -> None:
-    debugout(
-        get_caller_name(only=False),
-        "Debugout",
-        Color.yellow,
-        "# " + "-" * infosystem.columns + " #",
+async def get_infoweb(
+    session: aiohttp.ClientSession,
+    search_url: str,
+    local_file: str,
+    exclude_url: str = "",
+) -> list[WebData]:
+    """get_infoweb main control function"""
+    _caller = get_caller_name()
+    _info_web = InfoWeb()
+    _web_datas: list[WebData] = []
+    _search_pattern = re.compile(
+        r"^https?://.+/(debian|ubuntu)?/dists/([^/]+)?/main/installer-([^/]+)?/current/"
+        r"|"
+        r"^https?://d-i\.debian.org/daily-images/([^/]+)?/daily/"
+        r"|"
+        r"^https?://[^/]+/cdimage/(daily-builds)/(daily)/([^/]+)?/([^/]+)?/iso-cd/"
+        r"|"
+        r"^https?://[^/]+/cdimage/(weekly-builds)/([^/]+)?/iso-cd/"
     )
-    debugout(
-        get_caller_name(only=False),
-        "Debugout",
-        Color.yellow,
-        f"target_regexp:[{target_regexp}]",
+    # --- creating an exclusion pattern ---------------------------------------
+    _exclude_url = _compile_exclude_regex(exclude_url)
+    # --- expanding multi-level URLs ------------------------------------------
+    _resolved_urls = await _expand_regexp_urls(
+        _info_web, session, search_url, _exclude_url
     )
-    debugout(
-        get_caller_name(only=False),
-        "Debugout",
-        Color.yellow,
-        f"target_url   :[{target_url}]",
-    )
-    debugout(
-        get_caller_name(only=False),
-        "Debugout",
-        Color.yellow,
-        f"web.regexp   :[{data.regexp}]",
-    )
-    debugout(
-        get_caller_name(only=False),
-        "Debugout",
-        Color.yellow,
-        f"web.url      :[{data.url}]",
-    )
-    debugout(
-        get_caller_name(only=False),
-        "Debugout",
-        Color.yellow,
-        f"web.tmstamp  :[{data.tmstamp}]",
-    )
-    debugout(
-        get_caller_name(only=False),
-        "Debugout",
-        Color.yellow,
-        f"web.size     :[{data.size}]",
-    )
-    debugout(
-        get_caller_name(only=False),
-        "Debugout",
-        Color.yellow,
-        f"web.check    :[{data.check}]",
-    )
-    debugout(
-        get_caller_name(only=False),
-        "Debugout",
-        Color.yellow,
-        f"web.status   :[{data.status}]",
-    )
-    debugout(
-        get_caller_name(only=False),
-        "Debugout",
-        Color.yellow,
-        f"web.reason   :[{data.reason}]",
-    )
-    debugout(
-        get_caller_name(only=False),
-        "Debugout",
-        Color.yellow,
-        f"web.mime     :[{data.mime}]",
-    )
-    if data.mime and "text" in data.mime:
-        debugout(
-            get_caller_name(only=False),
-            "Debugout",
-            Color.yellow,
-            f"web.contents :[{data.contents}]",
-        )
-    else:
-        debugout(
-            get_caller_name(only=False),
-            "Debugout",
-            Color.yellow,
-            f"web.contents :error: mime({data.mime})",
-        )
-    debugout(
-        get_caller_name(only=False),
-        "Debugout",
-        Color.yellow,
-        f"web.output   :[{data.output}]",
-    )
-    debugout(
-        get_caller_name(only=False),
-        "Debugout",
-        Color.yellow,
-        "# " + "-" * infosystem.columns + " #",
-    )
+    # --- check the header of the confirmed real URL and generate WebData -----
+    for _request_url in list(set(_resolved_urls)):
+        # print(f"{Color.magenta}{_request_url}{Color.reset}")
+        for r in range(5):
+            _web_data = await _info_web.get_header(session, _request_url)
+            if _web_data.status in (200, 404):
+                break
+            message_warn(_caller, f"retry({r}): [{_request_url}]")
+            await asyncio.sleep(3)
+        # ---------------------------------------------------------------------
+        if _web_data.status != 200:
+            message_alert(_caller, f"status({_web_data.status}): [{_request_url}]")
+            continue
+        # print(f"{Color.br_yellow}{_web_data.request_url}({_web_data.status}){Color.reset}")
+        # ---------------------------------------------------------------------
+        _web_data.search_url = search_url
+        _web_data.exclude_url = exclude_url
+        # ---------------------------------------------------------------------
+        _path = urlparse(str(_web_data.request_url)).path
+        _dirname, _basename = posixpath.split(_path)
+        _file_name_path = Path(_basename) if _basename else None
+        _local_file_path = Path(local_file) if local_file else None
+        _match = _search_pattern.search(str(_web_data.request_url))
+        _generated_filename = str(_file_name_path)
+        if _match:
+            if _match.group(2):
+                _code = _match.group(2)
+                _arch = _match.group(3)
+                _generated_filename = f"mini-{_code}-{_arch}.iso"
+            elif _match.group(4):
+                _arch = _match.group(4)
+                _generated_filename = f"mini-testing-daily-{_arch}.iso"
+            elif _match.group(5):
+                _edtn = f"{_match.group(5)}-{_match.group(7)}"
+                _arch = _match.group(8)
+                _generated_filename = str(_file_name_path).replace(
+                    _arch, f"{_edtn}-{_arch}", 1
+                )
+            elif _match.group(9):
+                _edtn = _match.group(9)
+                _arch = _match.group(10)
+                _generated_filename = str(_file_name_path).replace(
+                    _arch, f"{_edtn}-{_arch}", 1
+                )
+            # print(f"_generated_filename:{_generated_filename}")
+        # print(f"{Color.br_blue}{_generated_filename}{Color.reset}")
+        if _generated_filename:
+            _web_data.local_file = (
+                str(_local_file_path.with_name(_generated_filename))
+                if _local_file_path
+                else ""
+            )
+
+        # ---------------------------------------------------------------------
+        _web_datas.append(_web_data)
+    # --- 2 step sort (newest url per regexp) ---------------------------------
+    _web_datas.sort(key=lambda x: x.request_url, reverse=True)
+    _web_datas.sort(key=lambda x: x.search_url)
+    # -------------------------------------------------------------------------
+    return _web_datas
 
 
 # --- eof ---------------------------------------------------------------------

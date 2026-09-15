@@ -27,13 +27,14 @@ from common.utils.my_config import infosystem
 from common.utils.my_debug import debug_logger
 from common.utils.my_error import handle_fatal_error
 from common.utils.my_infofile import InfoFile
-from common.utils.my_infoweb import InfoWeb
+from common.utils.my_infoweb import InfoWeb, WebData
 from common.utils.my_message import (
     get_caller_name,
     message_elapsed,
     message_end,
     message_info,
     message_start,
+    message_warn,
 )
 
 
@@ -108,34 +109,58 @@ async def get_web_file_info(info_comm: InfoCommon) -> InfoCommon:
     async with aiohttp.ClientSession(
         timeout=timeout, raise_for_status=False
     ) as session:
+        _caller = get_caller_name()
+        tget_mdias: list[WebData] = []
         for tget_mdia in info_comm.mdia.info.data:
-            if (
-                tget_mdia.entry_flag == ""
-                or not tget_mdia.web_regexp
-                or not tget_mdia.iso_path
-            ):
-                continue
-            message_info(get_caller_name(), tget_mdia.web_regexp, True)
-            await info_web.get_info(session, tget_mdia.web_regexp, tget_mdia.iso_path)
-            tget_mdia.web_path = info_web.data.url
-            tget_mdia.web_tstamp = info_web.data.tmstamp
-            tget_mdia.web_size = info_web.data.size
-            tget_mdia.web_check = info_web.data.check
-            tget_mdia.web_status = info_web.data.status
-            if info_web.data.status != 200:
-                continue
-            if Path(info_web.data.output).exists():
-                info_file.get_info(info_web.data.output)
-                tget_mdia.iso_path = info_file.data.path
-                tget_mdia.iso_tstamp = info_file.data.tmstamp
-                tget_mdia.iso_size = info_file.data.size
-                tget_mdia.iso_volume = info_file.data.volume
-            else:
-                tget_mdia.iso_path = info_web.data.output
-                tget_mdia.iso_tstamp = "-"
-                tget_mdia.iso_size = "-"
-                tget_mdia.iso_volume = "-"
-    return info_comm.mdia.info.data
+            # print(f"{Color.magenta}tget_mdia1:{tget_mdia}{Color.reset}")
+            if tget_mdia.web_regexp:
+                # print(f"{Color.magenta}tget_mdia2:{tget_mdia}{Color.reset}")
+                message_info(get_caller_name(), tget_mdia.web_regexp, True)
+                # print(f"{Color.br_cyan}{tget_mdia.web_regexp}{Color.reset}")
+                if tget_mdia.iso_path:
+                    # print(f"{Color.green}{tget_mdia.iso_path}{Color.reset}")
+                    local_file_path = Path(tget_mdia.iso_path)
+                else:
+                    # print(f"{Color.yellow}{tget_mdia.iso_path}{Color.reset}")
+                    local_file_path = Path("general.iso")
+                    iso_dir_path = info_comm.conf.info.get_path(key="DIRS_ISOS")
+                    local_file_path = iso_dir_path / local_file_path
+                # print(f"{Color.magenta}web_regexp:{tget_mdia.web_regexp}{Color.reset}")
+                _web_datas = await info_web.get_info(
+                    session, tget_mdia.web_regexp, local_file_path
+                )
+                for _web_data in _web_datas:
+                    tget_mdia.web_path = str(_web_data.request_url)
+                    tget_mdia.web_tstamp = str(_web_data.time_stamp)
+                    tget_mdia.web_size = str(_web_data.file_size)
+                    tget_mdia.web_check = str(_web_data.check_date)
+                    tget_mdia.web_status = str(_web_data.status)
+                    if _web_data.status != 200:
+                        message_warn(
+                            _caller, f"{_web_data.request_url}({_web_data.status})"
+                        )
+                        continue
+                    # print(f"{Color.green}{_web_data.request_url}{Color.reset}")
+                    local_file_path = Path(_web_data.local_file)
+                    if not local_file_path.parent:
+                        iso_dir_path = info_comm.conf.info.data.get_path(
+                            key="DIRS_ISOS"
+                        )
+                        local_file_path = iso_dir_path / local_file_path
+                    if local_file_path.exists():
+                        info_file.get_info(local_file_path)
+                        tget_mdia.iso_path = str(info_file.data.path)
+                        tget_mdia.iso_tstamp = str(info_file.data.tmstamp)
+                        tget_mdia.iso_size = str(info_file.data.size)
+                        tget_mdia.iso_volume = str(info_file.data.volume)
+                    else:
+                        tget_mdia.iso_path = str(local_file_path)
+                        tget_mdia.iso_tstamp = "-"
+                        tget_mdia.iso_size = "-"
+                        tget_mdia.iso_volume = "-"
+            tget_mdias.append(tget_mdia)
+            # print(f"{Color.br_magenta}tget_mdia:{tget_mdia}{Color.reset}")
+    return tget_mdias
 
 
 @debug_logger
@@ -148,9 +173,9 @@ def debugdump(targets: list, info_comm: InfoCommon) -> None:
     """
     if not targets:
         targets = ["conf", "dist", "mdia"]
-    print(f"{Color.br_yellow}{'=' * 80}{Color.reset}")
+    # print(f"{Color.br_yellow}{'=' * 80}{Color.reset}")
     for target in targets:
-        print(f"{Color.br_yellow}{'-' * 80}{Color.reset}")
+        # print(f"{Color.br_yellow}{'-' * 80}{Color.reset}")
         match target:
             case "conf":
                 info_comm.conf.dump(wrap=True)
@@ -160,8 +185,8 @@ def debugdump(targets: list, info_comm: InfoCommon) -> None:
                 info_comm.mdia.dump(wrap=True)
             case _:
                 pass
-        print(f"{Color.br_yellow}{'-' * 80}{Color.reset}")
-    print(f"{Color.br_yellow}{'=' * 80}{Color.reset}")
+        # print(f"{Color.br_yellow}{'-' * 80}{Color.reset}")
+    # print(f"{Color.br_yellow}{'=' * 80}{Color.reset}")
 
 
 @debug_logger
@@ -249,10 +274,10 @@ async def main():
             if target := infosystem.args.info:
                 if target == "a":
                     pass
-                await get_web_file_info(info_comm)
+                tget_mdias = await get_web_file_info(info_comm)
                 # -------------------------------------------------------------
                 dirs_rmak = info_comm.conf.info.get_path("DIRS_RMAK")
-                for data_mdia in info_comm.mdia.info.data:
+                for data_mdia in tget_mdias:
                     if data_mdia.cfg_path:
                         path_psed = Path(data_mdia.cfg_path)
                         preseed = (
@@ -268,6 +293,7 @@ async def main():
                             )
                             data_mdia.rmk_path = str(path_file.resolve())
                 # -------------------------------------------------------------
+                print(f"{Color.green}{info_comm.mdia.json}{Color.reset}")
                 generate_md("./", info_comm)
                 data_save(info_comm)
             if dirs := infosystem.args.md:
