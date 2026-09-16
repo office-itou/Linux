@@ -56,6 +56,7 @@ fnSetup_samba() {
 	fnMsgout "${_PROG_NAME:-}" "info" "global settings section"
 	testparm -s -v                                                                   | \
 	sed -ne '/^\[global\]$/,/^[ \t]*$/                                              {' \
+	    -e  '/^[ \t]*map to guest[ \t]*=/d'                                            \
 	    -e  '/^[ \t]*acl check permissions[ \t]*=/        s/^/#/'                      \
 	    -e  '/^[ \t]*allocation roundup size[ \t]*=/      s/^/#/'                      \
 	    -e  '/^[ \t]*allow nt4 crypto[ \t]*=/             s/^/#/'                      \

@@ -11,16 +11,16 @@
 #   g-var : _DIST_CODE : write
 # shellcheck disable=SC2148,SC2317,SC2329
 fnSystem_param() {
+	___PATH=""
 	if [ -e "${_DIRS_TGET:-}"/etc/os-release ]; then
 		___PATH="${_DIRS_TGET:-}/etc/os-release"
-		_DIST_NAME="$(sed -ne '/^ID=/      s/^[^=]\+="*\([^ "]\+\).*"*/\1/p' "${___PATH:-}" | awk '{print tolower($0);}')"
-		_DIST_VERS="$(sed -ne '/^VERSION=/ s/^[^=]\+="*\([^ "]\+\).*"*/\1/p' "${___PATH:-}" | awk '{print tolower($0);}')"
-		_DIST_CODE="$(sed -ne '/^VERSION=/ s/^[^=]\+="*.*(\(.\+\)).*"*/\1/p' "${___PATH:-}" | awk '{print tolower($0);}')"
 	elif [ -e "${_DIRS_TGET:-}"/etc/lsb-release ]; then
 		___PATH="${_DIRS_TGET:-}/etc/lsb-release"
-		_DIST_NAME="$(sed -ne '/^DISTRIB_ID=/      s/^[^=]\+="*\([^ "]\+\).*"*/\1/p' "${___PATH:-}" | awk '{print tolower($0);}')"
-		_DIST_VERS="$(sed -ne '/^DISTRIB_RELEASE=/ s/^[^=]\+="*\([^ "]\+\).*"*/\1/p' "${___PATH:-}" | awk '{print tolower($0);}')"
-		_DIST_CODE="$(sed -ne '/^DISTRIB_RELEASE=/ s/^[^=]\+="*.*(\(.\+\)).*"*/\1/p' "${___PATH:-}" | awk '{print tolower($0);}')"
+	fi
+	if [ -n "${___PATH}" ]; then
+		_DIST_NAME="$(awk -F= '/^(ID|DISTRIB_ID)=/ {gsub(/"/,"",$2); print tolower($2); exit}' "${___PATH}")"
+		_DIST_VERS="$(awk -F= '/^(VERSION_ID|DISTRIB_RELEASE)=/ {gsub(/"/,"",$2); print tolower($2); exit}' "${___PATH}")"
+		_DIST_CODE="$(awk -F= '/^(VERSION_CODENAME|DISTRIB_CODENAME)=/ {gsub(/"/,"",$2); print tolower($2); exit}' "${___PATH}")"
 	fi
 	readonly _DIST_NAME
 	readonly _DIST_CODE

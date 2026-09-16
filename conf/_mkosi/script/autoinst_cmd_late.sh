@@ -20,9 +20,10 @@
 	export LANG=C
 #	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
 	trap 'exit 1' 1 2 3 15
+	__time_start=$(date +%s)
 #	set -n								# Check for syntax errors
 #	set -x								# Show command and argument expansion
-	set -o ignoreeof					# Do not exit with Ctrl+D
+#	set -o ignoreeof					# Do not exit with Ctrl+D
 	set +m								# Disable job control
 	set -e								# End with status other than 0
 	set -u								# End with undefined variable reference
@@ -429,7 +430,7 @@ fnDbgout() {
 	___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${1:-}")"
 	shift
 	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___STRT}"
-	while [ -n "${1:-}" ]
+	while [ $# -gt 0 ]
 	do
 		if [ "${1%%,*}" != "debug" ] || [ -n "${_DBGS_FLAG:-}" ]; then
 			fnMsgout "${_PROG_NAME:-}" "${1%%,*}" "${1#*,}"
@@ -437,8 +438,7 @@ fnDbgout() {
 		shift
 	done
 	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
-	unset ___STRT
-	unset ___ENDS
+	unset ___STRT ___ENDS
 }
 
 # -----------------------------------------------------------------------------
@@ -620,16 +620,16 @@ fnFind_serivce() {
 #   output:   stdout   : message
 #   return:            : unused
 fnSystem_param() {
+	___PATH=""
 	if [ -e "${_DIRS_TGET:-}"/etc/os-release ]; then
 		___PATH="${_DIRS_TGET:-}/etc/os-release"
-		_DIST_NAME="$(sed -ne '/^ID=/      s/^[^=]\+="*\([^ "]\+\).*"*/\1/p' "${___PATH:-}" | awk '{print tolower($0);}')"
-		_DIST_VERS="$(sed -ne '/^VERSION=/ s/^[^=]\+="*\([^ "]\+\).*"*/\1/p' "${___PATH:-}" | awk '{print tolower($0);}')"
-		_DIST_CODE="$(sed -ne '/^VERSION=/ s/^[^=]\+="*.*(\(.\+\)).*"*/\1/p' "${___PATH:-}" | awk '{print tolower($0);}')"
 	elif [ -e "${_DIRS_TGET:-}"/etc/lsb-release ]; then
 		___PATH="${_DIRS_TGET:-}/etc/lsb-release"
-		_DIST_NAME="$(sed -ne '/^DISTRIB_ID=/      s/^[^=]\+="*\([^ "]\+\).*"*/\1/p' "${___PATH:-}" | awk '{print tolower($0);}')"
-		_DIST_VERS="$(sed -ne '/^DISTRIB_RELEASE=/ s/^[^=]\+="*\([^ "]\+\).*"*/\1/p' "${___PATH:-}" | awk '{print tolower($0);}')"
-		_DIST_CODE="$(sed -ne '/^DISTRIB_RELEASE=/ s/^[^=]\+="*.*(\(.\+\)).*"*/\1/p' "${___PATH:-}" | awk '{print tolower($0);}')"
+	fi
+	if [ -n "${___PATH}" ]; then
+		_DIST_NAME="$(awk -F= '/^(ID|DISTRIB_ID)=/ {gsub(/"/,"",$2); print tolower($2); exit}' "${___PATH}")"
+		_DIST_VERS="$(awk -F= '/^(VERSION_ID|DISTRIB_RELEASE)=/ {gsub(/"/,"",$2); print tolower($2); exit}' "${___PATH}")"
+		_DIST_CODE="$(awk -F= '/^(VERSION_CODENAME|DISTRIB_CODENAME)=/ {gsub(/"/,"",$2); print tolower($2); exit}' "${___PATH}")"
 	fi
 	readonly _DIST_NAME
 	readonly _DIST_CODE
@@ -2533,6 +2533,7 @@ fnSetup_samba() {
 	fnMsgout "${_PROG_NAME:-}" "info" "global settings section"
 	testparm -s -v                                                                   | \
 	sed -ne '/^\[global\]$/,/^[ \t]*$/                                              {' \
+	    -e  '/^[ \t]*map to guest[ \t]*=/d'                                            \
 	    -e  '/^[ \t]*acl check permissions[ \t]*=/        s/^/#/'                      \
 	    -e  '/^[ \t]*allocation roundup size[ \t]*=/      s/^/#/'                      \
 	    -e  '/^[ \t]*allow nt4 crypto[ \t]*=/             s/^/#/'                      \
@@ -4556,7 +4557,6 @@ fnMain() {
 	unset _FUNC_NAME
 }
 	# --- start ---------------------------------------------------------------
-	__time_start=$(date +%s)
 	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
 	# --- boot parameter selection --------------------------------------------
 	for __LINE in ${_COMD_LINE:-} ${_PROG_PARM:-}

@@ -24,9 +24,11 @@
 #	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
 	trap 'exit 1' 1 2 3 15
 
+	__time_start=$(date +%s)
+
 #	set -n								# Check for syntax errors
 #	set -x								# Show command and argument expansion
-	set -o ignoreeof					# Do not exit with Ctrl+D
+#	set -o ignoreeof					# Do not exit with Ctrl+D
 	set +m								# Disable job control
 	set -e								# End with status other than 0
 	set -u								# End with undefined variable reference
@@ -133,9 +135,7 @@ fnMain() {
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${_FUNC_NAME}]"
 	unset _FUNC_NAME
 }
-
 	# --- start ---------------------------------------------------------------
-	__time_start=$(date +%s)
 	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
 
 	# shellcheck source=/dev/null
