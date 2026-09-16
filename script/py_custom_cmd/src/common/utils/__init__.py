@@ -7,7 +7,7 @@ from . import (
     my_config,
     my_debug,
     my_error,
-    my_fileio,
+    my_file_api,
     my_infofile,
     my_infoweb,
     my_json,
@@ -15,6 +15,7 @@ from . import (
     my_message,
     my_process,
     my_string,
+    my_web_api,
 )
 
 __all__ = [
@@ -23,7 +24,7 @@ __all__ = [
     "my_config",
     "my_debug",
     "my_error",
-    "my_fileio",
+    "my_file_api",
     "my_infofile",
     "my_infoweb",
     "my_json",
@@ -31,5 +32,6 @@ __all__ = [
     "my_message",
     "my_process",
     "my_string",
+    "my_web_api",
 ]
 # --- eof ---------------------------------------------------------------------

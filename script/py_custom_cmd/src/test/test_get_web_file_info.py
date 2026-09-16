@@ -5,8 +5,10 @@
 # --- Python library ----------------------------------------------------------
 import asyncio
 import os
+import re
 import sys
 import time
+from dataclasses import dataclass
 from pathlib import Path
 
 import aiohttp  # sudo apt-get install python3-aiohttp
@@ -103,63 +105,77 @@ async def get_web_file_info(info_comm: InfoCommon) -> InfoCommon:
     Returns:
         InfoCommon: InfoCommon interface class
     """
+    _caller = get_caller_name()
     info_web = InfoWeb()
     info_file = InfoFile()
     timeout = ClientTimeout(total=60, sock_connect=10, sock_read=30)
+
+    @dataclass
+    class BaseDirectoryData:
+        name: str = ""
+        key: str = ""
+
+    _base_dir_datas: list[BaseDirectoryData] = [
+        BaseDirectoryData(name="debian", key="BASE_DEBI"),
+        BaseDirectoryData(name="ubuntu", key="BASE_UBUN"),
+        BaseDirectoryData(name="fedora", key="BASE_FEDO"),
+        BaseDirectoryData(name="centos", key="BASE_CENT"),
+        BaseDirectoryData(name="almalinux", key="BASE_ALMA"),
+        BaseDirectoryData(name="rockylinux", key="BASE_ROCK"),
+        BaseDirectoryData(name="miraclelinux", key="BASE_MIRA"),
+        BaseDirectoryData(name="opensuse", key="BASE_SUSE"),
+        BaseDirectoryData(name="memtest86plus", key="BASE_TEST"),
+        BaseDirectoryData(name="windows-10", key="BASE_WI10"),
+        BaseDirectoryData(name="windows-11", key="BASE_WI11"),
+        BaseDirectoryData(name="winpe", key="BASE_WINP"),
+        BaseDirectoryData(name="ati", key="BASE_ATIW"),
+        BaseDirectoryData(name="aomei", key="BASE_AOME"),
+    ]
+
     async with aiohttp.ClientSession(
         timeout=timeout, raise_for_status=False
     ) as session:
-        _caller = get_caller_name()
         tget_mdias: list[WebData] = []
         for tget_mdia in info_comm.mdia.info.data:
-            # print(f"{Color.magenta}tget_mdia1:{tget_mdia}{Color.reset}")
+            if tget_mdia.entry_name == "menu-entry":
+                continue
+            local_file_path = ""
+            if tget_mdia.iso_path:
+                local_file_path = Path(tget_mdia.iso_path)
+            else:
+                for _base_dir_data in _base_dir_datas:
+                    if _base_dir_data.name in tget_mdia.entry_name:
+                        key = _base_dir_data.key
+                        local_file_path = (
+                            info_comm.conf.info.get_path(key) / "_dummy.iso"
+                        )
+                        break
             if tget_mdia.web_regexp:
-                # print(f"{Color.magenta}tget_mdia2:{tget_mdia}{Color.reset}")
-                message_info(get_caller_name(), tget_mdia.web_regexp, True)
-                # print(f"{Color.br_cyan}{tget_mdia.web_regexp}{Color.reset}")
-                if tget_mdia.iso_path:
-                    # print(f"{Color.green}{tget_mdia.iso_path}{Color.reset}")
-                    local_file_path = Path(tget_mdia.iso_path)
-                else:
-                    # print(f"{Color.yellow}{tget_mdia.iso_path}{Color.reset}")
-                    local_file_path = Path("general.iso")
-                    iso_dir_path = info_comm.conf.info.get_path(key="DIRS_ISOS")
-                    local_file_path = iso_dir_path / local_file_path
-                # print(f"{Color.magenta}web_regexp:{tget_mdia.web_regexp}{Color.reset}")
+                message_info(_caller, tget_mdia.web_regexp, omit=True)
                 _web_datas = await info_web.get_info(
                     session, tget_mdia.web_regexp, local_file_path
                 )
-                for _web_data in _web_datas:
-                    tget_mdia.web_path = str(_web_data.request_url)
-                    tget_mdia.web_tstamp = str(_web_data.time_stamp)
-                    tget_mdia.web_size = str(_web_data.file_size)
-                    tget_mdia.web_check = str(_web_data.check_date)
-                    tget_mdia.web_status = str(_web_data.status)
-                    if _web_data.status != 200:
-                        message_warn(
-                            _caller, f"{_web_data.request_url}({_web_data.status})"
-                        )
-                        continue
-                    # print(f"{Color.green}{_web_data.request_url}{Color.reset}")
-                    local_file_path = Path(_web_data.local_file)
-                    if not local_file_path.parent:
-                        iso_dir_path = info_comm.conf.info.data.get_path(
-                            key="DIRS_ISOS"
-                        )
-                        local_file_path = iso_dir_path / local_file_path
-                    if local_file_path.exists():
-                        info_file.get_info(local_file_path)
-                        tget_mdia.iso_path = str(info_file.data.path)
-                        tget_mdia.iso_tstamp = str(info_file.data.tmstamp)
-                        tget_mdia.iso_size = str(info_file.data.size)
-                        tget_mdia.iso_volume = str(info_file.data.volume)
-                    else:
-                        tget_mdia.iso_path = str(local_file_path)
-                        tget_mdia.iso_tstamp = "-"
-                        tget_mdia.iso_size = "-"
-                        tget_mdia.iso_volume = "-"
-            tget_mdias.append(tget_mdia)
-            # print(f"{Color.br_magenta}tget_mdia:{tget_mdia}{Color.reset}")
+                if _web_datas:
+                    for _web_data in _web_datas:
+                        tget_mdia.web_path = str(_web_data.request_url)
+                        tget_mdia.web_tstamp = str(_web_data.time_stamp)
+                        tget_mdia.web_size = str(_web_data.file_size)
+                        tget_mdia.web_check = str(_web_data.check_date)
+                        tget_mdia.web_status = str(_web_data.status)
+                        local_file_path = Path(_web_data.local_file)
+                        if local_file_path.exists():
+                            info_file.get_info(local_file_path)
+                            tget_mdia.iso_path = str(info_file.data.path)
+                            tget_mdia.iso_tstamp = str(info_file.data.tmstamp)
+                            tget_mdia.iso_size = str(info_file.data.size)
+                            tget_mdia.iso_volume = str(info_file.data.volume)
+                        else:
+                            tget_mdia.iso_path = str(local_file_path)
+                            tget_mdia.iso_tstamp = "-"
+                            tget_mdia.iso_size = "-"
+                            tget_mdia.iso_volume = "-"
+                        # tget_mdias.append(tget_mdia)
+            # print(f"{Color.br_magenta}{tget_mdia}{Color.reset}")
     return tget_mdias
 
 

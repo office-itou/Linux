@@ -7,9 +7,7 @@ import posixpath
 import re
 
 # import traceback
-from collections.abc import Callable
-from dataclasses import dataclass
-from datetime import datetime, timezone
+# from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -19,31 +17,13 @@ from bs4 import BeautifulSoup
 from natsort import natsort_keygen
 
 # --- my library --------------------------------------------------------------
-from .my_colors import Color
+# from .my_colors import Color
 from .my_debug import debug_logger
-from .my_error import handle_fatal_error
 from .my_message import get_caller_name, message_alert, message_warn
+from .my_web_api import WebData, get_contents, get_header
 
 
 # -----------------------------------------------------------------------------
-@dataclass
-class WebData:
-    """Web data class"""
-
-    search_url: str = ""
-    exclude_url: str = ""
-    request_url: str = ""
-    response_url: str = ""
-    time_stamp: str = ""
-    file_size: str = ""
-    check_date: str = ""
-    status: str = ""
-    reason: str = ""
-    mime: str = ""
-    contents: str = ""
-    local_file: str = ""
-
-
 class InfoWeb:
     """Web information class"""
 
@@ -63,69 +43,16 @@ class InfoWeb:
         return self.data
 
     @debug_logger
-    async def get_response(self, request_func: Callable, request_url: str) -> WebData:
-        _caller = get_caller_name()
-        try:
-            async with request_func(
-                request_url, allow_redirects=True, timeout=60
-            ) as response:
-                _web_data = WebData()
-                _web_data.search_url = ""
-                _web_data.exclude_url = ""
-                _web_data.request_url = request_url
-                _web_data.response_url = (
-                    response.url if hasattr(response, "url") else ""
-                )
-                _web_data.time_stamp = (
-                    datetime.strptime(
-                        response.headers.get("Last-Modified"),
-                        "%a, %d %b %Y %H:%M:%S %Z",
-                    )
-                    .replace(tzinfo=timezone.utc)
-                    .isoformat()
-                    if response.headers.get("Last-Modified")
-                    else ""
-                )
-                _web_data.file_size = (
-                    response.headers.get("Content-Length")
-                    if response.headers.get("Content-Length")
-                    else 0
-                )
-                _web_data.check_date = datetime.now(timezone.utc).isoformat(
-                    timespec="microseconds"
-                )
-                _web_data.status = response.status if hasattr(response, "status") else 0
-                _web_data.reason = (
-                    response.reason if hasattr(response, "reason") else ""
-                )
-                _web_data.mime = response.headers.get("content-type", "")
-                _web_data.contents = (
-                    await response.text() if hasattr(response, "text") else ""
-                )
-                _web_data.local_file = ""
-                # try:
-                # except ValueError as e:
-                #    _summary = traceback.extract_tb(e.__traceback__)[-1]
-                #    message_alert(_caller, f"file name  : {_summary.filename}")
-                #    message_alert(_caller, f"line number: {_summary.lineno}")
-                #    # pass
-                return _web_data
-        except (aiohttp, asyncio) as e:
-            message_alert(_caller, f"HTTP/Connection error: {e}")
-        except (OSError, Exception) as e:  # noqa: BLE001
-            handle_fatal_error(_caller, e)
-
-    @debug_logger
     async def get_header(
         self, session: aiohttp.ClientSession, request_url: str
     ) -> WebData:
-        return await self.get_response(session.head, request_url)
+        return await get_header(session, request_url)
 
     @debug_logger
     async def get_text(
         self, session: aiohttp.ClientSession, request_url: str
     ) -> WebData:
-        return await self.get_response(session.get, request_url)
+        return await get_contents(session, request_url)
 
     @debug_logger
     async def get_info(
@@ -228,7 +155,7 @@ async def _expand_regexp_urls(
             # print(f"{Color.br_cyan}_match_before:{_match_before}{Color.reset}")
             for r in range(5):
                 _web_data = await info_web.get_text(session, _match_before)
-                if _web_data.status in (200, 404):
+                if _web_data.status in (200, 206, 404):
                     break
                 message_warn(_caller, f"retry({r}): [{_match_before}]")
                 await asyncio.sleep(3)
@@ -241,7 +168,7 @@ async def _expand_regexp_urls(
             _web_data.exclude_url = exclude_url
             # -----------------------------------------------------------------
             _name_pattern = re.compile(rf"^{_match_inside}$")
-            _soup = BeautifulSoup(_web_data.contents, "html.parser")
+            _soup = BeautifulSoup(_web_data.text, "html.parser")
             # -----------------------------------------------------------------
             for a in _soup.find_all("a", href=True):
                 _href = a["href"]
@@ -305,7 +232,7 @@ async def get_infoweb(
         # print(f"{Color.magenta}{_request_url}{Color.reset}")
         for r in range(5):
             _web_data = await _info_web.get_header(session, _request_url)
-            if _web_data.status in (200, 404):
+            if _web_data.status in (200, 206, 404):
                 break
             message_warn(_caller, f"retry({r}): [{_request_url}]")
             await asyncio.sleep(3)

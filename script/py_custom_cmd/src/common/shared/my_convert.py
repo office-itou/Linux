@@ -5,7 +5,7 @@ import csv
 
 # --- my library --------------------------------------------------------------
 from ..utils.my_debug import debug_logger
-from ..utils.my_fileio import file_read, file_write
+from ..utils.my_file_api import file_read, file_write
 
 
 def spc_encode(src_datas: list) -> list:
