@@ -1,121 +1,32 @@
 #!/usr/bin/env python3
+"""Test function"""
 
-# === Python library ==========================================================
-import argparse
-import inspect
+# --- Python library ----------------------------------------------------------
 import os
 import re
 import sys
-import traceback
-from dataclasses import dataclass
+import time
 from pathlib import Path
 from typing import Literal, TypedDict
 
-import __main__
-
-# from typing import Dict, List, Literal, Optional, TypedDict
-
-# === my library ==============================================================
-
-
-# --- escape code -------------------------------------------------------------
-@dataclass
-class Code:
-    """Control code class"""
-
-    escape: str = "\x1b"
-
-
-# --- color code --------------------------------------------------------------
-# https://qiita.com/ko1nksm/items/095bdb8f0eca6d327233
-@dataclass
-class Color(Code):
-    """Color code class"""
-
-    code = Code()
-    reset: str = f"{code.escape}[0m"  # reset all attributes
-    bold: str = f"{code.escape}[1m"  # (no comments)
-    faint: str = f"{code.escape}[2m"  # (no comments)
-    italic: str = f"{code.escape}[3m"  # (no comments)
-    underline: str = f"{code.escape}[4m"  # set underline
-    blink: str = f"{code.escape}[5m"  # (no comments)
-    fast_blink: str = f"{code.escape}[6m"  # (no comments)
-    reverse: str = f"{code.escape}[7m"  # set reverse display
-    conceal: str = f"{code.escape}[8m"  # (no comments)
-    strike: str = f"{code.escape}[9m"  # (no comments)
-    gothic: str = f"{code.escape}[20m"  # (no comments)
-    double_underline: str = f"{code.escape}[21m"  # (no comments)
-    normal: str = f"{code.escape}[22m"  # (no comments)
-    no_italic: str = f"{code.escape}[23m"  # (no comments)
-    no_underline: str = f"{code.escape}[24m"  # reset underline
-    no_blink: str = f"{code.escape}[25m"  # (no comments)
-    no_reverse: str = f"{code.escape}[27m"  # reset reverse display
-    no_conceal: str = f"{code.escape}[28m"  # (no comments)
-    no_strike: str = f"{code.escape}[29m"  # (no comments)
-    black: str = f"{code.escape}[30m"  # text dark black
-    red: str = f"{code.escape}[31m"  # text dark red
-    green: str = f"{code.escape}[32m"  # text dark green
-    yellow: str = f"{code.escape}[33m"  # text dark yellow
-    blue: str = f"{code.escape}[34m"  # text dark blue
-    magenta: str = f"{code.escape}[35m"  # text dark purple
-    cyan: str = f"{code.escape}[36m"  # text dark light blue
-    white: str = f"{code.escape}[37m"  # text dark white
-    default: str = f"{code.escape}[39m"  # (no comments)
-    bg_black: str = f"{code.escape}[40m"  # text reverse black
-    bg_red: str = f"{code.escape}[41m"  # text reverse red
-    bg_green: str = f"{code.escape}[42m"  # text reverse green
-    bg_yellow: str = f"{code.escape}[43m"  # text reverse yellow
-    bg_blue: str = f"{code.escape}[44m"  # text reverse blue
-    bg_magenta: str = f"{code.escape}[45m"  # text reverse purple
-    bg_cyan: str = f"{code.escape}[46m"  # text reverse light blue
-    bg_white: str = f"{code.escape}[47m"  # text reverse white
-    bg_default: str = f"{code.escape}[49m"  # (no comments)
-    br_black: str = f"{code.escape}[90m"  # text black
-    br_red: str = f"{code.escape}[91m"  # text red
-    br_green: str = f"{code.escape}[92m"  # text green
-    br_yellow: str = f"{code.escape}[93m"  # text yellow
-    br_blue: str = f"{code.escape}[94m"  # text blue
-    br_magenta: str = f"{code.escape}[95m"  # text purple
-    br_cyan: str = f"{code.escape}[96m"  # text light blue
-    br_white: str = f"{code.escape}[97m"  # text white
-    br_default: str = f"{code.escape}[99m"  # (no comments)
-
-
-# -----------------------------------------------------------------------------
-def message_alert(func_name: str, message: str):
-    """Message output for alert
-
-    Args:
-        func_name (str): Function name
-        message (str): Message
-    """
-    program_name = (
-        Path(__main__.__file__).stem if hasattr(__main__, "__file__") else "interactive"
-    )
-    text_prog = f"{program_name}({func_name})"
-    text_mesg = message
-    print(f"{Color.reset}{Color.br_red}{text_prog}:\n  {text_mesg}{Color.reset}")
-
-
-# -----------------------------------------------------------------------------
-def handle_fatal_error(caller: str, e: Exception) -> None:
-    """Fatal error handler
-
-    Args:
-        caller (str): Function name
-        e (Exception): Error information
-
-    Raises:
-        SystemExit: System exit
-    """
-    summary = traceback.extract_tb(e.__traceback__)[-1]
-    message_alert(caller, f"Fatal error: {e}")
-    if isinstance(e, OSError):
-        message_alert(caller, f"line number: {summary.lineno}")
-    else:
-        message_alert(caller, f"file name  : {summary.filename}")
-        message_alert(caller, f"line number: {summary.lineno}")
-    raise SystemExit from e
+# --- my library --------------------------------------------------------------
+execusr = os.getenv("SUDO_USER", os.getenv("USER"))
+homedir = os.getenv("SUDO_HOME") or os.getenv("HOME") or f"/home/{execusr}"
+libsdir = Path(homedir) / "linux/script/py_custom_cmd/src"
+if str(libsdir) not in sys.path:
+    sys.path.append(str(libsdir))
+from common.utils.my_argument import Argument
+from common.utils.my_colors import Color
+from common.utils.my_config import infosystem
+from common.utils.my_debug import debug_logger
+from common.utils.my_error import handle_fatal_error
+from common.utils.my_file_api import file_read, file_write
+from common.utils.my_message import (
+    get_caller_name,
+    message_elapsed,
+    message_end,
+    message_start,
+)
 
 
 # =============================================================================
@@ -169,152 +80,186 @@ class NodeData(TypedDict):
     summary: str
 
 
-# -----------------------------------------------------------------------------
-def build_perfect_tree_with_docs(
+@debug_logger
+@debug_logger
+def build_perfect_tree_with_docs_phase1(
     file_name: str,
     list_data_str: str,
     output_format: Literal["terminal", "markdown"] = "terminal",
-) -> list[str]:
-    # フォーマットに合わせてテーマを選択
-    theme = TreeTheme(use_color=(output_format == "terminal"))
-
-    # 1. 基本的な定義行を分解する正規表現
+) -> list[NodeData]:
+    # func_pattern = re.compile(
+    #    r"^(\s*)(?:async\s+def|def)\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(([\s\S]*?)\)\s*(?:->\s*([^\s:]+))?\s*:"
+    #    r"|"
+    #    r"^(\s*)(?:class)\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:\(([\s\S]*?)\))?\s*:",
+    #    re.MULTILINE | re.DOTALL,
+    # )
     func_pattern = re.compile(
-        r"^(\s*)(?:async\s+)?def\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(([\s\S]*?)\)\s*(?:->\s*([^\s:]+))?\s*:"
+        # 【関数用パターン】
+        # 引数末尾の ) から : までの間に -> 型宣言 が挟まっても、全体を正しくキャッチします
+        r"^(\s*)(?:async\s+def|def)\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(([\s\S]*?)\)\s*(?:->\s*([\s\S]*?))?\s*:"
         r"|"
-        r"^(\s*)class\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:\(([\s\S]*?)\))?\s*:"
+        # 【クラス用パターン】
+        r"^(\s*)(?:class)\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:\(([\s\S]*?)\))?\s*:",
+        re.MULTILINE,
     )
+    # docstringブロック全体を抽出するパターン
+    docstring_block_pattern = re.compile(r"^\s*\"\"\"([\s\S]*?)\"\"\"", re.MULTILINE)
 
-    # 2. docstring内の各項目を抜き出すための正規表現
-    doc_summary_pattern = re.compile(r"^\s*\"\"\"([\s\S]*?)(?:Args:|Returns:|\"\"\")")
+    doc_summary_pattern = re.compile(r"^\s*([\s\S]*?)(?:Args:|Returns:|\"\"\"|\Z)")
     doc_args_pattern = re.compile(
-        r"^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:\([^)]*\))?\s*:\s*(.*)\$"
+        r"^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:\([^)]*\))?\s*:\s*(.*)$"
     )
     doc_returns_pattern = re.compile(
         r"^\s*Returns:\s*(?:\n\s*)?([^\n]+(?:\n\s+[^\n]+)*)"
     )
 
-    lines = list_data_str.splitlines()
-    num_lines = len(lines)
     raw_nodes: list[NodeData] = []
 
-    # --- 【フェーズ1】パース処理と構造の抽出（ここでは色を付けない） ---
-    for i, line in enumerate(lines):
-        stripped_line = line.rstrip()
-        content = stripped_line.lstrip()
-        if not content:
-            continue
+    for match in func_pattern.finditer(list_data_str):
+        (
+            func_spcs,
+            func_name,
+            func_args,
+            func_return,
+            class_spcs,
+            class_name,
+            class_bases,
+        ) = match.groups()
 
-        if match := func_pattern.match(stripped_line):
-            (
-                func_spcs,
-                func_name,
-                func_args,
-                func_return,
-                class_spcs,
-                class_name,
-                class_bases,
-            ) = match.groups()
+        is_class = bool(class_name)
+        indent_level = len(class_spcs if is_class else func_spcs) // 4
+        node_type = "class" if is_class else "func"
+        raw_name = class_name if is_class else func_name
 
-            is_class = bool(class_name)
-            indent_level = len(class_spcs if is_class else func_spcs) // 4
-            node_type = "class" if is_class else "func"
-            raw_name = class_name if is_class else func_name
+        # 改行と余分な空白を省く最適化を適用
+        raw_args = " ".join(func_args.split()) if func_name else ""
+        return_type = func_return if func_name else None
 
-            raw_args = func_args.strip() if func_name else ""
-            return_type = func_return if func_name else None
+        if is_class and class_bases:
+            return_type = class_bases
 
-            # クラスの基底クラスを引数のように扱うための処理
-            if is_class and class_bases:
-                return_type = class_bases  # クラスの場合は便宜上ここに入れる
+        summary_text = ""
+        args_docs = {}
+        returns_doc = ""
 
-            # docstringの先読み解析
-            summary_text = ""
-            args_docs = {}
-            returns_doc = ""
+        # 【修正ポイント】定義の終了位置（match.end()）から直後のテキストを取得してdocstringを解析
+        after_definition_text = list_data_str[match.end() :]
+        if doc_block_match := docstring_block_pattern.match(after_definition_text):
+            doc_block = doc_block_match.group(1)
+            doc_lines = doc_block.splitlines()
 
-            next_idx = i + 1
-            if next_idx < num_lines and '"""' in lines[next_idx]:
-                doc_lines = []
-                while next_idx < num_lines:
-                    doc_lines.append(lines[next_idx])
-                    if lines[next_idx].strip().endswith('"""') and len(doc_lines) > 1:
-                        break
-                    next_idx += 1
+            # 1. 概要 (Summary) の抽出
+            if sum_match := doc_summary_pattern.search(doc_block):
+                summary_lines = [
+                    line.strip()
+                    for line in sum_match.group(1).splitlines()
+                    if line.strip()
+                ]
+                if summary_lines:
+                    summary_text = summary_lines[0]
 
-                doc_block = "\n".join(doc_lines)
+            # 2. 引数 (Args) の抽出
+            if "Args:" in doc_block:
+                for d_line in doc_lines:
+                    if arg_match := doc_args_pattern.match(d_line):
+                        args_docs[arg_match.group(1)] = arg_match.group(2).strip()
 
-                if sum_match := doc_summary_pattern.search(doc_block):
-                    summary_text = sum_match.group(1).strip().split("\n")[0]
+            # 3. 戻り値 (Returns) の抽出
+            if ret_match := doc_returns_pattern.search(doc_block):
+                returns_doc = ret_match.group(1).strip().split("\n")[0]
 
-                if "Args:" in doc_block:
-                    for d_line in doc_lines:
-                        if arg_match := doc_args_pattern.match(d_line.strip()):
-                            args_docs[arg_match.group(1)] = arg_match.group(2).strip()
+        # 引数のリスト化
+        # parsed_args = []
+        # if raw_args:
+        #    arg_items = [a.strip() for a in raw_args.split(",") if a.strip()]
+        #    for arg in arg_items:
+        #        arg_pure_name = arg.split(":")[0].strip()
+        #        parsed_args.append({"raw": arg, "name": arg_pure_name})
+        # --- [修正後] 型アノテーションのカンマに壊されない安全な分割ロジック ---
+        parsed_args = []
+        if raw_args:
+            # 改行と連続する空白を1つの半角スペースに美しく統合
+            clean_args_line = " ".join(raw_args.split())
 
-                if ret_match := doc_returns_pattern.search(doc_block):
-                    returns_doc = ret_match.group(1).strip().split("\n")[0]
+            arg_items = []
+            current_arg = []
+            bracket_level = 0  # [ ] や { } の深さを数えるカウンター
 
-            # 引数のリスト化
-            parsed_args = []
-            if raw_args:
-                clean_args_line = raw_args.replace("\n", " ").strip()
-                arg_items = [a.strip() for a in clean_args_line.split(",") if a.strip()]
-                for arg in arg_items:
-                    arg_pure_name = arg.split(":")[0].strip()
-                    parsed_args.append({"raw": arg, "name": arg_pure_name})
+            # 1文字ずつ走査して、型アノテーション内部のカンマを無視して安全に切り分ける
+            for char in clean_args_line:
+                if char in "[{(":
+                    bracket_level += 1
+                elif char in "]})":
+                    bracket_level -= 1
 
-            raw_nodes.append(
-                {
-                    "type": node_type,
-                    "raw_name": raw_name,
-                    "level": indent_level,
-                    "args": parsed_args,
-                    "return_type": return_type,
-                    "args_docs": args_docs,
-                    "returns_doc": returns_doc,
-                    "summary": summary_text,
-                }
-            )
+                # 最外周（型アノテーションの括弧の外）にあるカンマに出会ったら区切る
+                if char == "," and bracket_level == 0:
+                    item_str = "".join(current_arg).strip()
+                    if item_str:
+                        arg_items.append(item_str)
+                    current_arg = []
+                else:
+                    current_arg.append(char)
 
-    # --- 【フェーズ2】ツリー描画と色付け（出力処理） ---
+            # 最後の引数を追加
+            item_str = "".join(current_arg).strip()
+            if item_str:
+                arg_items.append(item_str)
+
+            # 純粋な変数名と型付きの文字列を分けて格納
+            for arg in arg_items:
+                arg_pure_name = arg.split(":")[0].strip()
+                parsed_args.append({"raw": arg, "name": arg_pure_name})
+        raw_nodes.append(
+            {
+                "type": node_type,
+                "raw_name": raw_name,
+                "level": indent_level,
+                "args": parsed_args,
+                "return_type": return_type,
+                "args_docs": args_docs,
+                "returns_doc": returns_doc,
+                "summary": summary_text,
+            }
+        )
+    return raw_nodes
+
+
+@debug_logger
+def build_perfect_tree_with_docs_phase2(
+    file_name: str,
+    raw_nodes: list[NodeData],
+    output_format: Literal["terminal", "markdown"] = "terminal",
+) -> list[NodeData]:
+    theme = TreeTheme(use_color=(output_format == "terminal"))
     pick_data = []
-
     # Markdown出力の場合はコードブロックの開始タグを入れる
     if output_format == "markdown":
         pick_data.append("```text")
-
     pick_data.append(f"{theme.file}{file_name}{theme.label}:{theme.reset}")
     num_nodes = len(raw_nodes)
-
     for i, node in enumerate(raw_nodes):
         level = node["level"]
-
         # 縦棒の計算
         active_layers = [
             any(raw_nodes[j]["level"] == l for j in range(i + 1, num_nodes))
             for l in range(level)
         ]
         indent_text = "".join("|   " if active else "    " for active in active_layers)
-
         has_next_sibling = any(
             raw_nodes[j]["level"] == level for j in range(i + 1, num_nodes)
         )
         branch = "+-- " if has_next_sibling else "`-- "
-
         # 名前の装飾
         if node["type"] == "class":
             display_name = f"{theme.cls_name}{node['raw_name']}{theme.cls_tag}"
         else:
             display_name = f"{theme.func_name}{node['raw_name']}{theme.func_tag}()"
-
         summary_suffix = f" # {node['summary']}" if node["summary"] else ""
-
         # ノードのメイン行を追加
         pick_data.append(
             f"{theme.label}{indent_text}{branch}{theme.node_type}{node['type']}{theme.label}: {display_name}{summary_suffix}{theme.reset}"
         )
-
         # 詳細項目（引数・戻り値）の組み立て
         details = []
         if node["type"] == "class":
@@ -326,7 +271,6 @@ def build_perfect_tree_with_docs(
                 if arg["name"] == "self":
                     details.append(f"{theme.label}arg : {theme.value}self{theme.reset}")
                     continue
-
                 if arg["name"] in node["args_docs"]:
                     doc_str = node["args_docs"][arg["name"]]
                     details.append(
@@ -336,14 +280,12 @@ def build_perfect_tree_with_docs(
                     details.append(
                         f"{theme.label}arg : {theme.doc_bracket}[{theme.value}{arg['raw']}{theme.doc_bracket}]{theme.reset}"
                     )
-
             # 戻り値の装飾
             if node["return_type"]:
                 ret_msg = f"{theme.label}ret : {theme.doc_bracket}[{theme.value}{node['return_type']}{theme.doc_bracket}]{theme.reset}"
                 if node["returns_doc"]:
                     ret_msg += f"{theme.label} {theme.doc_bracket}[{theme.doc}{node['returns_doc']}{theme.doc_bracket}]{theme.reset}"
                 details.append(ret_msg)
-
         # 詳細行の出力
         num_details = len(details)
         for d_idx, detail in enumerate(details):
@@ -352,163 +294,14 @@ def build_perfect_tree_with_docs(
             pick_data.append(
                 f"{theme.label}{indent_text}{child_prefix}{d_branch}{theme.reset}{detail}"
             )
-
     # Markdown出力の場合はコードブロックの閉じタグを入れる
     if output_format == "markdown":
         pick_data.append("```")
-
     return pick_data
 
 
-def get_caller_name(only: bool = True) -> str:
-    """Get function name
-
-    Args:
-        only (bool, optional): Function only or including filename. Defaults to True.
-
-    Returns:
-        str: _description_
-    """
-    frame = inspect.currentframe().f_back
-    func_name = str(frame.f_code.co_name)
-    file_name = str(Path(frame.f_code.co_filename).stem)
-    # modu_name = str(frame.f_globals.get("__name__"))
-    call_info = func_name if only == True else f"{file_name}({func_name})"
-    return call_info
-
-
-def file_read(path_src: Path, text: bool = True) -> str | bytes:
-    """File read (line break codes in text files are standardized to "\n")
-
-    Args:
-        path_src (Path): Source path
-        text (bool, optional): Read mode. Defaults to True.
-
-    Raises:
-        SystemExit: OSError
-        SystemExit: Exception
-
-    Returns:
-        str| bytes: Result
-    """
-    caller = get_caller_name()
-    try:
-        path_src = path_src.resolve()
-        mode = "r" if text else "rb"
-        encoding = "utf-8" if text else None
-        with open(path_src, mode=mode, encoding=encoding, newline=None) as f:
-            return f.read()
-    except (OSError, Exception) as e:  # noqa: BLE001
-        handle_fatal_error(caller, e)
-
-
-def file_write(
-    path_dest: Path,
-    data: str | bytes | None = None,
-    text: bool = True,
-) -> None:
-    """File write (line break codes in text files are standardized to "\n")
-
-    Args:
-        path_dest (Path): Destination path
-        data (str | bytes | None, optional): Output data. Defaults to None.
-        text (bool, optional): Write mode. Defaults to True.
-
-    Raises:
-        SystemExit: OSError
-        SystemExit: Exception
-    """
-    caller = get_caller_name()
-    try:
-        path_dest = path_dest.resolve()
-        mode = "w" if text else "wb"
-        encoding = "utf-8" if text else None
-        newline = "\n" if text else None
-        if data is None:
-            data = "" if text else b""
-        path_dest.parent.mkdir(parents=True, exist_ok=True)
-        with open(path_dest, mode=mode, encoding=encoding, newline=newline) as f:
-            f.write(data)
-            f.flush()
-            os.fsync(f.fileno())
-        if not path_dest.exists():
-            message_alert(get_caller_name(), f"failed: {path_dest}")
-    except (OSError, Exception) as e:  # noqa: BLE001
-        handle_fatal_error(caller, e)
-
-
-# -----------------------------------------------------------------------------
-def main():
-    # --- 1. コマンドライン引数の設定 ---
-    parser = argparse.ArgumentParser(
-        description="Pythonソースコードの構造を美しいツリー形式で出力します。"
-    )
-    # 必須引数: 検索対象のパス（ファイル、またはディレクトリ）
-    parser.add_argument(
-        "target_path",
-        type=str,
-        help="検索対象のファイルパス、またはディレクトリパスを指定します。",
-    )
-    # オプション引数: ファイル名パターン（デフォルトは全てのPythonファイル）
-    parser.add_argument(
-        "-p",
-        "--pattern",
-        type=str,
-        default="*.py",
-        help="ディレクトリを検索する場合のファイル名パターン (例: 'my_*.py') デフォルト: '*.py'",
-    )
-    # フラグ引数: サブディレクトリを再帰的に検索するかどうか
-    parser.add_argument(
-        "-r",
-        "--recursive",
-        action="store_true",
-        help="ディレクトリを指定した場合に、サブディレクトリも含めて再帰的に検索します。",
-    )
-    # オプション引数: Markdownの出力先ファイル名
-    parser.add_argument(
-        "-m",
-        "--markdown",
-        type=str,
-        default=None,
-        help="指定した場合、ツリー構造をMarkdownファイルとして出力します (例: 'README.md')。",
-    )
-
-    args = parser.parse_args()
-
-    # パスオブジェクトに変換
-    target = Path(args.target_path)
-    if not target.exists():
-        print(f"エラー: 指定されたパスが存在しません: {target}")
-        return
-
-    # --- 2. 検索対象ファイルのリストアップ ---
-    target_files = []
-    IGNORE_NAMES = {"__init__.py", "__main__.py"}
-
-    if target.is_file():
-        # 単一ファイルが指定された場合
-        if target.name not in IGNORE_NAMES:
-            target_files.append(target)
-    elif target.is_dir():
-        # ディレクトリが指定された場合（再帰フラグで処理を分岐）
-        search_iter = (
-            target.rglob(args.pattern) if args.recursive else target.glob(args.pattern)
-        )
-        for path_file in search_iter:
-            if not path_file.is_file():
-                continue
-            # 無視対象のチェック（ファイル名単体、およびパスの一部に含まれるか）
-            if path_file.name in IGNORE_NAMES or any(
-                part in IGNORE_NAMES for part in path_file.parts
-            ):
-                continue
-            target_files.append(path_file)
-
-    if not target_files:
-        print("条件に一致するPythonファイルが見つかりませんでした。")
-        return
-
-    # --- 3. 解析と出力処理 ---
+@debug_logger
+def build_perfect_tree_with_docs(target_files: str = ""):
     print(f"{Color.green}{'*' * 80}{Color.reset}")
 
     markdown_text = ""
@@ -516,16 +309,22 @@ def main():
         source_code = file_read(path_file)
 
         # ターミナル用に出力して画面表示
-        lines = build_perfect_tree_with_docs(
+        raw_nodes = build_perfect_tree_with_docs_phase1(
             path_file.stem, source_code, output_format="terminal"
+        )
+        lines = build_perfect_tree_with_docs_phase2(
+            path_file, raw_nodes, output_format="terminal"
         )
         print("\n".join(lines) + "\n" * 2)
         print(f"{Color.green}{'-' * 80}{Color.reset}")
 
         # Markdownオプションが指定されている場合のみ、データを蓄積する
-        if args.markdown:
-            lines_mkdn = build_perfect_tree_with_docs(
+        if hasattr(infosystem.args, "markdown") and infosystem.args.markdown:
+            raw_nodes = build_perfect_tree_with_docs_phase1(
                 path_file.stem, source_code, output_format="markdown"
+            )
+            lines_mkdn = build_perfect_tree_with_docs_phase2(
+                path_file, raw_nodes, output_format="markdown"
             )
             tree_content = "\n".join(lines_mkdn)
 
@@ -539,16 +338,114 @@ def main():
             markdown_text += folded_block + "\n"
 
     # Markdownファイルへの書き込み（オプション指定時のみ実行）
-    if args.markdown and markdown_text:
-        file_mkdn = Path(args.markdown)
+    if (
+        hasattr(infosystem.args, "markdown")
+        and infosystem.args.markdown
+        and markdown_text
+    ):
+        file_mkdn = Path(infosystem.args.markdown)
         file_write(file_mkdn, markdown_text)
         print(f"Markdownファイルを保存しました: {file_mkdn}")
 
     print(f"{Color.green}{'*' * 80}{Color.reset}")
 
 
-# -----------------------------------------------------------------------------
+@debug_logger
+def initarg() -> None:
+    """Initialize argument"""
+    description = "Pythonソースコードの構造を美しいツリー形式で出力します。\n"
+    arg_manager = Argument(description)
+    list_args = [
+        {
+            "arg": "target_path",
+            "type": "str",
+            "help": "検索対象のファイルパス、またはディレクトリパスを指定します。",
+        },
+        {
+            "arg": ("-p", "--pattern"),
+            "type": "str",
+            "default": "*.py",
+            "help": "ディレクトリを検索する場合のファイル名パターン (例: 'my_*.py') デフォルト: '*.py'",
+        },
+        {
+            "arg": ("-r", "--recursive"),
+            "action": "store_true",
+            "help": "ディレクトリを指定した場合に、サブディレクトリも含めて再帰的に検索します。",
+        },
+        {
+            "arg": ("-m", "--markdown"),
+            "type": "str",
+            "default": None,
+            "help": "指定した場合、ツリー構造をMarkdownファイルとして出力します (例: 'README.md')。",
+        },
+    ]
+    for line_arg in list_args:
+        arg_name = line_arg.pop("arg")
+        if isinstance(arg_name, tuple):
+            arg_manager.add(*arg_name, **line_arg)
+        else:
+            arg_manager.add(arg_name, **line_arg)
+
+    infosystem.args = arg_manager.parse()
+
+
+@debug_logger
+def initialize() -> (list[str], str):
+    """Initialize"""
+    target = Path(infosystem.args.target_path)
+    if not target.exists():
+        print(f"エラー: 指定されたパスが存在しません: {target}")
+        return
+    target_files = []
+    IGNORE_NAMES = {"__init__.py", "__main__.py"}
+    if target.is_file():
+        if target.name not in IGNORE_NAMES:
+            target_files.append(target)
+    elif target.is_dir():
+        search_iter = (
+            target.rglob(infosystem.args.pattern)
+            if infosystem.args.recursive
+            else target.glob(infosystem.args.pattern)
+        )
+        for path_file in search_iter:
+            if not path_file.is_file():
+                continue
+            if path_file.name in IGNORE_NAMES or any(
+                part in IGNORE_NAMES for part in path_file.parts
+            ):
+                continue
+            target_files.append(path_file)
+    return target_files
+
+
+@debug_logger
+def main():
+    """Main"""
+    caller = get_caller_name()
+    try:
+        # --- elapsed start----------------------------------------------------
+        start = time.perf_counter()
+        # --- startup process -------------------------------------------------
+        caller = get_caller_name()
+        message_start(caller)
+        # --- processing block ------------------------------------------------
+        initarg()
+        if infosystem.args:
+            target_files = initialize()
+            build_perfect_tree_with_docs(target_files)
+        # --- termination process ---------------------------------------------
+        message_end(get_caller_name())
+        # --- elapsed end -----------------------------------------------------
+        end = time.perf_counter()
+        elapsed = end - start
+        message_elapsed(caller, elapsed)
+        # --- exit ------------------------------------------------------------
+        return 0
+    except (OSError, Exception) as e:  # noqa: BLE001
+        handle_fatal_error(caller, e)
+    # -------------------------------------------------------------------------
 
 
 if __name__ == "__main__":
     sys.exit(main())
+# --- eof ---------------------------------------------------------------------
