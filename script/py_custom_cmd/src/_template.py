@@ -18,6 +18,7 @@ from common.utils.my_argument import Argument
 from common.utils.my_colors import Color
 from common.utils.my_config import infosystem
 from common.utils.my_debug import debug_logger
+from common.utils.my_error import handle_fatal_error
 from common.utils.my_message import (
     get_caller_name,
     message_elapsed,
@@ -44,41 +45,61 @@ def initialize():
 
 
 @debug_logger
+def initarg() -> None:
+    """Initialize argument"""
+    description = "template file\n"
+    arg_manager = Argument(description)
+    list_args = []
+    if list_args:
+        for line_arg in list_args:
+            arg_name = line_arg.pop("arg")
+            if isinstance(arg_name, tuple):
+                arg_manager.add(*arg_name, **line_arg)
+            else:
+                arg_manager.add(arg_name, **line_arg)
+
+    infosystem.args = arg_manager.parse()
+
+
+@debug_logger
 def main():
     """Main"""
-    # --- check the executing user --------------------------------------------
-    if os.geteuid() != 0:
-        message_warn(
-            get_caller_name(),
-            "You have standard user privileges.",
-        )
-        message_warn(
-            get_caller_name(),
-            f"{Color.underline}Please run this with sudo.",
-        )
-        return 1
-    # --- elapsed start--------------------------------------------------------
-    start = time.perf_counter()
-    # --- startup process -----------------------------------------------------
-    message_start(get_caller_name())
-    # --- processing block ----------------------------------------------------
-    arg_manager = Argument()
-    #   arg_manager.add('--add', type=str, help='add args')
-    args = arg_manager.parse()
-    if args:
-        info_comm = initialize()
-        print(f"dir(info_comm):{dir(info_comm)}")
-        print(f"info_comm.path.conf:{info_comm.conf.json}")
-        print(f"info_comm.path.dist:{info_comm.dist.json}")
-        print(f"info_comm.path.mdia:{info_comm.mdia.json}")
-    # --- termination process -------------------------------------------------
-    message_end(get_caller_name())
-    # --- elapsed end ---------------------------------------------------------
-    end = time.perf_counter()
-    elapsed = end - start
-    message_elapsed(get_caller_name(), elapsed)
-    # --- exit ----------------------------------------------------------------
-    return 0
+    caller = get_caller_name()
+    try:
+        # --- check the executing user ----------------------------------------
+        if os.geteuid() != 0:
+            message_warn(
+                get_caller_name(),
+                "You have standard user privileges.",
+            )
+            message_warn(
+                get_caller_name(),
+                f"{Color.underline}Please run this with sudo.",
+            )
+            return 1
+        # --- elapsed start----------------------------------------------------
+        start = time.perf_counter()
+        # --- startup process -------------------------------------------------
+        caller = get_caller_name()
+        message_start(caller)
+        # --- processing block ------------------------------------------------
+        initarg()
+        if infosystem.args:
+            info_comm = initialize()
+            print(f"dir(info_comm):{dir(info_comm)}")
+            print(f"info_comm.path.conf:{info_comm.conf.json}")
+            print(f"info_comm.path.dist:{info_comm.dist.json}")
+            print(f"info_comm.path.mdia:{info_comm.mdia.json}")
+        # --- termination process ---------------------------------------------
+        message_end(get_caller_name())
+        # --- elapsed end -----------------------------------------------------
+        end = time.perf_counter()
+        elapsed = end - start
+        message_elapsed(caller, elapsed)
+        # --- exit ------------------------------------------------------------
+        return 0
+    except (OSError, Exception) as e:  # noqa: BLE001
+        handle_fatal_error(caller, e)
     # -------------------------------------------------------------------------
 
 

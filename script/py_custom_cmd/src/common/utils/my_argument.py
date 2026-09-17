@@ -18,9 +18,9 @@ class Argument:
             setattr(namespace, self.dest, values)
 
     # -------------------------------------------------------------------------
-    def __init__(self):
+    def __init__(self, description: str = ""):
         """Method for initializing the Argument class."""
-        self.parser = argparse.ArgumentParser(allow_abbrev=False)
+        self.parser = argparse.ArgumentParser(description, allow_abbrev=False)
         self.parser.add_argument("--debug", help="Debug mode", action="store_true")
         self.parser.add_argument(
             "--debugout", help="Debug mode for display only", action="store_true"
@@ -28,16 +28,16 @@ class Argument:
         self.args = None
 
     # -------------------------------------------------------------------------
-    def add(self, name: str, **kwargs):
+    def add(self, *args, **kwargs):
         """Method for adding command-line arguments.
 
         Args:
-            name (str): Arguments for `add_argument`
+            *args: Arguments for `add_argument` (e.g., "-p", "--pattern")
             **kwargs: Arguments for `add_argument`
         """
         if kwargs.get("type") == "str":
             kwargs["type"] = str
-        self.parser.add_argument(name, **kwargs)
+        self.parser.add_argument(*args, **kwargs)
 
     # -------------------------------------------------------------------------
     def parse(self):

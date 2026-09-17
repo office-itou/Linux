@@ -72,4 +72,14 @@ class Color(Code):
     br_default: str = f"{code.escape}[99m"  # (no comments)
 
 
+# --- emoji -------------------------------------------------------------------
+
+
+@dataclass
+class Emoji(Code):
+    """Emoji code class"""
+
+    package: str = "📦"  # package
+
+
 # --- eof ---------------------------------------------------------------------
