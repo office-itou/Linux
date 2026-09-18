@@ -290,7 +290,7 @@ async def main():
             if target := infosystem.args.info:
                 if target == "a":
                     pass
-                # await get_web_file_info(info_comm)
+                await get_web_file_info(info_comm)
                 # -------------------------------------------------------------
                 dirs_rmak = info_comm.conf.get_path("DIRS_RMAK")
                 info_mdia = info_comm.mdia

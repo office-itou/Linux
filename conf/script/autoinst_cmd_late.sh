@@ -695,10 +695,10 @@ fnNetwork_param() {
 		"info,_NICS_MADR=[${_NICS_MADR:-}]" \
 		"info,_NICS_AUTO=[${_NICS_AUTO:-}]" \
 		"info,_NICS_IPV4=[${_NICS_IPV4:-}]" \
-		"info,_NICS_IPV4=[${_NICS_DNS4:-}]" \
-		"info,_NICS_IPV4=[${_NICS_WGRP:-}]" \
-		"info,_NICS_IPV4=[${_IPV6_ADDR:-}]" \
-		"info,_NICS_IPV4=[${_LINK_ADDR:-}]"
+		"info,_NICS_DNS4=[${_NICS_DNS4:-}]" \
+		"info,_NICS_WGRP=[${_NICS_WGRP:-}]" \
+		"info,_IPV6_ADDR=[${_IPV6_ADDR:-}]" \
+		"info,_LINK_ADDR=[${_LINK_ADDR:-}]"
 	# --- ipv4 ----------------------------------------------------------------
 	if [ -z "${_NICS_IPV4:-}" ]; then
 		_NICS_AUTO="dhcp"
@@ -1293,20 +1293,22 @@ fnMkdir_share(){
 
 	# --- fstab ---------------------------------------------------------------
 	__PATH="${_DIRS_TGET:-}/etc/fstab"
-	fnFile_backup "${__PATH}"			# backup original file
-	mkdir -p "${__PATH%/*}"
-	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
-		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "# <file system>" "<mount point>"                     "<type>" "<options>" "<dump>" "<pass>")
-		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_SHEL:?}" "${_DIRS_MKOS:?}/${_DIRS_SHEL##*/}" "none"   "bind,ro"   "0"      "0"     )
-		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_CONF:?}" "${_DIRS_XNFS:?}/${_DIRS_CONF##*/}" "none"   "bind,ro"   "0"      "0"     )
-		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_IMGS:?}" "${_DIRS_XNFS:?}/${_DIRS_IMGS##*/}" "none"   "bind,ro"   "0"      "0"     )
-		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_CONF:?}" "${_DIRS_XSMB:?}/${_DIRS_CONF##*/}" "none"   "bind,ro"   "0"      "0"     )
-		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_IMGS:?}" "${_DIRS_XSMB:?}/${_DIRS_IMGS##*/}" "none"   "bind,ro"   "0"      "0"     )
-		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_ISOS:?}" "${_DIRS_XSMB:?}/${_DIRS_ISOS##*/}" "none"   "bind,ro"   "0"      "0"     )
-		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_LOAD:?}" "${_DIRS_XSMB:?}/${_DIRS_LOAD##*/}" "none"   "bind,ro"   "0"      "0"     )
-		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_RMAK:?}" "${_DIRS_XSMB:?}/${_DIRS_RMAK##*/}" "none"   "bind,ro"   "0"      "0"     )
+	if ! grep -q '/srv/' "${__PATH:?}"; then
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "# <file system>" "<mount point>"                     "<type>" "<options>" "<dump>" "<pass>")
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_SHEL:?}" "${_DIRS_MKOS:?}/${_DIRS_SHEL##*/}" "none"   "bind,ro"   "0"      "0"     )
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_CONF:?}" "${_DIRS_XNFS:?}/${_DIRS_CONF##*/}" "none"   "bind,ro"   "0"      "0"     )
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_IMGS:?}" "${_DIRS_XNFS:?}/${_DIRS_IMGS##*/}" "none"   "bind,ro"   "0"      "0"     )
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_CONF:?}" "${_DIRS_XSMB:?}/${_DIRS_CONF##*/}" "none"   "bind,ro"   "0"      "0"     )
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_IMGS:?}" "${_DIRS_XSMB:?}/${_DIRS_IMGS##*/}" "none"   "bind,ro"   "0"      "0"     )
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_ISOS:?}" "${_DIRS_XSMB:?}/${_DIRS_ISOS##*/}" "none"   "bind,ro"   "0"      "0"     )
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_LOAD:?}" "${_DIRS_XSMB:?}/${_DIRS_LOAD##*/}" "none"   "bind,ro"   "0"      "0"     )
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_RMAK:?}" "${_DIRS_XSMB:?}/${_DIRS_RMAK##*/}" "none"   "bind,ro"   "0"      "0"     )
 _EOT_
+	fi
 	# --- check mount ---------------------------------------------------------
 	if [ -z "${_TGET_CHRT:-}" ]; then
 		systemctl --quiet daemon-reload
@@ -2571,6 +2573,7 @@ fnSetup_samba() {
 	    -e  '/^[ \t]*server smb transports[ \t]*=/        s/=.*$/= 445/'               \
 	    -e  '/^[ \t]*netbios name[ \t]*=/                 s/=.*$/= '"${_NICS_HOST}"'/' \
 	    -e  '/^[ \t]*workgroup[ \t]*=/                    s/=.*$/= '"${_NICS_WGRP}"'/' \
+	    -e  '/^[ \t]*log level =/                         s/=.*$/= 0/'                 \
 	    -e  '/^[ \t]*bind interfaces only[ \t]*=/                                   {' \
 	    -e  '                                             s/^/#/'                      \
 	    -e  '                                             s/=.*$/= yes/'               \

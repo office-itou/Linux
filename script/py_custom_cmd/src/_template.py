@@ -3,6 +3,7 @@
 """Template"""
 
 # --- Python library ----------------------------------------------------------
+import inspect
 import os
 import sys
 import time
@@ -86,13 +87,15 @@ def main():
         initarg()
         if infosystem.args:
             info_comm = initialize()
-            print(f"dir(info_comm):{dir(info_comm)}")
-            print(f"dir(info_comm.conf):{dir(info_comm.conf)}")
-            print(f"dir(info_comm.dist):{dir(info_comm.dist)}")
-            print(f"dir(info_comm.mdia):{dir(info_comm.mdia)}")
-            print(f"info_comm.path_conf:{info_comm.conf_json}")
-            print(f"info_comm.path_dist:{info_comm.dist_json}")
-            print(f"info_comm.path_mdia:{info_comm.mdia_json}")
+            print("*" * 80)
+            for target in info_comm, info_comm.conf, info_comm.dist, info_comm.mdia:
+                for name, obj in inspect.getmembers(target):
+                    if not name.startswith("__"):
+                        if callable(obj):
+                            print(f"{Color.cyan}{name}({type(obj)}){Color.reset}")
+                        else:
+                            print(f"{Color.yellow}{name}({type(obj)}){Color.reset}")
+                print("*" * 80)
         # --- termination process ---------------------------------------------
         message_end(get_caller_name())
         # --- elapsed end -----------------------------------------------------

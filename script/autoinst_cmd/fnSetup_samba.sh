@@ -94,6 +94,7 @@ fnSetup_samba() {
 	    -e  '/^[ \t]*server smb transports[ \t]*=/        s/=.*$/= 445/'               \
 	    -e  '/^[ \t]*netbios name[ \t]*=/                 s/=.*$/= '"${_NICS_HOST}"'/' \
 	    -e  '/^[ \t]*workgroup[ \t]*=/                    s/=.*$/= '"${_NICS_WGRP}"'/' \
+	    -e  '/^[ \t]*log level =/                         s/=.*$/= 0/'                 \
 	    -e  '/^[ \t]*bind interfaces only[ \t]*=/                                   {' \
 	    -e  '                                             s/^/#/'                      \
 	    -e  '                                             s/=.*$/= yes/'               \

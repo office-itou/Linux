@@ -184,20 +184,22 @@ fnMkdir_share(){
 
 	# --- fstab ---------------------------------------------------------------
 	__PATH="${_DIRS_TGET:-}/etc/fstab"
-	fnFile_backup "${__PATH}"			# backup original file
-	mkdir -p "${__PATH%/*}"
-	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
-		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "# <file system>" "<mount point>"                     "<type>" "<options>" "<dump>" "<pass>")
-		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_SHEL:?}" "${_DIRS_MKOS:?}/${_DIRS_SHEL##*/}" "none"   "bind,ro"   "0"      "0"     )
-		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_CONF:?}" "${_DIRS_XNFS:?}/${_DIRS_CONF##*/}" "none"   "bind,ro"   "0"      "0"     )
-		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_IMGS:?}" "${_DIRS_XNFS:?}/${_DIRS_IMGS##*/}" "none"   "bind,ro"   "0"      "0"     )
-		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_CONF:?}" "${_DIRS_XSMB:?}/${_DIRS_CONF##*/}" "none"   "bind,ro"   "0"      "0"     )
-		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_IMGS:?}" "${_DIRS_XSMB:?}/${_DIRS_IMGS##*/}" "none"   "bind,ro"   "0"      "0"     )
-		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_ISOS:?}" "${_DIRS_XSMB:?}/${_DIRS_ISOS##*/}" "none"   "bind,ro"   "0"      "0"     )
-		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_LOAD:?}" "${_DIRS_XSMB:?}/${_DIRS_LOAD##*/}" "none"   "bind,ro"   "0"      "0"     )
-		$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_RMAK:?}" "${_DIRS_XSMB:?}/${_DIRS_RMAK##*/}" "none"   "bind,ro"   "0"      "0"     )
+	if ! grep -q '/srv/' "${__PATH:?}"; then
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "# <file system>" "<mount point>"                     "<type>" "<options>" "<dump>" "<pass>")
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_SHEL:?}" "${_DIRS_MKOS:?}/${_DIRS_SHEL##*/}" "none"   "bind,ro"   "0"      "0"     )
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_CONF:?}" "${_DIRS_XNFS:?}/${_DIRS_CONF##*/}" "none"   "bind,ro"   "0"      "0"     )
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_IMGS:?}" "${_DIRS_XNFS:?}/${_DIRS_IMGS##*/}" "none"   "bind,ro"   "0"      "0"     )
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_CONF:?}" "${_DIRS_XSMB:?}/${_DIRS_CONF##*/}" "none"   "bind,ro"   "0"      "0"     )
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_IMGS:?}" "${_DIRS_XSMB:?}/${_DIRS_IMGS##*/}" "none"   "bind,ro"   "0"      "0"     )
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_ISOS:?}" "${_DIRS_XSMB:?}/${_DIRS_ISOS##*/}" "none"   "bind,ro"   "0"      "0"     )
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_LOAD:?}" "${_DIRS_XSMB:?}/${_DIRS_LOAD##*/}" "none"   "bind,ro"   "0"      "0"     )
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_RMAK:?}" "${_DIRS_XSMB:?}/${_DIRS_RMAK##*/}" "none"   "bind,ro"   "0"      "0"     )
 _EOT_
+	fi
 	# --- check mount ---------------------------------------------------------
 	if [ -z "${_TGET_CHRT:-}" ]; then
 		systemctl --quiet daemon-reload
@@ -240,29 +242,29 @@ _EOT_
 	fi
 
 	# --- create symbolic link ------------------------------------------------
-	[ ! -h "${_DIRS_HTML:?}/${_DIRS_CONF##*/}"               ] && ln -s "${_DIRS_CONF#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
-	[ ! -h "${_DIRS_HTML:?}/${_DIRS_IMGS##*/}"               ] && ln -s "${_DIRS_IMGS#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
-	[ ! -h "${_DIRS_HTML:?}/${_DIRS_ISOS##*/}"               ] && ln -s "${_DIRS_ISOS#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
-	[ ! -h "${_DIRS_HTML:?}/${_DIRS_LOAD##*/}"               ] && ln -s "${_DIRS_LOAD#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
-	[ ! -h "${_DIRS_HTML:?}/${_DIRS_RMAK##*/}"               ] && ln -s "${_DIRS_RMAK#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
-	[ ! -h "${_DIRS_HTML:?}/${_DIRS_TFTP##*/}"               ] && ln -s "${_DIRS_TFTP#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
-	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_CONF##*/}"               ] && ln -s "${_DIRS_CONF#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/exports/"
-	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_IMGS##*/}"               ] && ln -s "${_DIRS_IMGS#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/exports/"
-	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_ISOS##*/}"               ] && ln -s "${_DIRS_ISOS#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/exports/"
-	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_LOAD##*/}"               ] && ln -s "${_DIRS_LOAD#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/exports/"
-	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_RMAK##*/}"               ] && ln -s "${_DIRS_RMAK#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/exports/"
-	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_CONF##*/}"     ] && ln -s "../exports/${_DIRS_CONF##*/}"    "${_DIRS_TFTP:?}/menu-bios/"
-	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_IMGS##*/}"     ] && ln -s "../exports/${_DIRS_IMGS##*/}"    "${_DIRS_TFTP:?}/menu-bios/"
-	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_ISOS##*/}"     ] && ln -s "../exports/${_DIRS_ISOS##*/}"    "${_DIRS_TFTP:?}/menu-bios/"
-	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_LOAD##*/}"     ] && ln -s "../exports/${_DIRS_LOAD##*/}"    "${_DIRS_TFTP:?}/menu-bios/"
-	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_RMAK##*/}"     ] && ln -s "../exports/${_DIRS_RMAK##*/}"    "${_DIRS_TFTP:?}/menu-bios/"
-	[ ! -h "${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"  ] && ln -s "../syslinux.cfg"                 "${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"
-	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_CONF##*/}"    ] && ln -s "../exports/${_DIRS_CONF##*/}"    "${_DIRS_TFTP:?}/menu-efi64/"
-	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_IMGS##*/}"    ] && ln -s "../exports/${_DIRS_IMGS##*/}"    "${_DIRS_TFTP:?}/menu-efi64/"
-	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_ISOS##*/}"    ] && ln -s "../exports/${_DIRS_ISOS##*/}"    "${_DIRS_TFTP:?}/menu-efi64/"
-	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_LOAD##*/}"    ] && ln -s "../exports/${_DIRS_LOAD##*/}"    "${_DIRS_TFTP:?}/menu-efi64/"
-	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_RMAK##*/}"    ] && ln -s "../exports/${_DIRS_RMAK##*/}"    "${_DIRS_TFTP:?}/menu-efi64/"
-	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default" ] && ln -s "../syslinux.cfg"                 "${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_CONF##*/}"               ] && ln -sf "${_DIRS_CONF#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_IMGS##*/}"               ] && ln -sf "${_DIRS_IMGS#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_ISOS##*/}"               ] && ln -sf "${_DIRS_ISOS#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_LOAD##*/}"               ] && ln -sf "${_DIRS_LOAD#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_RMAK##*/}"               ] && ln -sf "${_DIRS_RMAK#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_TFTP##*/}"               ] && ln -sf "${_DIRS_TFTP#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_CONF##*/}"               ] && ln -sf "${_DIRS_CONF#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/exports/"
+	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_IMGS##*/}"               ] && ln -sf "${_DIRS_IMGS#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/exports/"
+	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_ISOS##*/}"               ] && ln -sf "${_DIRS_ISOS#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/exports/"
+	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_LOAD##*/}"               ] && ln -sf "${_DIRS_LOAD#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/exports/"
+	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_RMAK##*/}"               ] && ln -sf "${_DIRS_RMAK#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/exports/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_CONF##*/}"     ] && ln -sf "../exports/${_DIRS_CONF##*/}"    "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_IMGS##*/}"     ] && ln -sf "../exports/${_DIRS_IMGS##*/}"    "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_ISOS##*/}"     ] && ln -sf "../exports/${_DIRS_ISOS##*/}"    "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_LOAD##*/}"     ] && ln -sf "../exports/${_DIRS_LOAD##*/}"    "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_RMAK##*/}"     ] && ln -sf "../exports/${_DIRS_RMAK##*/}"    "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"  ] && ln -sf "../syslinux.cfg"                 "${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"
+	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_CONF##*/}"    ] && ln -sf "../exports/${_DIRS_CONF##*/}"    "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_IMGS##*/}"    ] && ln -sf "../exports/${_DIRS_IMGS##*/}"    "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_ISOS##*/}"    ] && ln -sf "../exports/${_DIRS_ISOS##*/}"    "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_LOAD##*/}"    ] && ln -sf "../exports/${_DIRS_LOAD##*/}"    "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_RMAK##*/}"    ] && ln -sf "../exports/${_DIRS_RMAK##*/}"    "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default" ] && ln -sf "../syslinux.cfg"                 "${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default"
 
 	# --- create index.html ---------------------------------------------------
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_DIRS_HTML}/index.html"

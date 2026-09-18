@@ -665,10 +665,10 @@ fnNetwork_param() {
 		"info,_NICS_MADR=[${_NICS_MADR:-}]" \
 		"info,_NICS_AUTO=[${_NICS_AUTO:-}]" \
 		"info,_NICS_IPV4=[${_NICS_IPV4:-}]" \
-		"info,_NICS_IPV4=[${_NICS_DNS4:-}]" \
-		"info,_NICS_IPV4=[${_NICS_WGRP:-}]" \
-		"info,_NICS_IPV4=[${_IPV6_ADDR:-}]" \
-		"info,_NICS_IPV4=[${_LINK_ADDR:-}]"
+		"info,_NICS_DNS4=[${_NICS_DNS4:-}]" \
+		"info,_NICS_WGRP=[${_NICS_WGRP:-}]" \
+		"info,_IPV6_ADDR=[${_IPV6_ADDR:-}]" \
+		"info,_LINK_ADDR=[${_LINK_ADDR:-}]"
 	# --- ipv4 ----------------------------------------------------------------
 	if [ -z "${_NICS_IPV4:-}" ]; then
 		_NICS_AUTO="dhcp"
