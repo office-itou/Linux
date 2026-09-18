@@ -10,16 +10,18 @@ item -- return                                  - Return
 item --gap --                                   [ Edition ]
 item -- server                                  - Server
 item -- desktop                                 - Desktop
+item --gap --                                   [ Development ]
 item -- openSUSE-tumbleweed                     - openSUSE ${edition} tumbleweed
 item -- openSUSE-16.1                           - openSUSE ${edition} 16.1
+item --gap --                                   [ Current (supported) ]
 item -- openSUSE-16.0                           - openSUSE ${edition} 16.0
 choose --default ${selected} selected           || goto menu
 iseq ${selected} return                         && goto return         ||
 iseq ${selected} server                         && set edition server  ||
 iseq ${selected} desktop                        && set edition desktop ||
-iseq ${selected} openSUSE-tumbleweed            && goto openSUSE-tumbleweed
-iseq ${selected} openSUSE-16.1                  && goto openSUSE-16.1
-iseq ${selected} openSUSE-16.0                  && goto openSUSE-16.0
+iseq ${selected} openSUSE-tumbleweed            && goto openSUSE-tumbleweed ||
+iseq ${selected} openSUSE-16.1                  && goto openSUSE-16.1 ||
+iseq ${selected} openSUSE-16.0                  && goto openSUSE-16.0 ||
 goto menu
 
 :openSUSE-tumbleweed

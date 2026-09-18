@@ -140,27 +140,38 @@ class InfoMedia:
 
     @debug_logger
     def finds(self, **kwargs) -> list[MediaData]:
-        """Search for the data class within self.data.Data search in common.cfg
+        """Search for the data class within self.data.
 
         Returns:
             list[DistributionData]: Search results for the key
         """
         MISSING = object()
-        return [
-            _class_data
-            for _class_data in self.data
-            if all(
-                getattr(_class_data, _key, MISSING) == _value
-                for _key, _value in kwargs.items()
-            )
-        ]
+        result = []
+        for _class_data in self.data:
+            match = True
+            for _key, _value in kwargs.items():
+                attr_val = getattr(_class_data, _key, MISSING)
+                if attr_val is MISSING:
+                    match = False
+                    break
+                if isinstance(_value, str) and isinstance(attr_val, str):
+                    if not re.search(_value, attr_val):
+                        match = False
+                        break
+                else:
+                    if attr_val != _value:
+                        match = False
+                        break
+            if match:
+                result.append(_class_data)
+        return result
 
     @debug_logger
-    def find(self, **kwargs) -> list[MediaData]:
+    def find(self, **kwargs) -> MediaData:
         """Search for the data class within self.data. (The first one)
 
         Returns:
-            list[DistributionData]: Search results for the key (The first one)
+            MediaData: Search results for the key (The first one)
         """
         MISSING = object()
         return next(

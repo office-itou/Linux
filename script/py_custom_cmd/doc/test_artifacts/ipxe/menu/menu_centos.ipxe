@@ -10,14 +10,15 @@ item -- return                                  - Return
 item --gap --                                   [ Edition ]
 item -- server                                  - Server
 item -- desktop                                 - Desktop
+item --gap --                                   [ Current (supported) ]
 item -- CentOS_Stream-10                        - CentOS Stream ${edition} 10 (Coughlan)
 item -- CentOS_Stream-9                         - CentOS Stream ${edition} 9
 choose --default ${selected} selected           || goto menu
 iseq ${selected} return                         && goto return         ||
 iseq ${selected} server                         && set edition server  ||
 iseq ${selected} desktop                        && set edition desktop ||
-iseq ${selected} CentOS_Stream-10               && goto CentOS Stream-10
-iseq ${selected} CentOS_Stream-9                && goto CentOS Stream-9
+iseq ${selected} CentOS_Stream-10               && goto CentOS Stream-10 ||
+iseq ${selected} CentOS_Stream-9                && goto CentOS Stream-9 ||
 goto menu
 
 :CentOS_Stream-10

@@ -22,33 +22,17 @@ class Text_fmat:
 
 # -----------------------------------------------------------------------------
 @dataclass
-class ConfData:
-    info: InfoConfiguration = None
-    path: Path = None
-    json: Path = None
-
-
-@dataclass
-class DistData:
-    info: InfoDistribution = None
-    path: Path = None
-    json: Path = None
-
-
-@dataclass
-class MdiaData:
-    info: InfoMedia = None
-    path: Path = None
-    json: Path = None
-
-
-# -----------------------------------------------------------------------------
-@dataclass
 class CommonData:
-    conf: ConfData = None
-    dist: DistData = None
-    mdia: MdiaData = None
+    conf: InfoConfiguration = None
+    dist: InfoDistribution = None
+    mdia: InfoMedia = None
     text_fmat: Text_fmat = None
+    conf_path: Path = None
+    dist_path: Path = None
+    mdia_path: Path = None
+    conf_json: Path = None
+    dist_json: Path = None
+    mdia_json: Path = None
 
 
 class InfoCommon:
@@ -59,34 +43,16 @@ class InfoCommon:
         """Method for initializing the data class."""
         self._valid_fields: set[str] = {f.name for f in fields(CommonData)}
         # ---------------------------------------------------------------------
-        _info_configuration = InfoConfiguration()
-        _conf_path = _info_configuration.get_path(key="PATH_CONF")
-        _dist_path = _info_configuration.get_path(key="PATH_DIST")
-        _mdia_path = _info_configuration.get_path(key="PATH_MDIA")
-        # ---------------------------------------------------------------------
-        self.conf = ConfData(
-            info=_info_configuration,
-            path=_conf_path,
-            json=_conf_path.with_suffix(_conf_path.suffix + ".json"),
-        )
-        self.dist = DistData(
-            info=InfoDistribution(_dist_path.with_suffix(_dist_path.suffix + ".json")),
-            path=_dist_path,
-            json=_dist_path.with_suffix(_dist_path.suffix + ".json"),
-        )
-        self.mdia = MdiaData(
-            info=InfoMedia(
-                _mdia_path.with_suffix(_mdia_path.suffix + ".json"), self.conf.info
-            ),
-            path=_mdia_path,
-            json=_mdia_path.with_suffix(_mdia_path.suffix + ".json"),
-        )
-        # ---------------------------------------------------------------------
+        self.conf = InfoConfiguration()
+        self.conf_path = Path(self.conf.get_path(key="PATH_CONF"))
+        self.dist_path = Path(self.conf.get_path(key="PATH_DIST"))
+        self.mdia_path = Path(self.conf.get_path(key="PATH_MDIA"))
+        self.conf_json = self.conf_path.with_suffix(self.conf_path.suffix + ".json")
+        self.dist_json = self.dist_path.with_suffix(self.dist_path.suffix + ".json")
+        self.mdia_json = self.mdia_path.with_suffix(self.mdia_path.suffix + ".json")
+        self.dist = InfoDistribution(self.dist_json)
+        self.mdia = InfoMedia(self.mdia_json, self.conf)
         self.text_fmat = Text_fmat()
-        # ---------------------------------------------------------------------
-        self.data = CommonData(
-            conf=self.conf, dist=self.dist, mdia=self.mdia, text_fmat=self.text_fmat
-        )
 
 
 # --- eof ---------------------------------------------------------------------

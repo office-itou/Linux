@@ -28,7 +28,7 @@ from common.utils.my_config import infosystem
 from common.utils.my_debug import debug_logger
 from common.utils.my_error import handle_fatal_error
 from common.utils.my_infofile import InfoFile
-from common.utils.my_infoweb import InfoWeb, WebData
+from common.utils.my_infoweb import InfoWeb
 from common.utils.my_message import (
     get_caller_name,
     message_elapsed,
@@ -63,17 +63,20 @@ def generate_md(dst_dir: str, info_comm: InfoCommon) -> None:
         dst_dir (str): Destination path
         info_comm (InfoCommon): InfoCommon interface class
     """
-    info_comm.conf.info.markdown(
+    caller = get_caller_name()
+    message_info(caller, "Generate markdown")
+
+    info_comm.conf.markdown(
         Path(dst_dir) / "Readme_Configuration.md",
-        f"Configuration data({info_comm.conf.path.name})",
+        f"Configuration data({info_comm.conf_path.name})",
     )
-    info_comm.dist.info.markdown(
+    info_comm.dist.markdown(
         Path(dst_dir) / "Readme_Distribution.md",
-        f"Distribution data({info_comm.dist.path.name})",
+        f"Distribution data({info_comm.dist_path.name})",
     )
-    info_comm.mdia.info.markdown(
+    info_comm.mdia.markdown(
         Path(dst_dir) / "Readme_Media.md",
-        f"Media data({info_comm.mdia.path.name})",
+        f"Media data({info_comm.mdia_path.name})",
     )
 
 
@@ -84,17 +87,19 @@ def data_save(info_comm: InfoCommon) -> None:
     Args:
         info_comm (InfoCommon): InfoCommon interface class
     """
+    caller = get_caller_name()
+    message_info(caller, "Data save")
     # -------------------------------------------------------------------------
-    info_comm.dist.info.save(info_comm.dist.json)
-    info_comm.mdia.info.save(info_comm.mdia.json)
+    info_comm.dist.save(info_comm.dist_json)
+    info_comm.mdia.save(info_comm.mdia_json)
     # -------------------------------------------------------------------------
-    info_comm.dist.info.put_list2text(info_comm.dist.path, info_comm.text_fmat.dist)
-    info_comm.mdia.info.put_list2text(info_comm.mdia.path, info_comm.text_fmat.mdia)
+    info_comm.dist.put_list2text(info_comm.dist_path, info_comm.text_fmat.dist)
+    info_comm.mdia.put_list2text(info_comm.mdia_path, info_comm.text_fmat.mdia)
 
 
 # -----------------------------------------------------------------------------
 @debug_logger
-async def get_web_file_info(info_comm: InfoCommon) -> InfoCommon:
+async def get_web_file_info(info_comm: InfoCommon) -> None:
     """Get web/file information data
 
     Args:
@@ -103,6 +108,9 @@ async def get_web_file_info(info_comm: InfoCommon) -> InfoCommon:
     Returns:
         InfoCommon: InfoCommon interface class
     """
+    caller = get_caller_name()
+    message_info(caller, "Data get")
+
     _caller = get_caller_name()
     info_web = InfoWeb()
     info_file = InfoFile()
@@ -133,8 +141,7 @@ async def get_web_file_info(info_comm: InfoCommon) -> InfoCommon:
     async with aiohttp.ClientSession(
         timeout=timeout, raise_for_status=False
     ) as session:
-        tget_mdias: list[WebData] = []
-        for tget_mdia in info_comm.mdia.info.data:
+        for tget_mdia in info_comm.mdia.data:
             if tget_mdia.entry_name == "menu-entry":
                 continue
             local_file_path = ""
@@ -144,9 +151,7 @@ async def get_web_file_info(info_comm: InfoCommon) -> InfoCommon:
                 for _base_dir_data in _base_dir_datas:
                     if _base_dir_data.name in tget_mdia.entry_name:
                         key = _base_dir_data.key
-                        local_file_path = (
-                            info_comm.conf.info.get_path(key) / "_dummy.iso"
-                        )
+                        local_file_path = info_comm.conf.get_path(key) / "_dummy.iso"
                         break
             if tget_mdia.web_regexp:
                 message_info(_caller, tget_mdia.web_regexp, omit=True)
@@ -172,9 +177,6 @@ async def get_web_file_info(info_comm: InfoCommon) -> InfoCommon:
                             tget_mdia.iso_tstamp = "-"
                             tget_mdia.iso_size = "-"
                             tget_mdia.iso_volume = "-"
-                        # tget_mdias.append(tget_mdia)
-            # print(f"{Color.br_magenta}{tget_mdia}{Color.reset}")
-    return tget_mdias
 
 
 @debug_logger
@@ -272,42 +274,43 @@ async def main():
             if (targets := infosystem.args.debugdump) is not None:
                 debugdump(targets, info_comm)
             if infosystem.args.t2j == True:
-                info_comm.dist.info.get_text2list(info_comm.dist.path)
-                info_comm.mdia.info.get_text2list(info_comm.mdia.path)
-                info_comm.dist.info.save(info_comm.dist.json)
-                info_comm.mdia.info.save(info_comm.mdia.json)
+                info_comm.dist.get_text2list(info_comm.dist_path)
+                info_comm.mdia.get_text2list(info_comm.mdia_path)
+                info_comm.dist.save(info_comm.dist_json)
+                info_comm.mdia.save(info_comm.mdia_json)
             if infosystem.args.j2t == True:
-                info_comm.dist.info.load(info_comm.dist.json)
-                info_comm.mdia.info.load(info_comm.mdia.json)
-                info_comm.dist.info.put_list2text(
-                    info_comm.dist.path, info_comm.text_fmat.dist
+                info_comm.dist.load(info_comm.dist_json)
+                info_comm.mdia.load(info_comm.mdia_json)
+                info_comm.dist.put_list2text(
+                    info_comm.dist_path, info_comm.text_fmat.dist
                 )
-                info_comm.mdia.info.put_list2text(
-                    info_comm.mdia.path, info_comm.text_fmat.mdia
+                info_comm.mdia.put_list2text(
+                    info_comm.mdia_path, info_comm.text_fmat.mdia
                 )
             if target := infosystem.args.info:
                 if target == "a":
                     pass
-                tget_mdias = await get_web_file_info(info_comm)
+                # await get_web_file_info(info_comm)
                 # -------------------------------------------------------------
-                dirs_rmak = info_comm.conf.info.get_path("DIRS_RMAK")
-                for data_mdia in tget_mdias:
-                    if data_mdia.cfg_path:
-                        path_psed = Path(data_mdia.cfg_path)
+                dirs_rmak = info_comm.conf.get_path("DIRS_RMAK")
+                info_mdia = info_comm.mdia
+                for info_mdia_data in info_mdia.data:
+                    if info_mdia_data.cfg_path:
+                        path_psed = Path(info_mdia_data.cfg_path)
                         preseed = (
                             ""
-                            if data_mdia.cfg_path.endswith("/")
+                            if info_mdia_data.cfg_path.endswith("/")
                             else path_psed.parent.name
                         )
-                        if preseed and data_mdia.iso_path:
-                            path_isos = Path(data_mdia.iso_path).resolve()
+                        if preseed and info_mdia_data.iso_path:
+                            path_isos = Path(info_mdia_data.iso_path).resolve()
                             path_file = (
                                 dirs_rmak
                                 / f"{path_isos.stem}_{preseed}{path_isos.suffix}"
                             )
-                            data_mdia.rmk_path = str(path_file.resolve())
+                            info_mdia_data.rmk_path = str(path_file.resolve())
                 # -------------------------------------------------------------
-                print(f"{Color.green}{info_comm.mdia.json}{Color.reset}")
+                # print(f"{Color.green}{info_comm.mdia_json}{Color.reset}")
                 generate_md("./", info_comm)
                 data_save(info_comm)
             if dirs := infosystem.args.md:

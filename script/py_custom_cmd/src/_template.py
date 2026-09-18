@@ -87,9 +87,12 @@ def main():
         if infosystem.args:
             info_comm = initialize()
             print(f"dir(info_comm):{dir(info_comm)}")
-            print(f"info_comm.path.conf:{info_comm.conf.json}")
-            print(f"info_comm.path.dist:{info_comm.dist.json}")
-            print(f"info_comm.path.mdia:{info_comm.mdia.json}")
+            print(f"dir(info_comm.conf):{dir(info_comm.conf)}")
+            print(f"dir(info_comm.dist):{dir(info_comm.dist)}")
+            print(f"dir(info_comm.mdia):{dir(info_comm.mdia)}")
+            print(f"info_comm.path_conf:{info_comm.conf_json}")
+            print(f"info_comm.path_dist:{info_comm.dist_json}")
+            print(f"info_comm.path_mdia:{info_comm.mdia_json}")
         # --- termination process ---------------------------------------------
         message_end(get_caller_name())
         # --- elapsed end -----------------------------------------------------

@@ -10,28 +10,32 @@ item -- return                                  - Return
 item --gap --                                   [ Edition ]
 item -- server                                  - Server
 item -- desktop                                 - Desktop
+item --gap --                                   [ Development ]
 item -- Ubuntu-26.10                            - Ubuntu ${edition} 26.10 (Stonking Stingray)
+item --gap --                                   [ Current (supported) ]
 item -- Ubuntu-26.04                            - Ubuntu ${edition} 26.04 (Resolute Raccoon)
 item -- Ubuntu-24.04                            - Ubuntu ${edition} 24.04 (Noble Numbat)
 item -- Ubuntu-22.04                            - Ubuntu ${edition} 22.04 (Jammy Jellyfish)
+item --gap --                                   [ Long Term Support ]
 item -- Ubuntu-20.04                            - Ubuntu ${edition} 20.04 (Focal Fossa)
 item -- Ubuntu-18.04                            - Ubuntu ${edition} 18.04 (Bionic Beaver)
 item -- Ubuntu-16.04                            - Ubuntu ${edition} 16.04 (Xenial Xerus)
 item -- Ubuntu-14.04                            - Ubuntu ${edition} 14.04 (Trusty Tahr)
+item --gap --                                   [ Expanded Security Maintenance ]
 item -- Ubuntu-12.04                            - Ubuntu ${edition} 12.04 (Precise Pangolin)
 choose --default ${selected} selected           || goto menu
 iseq ${selected} return                         && goto return         ||
 iseq ${selected} server                         && set edition server  ||
 iseq ${selected} desktop                        && set edition desktop ||
-iseq ${selected} Ubuntu-26.10                   && goto Ubuntu-26.10
-iseq ${selected} Ubuntu-26.04                   && goto Ubuntu-26.04
-iseq ${selected} Ubuntu-24.04                   && goto Ubuntu-24.04
-iseq ${selected} Ubuntu-22.04                   && goto Ubuntu-22.04
-iseq ${selected} Ubuntu-20.04                   && goto Ubuntu-20.04
-iseq ${selected} Ubuntu-18.04                   && goto Ubuntu-18.04
-iseq ${selected} Ubuntu-16.04                   && goto Ubuntu-16.04
-iseq ${selected} Ubuntu-14.04                   && goto Ubuntu-14.04
-iseq ${selected} Ubuntu-12.04                   && goto Ubuntu-12.04
+iseq ${selected} Ubuntu-26.10                   && goto Ubuntu-26.10 ||
+iseq ${selected} Ubuntu-26.04                   && goto Ubuntu-26.04 ||
+iseq ${selected} Ubuntu-24.04                   && goto Ubuntu-24.04 ||
+iseq ${selected} Ubuntu-22.04                   && goto Ubuntu-22.04 ||
+iseq ${selected} Ubuntu-20.04                   && goto Ubuntu-20.04 ||
+iseq ${selected} Ubuntu-18.04                   && goto Ubuntu-18.04 ||
+iseq ${selected} Ubuntu-16.04                   && goto Ubuntu-16.04 ||
+iseq ${selected} Ubuntu-14.04                   && goto Ubuntu-14.04 ||
+iseq ${selected} Ubuntu-12.04                   && goto Ubuntu-12.04 ||
 goto menu
 
 :Ubuntu-26.10

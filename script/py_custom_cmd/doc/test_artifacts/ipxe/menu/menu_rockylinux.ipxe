@@ -10,6 +10,7 @@ item -- return                                  - Return
 item --gap --                                   [ Edition ]
 item -- server                                  - Server
 item -- desktop                                 - Desktop
+item --gap --                                   [ Current (supported) ]
 item -- Rocky_Linux-10.2                        - Rocky Linux ${edition} 10.2 (Red Quartz)
 item -- Rocky_Linux-9.8                         - Rocky Linux ${edition} 9.8 (Blue Onyx)
 item -- Rocky_Linux-8.10                        - Rocky Linux ${edition} 8.10 (Green Obsidian)
@@ -17,9 +18,9 @@ choose --default ${selected} selected           || goto menu
 iseq ${selected} return                         && goto return         ||
 iseq ${selected} server                         && set edition server  ||
 iseq ${selected} desktop                        && set edition desktop ||
-iseq ${selected} Rocky_Linux-10.2               && goto Rocky Linux-10.2
-iseq ${selected} Rocky_Linux-9.8                && goto Rocky Linux-9.8
-iseq ${selected} Rocky_Linux-8.10               && goto Rocky Linux-8.10
+iseq ${selected} Rocky_Linux-10.2               && goto Rocky Linux-10.2 ||
+iseq ${selected} Rocky_Linux-9.8                && goto Rocky Linux-9.8 ||
+iseq ${selected} Rocky_Linux-8.10               && goto Rocky Linux-8.10 ||
 goto menu
 
 :Rocky_Linux-10.2

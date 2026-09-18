@@ -10,6 +10,7 @@ item -- return                                  - Return
 item --gap --                                   [ Edition ]
 item -- server                                  - Server
 item -- desktop                                 - Desktop
+item --gap --                                   [ Current (supported) ]
 item -- AlmaLinux-10.2                          - AlmaLinux ${edition} 10.2 (Lavender Lion)
 item -- AlmaLinux-9.8                           - AlmaLinux ${edition} 9.8 (Olive Jaguar)
 item -- AlmaLinux-8.10                          - AlmaLinux ${edition} 8.10 (Cerulean Leopard)
@@ -17,9 +18,9 @@ choose --default ${selected} selected           || goto menu
 iseq ${selected} return                         && goto return         ||
 iseq ${selected} server                         && set edition server  ||
 iseq ${selected} desktop                        && set edition desktop ||
-iseq ${selected} AlmaLinux-10.2                 && goto AlmaLinux-10.2
-iseq ${selected} AlmaLinux-9.8                  && goto AlmaLinux-9.8
-iseq ${selected} AlmaLinux-8.10                 && goto AlmaLinux-8.10
+iseq ${selected} AlmaLinux-10.2                 && goto AlmaLinux-10.2 ||
+iseq ${selected} AlmaLinux-9.8                  && goto AlmaLinux-9.8 ||
+iseq ${selected} AlmaLinux-8.10                 && goto AlmaLinux-8.10 ||
 goto menu
 
 :AlmaLinux-10.2

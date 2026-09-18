@@ -10,18 +10,20 @@ item -- return                                  - Return
 item --gap --                                   [ Edition ]
 item -- server                                  - Server
 item -- desktop                                 - Desktop
+item --gap --                                   [ To Be Announced ]
 item -- Fedora-46                               - Fedora ${edition} 46
 item -- Fedora-45                               - Fedora ${edition} 45
+item --gap --                                   [ Current (supported) ]
 item -- Fedora-44                               - Fedora ${edition} 44
 item -- Fedora-43                               - Fedora ${edition} 43
 choose --default ${selected} selected           || goto menu
 iseq ${selected} return                         && goto return         ||
 iseq ${selected} server                         && set edition server  ||
 iseq ${selected} desktop                        && set edition desktop ||
-iseq ${selected} Fedora-46                      && goto Fedora-46
-iseq ${selected} Fedora-45                      && goto Fedora-45
-iseq ${selected} Fedora-44                      && goto Fedora-44
-iseq ${selected} Fedora-43                      && goto Fedora-43
+iseq ${selected} Fedora-46                      && goto Fedora-46 ||
+iseq ${selected} Fedora-45                      && goto Fedora-45 ||
+iseq ${selected} Fedora-44                      && goto Fedora-44 ||
+iseq ${selected} Fedora-43                      && goto Fedora-43 ||
 goto menu
 
 :Fedora-46

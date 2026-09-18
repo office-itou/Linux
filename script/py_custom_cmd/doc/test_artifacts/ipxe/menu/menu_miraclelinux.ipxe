@@ -9,14 +9,15 @@ item -- return                                  - Return
 item --gap --                                   [ Edition ]
 item -- server                                  - Server
 item -- desktop                                 - Desktop
+item --gap --                                   [ Current (supported) ]
 item -- Miracle_Linux-9.8                       - Miracle Linux ${edition} 9.8 (Feige)
 item -- Miracle_Linux-8.10                      - Miracle Linux ${edition} 8.10 (Peony)
 choose --default ${selected} selected           || goto menu
 iseq ${selected} return                         && goto return         ||
 iseq ${selected} server                         && set edition server  ||
 iseq ${selected} desktop                        && set edition desktop ||
-iseq ${selected} Miracle_Linux-9.8              && goto Miracle Linux-9.8
-iseq ${selected} Miracle_Linux-8.10             && goto Miracle Linux-8.10
+iseq ${selected} Miracle_Linux-9.8              && goto Miracle Linux-9.8 ||
+iseq ${selected} Miracle_Linux-8.10             && goto Miracle Linux-8.10 ||
 goto menu
 
 :Miracle_Linux-9.8
