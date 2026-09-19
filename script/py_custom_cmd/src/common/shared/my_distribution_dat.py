@@ -37,7 +37,6 @@ ORDERED_DISTRIBUTIONS = [
     "debian",
     "ubuntu",
     "fedora",
-    "centos-stream",
     "centos",
     "almalinux",
     "rockylinux",
@@ -263,16 +262,18 @@ def sort_distribution_data(
     Returns:
         list[DistributionData]: DistributionData class
     """
-    match = re.compile(rf"^{re.escape(distribution)}(|-).+$")
-    selected_data = [item for item in data if match.match(item.version)]
+    selected_data_pattern = re.compile(rf"^{re.escape(distribution)}(|-).+$")
+    selected_data = [item for item in data if selected_data_pattern.match(item.version)]
+    base_match_pattern = re.compile(
+        r"^([a-zA-Z0-9_-]+?)-(?=\d|testing|sid|tumbleweed|x86|x64)"
+    )
+    num_match_pattern = re.compile(r"(\d+(?:\.\d+)*\S*)")
 
     def make_universal_sort_key(item):
         v_str = item.version
         if distribution and v_str.startswith(f"{distribution}-"):
             v_str = v_str[len(distribution) + 1 :]
-        base_match = re.match(
-            r"^([a-zA-Z0-9_-]+?)-(?=\d|testing|sid|tumbleweed|x86|x64)", v_str
-        )
+        base_match = base_match_pattern.match(v_str)
         if base_match:
             base_name = base_match.group(1)
             version_part = v_str[len(base_name) + 1 :]
@@ -282,7 +283,7 @@ def sort_distribution_data(
         version_part = re.sub(
             r"(\d+)h(\d+)", r"\1.\2", version_part, flags=re.IGNORECASE
         )
-        num_match = re.search(r"(\d+(?:\.\d+)*\S*)", version_part)
+        num_match = num_match_pattern.search(version_part)
         if num_match:
             try:
                 return (base_name, 2, parse_version(num_match.group(1)))

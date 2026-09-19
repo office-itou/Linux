@@ -3,15 +3,10 @@
 """Test web/file information"""
 
 # --- Python library ----------------------------------------------------------
-import asyncio
-import inspect
 import os
 import sys
 import time
 from pathlib import Path
-
-import aiohttp  # sudo apt-get install python3-aiohttp
-from aiohttp import ClientTimeout
 
 # --- my library --------------------------------------------------------------
 execusr = os.getenv("SUDO_USER", os.getenv("USER"))
@@ -19,6 +14,7 @@ homedir = os.getenv("SUDO_HOME") or os.getenv("HOME") or f"/home/{execusr}"
 libsdir = Path(homedir) / "linux/script/py_custom_cmd/src"
 if str(libsdir) not in sys.path:
     sys.path.append(str(libsdir))
+from common.shared.my_distribution_dat import ORDERED_DISTRIBUTIONS
 from common.shared.my_shared import InfoCommon
 from common.utils.my_argument import Argument
 from common.utils.my_colors import Color
@@ -85,7 +81,7 @@ def generate_md(dst_dir: str, info_comm: InfoCommon) -> None:
     message_info(caller, "Generate markdown")
     # -------------------------------------------------------------------------
     dest_path = Path(dst_dir) / "Readme_tbl_distribution.md"
-    md_title = f"Distribution data({dest_path.name})"
+    md_title = f"Distribution data({info_comm.dist_path.name})"
     list_data = []
     for distribution in ORDERED_DISTRIBUTIONS:
         list_sort = info_comm.dist.sort(distribution, reverse=True)
