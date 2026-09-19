@@ -16,15 +16,12 @@ from .my_message import get_caller_name, message_alert
 @debug_logger
 def file_read(src_path: Path, text: bool = True) -> str | bytes:
     """File read (line break codes in text files are standardized to "\n")
-
     Args:
         src_path (Path): Source path
         text (bool, optional): Read mode. Defaults to True.
-
     Raises:
         SystemExit: OSError
         SystemExit: Exception
-
     Returns:
         str| bytes: Result
     """
@@ -47,13 +44,11 @@ def file_write(
     backup: bool = False,
 ) -> None:
     """File write (line break codes in text files are standardized to "\n")
-
     Args:
         dest_path (Path): Destination path
         data (str | bytes | None, optional): Output data. Defaults to None.
         text (bool, optional): Write mode. Defaults to True.
         backup (bool, optional): Backup mode. Defaults to False.
-
     Raises:
         SystemExit: OSError
         SystemExit: Exception
@@ -82,7 +77,6 @@ def file_write(
 @debug_logger
 def file_copy(src_path: Path, dest_path: Path, backup: bool = False) -> None:
     """File copy
-
     Args:
         src_path (Path): Source path
         dest_path (Path): Destination path
@@ -102,7 +96,6 @@ def file_copy(src_path: Path, dest_path: Path, backup: bool = False) -> None:
 @debug_logger
 def file_backup(src_path: Path) -> None:
     """File backup
-
     Args:
         src_path (Path): Source path
     """

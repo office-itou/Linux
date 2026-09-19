@@ -15,7 +15,6 @@ from .my_string import count_width
 @debug_logger
 def list2markdown(dest_path: str, md_title: str, src_datas: list) -> None:
     """Markdown output of list data
-
     Args:
         dest_path (str): Destination path
         md_title (str): Markdown title
@@ -27,9 +26,9 @@ def list2markdown(dest_path: str, md_title: str, src_datas: list) -> None:
         r"(?:/[a-zA-Z0-9._~:/?#\[\]@!$&\'()*+,;=%-]*)?$"
     )
     _comment_pattern = re.compile(r"^#.*$")
+
     # _addr_pattern = re.compile(r"^[A-Z0-9]+_ADDR$")
     # _ip_pattern = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
-
     def _conversion_url(list_data: list) -> list:
         _conv_list_data = []
         for _dict_data in list_data:
@@ -99,10 +98,8 @@ def list2markdown(dest_path: str, md_title: str, src_datas: list) -> None:
 # -----------------------------------------------------------------------------
 def markdown2list(src_path: str) -> list:
     """List data output of markdown
-
     Args:
         src_path (str): Source path
-
     Returns:
         list: Destination data
     """

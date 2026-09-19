@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Template"""
+"""Test web/file information"""
 
 # --- Python library ----------------------------------------------------------
 import inspect
@@ -20,35 +20,34 @@ from common.utils.my_colors import Color
 from common.utils.my_config import infosystem
 from common.utils.my_debug import debug_logger
 from common.utils.my_error import handle_fatal_error
+from common.utils.my_mem_usage import print_peak_memory
 from common.utils.my_message import (
     get_caller_name,
     message_elapsed,
     message_end,
     message_info,
     message_start,
-    message_warn,
 )
 
 
 @debug_logger
 def initialize():
     """Initialize"""
+    caller = get_caller_name()
     if infosystem.debug == True:
-        message_info(get_caller_name(), "Debug mode on")
+        message_info(caller, "Debug mode on")
     if infosystem.debugout == True:
-        message_info(get_caller_name(), "Debugout mode on")
-    message_info(get_caller_name(), f"exec user:{infosystem.data.exec_user}")
-    message_info(get_caller_name(), f"home dir :{infosystem.data.home_dir}")
+        message_info(caller, "Debugout mode on")
+    message_info(caller, f"exec user:{infosystem.data.exec_user}")
+    message_info(caller, f"home dir :{infosystem.data.home_dir}")
     # -------------------------------------------------------------------------
-    info_comm = InfoCommon()
-    # -------------------------------------------------------------------------
-    return info_comm
+    return InfoCommon()
 
 
 @debug_logger
 def initarg() -> None:
     """Initialize argument"""
-    description = "template file\n"
+    description = "Get web information\n"
     arg_manager = Argument(description)
     list_args = []
     if list_args:
@@ -69,13 +68,10 @@ def main():
     try:
         # --- check the executing user ----------------------------------------
         if os.geteuid() != 0:
-            message_warn(
-                get_caller_name(),
-                "You have standard user privileges.",
-            )
-            message_warn(
-                get_caller_name(),
-                f"{Color.underline}Please run this with sudo.",
+            print(
+                f"{Color.reset}{Color.br_green}{infosystem.program_name}:\n"
+                f"{Color.br_yellow} You have standard user privileges. "
+                f"{Color.underline}Please run this with sudo.{Color.reset}"
             )
             return 1
         # --- elapsed start----------------------------------------------------
@@ -110,6 +106,7 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    return_code = main()
+    sys.exit(print_peak_memory() or return_code)
 
 # --- eof ---------------------------------------------------------------------

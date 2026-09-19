@@ -11,11 +11,9 @@ from .my_message import message_alert
 @debug_logger
 def handle_fatal_error(caller: str, e: Exception) -> None:
     """Fatal error handler
-
     Args:
         caller (str): Function name
         e (Exception): Error information
-
     Raises:
         SystemExit: System exit
     """

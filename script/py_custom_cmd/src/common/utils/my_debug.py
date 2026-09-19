@@ -34,11 +34,11 @@ def debug_logger(func: Callable):
             _parameter = _args_str or _kwargs_str or ""
         _comment = generate_comment("", "", _parameter)
         # --- start log -------------------------------------------------------
-        debugout(_call_info, "Start", Color.yellow, _comment)
+        debugout(Color.yellow, _call_info, "Start", _comment, omit=True)
         # --- execute the original function processing ------------------------
         result = func(*args, **kwargs)
         # --- completion log --------------------------------------------------
-        debugout(_call_info, "Complete", Color.yellow, "")
+        debugout(Color.yellow, _call_info, "Complete", "", omit=True)
         return result
 
     return _wrapper
@@ -47,7 +47,6 @@ def debug_logger(func: Callable):
 # -----------------------------------------------------------------------------
 def debugout_scale(size: int):
     """Debug output for scale
-
     Args:
         size (int): Scale value
     """
@@ -65,18 +64,18 @@ def debugout_scale(size: int):
 
 
 # -----------------------------------------------------------------------------
-def debugout(function_name: str, mode: str, message_color: str, message: str):
+def debugout(color: str, func_name: str, mode: str, message: str, omit: bool = False):
     """Debug output
-
     Args:
-        function_name (str): Function name
-        mode (str): Mode ("Start", "Complete", ....)
-        message_color (str): Color (`color.br_green`)
+        color (str): Message color
+        func_name (str): Function name
+        mode (str): Message category
         message (str): Message
+        omit (bool, optional): Omit. Defaults to False.
     """
     if infosystem.debugout == False:
         return
-    message_debug(function_name, mode, message_color, message)
+    message_debug(color, func_name, mode, message, omit=omit)
 
 
 # --- eof ---------------------------------------------------------------------

@@ -38,10 +38,11 @@ def initialize() -> tuple[InfoConfiguration, InfoDistribution, InfoMedia]:
     Returns:
         tuple[InfoConfiguration, InfoDistribution, InfoMedia]: info_conf, info_dist, info_mdia
     """
+    caller = get_caller_name()
     if infosystem.debug == True:
-        message_info(get_caller_name(), "Debug mode on")
+        message_info(caller, "Debug mode on")
     if infosystem.debugout == True:
-        message_info(get_caller_name(), "Debugout mode on")
+        message_info(caller, "Debugout mode on")
     # -------------------------------------------------------------------------
     info_conf = InfoConfiguration()
     path_dist = info_conf.get_path(key="PATH_DIST")
@@ -76,7 +77,7 @@ def main():
         # --- elapsed start--------------------------------------------------------
         start = time.perf_counter()
         # --- startup process -----------------------------------------------------
-        message_start(get_caller_name())
+        message_start(caller)
         # --- processing block ----------------------------------------------------
         initarg()
         if infosystem.args:
@@ -105,11 +106,11 @@ def main():
                         print(f"rmak_path:{data_mdia.rmk_path}")
 
         # --- termination process -------------------------------------------------
-        message_end(get_caller_name())
+        message_end(caller)
         # --- elapsed end ---------------------------------------------------------
         end = time.perf_counter()
         elapsed = end - start
-        message_elapsed(get_caller_name(), elapsed)
+        message_elapsed(caller, elapsed)
         # --- exit ----------------------------------------------------------------
         sys.exit(0)
         # -------------------------------------------------------------------------

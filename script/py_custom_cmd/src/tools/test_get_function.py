@@ -434,7 +434,7 @@ def main():
             target_files = initialize()
             build_perfect_tree_with_docs(target_files)
         # --- termination process ---------------------------------------------
-        message_end(get_caller_name())
+        message_end(caller)
         # --- elapsed end -----------------------------------------------------
         end = time.perf_counter()
         elapsed = end - start

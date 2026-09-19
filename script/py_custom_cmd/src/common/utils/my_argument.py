@@ -30,7 +30,6 @@ class Argument:
     # -------------------------------------------------------------------------
     def add(self, *args, **kwargs):
         """Method for adding command-line arguments.
-
         Args:
             *args: Arguments for `add_argument` (e.g., "-p", "--pattern")
             **kwargs: Arguments for `add_argument`
@@ -42,7 +41,6 @@ class Argument:
     # -------------------------------------------------------------------------
     def parse(self):
         """Method for returning the analysis results.
-
         Returns:
             obj: Save the object resulting from the parse.
         """

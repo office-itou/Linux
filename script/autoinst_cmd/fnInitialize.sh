@@ -76,10 +76,12 @@ fnInitialize() {
 	_TGET_CNTR=""						# is container   (empty: none, else: container)
 	if command -v systemd-detect-virt > /dev/null 2>&1; then
 		_TGET_VIRT="$(systemd-detect-virt --vm || true)"
-		systemd-detect-virt --quiet --chroot    && _TGET_CHRT="true"
 		systemd-detect-virt --quiet --container && _TGET_CNTR="true"
+		systemd-detect-virt --quiet --chroot    && _TGET_CHRT="true"
 	fi
-	if command -v ischroot > /dev/null 2>&1; then
+	if mountpoint -q /usr/bin/ischroot; then
+		_TGET_CHRT="true"
+	elif command -v ischroot > /dev/null 2>&1; then
 		ischroot --default-true && _TGET_CHRT="true"
 	fi
 	readonly _TGET_VIRT

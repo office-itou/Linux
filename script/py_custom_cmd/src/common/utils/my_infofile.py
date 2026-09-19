@@ -46,10 +46,8 @@ class InfoFile:
 @debug_logger
 def get_volume_uuid(device: str) -> str:
     """Get volume uuid
-
     Args:
         device (str): Device name
-
     Returns:
         str: UUID
     """
@@ -60,10 +58,8 @@ def get_volume_uuid(device: str) -> str:
 @debug_logger
 def get_volume_label(device: str) -> str:
     """Get volume label
-
     Args:
         device (str): Device name
-
     Returns:
         str: Volume label
     """
@@ -74,10 +70,8 @@ def get_volume_label(device: str) -> str:
 @debug_logger
 def get_info(target_path: str) -> FileData:
     """Get file information data
-
     Args:
         target_path (str): Target path
-
     Returns:
         FileData: File information
     """

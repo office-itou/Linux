@@ -11,6 +11,11 @@ from collections import defaultdict
 from pathlib import Path
 
 # --- my library --------------------------------------------------------------
+execusr = os.getenv("SUDO_USER", os.getenv("USER"))
+homedir = os.getenv("SUDO_HOME") or os.getenv("HOME") or f"/home/{execusr}"
+libsdir = Path(homedir) / "linux/script/py_custom_cmd/src"
+if str(libsdir) not in sys.path:
+    sys.path.append(str(libsdir))
 from common.shared.my_distribution_dat import (
     sort_distribution_data,
     sort_distribution_name,
@@ -22,6 +27,7 @@ from common.utils.my_config import infosystem
 from common.utils.my_debug import debug_logger
 from common.utils.my_error import handle_fatal_error
 from common.utils.my_file_api import file_read, file_write
+from common.utils.my_mem_usage import print_peak_memory
 from common.utils.my_message import (
     get_caller_name,
     message_elapsed,
@@ -46,21 +52,31 @@ LIFE_LABELS = {
 @debug_logger
 def initialize():
     """Initialize"""
-    if infosystem.debug:
-        message_info(get_caller_name(), "Debug mode on")
-    if infosystem.debugout:
-        message_info(get_caller_name(), "Debugout mode on")
-    message_info(get_caller_name(), f"exec user:{infosystem.data.exec_user}")
-    message_info(get_caller_name(), f"home dir :{infosystem.data.home_dir}")
+    caller = get_caller_name()
+    if infosystem.debug == True:
+        message_info(caller, "Debug mode on")
+    if infosystem.debugout == True:
+        message_info(caller, "Debugout mode on")
+    message_info(caller, f"exec user:{infosystem.data.exec_user}")
+    message_info(caller, f"home dir :{infosystem.data.home_dir}")
+    # -------------------------------------------------------------------------
     return InfoCommon()
 
 
 @debug_logger
 def initarg() -> None:
     """Initialize argument"""
-    description = "template file\n"
+    description = "Make IPXE menu file\n"
     arg_manager = Argument(description)
-    # 必要に応じて引数を追加
+    list_args = []
+    if list_args:
+        for line_arg in list_args:
+            arg_name = line_arg.pop("arg")
+            if isinstance(arg_name, tuple):
+                arg_manager.add(*arg_name, **line_arg)
+            else:
+                arg_manager.add(arg_name, **line_arg)
+
     infosystem.args = arg_manager.parse()
 
 
@@ -71,10 +87,10 @@ def generate_ipxe_menu_file(
     if target_distribution == "windows":
         query_version = r"(windows-|winpe-|ati[0-9]{4}|memtest86plus-)"
     elif target_distribution == "live":
-        print("skip: live mode")
+        # print("skip: live mode")
         return
     elif target_distribution == "custom_live":
-        print("skip: custom live mode")
+        # print("skip: custom live mode")
         return
     else:
         query_version = rf"{target_distribution}-"
@@ -175,7 +191,7 @@ def generate_ipxe_menu(info_comm: InfoCommon) -> None:
             continue
 
         target_distribution = match.group(1)
-        message_info(caller, f"Destination: {path_dest}")
+        # message_info(caller, f"Destination: {path_dest}")
         message_info(caller, f"Target Dist: {target_distribution}")
 
         generate_ipxe_menu_file(info_comm, path_src, path_dest, target_distribution)
@@ -186,26 +202,38 @@ def main():
     """Main"""
     caller = get_caller_name()
     try:
+        # --- check the executing user ----------------------------------------
         if os.geteuid() != 0:
-            message_warn(caller, "You have standard user privileges.")
-            message_warn(caller, f"{Color.underline}Please run this with sudo.")
+            print(
+                f"{Color.reset}{Color.br_green}{infosystem.program_name}:\n"
+                f"{Color.br_yellow} You have standard user privileges. "
+                f"{Color.underline}Please run this with sudo.{Color.reset}"
+            )
             return 1
-
+        # --- elapsed start----------------------------------------------------
         start = time.perf_counter()
+        # --- startup process -------------------------------------------------
         message_start(caller)
-
+        # --- processing block ------------------------------------------------
         initarg()
         if infosystem.args:
             info_comm = initialize()
             generate_ipxe_menu(info_comm)
-
+        # --- termination process ---------------------------------------------
         message_end(caller)
-        elapsed = time.perf_counter() - start
+        # --- elapsed end -----------------------------------------------------
+        end = time.perf_counter()
+        elapsed = end - start
         message_elapsed(caller, elapsed)
+        # --- exit ------------------------------------------------------------
         return 0
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(caller, e)
+    # -------------------------------------------------------------------------
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    return_code = main()
+    sys.exit(print_peak_memory() or return_code)
+
+# --- eof ---------------------------------------------------------------------

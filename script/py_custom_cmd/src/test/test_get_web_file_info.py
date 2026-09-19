@@ -7,28 +7,24 @@ import asyncio
 import os
 import sys
 import time
-from dataclasses import dataclass
 from pathlib import Path
 
 import aiohttp  # sudo apt-get install python3-aiohttp
 from aiohttp import ClientTimeout
 
 # --- my library --------------------------------------------------------------
-execusr = os.getenv("USER")
-execusr = os.getenv("SUDO_USER", execusr)
-homedir = os.getenv("HOME")
-homedir = os.getenv("SUDO_HOME", homedir)
-libsdir = "/linux/script/py_custom_cmd/src/"
-libsdir = Path(homedir) / libsdir.strip("/")
-sys.path.append(str(libsdir))
+execusr = os.getenv("SUDO_USER", os.getenv("USER"))
+homedir = os.getenv("SUDO_HOME") or os.getenv("HOME") or f"/home/{execusr}"
+libsdir = Path(homedir) / "linux/script/py_custom_cmd/src"
+if str(libsdir) not in sys.path:
+    sys.path.append(str(libsdir))
 from common.shared.my_shared import InfoCommon
 from common.utils.my_argument import Argument
 from common.utils.my_colors import Color
 from common.utils.my_config import infosystem
 from common.utils.my_debug import debug_logger
 from common.utils.my_error import handle_fatal_error
-from common.utils.my_infofile import InfoFile
-from common.utils.my_infoweb import InfoWeb
+from common.utils.my_mem_usage import print_peak_memory
 from common.utils.my_message import (
     get_caller_name,
     message_elapsed,
@@ -37,22 +33,93 @@ from common.utils.my_message import (
     message_start,
 )
 
+# --- 設定項目（後から簡単に件数を変更可能） ----------------------------------
+MAX_CONCURRENT_REQUESTS = 3  # 同時アクセスする上限件数
+
+# --- マッピングリスト --------------------------------------------------------
+BASE_DIR_MAP = {
+    "debian": "BASE_DEBI",
+    "ubuntu": "BASE_UBUN",
+    "fedora": "BASE_FEDO",
+    "centos": "BASE_CENT",
+    "almalinux": "BASE_ALMA",
+    "rockylinux": "BASE_ROCK",
+    "miraclelinux": "BASE_MIRA",
+    "opensuse": "BASE_SUSE",
+    "memtest86plus": "BASE_TEST",
+    "windows-10": "BASE_WI10",
+    "windows-11": "BASE_WI11",
+    "winpe": "BASE_WINP",
+    "ati": "BASE_ATIW",
+    "aomei": "BASE_AOME",
+}
+
 
 @debug_logger
-def initialize() -> InfoCommon:
-    """Initialize
-
-    Returns:
-        InfoCommon: InfoCommon interface class
-    """
+def initialize():
+    """Initialize"""
+    caller = get_caller_name()
     if infosystem.debug == True:
-        message_info(get_caller_name(), "Debug mode on")
+        message_info(caller, "Debug mode on")
     if infosystem.debugout == True:
-        message_info(get_caller_name(), "Debugout mode on")
+        message_info(caller, "Debugout mode on")
+    message_info(caller, f"exec user:{infosystem.data.exec_user}")
+    message_info(caller, f"home dir :{infosystem.data.home_dir}")
     # -------------------------------------------------------------------------
-    info_comm = InfoCommon()
-    # -------------------------------------------------------------------------
-    return info_comm
+    return InfoCommon()
+
+
+@debug_logger
+def initarg() -> None:
+    """Initialize argument"""
+    description = "Get web information\n"
+    arg_manager = Argument(description)
+    list_args = [
+        {
+            "arg": "--debugdump",
+            "help": "Debug dump mode for common datas",
+            "default": None,
+            "nargs": "*",
+            "action": Argument.DefaultListAction,
+            "type": "str",
+        },
+        {
+            "arg": "--t2j",
+            "help": "Text -> json convert",
+            "action": "store_true",
+        },
+        {
+            "arg": "--j2t",
+            "help": "Text -> json convert",
+            "action": "store_true",
+        },
+        {
+            "arg": "--md",
+            "help": "json -> Markdown generate",
+            "default": "",
+            "type": "str",
+        },
+        {
+            "arg": "--info",
+            "help": "Get ISO file information for web",
+            "default": "",
+            "type": "str",
+        },
+        {
+            "arg": "--save",
+            "help": "Save data",
+            "action": "store_true",
+        },
+    ]
+    if list_args:
+        for line_arg in list_args:
+            arg_name = line_arg.pop("arg")
+            if isinstance(arg_name, tuple):
+                arg_manager.add(*arg_name, **line_arg)
+            else:
+                arg_manager.add(arg_name, **line_arg)
+
+    infosystem.args = arg_manager.parse()
 
 
 @debug_logger
@@ -98,85 +165,92 @@ def data_save(info_comm: InfoCommon) -> None:
 
 
 # -----------------------------------------------------------------------------
+async def _process_single_media(
+    session: aiohttp.ClientSession,
+    tget_mdia,
+    info_comm: InfoCommon,
+    semaphore: asyncio.Semaphore,
+    caller: str,
+) -> None:
+    """1件のメディアデータを処理する非同期タスク (セマフォによる流量制限付き)"""
+    if tget_mdia.entry_name == "menu-entry":
+        return
+
+    # ダミーISOのパス決定
+    local_file_path = ""
+    if tget_mdia.iso_path:
+        local_file_path = Path(tget_mdia.iso_path)
+    else:
+        for name, key in BASE_DIR_MAP.items():
+            if name in tget_mdia.entry_name:
+                local_file_path = info_comm.conf.get_path(key) / "_dummy.iso"
+                break
+
+    if not tget_mdia.web_regexp:
+        return
+
+    # セマフォを使って同時に指定件数（3件）までしか以下のブロックに入れないように制御
+    async with semaphore:
+        message_info(caller, f"[Queue] Fetching: {tget_mdia.web_regexp}", omit=True)
+
+        # 並行実行時のデータ競合を防ぐため、Web/Fileモジュールはタスク内で個別に生成
+        from common.utils.my_infofile import InfoFile
+        from common.utils.my_infoweb import InfoWeb
+
+        info_web = InfoWeb()
+        info_file = InfoFile()
+
+        _web_datas = await info_web.get_info(
+            session, tget_mdia.web_regexp, local_file_path
+        )
+
+        if not _web_datas:
+            return
+
+        for _web_data in _web_datas:
+            tget_mdia.web_path = str(_web_data.request_url)
+            tget_mdia.web_tstamp = str(_web_data.time_stamp)
+            tget_mdia.web_size = str(_web_data.file_size)
+            tget_mdia.web_check = str(_web_data.check_date)
+            tget_mdia.web_status = str(_web_data.status)
+
+            local_file_path = Path(_web_data.local_file)
+            if local_file_path.exists():
+                # ディスクI/Oを伴う重い同期処理は別スレッドで実行
+                await asyncio.to_thread(info_file.get_info, local_file_path)
+
+                tget_mdia.iso_path = str(info_file.data.path)
+                tget_mdia.iso_tstamp = str(info_file.data.tmstamp)
+                tget_mdia.iso_size = str(info_file.data.size)
+                tget_mdia.iso_volume = str(info_file.data.volume)
+            else:
+                tget_mdia.iso_path = str(local_file_path)
+                tget_mdia.iso_tstamp = "-"
+                tget_mdia.iso_size = "-"
+                tget_mdia.iso_volume = "-"
+
+
 @debug_logger
 async def get_web_file_info(info_comm: InfoCommon) -> None:
-    """Get web/file information data
-
-    Args:
-        info_comm (InfoCommon): InfoCommon interface class
-
-    Returns:
-        InfoCommon: InfoCommon interface class
-    """
+    """Get web/file information data (Parallelized & Rate-limited)"""
     caller = get_caller_name()
     message_info(caller, "Data get")
 
-    _caller = get_caller_name()
-    info_web = InfoWeb()
-    info_file = InfoFile()
     timeout = ClientTimeout(total=60, sock_connect=10, sock_read=30)
 
-    @dataclass
-    class BaseDirectoryData:
-        name: str = ""
-        key: str = ""
-
-    _base_dir_datas: list[BaseDirectoryData] = [
-        BaseDirectoryData(name="debian", key="BASE_DEBI"),
-        BaseDirectoryData(name="ubuntu", key="BASE_UBUN"),
-        BaseDirectoryData(name="fedora", key="BASE_FEDO"),
-        BaseDirectoryData(name="centos", key="BASE_CENT"),
-        BaseDirectoryData(name="almalinux", key="BASE_ALMA"),
-        BaseDirectoryData(name="rockylinux", key="BASE_ROCK"),
-        BaseDirectoryData(name="miraclelinux", key="BASE_MIRA"),
-        BaseDirectoryData(name="opensuse", key="BASE_SUSE"),
-        BaseDirectoryData(name="memtest86plus", key="BASE_TEST"),
-        BaseDirectoryData(name="windows-10", key="BASE_WI10"),
-        BaseDirectoryData(name="windows-11", key="BASE_WI11"),
-        BaseDirectoryData(name="winpe", key="BASE_WINP"),
-        BaseDirectoryData(name="ati", key="BASE_ATIW"),
-        BaseDirectoryData(name="aomei", key="BASE_AOME"),
-    ]
+    # 定数で指定された上限数でセマフォを初期化
+    semaphore = asyncio.Semaphore(MAX_CONCURRENT_REQUESTS)
 
     async with aiohttp.ClientSession(
         timeout=timeout, raise_for_status=False
     ) as session:
-        for tget_mdia in info_comm.mdia.data:
-            if tget_mdia.entry_name == "menu-entry":
-                continue
-            local_file_path = ""
-            if tget_mdia.iso_path:
-                local_file_path = Path(tget_mdia.iso_path)
-            else:
-                for _base_dir_data in _base_dir_datas:
-                    if _base_dir_data.name in tget_mdia.entry_name:
-                        key = _base_dir_data.key
-                        local_file_path = info_comm.conf.get_path(key) / "_dummy.iso"
-                        break
-            if tget_mdia.web_regexp:
-                message_info(_caller, tget_mdia.web_regexp, omit=True)
-                _web_datas = await info_web.get_info(
-                    session, tget_mdia.web_regexp, local_file_path
-                )
-                if _web_datas:
-                    for _web_data in _web_datas:
-                        tget_mdia.web_path = str(_web_data.request_url)
-                        tget_mdia.web_tstamp = str(_web_data.time_stamp)
-                        tget_mdia.web_size = str(_web_data.file_size)
-                        tget_mdia.web_check = str(_web_data.check_date)
-                        tget_mdia.web_status = str(_web_data.status)
-                        local_file_path = Path(_web_data.local_file)
-                        if local_file_path.exists():
-                            info_file.get_info(local_file_path)
-                            tget_mdia.iso_path = str(info_file.data.path)
-                            tget_mdia.iso_tstamp = str(info_file.data.tmstamp)
-                            tget_mdia.iso_size = str(info_file.data.size)
-                            tget_mdia.iso_volume = str(info_file.data.volume)
-                        else:
-                            tget_mdia.iso_path = str(local_file_path)
-                            tget_mdia.iso_tstamp = "-"
-                            tget_mdia.iso_size = "-"
-                            tget_mdia.iso_volume = "-"
+        # すべてのメディアデータをタスクとして登録（この時点ではまだ待機状態）
+        tasks = [
+            _process_single_media(session, tget_mdia, info_comm, semaphore, caller)
+            for tget_mdia in info_comm.mdia.data
+        ]
+        # 一斉に実行を開始するが、内部のセマフォにより同時に動くのは指定件数（3件）のみ
+        await asyncio.gather(*tasks)
 
 
 @debug_logger
@@ -206,79 +280,38 @@ def debugdump(targets: list, info_comm: InfoCommon) -> None:
 
 
 @debug_logger
-def initarg() -> None:
-    """Initialize argument"""
-    arg_manager = Argument()
-    list_args = [
-        {
-            "arg": "--debugdump",
-            "help": "Debug dump mode for common datas",
-            "default": None,
-            "nargs": "*",
-            "action": Argument.DefaultListAction,
-            "type": "str",
-        },
-        {
-            "arg": "--t2j",
-            "help": "Text -> json convert",
-            "action": "store_true",
-        },
-        {
-            "arg": "--j2t",
-            "help": "Text -> json convert",
-            "action": "store_true",
-        },
-        {
-            "arg": "--md",
-            "help": "json -> Markdown generate",
-            "default": "",
-            "type": "str",
-        },
-        {
-            "arg": "--info",
-            "help": "Get ISO file information for web",
-            "default": "",
-            "type": "str",
-        },
-        {
-            "arg": "--save",
-            "help": "Save data",
-            "action": "store_true",
-        },
-    ]
-    for line_arg in list_args:
-        arg_name = line_arg.pop("arg")
-        arg_manager.add(arg_name, **line_arg)
-    infosystem.args = arg_manager.parse()
-
-
-@debug_logger
 async def main():
     """Main"""
     caller = get_caller_name()
     try:
-        # --- check the executing user --------------------------------------------
+        # --- check the executing user ----------------------------------------
         if os.geteuid() != 0:
             print(
-                f"{Color.reset}{Color.br_green}{infosystem.program_name}:\n{Color.br_yellow} You have standard user privileges. {Color.underline}Please run this with sudo.{Color.reset}"
+                f"{Color.reset}{Color.br_green}{infosystem.program_name}:\n"
+                f"{Color.br_yellow} You have standard user privileges. "
+                f"{Color.underline}Please run this with sudo.{Color.reset}"
             )
             return 1
-        # --- elapsed start--------------------------------------------------------
+        # --- elapsed start----------------------------------------------------
         start = time.perf_counter()
-        # --- startup process -----------------------------------------------------
-        message_start(get_caller_name())
-        # --- processing block ----------------------------------------------------
+        # --- startup process -------------------------------------------------
+        caller = get_caller_name()
+        message_start(caller)
+        # --- processing block ------------------------------------------------
         initarg()
         if infosystem.args:
             info_comm = initialize()
             if (targets := infosystem.args.debugdump) is not None:
                 debugdump(targets, info_comm)
-            if infosystem.args.t2j == True:
+
+            # == True を除去し、Pythonicな真偽値判定に変更
+            if infosystem.args.t2j:
                 info_comm.dist.get_text2list(info_comm.dist_path)
                 info_comm.mdia.get_text2list(info_comm.mdia_path)
                 info_comm.dist.save(info_comm.dist_json)
                 info_comm.mdia.save(info_comm.mdia_json)
-            if infosystem.args.j2t == True:
+
+            if infosystem.args.j2t:
                 info_comm.dist.load(info_comm.dist_json)
                 info_comm.mdia.load(info_comm.mdia_json)
                 info_comm.dist.put_list2text(
@@ -287,14 +320,17 @@ async def main():
                 info_comm.mdia.put_list2text(
                     info_comm.mdia_path, info_comm.text_fmat.mdia
                 )
+
             if target := infosystem.args.info:
+                # `target == "a"` の空のpassブロックは不要なら除去（今回はそのまま）
                 if target == "a":
                     pass
+
+                # 並行処理化された関数を呼び出す
                 await get_web_file_info(info_comm)
-                # -------------------------------------------------------------
+
                 dirs_rmak = info_comm.conf.get_path("DIRS_RMAK")
-                info_mdia = info_comm.mdia
-                for info_mdia_data in info_mdia.data:
+                for info_mdia_data in info_comm.mdia.data:
                     if info_mdia_data.cfg_path:
                         path_psed = Path(info_mdia_data.cfg_path)
                         preseed = (
@@ -309,28 +345,30 @@ async def main():
                                 / f"{path_isos.stem}_{preseed}{path_isos.suffix}"
                             )
                             info_mdia_data.rmk_path = str(path_file.resolve())
-                # -------------------------------------------------------------
-                # print(f"{Color.green}{info_comm.mdia_json}{Color.reset}")
+
                 generate_md("./", info_comm)
                 data_save(info_comm)
+
             if dirs := infosystem.args.md:
                 generate_md(dirs, info_comm)
-            if infosystem.args.save == True:
+
+            if infosystem.args.save:
                 data_save(info_comm)
-        # --- termination process -------------------------------------------------
+        # --- termination process ---------------------------------------------
         message_end(get_caller_name())
-        # --- elapsed end ---------------------------------------------------------
+        # --- elapsed end -----------------------------------------------------
         end = time.perf_counter()
         elapsed = end - start
-        message_elapsed(get_caller_name(), elapsed)
-        # --- exit ----------------------------------------------------------------
+        message_elapsed(caller, elapsed)
+        # --- exit ------------------------------------------------------------
         return 0
-        # -------------------------------------------------------------------------
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(caller, e)
+    # -------------------------------------------------------------------------
 
 
 if __name__ == "__main__":
-    sys.exit(asyncio.run(main()))
+    return_code = asyncio.run(main())
+    sys.exit(print_peak_memory() or return_code)
 
 # --- eof ---------------------------------------------------------------------

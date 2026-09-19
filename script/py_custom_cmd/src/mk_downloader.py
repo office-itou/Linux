@@ -15,6 +15,8 @@ import os
 #import sys
 #sys.path.append(topdir)
 
+from common.utils.my_mem_usage import print_peak_memory
+
 import py_common.my_config as my_config
 #from py_common.my_config import debug_flag, debugout_flag, program_name, col_size, row_size
 from py_common.my_colors import color
@@ -91,8 +93,12 @@ def main():
     function_name = inspect.currentframe().f_code.co_name
     # --- check the executing user --------------------------------------------
     if os.geteuid() != 0:
-        message_debug(function_name, "Warning", color.br_yellow, "You have standard user privileges. Please run this with sudo.")
-        exit(1)
+        print(
+            f"{Color.reset}{Color.br_green}{infosystem.program_name}:\n"
+            f"{Color.br_yellow} You have standard user privileges. "
+            f"{Color.underline}Please run this with sudo.{Color.reset}"
+        )
+        return 1
     # --- startup process -----------------------------------------------------
     message_start(function_name)
     # --- processing block ----------------------------------------------------
@@ -104,10 +110,11 @@ def main():
     elapsed = end - start
     message_elapsed(function_name, elapsed)
     # --- exit ----------------------------------------------------------------
-    exit(0)
+    return 0
     # -------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    main()
+    return_code = main()
+    sys.exit(print_peak_memory() or return_code)
 
 # --- eof ---------------------------------------------------------------------

@@ -16,10 +16,8 @@ from .my_message import get_caller_name, message_alert
 @debug_logger
 def json_load(src_path: Path) -> Any:
     """Load data in json format
-
     Args:
         src_path (Path): Source path
-
     Returns:
         Any: data
     """
@@ -36,7 +34,6 @@ def json_load(src_path: Path) -> Any:
 @debug_logger
 def json_save(dest_path: Path, src_data: Any) -> None:
     """Save distridata in json format
-
     Args:
         dest_path (Path): Destination path
         src_data (Any): Source data

@@ -64,13 +64,11 @@ async def get_response(
     overwrite: bool = False,
 ) -> dict:
     """Get response
-
     Args:
         request_func (Callable): Request function
         request_url (str): Request URL
         local_file_path (str, optional): Local file name. Defaults to "".
         overwrite (bool, optional): Overwrite. Defaults to False.
-
     Returns:
         dict: Result
     """
@@ -92,7 +90,6 @@ async def get_response(
         local_file=str(_final_file_path),
         check_date=_check_date,
     )
-
     # -------------------------------------------------------------------------
     _timeout = aiohttp.ClientTimeout(total=None, connect=30, sock_read=30)
     for _attempt in range(1, _max_retries + 1):
@@ -194,11 +191,9 @@ async def get_response(
 @debug_logger
 async def get_header(session: aiohttp.ClientSession, request_url: str) -> dict:
     """Get header
-
     Args:
         session (aiohttp.ClientSession): Session object
         request_url (str): Request URL
-
     Returns:
         dict: Result
     """
@@ -213,13 +208,11 @@ async def get_contents(
     overwrite: bool = False,
 ) -> dict:
     """Get contents
-
     Args:
         session (aiohttp.ClientSession): Session object
         request_url (str): Request URL
         local_file_path (str, optional): Local file name. Defaults to "".
         overwrite (bool, optional): Overwrite. Defaults to False.
-
     Returns:
         dict: Result
     """

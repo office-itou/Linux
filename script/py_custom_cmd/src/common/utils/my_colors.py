@@ -4,11 +4,10 @@
 # from typing import Any, Callable
 from dataclasses import dataclass
 
+
 # --- my library --------------------------------------------------------------
 # from .my_config                import infosystem
 # from .my_debug                 import debug_logger
-
-
 # --- escape code -------------------------------------------------------------
 @dataclass
 class Code:
@@ -73,8 +72,6 @@ class Color(Code):
 
 
 # --- emoji -------------------------------------------------------------------
-
-
 @dataclass
 class Emoji(Code):
     """Emoji code class"""

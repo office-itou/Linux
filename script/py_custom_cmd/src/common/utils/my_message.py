@@ -19,149 +19,108 @@ colsize_func = (
 colsize_mesg = infosystem.columns - (colsize_func + colsize_mode + 2)
 
 
-def message_date(func_name: str, mode: str, message_color: str, date_time: str):
-    """Message output for datetime
-
+def message_out(
+    color: str, func_name: str, mode: str, message: str, omit: bool = False
+) -> None:
+    """_summary_
     Args:
+        color (str): Message color
         func_name (str): Function name
         mode (str): Message category
-        message_color (str): Message color
-        date_time (str): Formatted date and time
+        message (str): Message
+        omit (bool, optional): Omit. Defaults to False.
     """
-    _mesg_text = f"--- {date_time} " + "-" * (
-        infosystem.columns - (colsize_func + colsize_mode + 5 + 2)
+    _prog_text = omit_middle(f"{infosystem.program_name}({func_name})", colsize_func)
+    _mesg_text = (
+        message
+        if omit == False
+        else omit_middle(
+            f"{message}", infosystem.columns - (colsize_func + colsize_mode + 2)
+        )
     )
     eprint(
-        f"{Color.reset}{message_color}{func_name:<{colsize_func}}|{mode:^{colsize_mode}}|{_mesg_text}{Color.reset}",
+        f"{Color.reset}{color}{_prog_text:<{colsize_func}}|{mode:^{colsize_mode}}|{_mesg_text}{Color.reset}",
         infosystem.columns,
+        wrap=False,
     )
 
 
 def message_start(func_name: str):
     """Message output for startup
-
     Args:
         func_name (str): Function name
     """
     _date_time = datetime.now().astimezone().strftime("%Y/%m/%d %H:%M:%S %Z (%z)")
-    _prog_text = omit_middle(f"{infosystem.program_name}({func_name})", colsize_func)
-    message_date(_prog_text, "Start", Color.green, _date_time)
+    message_out(Color.br_green, func_name, "Start", _date_time, omit=True)
 
 
 def message_end(func_name: str):
     """Message output for termination
-
     Args:
         func_name (str): Function name
     """
     _date_time = datetime.now().astimezone().strftime("%Y/%m/%d %H:%M:%S %Z (%z)")
-    _prog_text = omit_middle(f"{infosystem.program_name}({func_name})", colsize_func)
-    message_date(_prog_text, "Complete", Color.green, _date_time)
+    message_out(Color.br_green, func_name, "Complete", _date_time, omit=True)
 
 
 def message_elapsed(func_name: str, elapsed: str):
     """Message output for elapsed time
-
     Args:
         func_name (str): Function name
         elapsed (str): Elapsed time
     """
-    _prog_text = omit_middle(f"{infosystem.program_name}({func_name})", colsize_func)
     _time_text = timedelta(seconds=elapsed)
-    eprint(
-        f"{Color.reset}{Color.yellow}{_prog_text:<{colsize_func}}|{'Elapsed':^{colsize_mode}}|{_time_text}{Color.reset}",
-        infosystem.columns,
-    )
+    message_out(Color.br_yellow, func_name, "Elapsed", _time_text, omit=True)
 
 
-def message_debug(func_name: str, mode: str, message_color: str, message: str):
+def message_debug(
+    color: str, func_name: str, mode: str, message: str, omit: bool = False
+):
     """Message output for debug
-
     Args:
+        color (str): Message color
         func_name (str): Function name
         mode (str): Message category
-        message_color (str): Message color
         message (str): Message
+        omit (bool, optional): Omit. Defaults to False.
     """
-    _prog_text = omit_middle(f"{infosystem.program_name}:{func_name}", colsize_func)
-    _mesg_text = omit_middle(
-        f"{message}", infosystem.columns - (colsize_func + colsize_mode + 1)
-    )
-    eprint(
-        f"{Color.reset}{message_color}{_prog_text:<{colsize_func}}|{mode:^{colsize_mode}}|{_mesg_text}{Color.reset}",
-        infosystem.columns,
-    )
+    message_out(color, func_name, mode, message, omit=omit)
 
 
 def message_info(func_name: str, message: str, omit: bool = False):
     """message output for information
-
     Args:
         func_name (str): Function name
         message (str): Message
         omit (bool, optional): Omit. Defaults to False.
     """
-    _prog_text = omit_middle(f"{infosystem.program_name}({func_name})", colsize_func)
-    _mesg_text = (
-        omit_middle(
-            f"{message}", infosystem.columns - (colsize_func + colsize_mode + 2)
-        )
-        if omit == True
-        else message
-    )
-    eprint(
-        f"{Color.reset}{Color.br_green}{_prog_text:<{colsize_func}}|{'info':^{colsize_mode}}|{_mesg_text}{Color.reset}"
-    )
+    message_out(Color.green, func_name, "info", message, omit=omit)
 
 
 def message_warn(func_name: str, message: str, omit: bool = False):
     """Message output for warning
-
     Args:
         func_name (str): Function name
         message (str): Message
         omit (bool, optional): Omit. Defaults to False.
     """
-    _prog_text = omit_middle(f"{infosystem.program_name}({func_name})", colsize_func)
-    _mesg_text = (
-        omit_middle(
-            f"{message}", infosystem.columns - (colsize_func + colsize_mode + 2)
-        )
-        if omit == True
-        else message
-    )
-    eprint(
-        f"{Color.reset}{Color.br_yellow}{_prog_text:<{colsize_func}}|{'info':^{colsize_mode}}|{_mesg_text}{Color.reset}"
-    )
+    message_out(Color.yellow, func_name, "Warning", message, omit=omit)
 
 
 def message_alert(func_name: str, message: str, omit: bool = False):
     """Message output for alert
-
     Args:
         func_name (str): Function name
         message (str): Message
         omit (bool, optional): Omit. Defaults to False.
     """
-    _prog_text = omit_middle(f"{infosystem.program_name}({func_name})", colsize_func)
-    _mesg_text = (
-        omit_middle(
-            f"{message}", infosystem.columns - (colsize_func + colsize_mode + 2)
-        )
-        if omit == True
-        else message
-    )
-    eprint(
-        f"{Color.reset}{Color.br_red}{_prog_text:<{colsize_func}}|{'info':^{colsize_mode}}|{_mesg_text}{Color.reset}"
-    )
+    message_out(Color.red, func_name, "alert", message, omit=omit)
 
 
 def get_caller_name(only: bool = True) -> str:
     """Get function name
-
     Args:
         only (bool, optional): Function only or including filename. Defaults to True.
-
     Returns:
         str: _description_
     """
@@ -174,12 +133,10 @@ def get_caller_name(only: bool = True) -> str:
 
 def generate_comment(modu_name: str, func_name: str, para: str = "") -> str:
     """Omit the intermediate characters.
-
     Args:
         modu_name (str): Module name
         func_name (str): Function name
         para (str, optional): Parameter. Defaults to "".
-
     Returns:
         str: Comment message
     """

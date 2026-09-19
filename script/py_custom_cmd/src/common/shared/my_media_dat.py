@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 """media.dat I/O"""
-
 # --- Python library ----------------------------------------------------------
 import re
 from dataclasses import dataclass, fields
@@ -72,13 +71,10 @@ class InfoMedia:
 
     def __getattr__(self, name: str) -> Any:
         """Special methods
-
         Args:
             name (str): Attribute name
-
         Raises:
             AttributeError: AttributeError
-
         Returns:
             Any: Attribute value [(self.data[0], name) or ""]
         """
@@ -91,7 +87,6 @@ class InfoMedia:
     @debug_logger
     def load(self, src_path: Path) -> None:
         """Load file
-
         Args:
             src_path (Path): Source path
         """
@@ -105,7 +100,6 @@ class InfoMedia:
     @debug_logger
     def save(self, dest_path: Path) -> None:
         """Save file
-
         Args:
             dest_path (str): Destination path
         """
@@ -117,10 +111,8 @@ class InfoMedia:
     @debug_logger
     def findregexp(self, queries: list[dict[str, str]]) -> list[MediaData]:
         """Search for the data class within self.data. (Supports regular expressions)
-
         Args:
             queries (list[dict[str, str]]): Query
-
         Returns:
             list[DistributionData]: Search results for the query
         """
@@ -141,7 +133,6 @@ class InfoMedia:
     @debug_logger
     def finds(self, **kwargs) -> list[MediaData]:
         """Search for the data class within self.data.
-
         Returns:
             list[DistributionData]: Search results for the key
         """
@@ -169,7 +160,6 @@ class InfoMedia:
     @debug_logger
     def find(self, **kwargs) -> MediaData:
         """Search for the data class within self.data. (The first one)
-
         Returns:
             MediaData: Search results for the key (The first one)
         """
@@ -197,7 +187,6 @@ class InfoMedia:
     @debug_logger
     def dump(self, wrap: bool = False) -> None:
         """Data dump output
-
         Args:
             wrap (bool, optional): Toggle text wrapping. Defaults to False.
         """

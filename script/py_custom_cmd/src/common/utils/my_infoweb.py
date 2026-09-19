@@ -279,7 +279,6 @@ async def get_infoweb(
                 if _local_file_path
                 else ""
             )
-
         # ---------------------------------------------------------------------
         _web_datas.append(_web_data)
     # --- 2 step sort (newest url per regexp) ---------------------------------

@@ -10,10 +10,8 @@ from .my_colors import Color
 
 def count_full_width(src_text: str) -> int:
     """Character count for full-width characters only
-
     Args:
         src_text (str): Source text
-
     Returns:
         int: Count
     """
@@ -23,10 +21,8 @@ def count_full_width(src_text: str) -> int:
 
 def count_half_width(src_text: str) -> int:
     """Character count for half-width characters only
-
     Args:
         src_text (str): Source text
-
     Returns:
         int: Count
     """
@@ -36,10 +32,8 @@ def count_half_width(src_text: str) -> int:
 
 def count_width(src_text: str) -> int:
     """Character count for full-width and half-width characters
-
     Args:
         src_text (str): Source text
-
     Returns:
         int: Count
     """
@@ -49,10 +43,8 @@ def count_width(src_text: str) -> int:
 
 def get_char_width(src_char: str) -> int:
     """character count for full-width and half-width characters on the screen
-
     Args:
         char (str): Source character
-
     Returns:
         int: Length
     """
@@ -63,13 +55,11 @@ def split_by_width(
     src_text: str, max_width: int, from_back: bool = False, omit: bool = False
 ) -> list:
     """Character splitting for full-width and half-width characters on the screen
-
     Args:
         src_text (str): Source text
         max_width (int): Max width
         from_back (bool, optional): From back. Defaults to False.
         omit (bool, optional): Omit. Defaults to False.
-
     Returns:
         list: _description_
     """
@@ -135,7 +125,6 @@ def split_by_width(
 
 def eprint(src_text: str, max_width: int = 0, wrap: bool = False):
     """Screen output with character splitting that supports escape characters and full-width/half-width characters.
-
     Args:
         src_text (str): Source text
         max_width (int, optional): Max width. Defaults to 0.
@@ -150,12 +139,10 @@ def eprint(src_text: str, max_width: int = 0, wrap: bool = False):
 
 def omit_middle(src_text: str, max_len: int = 80, placeholder: str = "..") -> str:
     """Omit the intermediate characters.
-
     Args:
         src_text (str): Source text
         max_len (int, optional): Max length. Defaults to 80.
         placeholder (str, optional): Placeholder. Defaults to "..".
-
     Returns:
         str: _description_
     """

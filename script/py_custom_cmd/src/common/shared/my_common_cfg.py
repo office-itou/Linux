@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 """common.cfg I/O"""
-
 # --- Python library ----------------------------------------------------------
 import re
 from dataclasses import dataclass, fields
@@ -44,13 +43,10 @@ class InfoConfiguration:
     @debug_logger
     def __getattr__(self, name: str) -> Any:
         """Special methods
-
         Args:
             name (str): Attribute name
-
         Raises:
             AttributeError: AttributeError
-
         Returns:
             Any: Attribute value [(self.data[0], name) or ""]
         """
@@ -70,10 +66,8 @@ class InfoConfiguration:
     @debug_logger
     def findregexp(self, queries: list[dict[str, str]]) -> list[ConfigurationData]:
         """Search for the data class within self.data. (Supports regular expressions)
-
         Args:
             queries (list[dict[str, str]]): Query
-
         Returns:
             list[ConfigurationData]: Search results for the query
         """
@@ -94,7 +88,6 @@ class InfoConfiguration:
     @debug_logger
     def finds(self, **kwargs) -> list[ConfigurationData]:
         """Search for the data class within self.data.
-
         Returns:
             list[ConfigurationData]: Search results for the key
         """
@@ -122,7 +115,6 @@ class InfoConfiguration:
     @debug_logger
     def find(self, **kwargs) -> ConfigurationData:
         """Search for the data class within self.data. (The first one)
-
         Returns:
             list: Search results for the key (The first one)
         """
@@ -150,7 +142,6 @@ class InfoConfiguration:
     @debug_logger
     def dump(self, wrap: bool = False) -> None:
         """Data dump output
-
         Args:
             wrap (bool, optional): Toggle text wrapping. Defaults to False.
         """
@@ -197,10 +188,8 @@ class InfoConfiguration:
 # -----------------------------------------------------------------------------
 def load() -> list[ConfigurationData]:
     """load data in common.cfg
-
     Raises:
         SystemExit: raise SystemExit from e
-
     Returns:
         list[ConfigurationData]: list[ConfigurationData]
     """
@@ -255,11 +244,9 @@ def load() -> list[ConfigurationData]:
 @debug_logger
 def conv2data(list_conf: list[ConfigurationData], list_orig: list) -> list:
     """convert to data format
-
     Args:
         list_conf (list[ConfigurationData]): list_orig
         list_orig (list): list_orig
-
     Returns:
         list: list_conv
     """
@@ -290,11 +277,9 @@ def conv2data(list_conf: list[ConfigurationData], list_orig: list) -> list:
 @debug_logger
 def conv2variable(list_conf: list[ConfigurationData], list_orig: list) -> list:
     """convert to variable format
-
     Args:
         list_conf (list[ConfigurationData]): list_conf
         list_orig (list): list_orig
-
     Returns:
         list: list_conv
     """

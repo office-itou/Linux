@@ -65,6 +65,7 @@ goto menu
 :ubuntu-server
 set messages Loading Ubuntu ${vers} Server ...
 set parmauto automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=${srvrhttp}/conf/nocloud/ubuntu_server
+set ntwkconf network-config=enabled
 set imgsdirs ${srvrhttp}/imgs/ubuntu-live-${vers}
 set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/ubuntu-live-${vers}
 goto ubuntu-common
@@ -72,6 +73,7 @@ goto ubuntu-common
 :ubuntu-desktop
 set messages Loading Ubuntu ${vers} Desktop ...
 set parmauto automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=${srvrhttp}/conf/nocloud/ubuntu_desktop
+set ntwkconf network-config=disabled
 set imgsdirs ${srvrhttp}/imgs/ubuntu-desktop-${vers}
 set exptdirs ${srvraddr}:/srv/exports/nfs/imgs/ubuntu-desktop-${vers}
 goto ubuntu-common
@@ -82,7 +84,7 @@ set inirdopt ${imgsdirs}/casper/initrd
 set hnameopt sv-ubuntu.workgroup
 set enameopt ens160
 set languopt language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
-set otheropt netboot=nfs nfsroot=${exptdirs} network-config=disabled --- quiet vga=788
+set otheropt netboot=nfs nfsroot=${exptdirs} ${ntwkconf} --- quiet vga=788
 set consoles dummy_console=tty0 dummy_console=ttyS0,9600
 set sulogins SYSTEMD_SULOGIN_FORCE=1 dummy_init=/sbin/sulogin
 set debugopt ${consoles} ${sulogins}

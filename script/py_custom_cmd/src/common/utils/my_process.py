@@ -13,11 +13,9 @@ from .my_message import get_caller_name, message_alert
 @debug_logger
 def run_subprocess(*args, **kwargs) -> str:
     """Subprocess wrapper
-
     Raises:
         SystemExit: subprocess.CalledProcessError
         SystemExit: FileNotFoundError
-
     Returns:
         str: stdout
     """

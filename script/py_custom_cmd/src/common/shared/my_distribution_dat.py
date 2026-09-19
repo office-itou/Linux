@@ -93,13 +93,10 @@ class InfoDistribution:
 
     def __getattr__(self, name: str) -> Any:
         """Special methods
-
         Args:
             name (str): Attribute name
-
         Raises:
             AttributeError: AttributeError
-
         Returns:
             Any: Attribute value [(self.data[0], name) or ""]
         """
@@ -112,7 +109,6 @@ class InfoDistribution:
     @debug_logger
     def load(self, src_path: Path) -> None:
         """Load file
-
         Args:
             src_path (Path): Source path
         """
@@ -135,10 +131,8 @@ class InfoDistribution:
     @debug_logger
     def findregexp(self, queries: list[dict[str, str]]) -> list[DistributionData]:
         """Search for the data class within self.data. (Supports regular expressions)
-
         Args:
             queries (list[dict[str, str]]): Query
-
         Returns:
             list[DistributionData]: Search results for the query
         """
@@ -159,7 +153,6 @@ class InfoDistribution:
     @debug_logger
     def finds(self, **kwargs) -> list[DistributionData]:
         """Search for the data class within self.data.
-
         Returns:
             list[DistributionData]: Search results for the key
         """
@@ -187,7 +180,6 @@ class InfoDistribution:
     @debug_logger
     def find(self, **kwargs) -> DistributionData:
         """Search for the data class within self.data. (The first one)
-
         Returns:
             DistributionData: Search results for the key (The first one)
         """
@@ -215,7 +207,6 @@ class InfoDistribution:
     @debug_logger
     def dump(self, wrap: bool = False) -> None:
         """Data dump output
-
         Args:
             wrap (bool, optional): Toggle text wrapping. Defaults to False.
         """

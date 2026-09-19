@@ -10,10 +10,8 @@ from ..utils.my_file_api import file_read, file_write
 
 def spc_encode(src_datas: list) -> list:
     """Encoding whitespace characters on a per-list basis
-
     Args:
         src_datas (list): Source data
-
     Returns:
         list: Conversion data
     """
@@ -37,10 +35,8 @@ def spc_encode(src_datas: list) -> list:
 
 def spc_decode(src_datas: list) -> list:
     """Decoding whitespace characters on a per-list basis
-
     Args:
         src_data (list): Source data
-
     Returns:
         list: Conversion data
     """
@@ -59,10 +55,8 @@ def spc_decode(src_datas: list) -> list:
 @debug_logger
 def get_text2list(src_path: str) -> list[dict[str, str]]:
     """Text file to list
-
     Args:
         src_path (str): Source path
-
     Returns:
         list[dict[str, str]]: Conversion data
     """
@@ -93,7 +87,6 @@ def get_text2list(src_path: str) -> list[dict[str, str]]:
 @debug_logger
 def put_list2text(dst_path: str, src_datas: list, format_str: str) -> None:
     """list to text file
-
     Args:
         dst_path (str): Destination path
         src_data (list): Source data
