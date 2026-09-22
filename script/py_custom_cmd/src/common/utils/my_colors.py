@@ -1,4 +1,4 @@
-"""Color code"""
+"""Color code (For both CUI/GUI)"""
 
 # --- Python library ----------------------------------------------------------
 # from typing import Any, Callable
@@ -6,8 +6,8 @@ from dataclasses import dataclass
 
 
 # --- my library --------------------------------------------------------------
-# from .my_config                import infosystem
-# from .my_debug                 import debug_logger
+# from my_config                import infosystem
+# from my_debug                 import debug_logger
 # --- escape code -------------------------------------------------------------
 @dataclass
 class Code:

@@ -1,14 +1,15 @@
-"""debug processing"""
+"""debug processing (For both CUI/GUI)"""
 
 # --- Python library ----------------------------------------------------------
 import inspect
 import sys
+
 from collections.abc import Callable
 
 # --- my library --------------------------------------------------------------
-from .my_colors import Color
-from .my_config import infosystem
-from .my_message import generate_comment, message_debug
+from my_colors import Color
+from my_config import infosystem
+from my_message import generate_comment, message_debug
 
 
 # -----------------------------------------------------------------------------
@@ -45,6 +46,36 @@ def debug_logger(func: Callable):
 
 
 # -----------------------------------------------------------------------------
+def debug_chk_cui(func: Callable):
+    """A decorator that forces termination if a CUI-only function is called from a GUI environment."""
+
+    def _wrapper(*args, **kwargs):
+        # --- Defensive processing when invoked from a GUI environment --------
+        if infosystem.is_gui:
+            _frame = inspect.currentframe().f_back
+            _func_name = str(_frame.f_code.co_name)
+            _modu_name = str(_frame.f_globals.get("__name__"))
+            _call_info = f"{_modu_name}({_func_name})"
+            # -----------------------------------------------------------------
+            if infosystem.gui_error_callback:
+                infosystem.gui_error_callback(
+                    "System Error",
+                    f"A CUI-only function was called from the GUI:\n{func.__name__}\n\nCaller:\n{_call_info}",
+                )
+            else:
+                # --- Fallback mechanism in the event that a callback is not registered. ---
+                print(
+                    f"🚨 [Error] CUI function '{func.__name__}' called from GUI by {_call_info}",
+                    file=sys.stderr,
+                )
+            raise SystemExit(1)  # Safely exit the application
+        # --- In a CUI environment, the original function is executed as-is, and the result is returned. ---
+        return func(*args, **kwargs)
+
+    return _wrapper
+
+
+# -----------------------------------------------------------------------------
 def debugout_scale(size: int):
     """Debug output for scale
     Args:
@@ -73,9 +104,8 @@ def debugout(color: str, func_name: str, mode: str, message: str, omit: bool = F
         message (str): Message
         omit (bool, optional): Omit. Defaults to False.
     """
-    if infosystem.debugout == False:
-        return
-    message_debug(color, func_name, mode, message, omit=omit)
+    if infosystem.debugout:
+        message_debug(color, func_name, mode, message, omit=omit)
 
 
 # --- eof ---------------------------------------------------------------------

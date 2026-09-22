@@ -15,13 +15,13 @@ homedir = os.getenv("SUDO_HOME") or os.getenv("HOME") or f"/home/{execusr}"
 libsdir = Path(homedir) / "linux/script/py_custom_cmd/src"
 if str(libsdir) not in sys.path:
     sys.path.append(str(libsdir))
-from common.utils.my_argument import Argument
-from common.utils.my_colors import Color
-from common.utils.my_config import infosystem
-from common.utils.my_debug import debug_logger
-from common.utils.my_error import handle_fatal_error
-from common.utils.my_file_api import file_read, file_write
-from common.utils.my_message import (
+from my_argument import Argument
+from my_colors import Color
+from my_config import infosystem
+from my_debug import debug_logger
+from my_error import handle_fatal_error
+from my_file_api import file_read, file_write
+from my_message import (
     get_caller_name,
     message_elapsed,
     message_end,

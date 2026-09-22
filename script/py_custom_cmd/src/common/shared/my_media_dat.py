@@ -3,20 +3,22 @@ from __future__ import annotations
 """media.dat I/O"""
 # --- Python library ----------------------------------------------------------
 import re
+
 from dataclasses import dataclass, fields
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 # --- my library --------------------------------------------------------------
 if TYPE_CHECKING:
-    from ..shared.my_common_cfg import InfoConfiguration
-from ..shared.my_convert import get_text2list, put_list2text, spc_decode, spc_encode
-from ..utils.my_colors import Color
-from ..utils.my_config import infosystem
-from ..utils.my_debug import debug_logger
-from ..utils.my_json import json_load, json_save
-from ..utils.my_markdown import list2markdown
-from ..utils.my_string import eprint
+    from my_common_cfg import InfoConfiguration
+from my_convert import get_text2list, put_list2text, spc_decode, spc_encode
+
+from my_colors import Color
+from my_config import infosystem
+from my_debug import debug_logger
+from my_json import json_load, json_save
+from my_markdown import list2markdown
+from my_string import eprint
 
 
 # -----------------------------------------------------------------------------

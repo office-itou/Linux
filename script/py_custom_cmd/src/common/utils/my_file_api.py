@@ -1,16 +1,18 @@
-"""File I/O processing"""
+"""File I/O processing (For both CUI/GUI)"""
 
 # --- Python library ----------------------------------------------------------
 import os
 import re
 import shutil
+
 from datetime import datetime
 from pathlib import Path
 
 # --- my library --------------------------------------------------------------
-from .my_debug import debug_logger
-from .my_error import handle_fatal_error
-from .my_message import get_caller_name, message_alert
+from my_config import infosystem
+from my_debug import debug_logger
+from my_error import handle_fatal_error
+from my_message import get_caller_name, message_alert
 
 
 @debug_logger
@@ -69,7 +71,12 @@ def file_write(
             f.flush()
             os.fsync(f.fileno())
         if not dest_path.exists():
-            message_alert(get_caller_name(), f"failed: {dest_path}")
+            if infosystem.is_gui and infosystem.gui_error_callback:
+                infosystem.gui_error_callback(
+                    "File Error", f"Failed to write file:\n{dest_path}"
+                )
+            else:
+                message_alert(get_caller_name(), f"failed: {dest_path}")
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e)
 

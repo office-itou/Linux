@@ -2,14 +2,15 @@
 
 # --- Python library ----------------------------------------------------------
 import json
+
 from pathlib import Path
 from typing import Any
 
 # --- my library --------------------------------------------------------------
-from .my_debug import debug_logger
-from .my_error import handle_fatal_error
-from .my_file_api import file_read, file_write
-from .my_message import get_caller_name, message_alert
+from my_debug import debug_logger
+from my_error import handle_fatal_error
+from my_file_api import file_read, file_write
+from my_message import get_caller_name, message_alert
 
 
 # -----------------------------------------------------------------------------

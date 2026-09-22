@@ -2,6 +2,7 @@
 
 # --- Python library ----------------------------------------------------------
 import re
+
 from dataclasses import dataclass, fields
 from operator import attrgetter
 from pathlib import Path
@@ -11,18 +12,19 @@ from packaging.version import InvalidVersion
 from packaging.version import parse as parse_version
 
 # --- my library --------------------------------------------------------------
-from ..shared.my_convert import (
+from my_convert import (
     get_text2list,
     put_list2text,
     spc_decode,
     spc_encode,
 )
-from ..utils.my_colors import Color
-from ..utils.my_config import infosystem
-from ..utils.my_debug import debug_logger
-from ..utils.my_json import json_load, json_save
-from ..utils.my_markdown import list2markdown
-from ..utils.my_string import eprint
+
+from my_colors import Color
+from my_config import infosystem
+from my_debug import debug_logger
+from my_json import json_load, json_save
+from my_markdown import list2markdown
+from my_string import eprint
 
 # -----------------------------------------------------------------------------
 LIFE_MAP = {

@@ -1,4 +1,4 @@
-"""Retrieves file information from the local system."""
+"""Retrieves file information from the local system.(For both CUI/GUI)"""
 
 # --- Python library ----------------------------------------------------------
 from dataclasses import dataclass
@@ -7,9 +7,10 @@ from pathlib import Path
 
 import magic  # sudo apt-get install python3-magic
 
+
 # --- my library --------------------------------------------------------------
-from .my_debug import debug_logger
-from .my_process import run_subprocess
+from my_debug import debug_logger
+from my_process import run_subprocess
 
 
 # -----------------------------------------------------------------------------

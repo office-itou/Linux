@@ -1,11 +1,38 @@
-"""String processing"""
+"""String processing (For both CUI/GUI)"""
 
 # --- Python library ----------------------------------------------------------
 import re
 import unicodedata
 
 # --- my library --------------------------------------------------------------
-from .my_colors import Color
+from my_colors import Color
+from my_config import infosystem
+
+# Define a global variable to hold a reference to the log window (to prevent circular imports).
+_gui_log_window = None
+
+
+def set_gui_log_window(window_instance):
+    """A function to receive the log window instance from the main side."""
+    global _gui_log_window
+    _gui_log_window = window_instance
+
+
+def eprint(src_text: str, max_width: int = 0, wrap: bool = False):
+    """Screen Output (Supports both CUI and GUI; includes color & formatting parsing)"""
+    _reset_code = Color.reset if Color.reset else "\x1b[0m"
+    _display_text = src_text
+    # Trimming and wrapping logic based on the existing number of columns
+    if max_width > 0 and (_lines := split_by_width(src_text, max_width)):
+        _display_text = "\n".join(_lines) if wrap else _lines[0]
+    full_text = f"{_reset_code}{_display_text}{_reset_code}"
+    # If the GUI log window is enabled, the output is sent there with color analysis included.
+    if infosystem.is_gui and _gui_log_window and infosystem.log_window_active:
+        # When sending text to a Tkinter text widget, add a newline character at the end.
+        _gui_log_window.append_ansi_text(full_text + "\n")
+    else:
+        # Conventional CUI console output
+        print(full_text)
 
 
 def count_full_width(src_text: str) -> int:
@@ -121,20 +148,6 @@ def split_by_width(
     if _current_line:
         _lines.append("".join(_current_line))
     return _lines
-
-
-def eprint(src_text: str, max_width: int = 0, wrap: bool = False):
-    """Screen output with character splitting that supports escape characters and full-width/half-width characters.
-    Args:
-        src_text (str): Source text
-        max_width (int, optional): Max width. Defaults to 0.
-        wrap (bool, optional): Wrap. Defaults to False.
-    """
-    _reset_code = Color.reset if Color.reset else "\x1b[0m"
-    _display_text = src_text
-    if max_width > 0 and (_lines := split_by_width(src_text, max_width)):
-        _display_text = "\n".join(_lines) if wrap else _lines[0]
-    print(f"{_reset_code}{_display_text}{_reset_code}")
 
 
 def omit_middle(src_text: str, max_len: int = 80, placeholder: str = "..") -> str:

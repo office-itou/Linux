@@ -1,16 +1,15 @@
-# 🌐 多言語対応用のメッセージ辞書 (messages.py)
 MESSAGES = {
     # --- en ver. -------------------------------------------------------------
     "en": {
-        "title": "JSON List & Card Editor",
+        "title": "Test window",
         # --- menu ------------------------------------------------------------
         "menu_file": "File",
-        "menu_open": "Open JSON File...",
+        "menu_open": "Open File...",
         "menu_save": "Save",
         "menu_save_as": "Save As...",
         "menu_exit": "Exit",
         "menu_lang": "Language",
-        "info_start": "Please load JSON data from the 'File' menu.",
+        "info_start": "Please load data from the 'File' menu.",
         "info_open": "Active File: {path} ({count} items)",
         "info_loading": "Loading: {path} ({count} items)",
         # --- message ---------------------------------------------------------
@@ -19,34 +18,26 @@ MESSAGES = {
         "msg_err_title": "Error",
         "msg_err_load": "Failed to load file:\n{e}",
         "msg_err_save": "Failed to save file:\n{e}",
+        # --- radio button ----------------------------------------------------
+        "rdo_lang_en": "English",
+        "rdo_lang_ja": "Japanese",
+        # --- button ----------------------------------------------------------
         "btn_confirm": "✅ Confirm & Return",
-        # Common headers
-        "version": "ID",
-        "name": "OS Name",
-        "version_id": "Ver",
-        "code_name": "Code Name",
-        "life": "Status",
-        "release": "Release Date",
-        "kerne": "Kernel",
-        "type": "Type",
-        "entry_name": "Entry Name",
-        "entry_disp": "Display Name",
-        "latest": "Latest Ver",
-        "support": "Support",
-        "iso_path": "ISO Path",
-        "card_title": "Card Edit - [{ver}]",
+        "btn_exec": "Run",
+        "btn_exit": "Exit",
+        # --- common headers --------------------------------------------------
     },
     # --- ja ver. -------------------------------------------------------------
     "ja": {
-        "title": "JSON リスト＆カードエディタ",
+        "title": "テスト画面",
         # --- menu ------------------------------------------------------------
         "menu_file": "ファイル",
-        "menu_open": "JSONファイルを開く...",
+        "menu_open": "ファイルを開く...",
         "menu_save": "上書き保存",
         "menu_save_as": "名前を付けて保存...",
         "menu_exit": "終了",
         "menu_lang": "言語設定",
-        "info_start": "「ファイル」メニューからJSONデータを読み込んでください。",
+        "info_start": "「ファイル」メニューからデータを読み込んでください。",
         "info_open": "開いているファイル: {path} ({count}件)",
         "info_loading": "読込中: {path} ({count}件)",
         # --- message ---------------------------------------------------------
@@ -55,21 +46,13 @@ MESSAGES = {
         "msg_err_title": "エラー",
         "msg_err_load": "ファイルの読み込みに失敗しました:\n{e}",
         "msg_err_save": "保存に失敗しました:\n{e}",
+        # --- radio button ----------------------------------------------------
+        "rdo_lang_en": "英語(English)",
+        "rdo_lang_ja": "日本語(Japanese)",
+        # --- button ----------------------------------------------------------
         "btn_confirm": "✅ 変更を確定して戻る",
-        # 汎用共通ヘッダー翻訳（無いキーは自動でそのまま表示されます）
-        "version": "識別ID",
-        "name": "OS名",
-        "version_id": "Ver",
-        "code_name": "コードネーム",
-        "life": "状態",
-        "release": "リリース日",
-        "kerne": "カーネル",
-        "type": "種別",
-        "entry_name": "エントリ名",
-        "entry_disp": "表示名",
-        "latest": "最新Ver",
-        "support": "サポート",
-        "iso_path": "ISOパス",
-        "card_title": "カード編集 - [{ver}]",
+        "btn_exec": "実行",
+        "btn_exit": "終了",
+        # --- common headers --------------------------------------------------
     },
 }

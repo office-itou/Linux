@@ -37,7 +37,7 @@ FILE_MENU_DATA: list[dict[str, str]] = [
 # --- radio button (language) -------------------------------------------------
 # 1: label
 # 2: value
-LANG_MENU_DATA: list[dict[str, Any]] = [
+LANG_MENU_DATA: list[str, dict[str, Any]] = [
     {"label": "English", "value": "en", "cmd_name": "switch_language"},
     {"label": "日本語 (Japanese)", "value": "ja", "cmd_name": "switch_language"},
 ]

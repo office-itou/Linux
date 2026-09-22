@@ -5,29 +5,24 @@
 # --- Python library ----------------------------------------------------------
 import os
 import sys
-import time
-from pathlib import Path
+
+from my_argument import Argument
+from my_colors import Color
 
 # --- my library --------------------------------------------------------------
-execusr = os.getenv("SUDO_USER", os.getenv("USER"))
-homedir = os.getenv("SUDO_HOME") or os.getenv("HOME") or f"/home/{execusr}"
-libsdir = Path(homedir) / "linux/script/py_custom_cmd/src"
-if str(libsdir) not in sys.path:
-    sys.path.append(str(libsdir))
-from common.utils.my_argument import Argument
-from common.utils.my_colors import Color
-from common.utils.my_config import infosystem
-from common.utils.my_debug import debug_logger
-from common.utils.my_error import handle_fatal_error
-from common.utils.my_mem_usage import print_peak_memory
-from common.utils.my_message import (
+from my_config import infosystem
+from my_debug import debug_logger
+from my_error import handle_fatal_error
+from my_mem_usage import print_peak_memory
+from my_message import (
     get_caller_name,
     message_elapsed,
     message_end,
     message_info,
     message_start,
 )
-from common.utils.my_string import eprint
+from my_string import eprint
+from my_time import TimeElapsed
 
 
 @debug_logger
@@ -69,33 +64,40 @@ def test():
     strslid = f"12345678901234567980 {Color.underline}１２３４５６７８９０"
 
     list_text = [
-        f"{Color.reset}{strhalf}{Color.green}{strhalf}{Color.yellow}{strhalf}{Color.red}{strhalf}{Color.magenta}{strhalf}{Color.reset}",
-        f"{Color.reset}{strwide}{Color.green}{strwide}{Color.yellow}{strwide}{Color.red}{strwide}{Color.magenta}{strwide}{Color.reset}",
-        f"{Color.reset}{strhalf}{Color.green}{strmixd}{Color.yellow}{strwide}{Color.red}{strwide}{Color.magenta}{strwide}{Color.reset}",
-        f"{Color.reset}{strhalf}{Color.green}{strslid}{Color.yellow}{strwide}{Color.red}{strwide}{Color.magenta}{strwide}{Color.reset}",
+        f"{strhalf}{Color.green}{strhalf}{Color.yellow}{strhalf}{Color.red}{strhalf}{Color.magenta}{strhalf}",
+        f"{strwide}{Color.green}{strwide}{Color.yellow}{strwide}{Color.red}{strwide}{Color.magenta}{strwide}",
+        f"{strhalf}{Color.green}{strmixd}{Color.yellow}{strwide}{Color.red}{strwide}{Color.magenta}{strwide}",
+        f"{strhalf}{Color.green}{strslid}{Color.yellow}{strwide}{Color.red}{strwide}{Color.magenta}{strwide}",
     ]
 
     for text in list_text:
-        eprint(text, infosystem.columns)
+        eprint(f"{Color.reset}{text}{text}{Color.reset}", infosystem.columns)
+    for text in list_text:
+        eprint(f"{Color.reset}{text}{text}{Color.reset}", infosystem.columns, wrap=True)
 
 
-@debug_logger
+debug_logger
+def check_root(bypass: bool = False) -> bool:
+    if bypass or os.geteuid() == 0:
+        return True
+    print(
+        f"{Color.reset}{Color.br_green}{infosystem.program_name}:\n"
+        f"{Color.br_yellow} You have standard user privileges. "
+        f"{Color.underline}Please run this with sudo.{Color.reset}"
+    )
+    return False
+
+
 def main():
     """Main"""
     caller = get_caller_name()
     try:
         # --- check the executing user ----------------------------------------
-        if os.geteuid() != 0:
-            print(
-                f"{Color.reset}{Color.br_green}{infosystem.program_name}:\n"
-                f"{Color.br_yellow} You have standard user privileges. "
-                f"{Color.underline}Please run this with sudo.{Color.reset}"
-            )
+        if not check_root(True):
             return 1
         # --- elapsed start----------------------------------------------------
-        start = time.perf_counter()
+        time_elapsed = TimeElapsed()
         # --- startup process -------------------------------------------------
-        caller = get_caller_name()
         message_start(caller)
         # --- processing block ------------------------------------------------
         initarg()
@@ -105,18 +107,17 @@ def main():
         # --- termination process ---------------------------------------------
         message_end(get_caller_name())
         # --- elapsed end -----------------------------------------------------
-        end = time.perf_counter()
-        elapsed = end - start
-        message_elapsed(caller, elapsed)
+        message_elapsed(caller, time_elapsed.elapsed(), omit=True)
         # --- exit ------------------------------------------------------------
+        print_peak_memory()
         return 0
     except (OSError, Exception) as e:  # noqa: BLE001
-        handle_fatal_error(caller, e)
+        handle_fatal_error(caller, e, omit=True)
     # -------------------------------------------------------------------------
 
 
 if __name__ == "__main__":
-    return_code = main()
-    sys.exit(print_peak_memory() or return_code)
+    infosystem.initialize(is_gui=False)
+    sys.exit(main())
 
 # --- eof ---------------------------------------------------------------------

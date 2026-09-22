@@ -1,13 +1,15 @@
-"""argparse wrapper"""
+"""argparse wrapper (For both CUI/GUI)"""
 
 # --- Python library ----------------------------------------------------------
 import argparse
 
 # --- my library --------------------------------------------------------------
-from .my_config import infosystem
+from my_config import infosystem
+from my_debug import debug_chk_cui
 
 
 # -----------------------------------------------------------------------------
+@debug_chk_cui
 class Argument:
     """argparse wrapper class."""
 

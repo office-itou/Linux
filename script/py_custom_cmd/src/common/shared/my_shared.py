@@ -5,10 +5,11 @@ from dataclasses import dataclass, fields
 from pathlib import Path
 
 # --- my library --------------------------------------------------------------
-from ..shared.my_common_cfg import InfoConfiguration
-from ..shared.my_distribution_dat import InfoDistribution
-from ..shared.my_media_dat import InfoMedia
-from ..utils.my_debug import debug_logger
+from my_common_cfg import InfoConfiguration
+from my_distribution_dat import InfoDistribution
+from my_media_dat import InfoMedia
+
+from my_debug import debug_logger
 
 
 # =============================================================================

@@ -3,20 +3,16 @@
 # --- Python library ----------------------------------------------------------
 import inspect
 import re
+
 from datetime import datetime, timedelta
 from pathlib import Path
 
 # --- my library --------------------------------------------------------------
-from .my_colors import Color
-from .my_config import infosystem
-from .my_string import count_width, eprint, omit_middle
+from my_colors import Color
+from my_config import infosystem
+from my_string import count_width, eprint, omit_middle
 
-# colsize_func = 30 if infosystem.columns < 80 else 40 if infosystem.columns < 100 else 50
 colsize_mode = 8
-colsize_func = (
-    (infosystem.columns - (colsize_mode + 2)) // 2 if infosystem.columns < 100 else 50
-)
-colsize_mesg = infosystem.columns - (colsize_func + colsize_mode + 2)
 
 
 def message_out(
@@ -30,47 +26,55 @@ def message_out(
         message (str): Message
         omit (bool, optional): Omit. Defaults to False.
     """
-    _prog_text = omit_middle(f"{infosystem.program_name}({func_name})", colsize_func)
+    _colsize = (
+        (infosystem.columns - (colsize_mode + 2)) // 2
+        if infosystem.columns < 100
+        else 50
+    )
+    _prog_text = omit_middle(f"{infosystem.program_name}({func_name})", _colsize)
     _mesg_text = (
         message
         if omit == False
         else omit_middle(
-            f"{message}", infosystem.columns - (colsize_func + colsize_mode + 2)
+            f"{message}", infosystem.columns - (_colsize + colsize_mode + 2)
         )
     )
     eprint(
-        f"{Color.reset}{color}{_prog_text:<{colsize_func}}|{mode:^{colsize_mode}}|{_mesg_text}{Color.reset}",
+        f"{Color.reset}{color}{_prog_text:<{_colsize}}|{mode:^{colsize_mode}}|{_mesg_text}{Color.reset}",
         infosystem.columns,
-        wrap=False,
+        wrap=not omit,
     )
 
 
-def message_start(func_name: str):
+def message_start(func_name: str, omit: bool = False):
     """Message output for startup
     Args:
         func_name (str): Function name
+        omit (bool, optional): Omit. Defaults to False.
     """
     _date_time = datetime.now().astimezone().strftime("%Y/%m/%d %H:%M:%S %Z (%z)")
-    message_out(Color.br_green, func_name, "Start", _date_time, omit=True)
+    message_out(Color.br_green, func_name, "Start", _date_time, omit=omit)
 
 
-def message_end(func_name: str):
+def message_end(func_name: str, omit: bool = False):
     """Message output for termination
     Args:
         func_name (str): Function name
+        omit (bool, optional): Omit. Defaults to False.
     """
     _date_time = datetime.now().astimezone().strftime("%Y/%m/%d %H:%M:%S %Z (%z)")
-    message_out(Color.br_green, func_name, "Complete", _date_time, omit=True)
+    message_out(Color.br_green, func_name, "Complete", _date_time, omit=omit)
 
 
-def message_elapsed(func_name: str, elapsed: str):
+def message_elapsed(func_name: str, elapsed: float, omit: bool = False):
     """Message output for elapsed time
     Args:
         func_name (str): Function name
-        elapsed (str): Elapsed time
+        elapsed (float): Elapsed time
+        omit (bool, optional): Omit. Defaults to False.
     """
     _time_text = timedelta(seconds=elapsed)
-    message_out(Color.br_yellow, func_name, "Elapsed", _time_text, omit=True)
+    message_out(Color.br_yellow, func_name, "Elapsed", _time_text, omit=omit)
 
 
 def message_debug(
@@ -140,10 +144,13 @@ def generate_comment(modu_name: str, func_name: str, para: str = "") -> str:
     Returns:
         str: Comment message
     """
-    from .my_message import colsize_mesg
-
     _front_part = ""
-    _colsize_para = colsize_mesg
+    _colsize = (
+        (infosystem.columns - (colsize_mode + 2)) // 2
+        if infosystem.columns < 100
+        else 50
+    )
+    _colsize_para = infosystem.columns - (_colsize + colsize_mode + 2)
     if modu_name:
         _text_modu = re.sub(r"^[^.]+.", "", modu_name)
         _colsize_modu = min(count_width(_text_modu), 20)
