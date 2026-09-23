@@ -6,7 +6,7 @@ PYTHON       = python3
 PIP          = pip
 PYINSTALLER  = pyinstaller
 MAIN_SCRIPT  = main.py
-EXE_NAME     = editor
+EXE_NAME     = markdown
 IMPORT_PKGS  = tkinter
 
 # 常時使用する固定のパス定義は上部でOK

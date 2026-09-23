@@ -34,5 +34,6 @@
             "unfixable": ["F401"]
         }
     },
-    "files.eol": "\n"
+    "files.eol": "\n",
+    "makefile.configureOnOpen": false
 }

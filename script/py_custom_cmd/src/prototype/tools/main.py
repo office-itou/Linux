@@ -2,9 +2,11 @@
 # --- Python library ----------------------------------------------------------
 # import re
 import tkinter as tk
-from tkinter import ttk
-from typing import Any, Callable
 
+from collections.abc import Callable
+from dataclasses import asdict
+from tkinter import ttk
+from typing import Any
 
 # from typing import Any
 # ruff: isort: off
@@ -17,6 +19,7 @@ from my_message import get_caller_name, message_elapsed
 from my_string import eprint, set_gui_log_window
 
 # from my_string import eprint
+from my_shared import InfoCommon
 from my_time import TimeElapsed
 
 
@@ -29,7 +32,7 @@ from functions import test
 class MainWindow:
     def __init__(self, root: tk.Tk) -> None:
         self.root: tk.Tk = root
-        self.root.geometry("400x300")
+        self.root.geometry("800x600")
 
         # 1. 状態変数の初期化
         self.current_lang_strvar: tk.StringVar = tk.StringVar(value=infosystem.lang)
@@ -38,7 +41,10 @@ class MainWindow:
         # 2. 定義ファイルの読み込み
         self.ui_def = load_ui_definition("ui_definition.json")
 
-        # 3. 画面の構築
+        # 3. data loading
+        self.info_comm = InfoCommon()
+
+        # 4. 画面の構築
         self.generate_window()
 
     def _get_command_map(self) -> dict[str, Callable[[Any], None]]:
@@ -65,7 +71,7 @@ class MainWindow:
             if child.winfo_exists() and "debug_log_win" not in str(child):
                 try:
                     child.destroy()
-                except Exception:
+                except Exception:  # noqa: BLE001, S110
                     pass
 
         # 現在選択されている言語の文言を取得
@@ -88,12 +94,70 @@ class MainWindow:
             variables=var_map,
         )
 
-        # ボタンの配置用ベースフレームを作成 (Grid引き延ばし用設定)
-        main_frame = ttk.Frame(self.root, padding=20)
-        main_frame.pack(fill=tk.BOTH, expand=True)
+        #main_frame = ttk.Frame(self.root, padding=20)
+        #main_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=5)
+
+        # 2. 中央テーブル
+        table_frame = ttk.Frame(self.root)
+        table_frame.pack(fill="both", expand=True, padx=15, pady=5)
+
+        scrollbar_y = ttk.Scrollbar(table_frame, orient="vertical")
+        scrollbar_y.pack(side="right", fill="y")
+        scrollbar_x = ttk.Scrollbar(table_frame, orient="horizontal")
+        scrollbar_x.pack(side="bottom", fill="x")
+
+        tree = ttk.Treeview(table_frame, show="headings")
+        tree.pack(fill="both", expand=True)
+        scrollbar_y.config(command=tree.yview)
+        scrollbar_x.config(command=tree.xview)
+
+        #dict_data = asdict(self.info_comm.mdia.data[0])
+        #all_keys: list[str] = list(dict_data.keys())
+        #current_columns = all_keys[:8]
+
+        row_keys: list[str] = []
+        for key, val in self.info_comm.mdia.data[0].__dict__.items():
+            if key == "type" or key == "entry_disp" or key == "release":
+                row_keys.append(key)
+        current_columns = row_keys[:8]
+
+
+        if tree:
+            tree.destroy()
+        tree = ttk.Treeview(
+            table_frame,
+            columns=current_columns,
+            show="headings",
+            yscrollcommand=scrollbar_y.set,
+            xscrollcommand=scrollbar_x.set,
+        )
+        tree.pack(fill="both", expand=True)
+        scrollbar_y.config(command=tree.yview)
+        scrollbar_x.config(command=tree.xview)
+
+        for col in current_columns:
+            display_title: str = current_messages.get(col, col)
+            tree.heading(col, text=display_title)
+            tree.column(col, width=120, anchor="w")
+
+        for row in tree.get_children():
+            tree.delete(row)
+
+        index=0
+        for item in self.info_comm.mdia.data:
+            row_values: list[str] = []
+            if item.__dict__["entry_flag"] == "o":
+                for key, val in item.__dict__.items():
+                    if key == "type" or key == "entry_disp" or key == "release":
+                        row_values.append(val)
+                index += 1
+                tree.insert("", "end", iid=str(index), values=row_values)
+
+        return
         main_frame.columnconfigure(0, weight=1)
         main_frame.columnconfigure(1, weight=1)
 
+        # ボタンの配置用ベースフレームを作成 (Grid引き延ばし用設定)
         # 2. ボタン群の動的生成＆グリッド配置
         build_buttons(
             parent=main_frame,
@@ -101,6 +165,8 @@ class MainWindow:
             messages=current_messages,
             commands=cmd_map,
         )
+
+
 
     # --- 共通イベントハンドラ ----------------------------------------------------
     def event_open_file(self, event=None) -> None:

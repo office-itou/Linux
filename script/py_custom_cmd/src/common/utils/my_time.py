@@ -4,7 +4,6 @@
 import time
 
 # --- my library --------------------------------------------------------------
-from my_debug import debug_logger
 
 
 class TimeElapsed:
@@ -13,7 +12,7 @@ class TimeElapsed:
         self.end_time: float = 0.0
         self.elapsed_time: float = 0.0
 
-    def elapsed(self) -> int:
+    def elapsed(self) -> float:
         self.end_time = time.perf_counter()
         self.elapsed_time = self.end_time - self.start_time
         return self.elapsed_time

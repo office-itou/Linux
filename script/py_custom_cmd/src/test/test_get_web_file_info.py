@@ -13,11 +13,6 @@ import aiohttp  # sudo apt-get install python3-aiohttp
 from aiohttp import ClientTimeout
 
 # --- my library --------------------------------------------------------------
-# execusr = os.getenv("SUDO_USER", os.getenv("USER"))
-# homedir = os.getenv("SUDO_HOME") or os.getenv("HOME") or f"/home/{execusr}"
-# libsdir = Path(homedir) / "linux/script/py_custom_cmd/src"
-# if str(libsdir) not in sys.path:
-#    sys.path.append(str(libsdir))
 from my_argument import Argument
 from my_colors import Color
 from my_config import infosystem
@@ -283,10 +278,9 @@ async def main():
         if not check_root(True):
             return 1
         # --- elapsed start----------------------------------------------------
-        time_elapsed = TimeElapsed
+        time_elapsed = TimeElapsed()
         # --- startup process -------------------------------------------------
-        caller = get_caller_name()
-        message_start(caller, omit=True)
+        message_start(caller, omit=False)
         # --- processing block ------------------------------------------------
         initarg()
         if infosystem.args:
@@ -341,10 +335,11 @@ async def main():
         print_peak_memory()
         return 0
     except (OSError, Exception) as e:  # noqa: BLE001
-        handle_fatal_error(caller, e, omit=True)
+        handle_fatal_error(caller, e, omit=False)
     # -------------------------------------------------------------------------
 
 
 if __name__ == "__main__":
+    infosystem.initialize(is_gui=False)
     sys.exit(asyncio.run(main()))
 # --- eof ---------------------------------------------------------------------

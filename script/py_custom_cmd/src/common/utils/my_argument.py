@@ -9,7 +9,6 @@ from my_debug import debug_chk_cui
 
 
 # -----------------------------------------------------------------------------
-@debug_chk_cui
 class Argument:
     """argparse wrapper class."""
 
@@ -20,6 +19,7 @@ class Argument:
             setattr(namespace, self.dest, values)
 
     # -------------------------------------------------------------------------
+    @debug_chk_cui
     def __init__(self, description: str = ""):
         """Method for initializing the Argument class."""
         self.parser = argparse.ArgumentParser(description, allow_abbrev=False)

@@ -8,6 +8,7 @@ import shutil
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 
 import aiofiles  # sudo apt-get install python3-aiofiles
@@ -120,14 +121,9 @@ async def get_response(
                 # -------------------------------------------------------------
                 _web_data.response_url = str(_response.url)
                 _last_mod = _response.headers.get("Last-Modified", "")
+                print(f"_last_mod:{_last_mod}")
                 _last_mod_isoformat = (
-                    (
-                        datetime.strptime(_last_mod, "%a, %d %b %Y %H:%M:%S %Z")
-                        .replace(tzinfo=timezone.utc)
-                        .isoformat()
-                    )
-                    if _last_mod
-                    else ""
+                    parsedate_to_datetime(_last_mod).isoformat() if _last_mod else ""
                 )
                 _web_data.time_stamp = _last_mod_isoformat
                 _content_length = _response.headers.get("Content-Length", 0)

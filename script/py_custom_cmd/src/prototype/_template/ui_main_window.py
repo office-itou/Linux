@@ -1,11 +1,11 @@
 # --- Python library ----------------------------------------------------------
 import tkinter as tk
 
+
 # from collections.abc import Callable
 # from tkinter import filedialog, messagebox, ttk
 from tkinter import ttk
 from typing import Any
-
 
 # ruff: isort: off
 # --- my library --------------------------------------------------------------
@@ -62,18 +62,33 @@ class MainWindowUI:
 
     def create_main_window(self) -> None:
         # --- destroy ---------------------------------------------------------
-        if self.menubar:
-            self.root.config(menu="")
-            self.menubar.destroy()
-        if self.top_frame:
-            self.top_frame.destroy()
-        if self.table_frame:
-            self.table_frame.destroy()
-        if self.bottom_frame:
-            self.bottom_frame.destroy()
-        # --- member variable initialization declaration (initially none) -----
-        self.menubar: tk.Menu | None = None
-        self.bottom_frame: ttk.Frame | None = None
+        for child in self.root.winfo_children():
+            if child.winfo_exists():
+                # 📌 これが入っていれば、言語切り替え時も前のログ画面が破壊されずに残ります！
+                if "debug_log_win" in str(child):
+                    continue
+                try:
+                    child.destroy()
+                except Exception:  # noqa: BLE001, S110
+                    pass
+        # --- メンバー変数の参照初期化 -----------------------------------------
+        self.menubar = None
+        self.top_frame = None
+        self.table_frame = None
+        self.bottom_frame = None
+        self.tree = None
+        self.info_label = None
+        self.scrollbar_y = None
+        self.scrollbar_x = None
+        # --- メンバー変数の参照初期化 -----------------------------------------
+        self.menubar = None
+        self.top_frame = None
+        self.table_frame = None
+        self.bottom_frame = None
+        self.tree = None
+        self.info_label = None
+        self.scrollbar_y = None
+        self.scrollbar_x = None
         # ---------------------------------------------------------------------
         lang = self.current_lang_strvar.get()
         self.message = MESSAGES[lang]

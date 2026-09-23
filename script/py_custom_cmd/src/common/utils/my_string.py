@@ -5,34 +5,54 @@ import re
 import unicodedata
 
 # --- my library --------------------------------------------------------------
-from my_colors import Color
-from my_config import infosystem
+# from my_colors import Color
+# from my_config import infosystem
 
-# Define a global variable to hold a reference to the log window (to prevent circular imports).
-_gui_log_window = None
-
-
-def set_gui_log_window(window_instance):
-    """A function to receive the log window instance from the main side."""
-    global _gui_log_window
-    _gui_log_window = window_instance
+# --- Manage all open windows in a list. --------------------------------------
+_gui_log_windows = []
 
 
-def eprint(src_text: str, max_width: int = 0, wrap: bool = False):
-    """Screen Output (Supports both CUI and GUI; includes color & formatting parsing)"""
-    _reset_code = Color.reset if Color.reset else "\x1b[0m"
-    _display_text = src_text
-    # Trimming and wrapping logic based on the existing number of columns
-    if max_width > 0 and (_lines := split_by_width(src_text, max_width)):
-        _display_text = "\n".join(_lines) if wrap else _lines[0]
-    full_text = f"{_reset_code}{_display_text}{_reset_code}"
-    # If the GUI log window is enabled, the output is sent there with color analysis included.
-    if infosystem.is_gui and _gui_log_window and infosystem.log_window_active:
-        # When sending text to a Tkinter text widget, add a newline character at the end.
-        _gui_log_window.append_ansi_text(full_text + "\n")
+def set_gui_log_window(window_obj):
+    """ウィンドウの登録・解除を行う関数"""
+    global _gui_log_windows
+    if window_obj is None:
+        # None が渡されたら全クリア（アプリ終了時など）
+        _gui_log_windows.clear()
     else:
-        # Conventional CUI console output
-        print(full_text)
+        # 新しいウィンドウをリストに追加
+        _gui_log_windows.append(window_obj)
+
+
+def remove_gui_log_window(window_obj):
+    """特定のウィンドウが手動で閉じられた時にリストから除外する関数"""
+    global _gui_log_windows
+    if window_obj in _gui_log_windows:
+        _gui_log_windows.remove(window_obj)
+
+
+def eprint(full_text, *args, **kwargs):
+    import sys
+
+    from my_config import infosystem
+
+    # 📌 登録されているすべての有効なウィンドウに対してループでログを書き込む
+    has_written = False
+    if infosystem.is_gui and infosystem.log_window_active:
+        # リストのコピーを使って、ループ中の要素削除によるエラーを防ぐ
+        for win in list(_gui_log_windows):
+            try:
+                # ウィンドウの tkinter 要素がまだ存在しているか最終チェック
+                if hasattr(win, "win") and win.win.winfo_exists():
+                    win.append_ansi_text(full_text + "\n")
+                    has_written = True
+                else:
+                    _gui_log_windows.remove(win)  # 存在しなければリストから掃除
+            except Exception:  # noqa: BLE001, S110
+                pass
+
+    # GUIの窓が一つもない、またはCUI環境なら標準エラー出力へ
+    if not has_written:
+        print(full_text, file=sys.stderr)
 
 
 def count_full_width(src_text: str) -> int:

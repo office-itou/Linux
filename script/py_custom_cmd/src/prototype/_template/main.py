@@ -2,6 +2,7 @@
 # import re
 import tkinter as tk
 
+
 # from collections.abc import Callable
 # from tkinter import filedialog, messagebox, ttk
 
@@ -83,8 +84,8 @@ class MainWindow(MainWindowUI):
     @debug_logger
     def event_exec(self, event=None) -> None:
         eprint("実行")
-        self.log_win = DebugLogWindow(self.root)
-        set_gui_log_window(self.log_win)
+        new_log_win = DebugLogWindow(self.root)
+        set_gui_log_window(new_log_win)
         test()
 
 

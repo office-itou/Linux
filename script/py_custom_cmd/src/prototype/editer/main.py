@@ -17,7 +17,7 @@ from typing import Any
 #    sys.path.append(str(libsdir))
 # common functions
 #
-# lib_path = os.path.abspath("/srv/hgfs/linux/script/py_custom_cmd/src/")
+# lib_path = os.path.abspath("/srv/user/private/src/git/linux/script/py_custom_cmd/src/")
 # current_dir = os.path.dirname(os.path.abspath(__file__))
 # utils_path = os.path.abspath(os.path.join(lib_path, "common/utils"))
 # shared_path = os.path.abspath(os.path.join(lib_path, "common/shared"))

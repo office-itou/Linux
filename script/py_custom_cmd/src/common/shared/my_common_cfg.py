@@ -31,7 +31,6 @@ class ConfigurationData:
     comment: str = ""
 
 
-@debug_logger
 class InfoConfiguration:
     """common.cfg interface class"""
 

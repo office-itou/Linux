@@ -16,12 +16,45 @@ from my_config import infosystem
 # -----------------------------------------------------------------------------
 class DebugLogWindow:
     def __init__(self, parent_root: tk.Tk) -> None:
-        self.win = tk.Toplevel(parent_root)
+        self.win = tk.Toplevel(parent_root, name="debug_log_win")
         self.win.title("📂 Debug Log Monitor")
         self.win.attributes("-topmost", True)
+
+        # 親の最新の座標・サイズ情報を同期
+        parent_root.update_idletasks()
+        parent_x = parent_root.winfo_x()
+        parent_y = parent_root.winfo_y()
+        #parent_w = parent_root.winfo_width()
+
+        # 📌 基準となるタイトルの高さ（約35px）を「ずらし幅」として使用
+        title_height = 35  
+        
+        from my_config import infosystem
+        current_step = getattr(infosystem, "win_cascade_step", 0)
+
+        # 📌 最初の1個目は「親の右上端」にピタッと合わせる
+        # 2個目以降は、タイトルの高さ分だけ「右」かつ「上」へずらしていく
+        target_x = parent_x + ((current_step + 1) * title_height)
+        target_y = parent_y - ((current_step + 3) * title_height)
+
+        # Ubuntuの上部黒バー（システムバー）に潜り込まないための安全対策（Y座標の最低値）
+        # もし画面上部（バーの下）に収まらない場合は下方向へカスケードさせます
+        if target_y < 40:
+            target_y = parent_y + (current_step * title_height)
+
+        # 📌 geometryの適用（位置を設定）
+        self.win.geometry(f"600x400+{target_x}+{target_y}")
+
+        # カスケードのステップ更新（最大4枚まで重ねたらリセット）
+        if current_step >= 3:
+            infosystem.win_cascade_step = 0
+        else:
+            infosystem.win_cascade_step = current_step + 1
+        # ---------------------------------------------------------------------
         cols = infosystem.columns if infosystem.columns > 0 else 80
         self.win.protocol("WM_DELETE_WINDOW", self.on_close)
         infosystem.log_window_active = True
+        # ---------------------------------------------------------------------
         frame = ttk.Frame(self.win)
         frame.pack(fill="both", expand=True, padx=5, pady=5)
         self.text_area = tk.Text(
@@ -85,5 +118,13 @@ class DebugLogWindow:
         self.text_area.see("end")
 
     def on_close(self) -> None:
-        infosystem.log_window_active = False
+        # 📌 自分が閉じられたら、my_string の管理リストから自分自身を削除する
+        from my_string import remove_gui_log_window
+        remove_gui_log_window(self)
+        
+        # もし開いているサブウィンドウが完全にゼロになったらアクティブフラグを落とす
+        from my_string import _gui_log_windows
+        if not _gui_log_windows:
+            infosystem.log_window_active = False
+
         self.win.destroy()

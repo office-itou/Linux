@@ -38,6 +38,10 @@ class SystemData:
     gui_info_callback: Any = None
     gui_error_callback: Any = None
     log_window_active: bool = False
+    # --- Coordinate management for cascade layout ----------------------------
+    #     (initial position: X=50, Y=50)
+    next_win_x: int = 50
+    next_win_y: int = 50
     # --- laguage -------------------------------------------------------------
     lang: str = "en"
 

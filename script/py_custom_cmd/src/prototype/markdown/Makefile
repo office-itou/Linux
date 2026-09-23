@@ -6,11 +6,11 @@ PYTHON       = python3
 PIP          = pip
 PYINSTALLER  = pyinstaller
 MAIN_SCRIPT  = main.py
-EXE_NAME     = markdown
+EXE_NAME     = template
 IMPORT_PKGS  = tkinter
 
 # 常時使用する固定のパス定義は上部でOK
-SRC_DIR      = /srv/hgfs/linux/script/py_custom_cmd/src
+SRC_DIR      = /srv/user/private/src/git/linux/script/py_custom_cmd/src
 UTILS_DIR    = $(SRC_DIR)/common/utils
 SHARED_DIR   = $(SRC_DIR)/common/shared
 
