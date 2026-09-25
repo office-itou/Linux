@@ -8,8 +8,8 @@ from operator import attrgetter
 from pathlib import Path
 from typing import Any
 
-from packaging.version import InvalidVersion
-from packaging.version import parse as parse_version
+from my_colors import Color
+from my_config import infosystem
 
 # --- my library --------------------------------------------------------------
 from my_convert import (
@@ -18,13 +18,12 @@ from my_convert import (
     spc_decode,
     spc_encode,
 )
-
-from my_colors import Color
-from my_config import infosystem
 from my_debug import debug_logger
 from my_json import json_load, json_save
 from my_markdown import list2markdown
 from my_string import eprint
+from packaging.version import InvalidVersion
+from packaging.version import parse as parse_version
 
 # -----------------------------------------------------------------------------
 LIFE_MAP = {

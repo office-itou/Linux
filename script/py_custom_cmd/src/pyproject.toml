@@ -1,5 +1,0 @@
-[tool.ruff.lint.isort]
-# 自作のモジュール名やパッケージ名を指定して、強制的に「ローカルグループ」に分類させる
-known-local-folder = ["common", "card_editor", "log_monitor", "menu_data", "ui_layout", "utils"]
-# もしくは、セクションの間に必ず空行を入れる設定を明示する
-lines-between-types = 1

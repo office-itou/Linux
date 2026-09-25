@@ -11,10 +11,9 @@ from typing import TYPE_CHECKING, Any
 # --- my library --------------------------------------------------------------
 if TYPE_CHECKING:
     from my_common_cfg import InfoConfiguration
-from my_convert import get_text2list, put_list2text, spc_decode, spc_encode
-
 from my_colors import Color
 from my_config import infosystem
+from my_convert import get_text2list, put_list2text, spc_decode, spc_encode
 from my_debug import debug_logger
 from my_json import json_load, json_save
 from my_markdown import list2markdown

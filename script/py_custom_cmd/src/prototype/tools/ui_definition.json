@@ -13,7 +13,15 @@
       "btn_confirm": "✅ Confirm",
       "btn_exec": "Run",
       "btn_exit": "Exit",
-      "btn_debug": "Debug monitor"
+      "btn_debug": "Debug monitor",
+      "is_checked": "✅",
+      "type": "Type",
+      "entry_disp": "Display",
+      "release": "Release",
+      "support": "Support",
+      "memo": "Memo",
+      "lbl_table_active": "📊 Active data",
+      "lbl_table_archive": "🗄️ Archive data"
     },
     "ja": {
       "title": "テスト画面",
@@ -28,7 +36,15 @@
       "btn_confirm": "✅ 確定",
       "btn_exec": "実行",
       "btn_exit": "終了",
-      "btn_debug": "デバッグモニター"
+      "btn_debug": "デバッグモニター",
+      "is_checked": "✅",
+      "type": "種別",
+      "entry_disp": "表示名",
+      "release": "リリース",
+      "support": "サポート",
+      "memo": "メモ",
+      "lbl_table_active": "📊 アクティブデータ",
+      "lbl_table_archive": "🗄️ アーカイブデータ"
     }
   },
   "menus": [
@@ -134,6 +150,64 @@
         "pady": 10,
         "sticky": "ew"
       }
+    }
+  ],
+  "tables": [
+    {
+      "table_id": "active_table",
+      "label_key": "lbl_table_active",
+      "even_bg": "#ffffff",
+      "odd_bg": "#f3f4f6",
+      "updated_bg": "#e0f2fe",
+      "command_select_all": "event_active_select_all",
+      "command_deselect_all": "event_active_deselect_all",
+      "grid_layout": {
+        "row": 0,
+        "column": 0,
+        "row_span": 1,
+        "column_span": 1,
+        "padx": 10,
+        "pady": 10,
+        "sticky": "nsew"
+      },
+      "columns": [
+        {
+          "field": "is_checked",
+          "width": 40,
+          "anchor": "center"
+        },
+        {
+          "field": "type",
+          "width": -1,
+          "anchor": "center"
+        },
+        {
+          "field": "entry_disp",
+          "width": 100,
+          "anchor": "w"
+        },
+        {
+          "field": "release",
+          "width": -1,
+          "anchor": "center"
+        },
+        {
+          "field": "support",
+          "width": -1,
+          "anchor": "center"
+        },
+        {
+          "field": "web_tstamp",
+          "width": -1,
+          "anchor": "center",
+          "format": "{:%Y/%m/%d %H:%M}"
+        },
+        {
+          "field": "memo",
+          "width": -1,
+          "anchor": "w"
+        }
+      ]
     }
   ]
 }

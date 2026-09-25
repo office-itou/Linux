@@ -76,7 +76,6 @@ def test():
         eprint(f"{Color.reset}{text}{text}{Color.reset}", infosystem.columns, wrap=True)
 
 
-debug_logger
 def check_root(bypass: bool = False) -> bool:
     if bypass or os.geteuid() == 0:
         return True
@@ -105,7 +104,7 @@ def main():
             initialize()
             test()
         # --- termination process ---------------------------------------------
-        message_end(get_caller_name())
+        message_end(caller)
         # --- elapsed end -----------------------------------------------------
         message_elapsed(caller, time_elapsed.elapsed(), omit=True)
         # --- exit ------------------------------------------------------------

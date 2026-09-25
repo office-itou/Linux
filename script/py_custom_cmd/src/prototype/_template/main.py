@@ -16,7 +16,7 @@ from my_debug import debug_logger
 
 # from my_error import handle_fatal_error
 # from my_gui_buttons import create_action_button
-from my_gui_log_monitor import DebugLogWindow
+from my_gui_build_log_monitor import DebugLogWindow
 from my_mem_usage import print_peak_memory
 from my_message import (
     get_caller_name,

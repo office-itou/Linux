@@ -6,10 +6,9 @@ from pathlib import Path
 
 # --- my library --------------------------------------------------------------
 from my_common_cfg import InfoConfiguration
+from my_debug import debug_logger
 from my_distribution_dat import InfoDistribution
 from my_media_dat import InfoMedia
-
-from my_debug import debug_logger
 
 
 # =============================================================================

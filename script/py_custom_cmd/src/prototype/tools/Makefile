@@ -1,35 +1,66 @@
 # ==============================================================================
-# Python プロジェクト管理用 Makefile for Linux (複数ソース分割対応版)
+# Python プロジェクト管理用 Makefile (仮想環境 venv 特化・最軽量ビルド版)
 # ==============================================================================
 
-PYTHON       = python3
-PIP          = pip
-PYINSTALLER  = pyinstaller
-MAIN_SCRIPT  = main.py
-EXE_NAME     = template
-IMPORT_PKGS  = tkinter
+PYTHON        = python3
+PIP           = pip
+PYINSTALLER   = pyinstaller
 
-# 常時使用する固定のパス定義は上部でOK
+PROJECT_NAME  := $(notdir $(CURDIR))
+VENV_PATH     := $(HOME)/.venv_$(PROJECT_NAME)
+
+# 💡 実行ファイルの参照先をホームディレクトリの仮想環境へ向けます
+PYTHON        := $(VENV_PATH)/bin/python3
+PYINSTALLER   := $(VENV_PATH)/bin/pyinstaller
+PIP           := $(VENV_PATH)/bin/pip
+PIP_INSTALL   = pyinstaller ruff setuptools aiohttp aiofiles pandas python-magic bs4 rich natsort
+
+BUILD_ONEDIR  = --onedir
+BUILD_ONEFILE = --onefile
+BUILD_TYPE    = $(BUILD_ONEFILE)
+MAIN_SCRIPT   = main.py
+EXE_NAME      = template
+ADD_DATA_FILE = --add-data="ui_definition.json:."
+#IMPORT_PKGS   = --hidden-import="bs4" \
+#                --hidden-import="BeautifulSoup" \
+#                --hidden-import="urllib.parse" \
+#                --hidden-import="urlparse"
+#IMPORT_PKGS   = --collect-submodule tkinter
+#SUB_MODULES   = --collect-submodule my_config \
+#                --collect-submodule my_gui_build_helper \
+#                --collect-submodule my_gui_build_log_monitor \
+#                --collect-submodule my_mem_usage \
+#                --collect-submodule my_message \
+#                --collect-submodule my_shared \
+#                --collect-submodule my_string \
+#                --collect-submodule my_time
+UNIQUE_SUFFIX := $(USER)_$(PROJECT_NAME)
+TMP_WORK_DIR  := /tmp/pyinstaller_work_$(UNIQUE_SUFFIX)
+WORK_PATH     = --workpath="$(TMP_WORK_DIR)"
+#DIST_PATH     = --distpath="$(CURDIR)/dist"
+
+# パス定義
 SRC_DIR      = /srv/user/private/src/git/linux/script/py_custom_cmd/src
 UTILS_DIR    = $(SRC_DIR)/common/utils
 SHARED_DIR   = $(SRC_DIR)/common/shared
-
-# 💡 修正: shell pwd を毎回実行するのを防ぐため、Makefile組み込み変数 $(CURDIR) に変更
 CURRENT_DIR  = $(CURDIR)
-LIB_DIRS     = -p $(CURRENT_DIR) -p $(UTILS_DIR) -p $(SHARED_DIR)
+LIB_DIRS     = --paths $(CURRENT_DIR):$(UTILS_DIR):$(SHARED_DIR)
 
 .PHONY: help install run build clean ruff-init path-init
 
 help:
 	@echo "利用可能なコマンド一覧:"
-	@echo "  make install  - 必要なライブラリのインストールと各種初期設定を行います"
-	@echo "  make run      - アプリを起動します（開発テスト用）"
-	@echo "  make build    - 分割されたソースを統合し、単一の .exe を生成します"
-	@echo "  make clean    - ビルド時の一時フォルダやPythonのキャッシュを削除します"
+	@echo "  make install  - ホームディレクトリ配下に仮想環境を作成しライブラリを揃えます"
+	@echo "  make run      - 離れた場所にある仮想環境のPythonでアプリを起動します"
+	@echo "  make build    - 離れた場所にある仮想環境のPyInstallerで最軽量ビルドを行います"
+	@echo "  make clean    - ビルド一時ファイルやホームの仮想環境まで一括でクリーンアップします"
 
-# 💡 修正: path-init も一緒に自動実行されるように連結
+# 💡 仮想環境の自動作成とパッケージ導入を完全自動化
 install:
-	$(PIP) install pyinstaller ruff
+	@echo "📦 ホームディレクトリ配下に仮想環境を作成しています: $(VENV_PATH)"
+	python3 -m venv $(VENV_PATH)
+	$(PIP) install --upgrade pip
+	$(PIP) install $(PIP_INSTALL)
 	$(MAKE) ruff-init
 	$(MAKE) path-init
 
@@ -37,17 +68,20 @@ run:
 	$(PYTHON) $(MAIN_SCRIPT)
 
 build:
-	$(PYINSTALLER) --onefile --noconsole $(LIB_DIRS) --name=$(EXE_NAME) $(MAIN_SCRIPT)
+	@mkdir -p $(TMP_WORK_DIR)
+	# 💡 不要なシステム側パッケージを巻き込まないよう、仮想環境のPyInstallerを駆動
+	$(PYINSTALLER) $(BUILD_TYPE) $(LIB_DIRS) $(IMPORT_PKGS) $(ADD_DATA_FILE) $(WORK_PATH) --name=$(EXE_NAME) $(MAIN_SCRIPT)
+	@if [ -d $(TMP_WORK_DIR) ]; then rm -rf $(TMP_WORK_DIR); fi
 	@echo "--------------------------------------------------"
-	@echo "ビルド成功！ 'dist/$(EXE_NAME)' が生成されました。"
+	@echo "ビルド成功！ 'dist/template' が生成されました。"
+	@#if realpath $(CURRENT_DIR) | grep hgfs; then echo "hgfsを含まないディレクトリーで実行して下さい。遅いです。"; fi
 	@echo "--------------------------------------------------"
 
 clean:
-	@if [ -e build ]; then rm -rf build; fi
-	@if [ -e dist ]; then rm -rf dist; fi
-	@if [ -e __pycache__ ]; then rm -rf __pycache__; fi
-	@if [ -e .pytest_cache ]; then rm -rf .pytest_cache; fi
-	@if [ -e *.spec ]; then rm -f *.spec; fi
+	@rm -rf build dist __pycache__ .pytest_cache *.spec
+	@if [ -n "$(TMP_WORK_DIR)" ] && [ -d "$(TMP_WORK_DIR)" ]; then rm -rf "$(TMP_WORK_DIR)"; fi
+	@# 💡 安全装置付きでホームディレクトリの下の仮想環境を丸ごと削除
+	@if [ -n "$(VENV_PATH)" ] && [ -d "$(VENV_PATH)" ]; then rm -rf "$(VENV_PATH)"; fi
 	@echo "クリーンアップが完了しました。"
 
 # ==============================================================================
@@ -79,4 +113,28 @@ path-init:
 	@echo "$(SHARED_DIR)" >> $(PTH_FILE)
 	@echo "以下のパスを登録しました ($(PTH_FILE)):"
 	@cat $(PTH_FILE)
+	@echo "--------------------------------------------------"
+
+# ==============================================================================
+# 🌟 依存する apt-get パッケージの簡易リストアップ
+# ==============================================================================
+check-apt-deps:
+	@echo "🔍 ソースコードから必要な apt-get パッケージ候補を抽出しています..."
+	@echo "--------------------------------------------------"
+	@# 1. ローカルの独自モジュール（my_xxx や gui_xxx）の名前を取得
+	@LOCAL_MODS=$$(find . -maxdepth 1 -name "*.py" | sed 's|.*/||;s|\.py$$||'); \
+	\
+	# 2. .py ファイルから 'import xxx' や 'from xxx import' を抽出し、標準ライブラリや独自モジュールを除外
+	echo "📦 [apt-get install] 推奨パッケージ一覧:" ; \
+	grep -h -r -E "^(import|from)[[:space:]]+" . --include="*.py" | \
+	awk '{print $$2}' | sed 's/\..*//' | sort -u | \
+	while read -r mod; do \
+		# 標準モジュールやローカルモジュールならスキップ \
+		if echo "$$LOCAL_MODS asyncio tkinter datetime os sys threading pathlib" | grep -q -w "$$mod"; then \
+			if [ "$$mod" = "tkinter" ]; then echo "  -> python3-tk (Tkinter画面用)"; fi; \
+			continue; \
+		fi; \
+		# それ以外は python3-モジュール名 の形式で出力 \
+		echo "  -> python3-$$mod"; \
+	done
 	@echo "--------------------------------------------------"

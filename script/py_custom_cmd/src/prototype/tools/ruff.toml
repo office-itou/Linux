@@ -3,4 +3,4 @@ select = ["I", "E", "F"]
 
 [lint.isort]
 lines-after-imports = 2
-known-local-folder = ["functions", "messages", "ui_log_monitor", "ui_main_window"]
+known-local-folder = ["async_io", "gui_async_handler", "gui_build_table", "gui_window"]
