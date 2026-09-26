@@ -1,7 +1,6 @@
 # --- Python library ----------------------------------------------------------
 import re
 import tkinter as tk
-
 from tkinter import ttk
 
 # ruff: isort: off

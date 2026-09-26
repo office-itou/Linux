@@ -1,10 +1,8 @@
 # --- Python library ----------------------------------------------------------
 import asyncio
-
 from pathlib import Path
 
 import aiohttp  # sudo apt-get install python3-aiohttp
-
 from aiohttp import ClientTimeout
 
 # --- my library --------------------------------------------------------------
@@ -14,6 +12,7 @@ from my_message import (
     message_info,
 )
 from my_shared import InfoCommon
+
 
 # --- 設定項目（後から簡単に件数を変更可能） ----------------------------------
 MAX_CONCURRENT_REQUESTS = 3  # 同時アクセスする上限件数

@@ -3,7 +3,6 @@
 # --- Python library ----------------------------------------------------------
 import os
 import shutil
-
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -67,6 +66,7 @@ class InfoSystem:
         lang = detect_language() or "en"
         if is_gui:
             from tkinter import messagebox
+
             gui_error_callback = messagebox.showerror
             gui_info_callback = messagebox.showinfo
             log_window_active = True
@@ -102,7 +102,12 @@ class InfoSystem:
         return getattr(self.data, name)
 
     def __setattr__(self, name: str, value: Any) -> None:
-        if name != "data" and "data" in self.__dict__ and self.data is not None and hasattr(self.data, name):
+        if (
+            name != "data"
+            and "data" in self.__dict__
+            and self.data is not None
+            and hasattr(self.data, name)
+        ):
             setattr(self.data, name, value)
         else:
             super().__setattr__(name, value)

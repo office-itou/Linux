@@ -1,0 +1,6 @@
+[lint]
+select = ["I", "E", "F"]
+
+[lint.isort]
+lines-after-imports = 2
+known-local-folder = ["async_io", "gui_async_handler", "gui_custom_iso", "gui_custom_live", "gui_download", "gui_edit", "gui_ipxe", "gui_main", "gui_main_build", "gui_main_build_buttons", "gui_main_build_tables", "gui_main_event", "gui_markdown", "__init__", "__main__"]

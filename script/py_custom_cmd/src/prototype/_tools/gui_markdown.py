@@ -1,0 +1,2 @@
+class MarkdownWindow:
+    pass

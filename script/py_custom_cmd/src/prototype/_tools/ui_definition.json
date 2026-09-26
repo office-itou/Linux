@@ -1,0 +1,217 @@
+{
+  "messages": {
+    "en": {
+      "title": "Test Window",
+      "menu_file": "File",
+      "menu_open": "Open File...",
+      "menu_save": "Save",
+      "menu_save_as": "Save As...",
+      "menu_exit": "Exit",
+      "menu_lang": "Language",
+      "rdo_lang_en": "English",
+      "rdo_lang_ja": "Japanese",
+      "btn_confirm": "✅ Confirm",
+      "btn_exec": "Run",
+      "btn_exit": "Exit",
+      "btn_debug": "Monitor",
+      "is_checked": "✅",
+      "type": "Type",
+      "entry_disp": "Display",
+      "release": "Release",
+      "support": "Support",
+      "memo": "Memo",
+      "lbl_table_active": "📊 Active data",
+      "lbl_table_archive": "🗄️ Archive data"
+    },
+    "ja": {
+      "title": "テスト画面",
+      "menu_file": "ファイル",
+      "menu_open": "ファイルを開く...",
+      "menu_save": "上書き保存",
+      "menu_save_as": "名前を付けて保存...",
+      "menu_exit": "終了",
+      "menu_lang": "言語設定",
+      "rdo_lang_en": "英語(English)",
+      "rdo_lang_ja": "日本語(Japanese)",
+      "btn_confirm": "✅ 確定",
+      "btn_exec": "実行",
+      "btn_exit": "終了",
+      "btn_debug": "モニター",
+      "is_checked": "✅",
+      "type": "種別",
+      "entry_disp": "表示名",
+      "release": "リリース",
+      "support": "サポート",
+      "memo": "メモ",
+      "lbl_table_active": "📊 アクティブデータ",
+      "lbl_table_archive": "🗄️ アーカイブデータ"
+    }
+  },
+  "menus": [
+    {
+      "title_key": "menu_file",
+      "items": [
+        {
+          "type": "command",
+          "label_key": "menu_open",
+          "command_name": "event_open_file",
+          "accelerator": "Ctrl+O",
+          "bind": "<Control-o>"
+        },
+        {
+          "type": "command",
+          "label_key": "menu_save",
+          "command_name": "event_save_file",
+          "accelerator": "Ctrl+S",
+          "bind": "<Control-s>"
+        },
+        {
+          "type": "command",
+          "label_key": "menu_save_as",
+          "command_name": "event_save_file_as",
+          "accelerator": "Ctrl+Shift+S",
+          "bind": "<Control-Shift-S>"
+        },
+        {
+          "type": "separator"
+        },
+        {
+          "type": "command",
+          "label_key": "menu_exit",
+          "command_name": "event_quit_app",
+          "accelerator": "Ctrl+Q",
+          "bind": "<Control-q>"
+        }
+      ]
+    },
+    {
+      "title_key": "menu_lang",
+      "items": [
+        {
+          "type": "radio",
+          "label_key": "rdo_lang_en",
+          "command_name": "event_switch_language",
+          "variable_name": "current_lang_strvar",
+          "value": "en"
+        },
+        {
+          "type": "radio",
+          "label_key": "rdo_lang_ja",
+          "command_name": "event_switch_language",
+          "variable_name": "current_lang_strvar",
+          "value": "ja"
+        }
+      ]
+    }
+  ],
+  "button_layout": {
+    "side": "right",
+    "padx": 10,
+    "pady": 5
+  },
+  "buttons": [
+    {
+      "label_key": "btn_exec",
+      "command_name": "event_exec",
+      "grid_layout": {
+        "row": 0,
+        "column": 0,
+        "padx": 5,
+        "pady": 5
+      }
+    },
+    {
+      "label_key": "btn_confirm",
+      "command_name": "event_confirm",
+      "grid_layout": {
+        "row": 0,
+        "column": 1,
+        "padx": 5,
+        "pady": 5
+      }
+    },
+    {
+      "label_key": "btn_exit",
+      "command_name": "event_quit_app",
+      "grid_layout": {
+        "row": 0,
+        "column": 2,
+        "padx": 5,
+        "pady": 5
+      }
+    },
+    {
+      "label_key": "btn_debug",
+      "command_name": "event_debug_mon",
+      "grid_layout": {
+        "row": 0,
+        "column": 3,
+        "padx": 5,
+        "pady": 5
+      }
+    }
+  ],
+  "tables": [
+    {
+      "table_id": "active_table",
+      "label_key": "lbl_table_active",
+      "even_bg": "#ffffff",
+      "odd_bg": "#f3f4f6",
+      "updated_bg": "#e0f2fe",
+      "command_select_all": "event_active_select_all",
+      "command_deselect_all": "event_active_deselect_all",
+      "grid_layout": {
+        "row": 0,
+        "column": 0,
+        "row_span": 1,
+        "column_span": 1,
+        "padx": 10,
+        "pady": 10,
+        "sticky": "nsew"
+      },
+      "columns": [
+        {
+          "field": "is_checked",
+          "width": 40,
+          "anchor": "center"
+        },
+        {
+          "field": "type",
+          "width": -1,
+          "anchor": "center"
+        },
+        {
+          "field": "entry_disp",
+          "width": 100,
+          "anchor": "w"
+        },
+        {
+          "field": "release",
+          "width": -1,
+          "anchor": "center"
+        },
+        {
+          "field": "support",
+          "width": -1,
+          "anchor": "center"
+        },
+        {
+          "field": "web_tstamp",
+          "width": -1,
+          "anchor": "center",
+          "format": "{:%Y/%m/%d %H:%M}"
+        },
+        {
+          "field": "memo",
+          "width": -1,
+          "anchor": "w"
+        },
+        {
+          "field": "memo2",
+          "width": -1,
+          "anchor": "w"
+        }
+      ]
+    }
+  ]
+}

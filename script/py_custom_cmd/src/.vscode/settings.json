@@ -23,6 +23,7 @@
             "strings": true
         }
     },
+    "python.analysis.typeCheckingMode": "standard",
     "security.promptForLocalFileProtocolHandling": false,
     "chat.disableAIFeatures": true,
     "chat.extensionUnification.enabled": false,

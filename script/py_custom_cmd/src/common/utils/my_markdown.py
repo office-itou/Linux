@@ -3,9 +3,7 @@
 # --- Python library ----------------------------------------------------------
 import re
 
-import pandas as pd
-
-
+# ⭕ pandas のインポートを完全に削除
 # --- my library --------------------------------------------------------------
 from my_debug import debug_logger
 from my_file_api import file_read, file_write
@@ -24,12 +22,10 @@ def list2markdown(dest_path: str, md_title: str, src_datas: list) -> None:
     _spc_str = " " * 2
     _url_pattern = re.compile(
         r"^https?://(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}"
-        r"(?:/[a-zA-Z0-9._~:/?#\[\]@!$&\'()*+,;=%-]*)?$"
+        r"(?:/[a-zA-Z0-9._~:/?#\[\]@!\(&\'()*+,;=\%-]*)?\)"
     )
-    _comment_pattern = re.compile(r"^#.*$")
+    _comment_pattern = re.compile(r"^#.*\$")
 
-    # _addr_pattern = re.compile(r"^[A-Z0-9]+_ADDR$")
-    # _ip_pattern = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
     def _conversion_url(list_data: list) -> list:
         _conv_list_data = []
         for _dict_data in list_data:
@@ -46,17 +42,29 @@ def list2markdown(dest_path: str, md_title: str, src_datas: list) -> None:
         return _conv_list_data
 
     def _generate(list_data: list):
-        _df = pd.DataFrame(_conversion_url(list_data))
-        # --- get the width of each column ----------------------------------------
+        # ⭕ pandas.DataFrame の代わりに、変換済みの辞書のリストを直接扱う
+        _converted_data = _conversion_url(list_data)
+        if not _converted_data:
+            return ("", "", [])
+        # --- 列名 (ヘッダー) のリストを取得 (最初の要素のキー) ---------------------
+        _columns = list(_converted_data[0].keys())
+        # --- 各列の最大文字幅を計算 (純粋なループ処理で高速化) --------------------
         _col_sizes = {}
-        for _name in _df.columns:
+        for _name in _columns:
             _cnt_name = count_width(str(_name))
-            _max_size = _df[_name].apply(lambda x: count_width(str(x))).max()
+
+            # 各行の該当列の文字幅の最大値を取得
+            _max_size = 0
+            for _row_dict in _converted_data:
+                _val_str = str(_row_dict.get(_name, ""))
+                _w = count_width(_val_str)
+                _max_size = max(_max_size, _w)
+
             _col_sizes[_name] = max(_max_size, _cnt_name)
         # --- header and divider line ---------------------------------------------
         _header = ""
         _align = ""
-        for _name in _df.columns:
+        for _name in _columns:
             _colsize = _col_sizes[_name]
             _name_str = str(_name)
             _pad_total = _colsize - count_width(_name_str)
@@ -66,17 +74,18 @@ def list2markdown(dest_path: str, md_title: str, src_datas: list) -> None:
             _align += "|:" + "-" * (_colsize - 1)
         _header += "|"
         _align += "|"
-        # --- data ----------------------------------------------------------------
+        # --- data (iterrows() から通常のループに書き換え) -------------------------
         _md_rows = []
-        for _index, _row in _df.iterrows():
+        for _row_dict in _converted_data:
             _row_text = ""
-            for _name in _df.columns:
+            for _name in _columns:
                 _colsize = _col_sizes[_name]
-                _val_str = str(_row[_name])
+                _val_str = str(_row_dict.get(_name, ""))
                 _pad_r = _colsize - count_width(_val_str)
                 _row_text += f"|{_val_str}{' ' * _pad_r}"
             _row_text += "|"
             _md_rows.append(f"{_spc_str}{_row_text}")
+
         return (_header, _align, _md_rows)
 
     # --- output --------------------------------------------------------------
@@ -111,7 +120,7 @@ def markdown2list(src_path: str) -> list:
         _line_str = _line.strip()
         if _line_str.startswith("|") and _line_str.endswith("|"):
             _cells = [_cell.strip() for _cell in _line_str.split("|")[1:-1]]
-            if all(re.match(r"^:?-+:?$", c) for c in _cells):
+            if all(re.match(r"^:?-+:?\$", c) for c in _cells):
                 continue
             if not _headers:
                 _headers = _cells

@@ -34,6 +34,7 @@ install:
 	$(MAKE) path-init
 
 run:
+	@$(PYTHON) -c "import site; print(site.getsitepackages())"
 	$(PYTHON) $(MAIN_SCRIPT)
 
 build:

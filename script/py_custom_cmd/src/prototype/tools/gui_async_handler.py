@@ -1,11 +1,11 @@
 # gui_async_handler.py
 import asyncio
 import threading
-
 from typing import Any
 
-from async_io import get_web_file_info
 from my_string import eprint
+
+from async_io import get_web_file_info
 
 
 class AsyncProcessHandler:

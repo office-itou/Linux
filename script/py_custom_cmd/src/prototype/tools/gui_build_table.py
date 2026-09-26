@@ -1,5 +1,4 @@
 import tkinter as tk
-
 from datetime import datetime
 from tkinter import font, ttk
 from typing import Any

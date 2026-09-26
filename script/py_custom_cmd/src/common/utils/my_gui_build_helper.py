@@ -3,7 +3,6 @@ import json
 import os
 import sys
 import tkinter as tk
-
 from collections.abc import Callable
 from pathlib import Path
 from tkinter import ttk
@@ -14,7 +13,7 @@ def load_ui_definition(filename: str = "ui_definition.json") -> dict:
     """PyInstallerのビルド環境と通常実行環境の両方に対応した安全なJSON読み込み"""
     if hasattr(sys, "_MEIPASS"):
         # 💡 PyInstallerで固められた実行ファイルから呼ばれた場合 (_MEIPASS 内を探す)
-        base_path = Path(sys._MEIPASS)
+        base_path = Path(sys._MEIPASS)  # type: ignore
     else:
         # 💡 通常の python3 main.py で実行された場合 (カレントディレクトリ)
         base_path = Path(os.getcwd())
@@ -45,20 +44,24 @@ def build_menu_bar(
                 menu_block.add_separator()
                 continue
             label = messages.get(item.get("label_key", ""), "")
-            cmd = commands.get(item.get("command_name", ""), None)
-            if item_type == "command":
-                acc = item.get("accelerator", "")
-                bind = item.get("bind", "")
-                menu_block.add_command(label=label, command=cmd, accelerator=acc)
-                if bind and cmd:
-                    root.unbind_all(bind)
-                    root.bind(bind, cmd)
-            elif item_type == "radio":
-                var = variables.get(item.get("variable_name", ""), None)
-                val = item.get("value")
-                menu_block.add_radiobutton(
-                    label=label, variable=var, value=val, command=cmd
-                )
+            cmd: Any | None = commands.get(item.get("command_name", ""), None)
+            if cmd:
+                if item_type == "command":
+                    acc = item.get("accelerator", "")
+                    bind = item.get("bind", "")
+                    menu_block.add_command(label=label, command=cmd, accelerator=acc)
+                    if bind and cmd:
+                        root.unbind_all(bind)
+                        root.bind(bind, cmd)
+                elif item_type == "radio":
+                    var: tk.Variable | None = variables.get(
+                        item.get("variable_name", ""), None
+                    )
+                    if var:
+                        val = item.get("value")
+                        menu_block.add_radiobutton(
+                            label=label, variable=var, value=val, command=cmd
+                        )
         block_title = messages.get(block.get("title_key", ""), "")
         menubar.add_cascade(label=block_title, menu=menu_block)
     root.config(menu=menubar)
@@ -81,22 +84,23 @@ def build_buttons(
     created_buttons = []
     for btn_info in button_data:
         label = messages.get(btn_info.get("label_key", ""), "")
-        cmd = commands.get(btn_info.get("command_name", ""), None)
-        # ttk.Buttonの作成
-        btn = ttk.Button(parent, text=label, command=cmd)
-        # gridレイアウトの設定取得
-        grid_info = btn_info.get("grid_layout", {})
-        # gridのパラメータを動的にマッピング (省略された場合はデフォルト値)
-        grid_kwargs = {
-            "row": grid_info.get("row", 0),
-            "column": grid_info.get("column", 0),
-            "rowspan": grid_info.get("row_span", 1),
-            "columnspan": grid_info.get("column_span", 1),
-            "padx": grid_info.get("padx", 0),
-            "pady": grid_info.get("pady", 0),
-            "sticky": grid_info.get("sticky", ""),
-        }
-        # グリッド配置を実行
-        btn.grid(**grid_kwargs)
-        created_buttons.append(btn)
+        cmd: Any | None = commands.get(btn_info.get("command_name", ""), None)
+        if cmd:
+            # ttk.Buttonの作成
+            btn = ttk.Button(parent, text=label, command=cmd)
+            # gridレイアウトの設定取得
+            grid_info = btn_info.get("grid_layout", {})
+            # gridのパラメータを動的にマッピング (省略された場合はデフォルト値)
+            grid_kwargs = {
+                "row": grid_info.get("row", 0),
+                "column": grid_info.get("column", 0),
+                "rowspan": grid_info.get("row_span", 1),
+                "columnspan": grid_info.get("column_span", 1),
+                "padx": grid_info.get("padx", 0),
+                "pady": grid_info.get("pady", 0),
+                "sticky": grid_info.get("sticky", ""),
+            }
+            # グリッド配置を実行
+            btn.grid(**grid_kwargs)
+            created_buttons.append(btn)
     return created_buttons

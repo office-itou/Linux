@@ -1,17 +1,16 @@
 # gui_window.py
 import tkinter as tk
-
 from collections.abc import Callable
 from tkinter import ttk
-from typing import Any
 
-from gui_async_handler import AsyncProcessHandler  # 💡 先ほど分けたハンドラをインポート
-from gui_build_table import build_tables
 from my_config import infosystem
 from my_gui_build_helper import build_buttons, build_menu_bar, load_ui_definition
 from my_gui_build_log_monitor import DebugLogWindow
 from my_shared import InfoCommon
 from my_string import eprint, set_gui_log_window
+
+from gui_async_handler import AsyncProcessHandler  # 💡 先ほど分けたハンドラをインポート
+from gui_build_table import build_tables
 
 
 class MainWindow:
@@ -28,7 +27,7 @@ class MainWindow:
         # 3. 画面の構築
         self.generate_window()
 
-    def _get_command_map(self) -> dict[str, Callable[[Any], None]]:
+    def _get_command_map(self) -> dict[str, Callable]:
         return {
             "event_open_file": self.event_open_file,
             "event_save_file": self.event_save_file,
