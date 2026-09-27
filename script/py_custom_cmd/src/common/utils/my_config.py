@@ -2,18 +2,15 @@
 
 # --- Python library ----------------------------------------------------------
 import os
-import shutil
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-import __main__
 
-
-# ruff: isort: off
 # --- my library --------------------------------------------------------------
+# ruff: isort: off
 # ruff: isort: on
-# -----------------------------------------------------------------------------
+# =============================================================================
 @dataclass
 class SystemData:
     """System data class (For both CUI/GUI)"""
@@ -50,20 +47,31 @@ class InfoSystem:
     """System information class"""
 
     def __init__(self) -> None:
+        # __init__ はインスタンス変数の枠だけを用意し、
+        # 重い処理やインポートは一切行わない
         self.data: SystemData | None = None
 
-    def initialize(self, is_gui: bool = False) -> None:
+    def _create_system_data(self, is_gui: bool) -> SystemData:
+        """引数の is_gui に応じて、環境情報を解析し
+        SystemData インスタンスを生成する共通メソッド"""
+        import shutil
+
+        from common.utils import detect_language
+
+        import __main__
+
         terminal_size = shutil.get_terminal_size()
+
+        # 実行中のプログラム名とユーザー環境情報の取得
         program_name = (
             Path(__main__.__file__).stem
             if hasattr(__main__, "__file__")
             else "interactive"
         )
         exec_user = os.getenv("SUDO_USER", os.getenv("USER"))
-        home_dir = os.getenv("SUDO_HOME")
-        from my_language import detect_language
-
+        home_dir = os.getenv("SUDO_HOME") or os.getenv("HOME") or f"/home/{exec_user}"
         lang = detect_language() or "en"
+        # GUIとCUIによるパラメータの振り分け処理（一本化）
         if is_gui:
             from tkinter import messagebox
 
@@ -80,25 +88,33 @@ class InfoSystem:
             columns = terminal_size.columns
             rows = terminal_size.lines
             debugout = False
-        self.data = SystemData(
+        return SystemData(
             lang=lang,
             is_gui=is_gui,
             debugout=debugout,
             program_name=program_name,
             columns=columns,
             rows=rows,
-            exec_user=exec_user,
-            home_dir=home_dir or os.getenv("HOME") or f"/home/{exec_user}",
+            exec_user=exec_user if exec_user else "",
+            home_dir=home_dir if home_dir else "",
             gui_error_callback=gui_error_callback,
             gui_info_callback=gui_info_callback,
             log_window_active=log_window_active,
         )
 
-    def __getattr__(self, name: str) -> Any:
+    def _ensure_default_data(self) -> None:
+        """データが未初期化の場合にのみ、最小限のデフォルトデータを安全に生成する"""
         if self.data is None:
-            raise RuntimeError(
-                "InfoSystem has not been initialized yet. Call initialize() first."
-            )
+            # 共通メソッドを CUIモード(False) で呼び出す
+            self.data = self._create_system_data(is_gui=False)
+
+    def initialize(self, is_gui: bool = False) -> None:
+        """明示的にGUI/CUI環境の最適化初期化を行う"""
+        # 共通メソッドを呼び出してインスタンスを上書き
+        self.data = self._create_system_data(is_gui=is_gui)
+
+    def __getattr__(self, name: str) -> Any:
+        self._ensure_default_data()
         return getattr(self.data, name)
 
     def __setattr__(self, name: str, value: Any) -> None:
@@ -113,6 +129,7 @@ class InfoSystem:
             super().__setattr__(name, value)
 
     def to_dict(self) -> dict[str, Any]:
+        self._ensure_default_data()
         if self.data is None:
             return {}
         return asdict(self.data)

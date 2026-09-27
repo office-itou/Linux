@@ -1,15 +1,25 @@
+#!/usr/bin/env python3
 """main task"""
 
 # --- python library ----------------------------------------------------------
+import sys
 import tkinter as tk
+from pathlib import Path
 
 
+sys.path.append(str(Path(__file__).resolve().parents[2]))
 # --- my library --------------------------------------------------------------
 # ruff: isort: off
-from my_config import infosystem
-from my_mem_usage import print_peak_memory
-from my_message import get_caller_name, message_elapsed, message_end, message_start
-from my_time import TimeElapsed
+import my_env_guard  # noqa: F401
+from common.utils import (
+    TimeElapsed,
+    get_caller_name,
+    infosystem,
+    message_elapsed,
+    message_end,
+    message_start,
+    print_peak_memory,
+)
 
 # ruff: isort: on
 # --- gui window module ------------------------------------------------------

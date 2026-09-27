@@ -2,30 +2,32 @@
 
 # --- Python library ----------------------------------------------------------
 import re
-
 from dataclasses import dataclass, fields
 from operator import attrgetter
 from pathlib import Path
 from typing import Any
 
-from my_colors import Color
-from my_config import infosystem
 
 # --- my library --------------------------------------------------------------
-from my_convert import (
+# ruff: isort: off
+from common.utils import (
+    Color,
+    infosystem,
+    debug_logger,
+    json_load,
+    json_save,
+    list2markdown,
+    eprint,
+)
+from common.shared import (
     get_text2list,
     put_list2text,
     spc_decode,
     spc_encode,
 )
-from my_debug import debug_logger
-from my_json import json_load, json_save
-from my_markdown import list2markdown
-from my_string import eprint
-from packaging.version import InvalidVersion
-from packaging.version import parse as parse_version
 
-# -----------------------------------------------------------------------------
+# ruff: isort: on
+# =============================================================================
 LIFE_MAP = {
     "-": "Current (supported)",
     "elts": "Extended Long-Term Support",
@@ -112,7 +114,7 @@ class InfoDistribution:
         Args:
             src_path (Path): Source path
         """
-        _raw_data = json_load(src_path) if src_path.exists() else [{None}]
+        _raw_data: list[dict[str, str]] = json_load(src_path)
         _decoded_data = spc_decode(_raw_data)
         self.data: list[DistributionData] = [
             DistributionData(**d) if isinstance(d, dict) else d for d in _decoded_data
@@ -124,7 +126,11 @@ class InfoDistribution:
         Args:
             dest_path (Path): Destination path
         """
-        _data_dicts = [d.__dict__ if hasattr(d, "__dict__") else d for d in self.data]
+        _data_dicts: list[dict[str, str]] = [
+            d.__dict__ if hasattr(d, "__dict__") else getattr(d, f.name)
+            for d in self.data
+            for f in fields(d)
+        ]
         _encoded_data = spc_encode(_data_dicts)
         json_save(dest_path, _encoded_data)
 
@@ -233,7 +239,11 @@ class InfoDistribution:
             dest_path (Path): Destination path
             format_str (str): Output format
         """
-        _data_dicts = [d.__dict__ if hasattr(d, "__dict__") else d for d in self.data]
+        _data_dicts: list[dict[str, str]] = [
+            d.__dict__ if hasattr(d, "__dict__") else getattr(d, f.name)
+            for d in self.data
+            for f in fields(d)
+        ]
         _encoded_data = spc_encode(_data_dicts)
         put_list2text(dest_path, _encoded_data, format_str)
 
@@ -251,20 +261,38 @@ class InfoDistribution:
         return sort_distribution_data(self.data, distribution, reverse)
 
 
+def parse_version_to_tuple(version_str: str) -> tuple[int, ...]:
+    """文字列のバージョン番号を比較可能な数値のタプルに変換する (標準機能のみ)
+
+    例: "1.2.3.4" -> (1, 2, 3, 4)
+    数字以外の文字が含まれる、またはパースできない場合は ValueError を発生させる
+    """
+    # バージョン文字列から数字とドット以外を排除・クリーンアップ
+    cleaned = re.sub(r"[^\d.]", "", version_str).strip(".")
+    if not cleaned:
+        raise ValueError("Invalid version format")
+
+    # ドットで分割してすべて整数(int)に変換
+    return tuple(map(int, cleaned.split(".")))
+
+
 @debug_logger
 def sort_distribution_data(
-    data: DistributionData, distribution: str = "", reverse: bool = False
-) -> list[DistributionData]:
+    data: list, distribution: str = "", reverse: bool = False
+) -> list:
     """Sort and output the DistributionData class.
     Args:
-        data (DistributionData): Source data
+        data (list): Source data (DistributionDataのリスト)
         distribution (str, optional): Target distribution. Defaults to "".
         reverse (bool, optional): Reverse off/on. Defaults to False.
     Returns:
-        list[DistributionData]: DistributionData class
+        list: Sorted DistributionData list
     """
     selected_data_pattern = re.compile(rf"^{re.escape(distribution)}(|-).+$")
+
+    # 💡 data 自体がリスト等のイテラブルであるため、内包表記でマッチする要素を抽出
     selected_data = [item for item in data if selected_data_pattern.match(item.version)]
+
     base_match_pattern = re.compile(
         r"^([a-zA-Z0-9_-]+?)-(?=\d|testing|sid|tumbleweed|x86|x64)"
     )
@@ -274,6 +302,7 @@ def sort_distribution_data(
         v_str = item.version
         if distribution and v_str.startswith(f"{distribution}-"):
             v_str = v_str[len(distribution) + 1 :]
+
         base_match = base_match_pattern.match(v_str)
         if base_match:
             base_name = base_match.group(1)
@@ -281,19 +310,26 @@ def sort_distribution_data(
         else:
             base_name = ""
             version_part = v_str
+
         version_part = re.sub(
             r"(\d+)h(\d+)", r"\1.\2", version_part, flags=re.IGNORECASE
         )
+
         num_match = num_match_pattern.search(version_part)
         if num_match:
             try:
-                return (base_name, 2, parse_version(num_match.group(1)))
-            except InvalidVersion:
+                # ⭕ parse_version の代わりに数値タプル化関数を適用
+                return (base_name, 2, parse_version_to_tuple(num_match.group(1)))
+            except ValueError:  # ⭕ InvalidVersion の代わりに ValueError を検知
                 pass
+
         if version_part:
             return (base_name, 3, version_part)
-        return (base_name, 0, parse_version("0.0.0"))
 
+        # ⭕ "0.0.0" もタプルで表現
+        return (base_name, 0, (0, 0, 0))
+
+    # ソート処理の実行
     step1 = sorted(selected_data, key=make_universal_sort_key, reverse=reverse)
     sorted_datas = sorted(step1, key=attrgetter("sort_flag"), reverse=reverse)
     return sorted_datas

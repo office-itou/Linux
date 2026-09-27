@@ -1,0 +1,7 @@
+[lint]
+select = ["I", "E", "F"]
+ignore = ["EXE002"]
+
+[lint.isort]
+lines-after-imports = 2
+known-local-folder = ["my_common_cfg", "my_convert", "my_distribution_dat", "my_media_dat", "my_shared", "__init__", "__main__"]

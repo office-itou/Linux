@@ -3,27 +3,33 @@
 # --- Python library ----------------------------------------------------------
 import inspect
 import sys
-
 from collections.abc import Callable
 
+
 # --- my library --------------------------------------------------------------
-from my_colors import Color
-from my_config import infosystem
-from my_message import generate_comment, message_debug
+# ruff: isort: off
+from common.utils import Color, infosystem, generate_comment, message_debug, eprint
 
 
-# -----------------------------------------------------------------------------
+# ruff: isort: on
+# =============================================================================
 def debug_logger(func: Callable):
     """Debug output decorator"""
 
     # -------------------------------------------------------------------------
     def _wrapper(*args, **kwargs):
+        if not infosystem:
+            raise SystemExit("no initialize")
         # --- get the caller's frame ------------------------------------------
-        _frame = inspect.currentframe().f_back
-        _func_name = str(_frame.f_code.co_name)
-        # _file_name = str(Path(_frame.f_code.co_filename).stem)
-        _modu_name = str(_frame.f_globals.get("__name__"))
-        _call_info = f"{_modu_name}({_func_name})"
+        _frame = inspect.currentframe()
+        if _frame is not None and _frame.f_back is not None:
+            _func_name = str(_frame.f_back.f_code.co_name)
+            _modu_name = str(_frame.f_back.f_globals.get("__name__"))
+            _call_info = f"{_modu_name}({_func_name})"
+        else:
+            _func_name = "unknown"
+            _modu_name = "unknown"
+            _call_info = "unknown"
         # --- generation of function information and comments -----------------
         _args_str = ", ".join(repr(x) for x in args) if args else ""
         _kwargs_str = (
@@ -47,29 +53,39 @@ def debug_logger(func: Callable):
 
 # -----------------------------------------------------------------------------
 def debug_chk_cui(func: Callable):
-    """A decorator that forces termination if a CUI-only function is called from a GUI environment."""
+    """A decorator that forces termination
+    if a CUI-only function is called from a GUI environment."""
 
     def _wrapper(*args, **kwargs):
         # --- Defensive processing when invoked from a GUI environment --------
         if infosystem.is_gui:
-            _frame = inspect.currentframe().f_back
-            _func_name = str(_frame.f_code.co_name)
-            _modu_name = str(_frame.f_globals.get("__name__"))
-            _call_info = f"{_modu_name}({_func_name})"
+            _frame = inspect.currentframe()
+            if _frame is not None and _frame.f_back is not None:
+                _func_name = str(_frame.f_back.f_code.co_name)
+                _modu_name = str(_frame.f_back.f_globals.get("__name__"))
+                _call_info = f"{_modu_name}({_func_name})"
+            else:
+                _func_name = "unknown"
+                _modu_name = "unknown"
+                _call_info = "unknown"
             # -----------------------------------------------------------------
             if infosystem.gui_error_callback:
                 infosystem.gui_error_callback(
                     "System Error",
-                    f"A CUI-only function was called from the GUI:\n{func.__name__}\n\nCaller:\n{_call_info}",
+                    f"A CUI-only function was called from the GUI:\n"
+                    f"{func.__name__}\n\nCaller:\n{_call_info}",
                 )
             else:
-                # --- Fallback mechanism in the event that a callback is not registered. ---
+                # --- Fallback mechanism in the event
+                #     that a callback is not registered. ---
                 print(
-                    f"🚨 [Error] CUI function '{func.__name__}' called from GUI by {_call_info}",
+                    f"🚨 [Error] CUI function '{func.__name__}' "
+                    f"called from GUI by {_call_info}",
                     file=sys.stderr,
                 )
             raise SystemExit(1)  # Safely exit the application
-        # --- In a CUI environment, the original function is executed as-is, and the result is returned. ---
+        # --- In a CUI environment, the original function is executed as-is,
+        #     and the result is returned. ---
         return func(*args, **kwargs)
 
     return _wrapper
@@ -81,7 +97,7 @@ def debugout_scale(size: int):
     Args:
         size (int): Scale value
     """
-    _eprint = lambda *args, **kwargs: print(*args, file=sys.stderr, **kwargs)
+    # _eprint = lambda *args, **kwargs: print(*args, file=sys.stderr, **kwargs)
     # _scale_u = "".join(
     #     str(i // 100)[-1] if i % 10 == 0 else " " for i in range(1, size + 1)
     # )
@@ -89,9 +105,9 @@ def debugout_scale(size: int):
         str((i // 10) % 10) if i % 10 == 0 else " " for i in range(1, size + 1)
     )
     _scale_l = "".join(str(i % 10) for i in range(1, size + 1))
-    # _eprint(scale_u)
-    _eprint(_scale_m)
-    _eprint(_scale_l)
+    # eprint(scale_u)
+    eprint(_scale_m)
+    eprint(_scale_l)
 
 
 # -----------------------------------------------------------------------------

@@ -3,9 +3,10 @@ import re
 import tkinter as tk
 from tkinter import ttk
 
+
 # ruff: isort: off
 # --- my library --------------------------------------------------------------
-from my_config import infosystem
+from common.utils import infosystem
 
 
 # ruff: isort: on
@@ -23,12 +24,12 @@ class DebugLogWindow:
         parent_root.update_idletasks()
         parent_x = parent_root.winfo_x()
         parent_y = parent_root.winfo_y()
-        #parent_w = parent_root.winfo_width()
+        # parent_w = parent_root.winfo_width()
 
         # 📌 基準となるタイトルの高さ（約35px）を「ずらし幅」として使用
-        title_height = 35  
-        
-        from my_config import infosystem
+        title_height = 35
+
+        from common.utils import infosystem
         current_step = getattr(infosystem, "win_cascade_step", 0)
 
         # 📌 最初の1個目は「親の右上端」にピタッと合わせる
@@ -36,7 +37,7 @@ class DebugLogWindow:
         target_x = parent_x + ((current_step + 1) * title_height)
         target_y = parent_y - ((current_step + 3) * title_height)
 
-        # Ubuntuの上部黒バー（システムバー）に潜り込まないための安全対策（Y座標の最低値）
+        # Ubuntuの上部黒バー（システムバー）に潜り込まないための安全対策（Y座標の最低値）  # noqa: E501
         # もし画面上部（バーの下）に収まらない場合は下方向へカスケードさせます
         if target_y < 40:
             target_y = parent_y + (current_step * title_height)
@@ -118,11 +119,11 @@ class DebugLogWindow:
 
     def on_close(self) -> None:
         # 📌 自分が閉じられたら、my_string の管理リストから自分自身を削除する
-        from my_string import remove_gui_log_window
+        from common.utils import remove_gui_log_window
         remove_gui_log_window(self)
-        
+
         # もし開いているサブウィンドウが完全にゼロになったらアクティブフラグを落とす
-        from my_string import _gui_log_windows
+        from common.utils import _gui_log_windows
         if not _gui_log_windows:
             infosystem.log_window_active = False
 

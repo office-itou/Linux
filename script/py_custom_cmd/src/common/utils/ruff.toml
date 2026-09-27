@@ -1,0 +1,7 @@
+[lint]
+select = ["I", "E", "F"]
+ignore = ["EXE002"]
+
+[lint.isort]
+lines-after-imports = 2
+known-local-folder = ["my_argument", "my_colors", "my_config", "my_debug", "my_error", "my_file_api", "my_gui_build_helper", "my_gui_build_log_monitor", "my_gui_init", "my_infofile", "my_infoweb", "my_json", "my_language", "my_markdown", "-", "コピー", "my_markdown", "my_mem_usage", "my_message", "my_process", "my_string", "my_time", "my_web_api", "__init__", "__main__"]

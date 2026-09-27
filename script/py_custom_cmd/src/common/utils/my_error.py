@@ -4,12 +4,14 @@
 import sys
 import traceback
 
+
 # --- my library --------------------------------------------------------------
-from my_config import infosystem
-from my_debug import debug_logger
-from my_message import message_alert
+# ruff: isort: off
+from common.utils import infosystem, debug_logger, message_alert
 
 
+# ruff: isort: on
+# =============================================================================
 @debug_logger
 def handle_fatal_error(caller: str, e: Exception, omit: bool = False) -> None:
     """Fatal error handler (For both CUI/GUI)
@@ -32,7 +34,6 @@ def handle_fatal_error(caller: str, e: Exception, omit: bool = False) -> None:
         )
     # --- Processing in GUI mode ----------------------------------------------
     if infosystem.is_gui and infosystem.gui_error_callback:
-        # --- Launch the dialog using the main window's name (or similar) as the title. ---
         infosystem.gui_error_callback(f"Error ({caller})", _error_msg)
         sys.exit(1)  # Safely terminate the GUI thread
     else:

@@ -4,19 +4,25 @@
 import os
 import re
 import shutil
-
 from datetime import datetime
 from pathlib import Path
 
+
 # --- my library --------------------------------------------------------------
-from my_config import infosystem
-from my_debug import debug_logger
-from my_error import handle_fatal_error
-from my_message import get_caller_name, message_alert
+# ruff: isort: off
+from common.utils import (
+    infosystem,
+    debug_logger,
+    handle_fatal_error,
+    get_caller_name,
+    message_alert,
+)
 
 
+# ruff: isort: on
+# =============================================================================
 @debug_logger
-def file_read(src_path: Path, text: bool = True) -> str | bytes:
+def file_read(src_path: Path, text: bool = True) -> str | bytes | None:
     """File read (line break codes in text files are standardized to "\n")
     Args:
         src_path (Path): Source path
@@ -32,10 +38,11 @@ def file_read(src_path: Path, text: bool = True) -> str | bytes:
         _src_path = src_path.resolve()
         _mode = "r" if text else "rb"
         _encoding = "utf-8" if text else None
-        with open(src_path, mode=_mode, encoding=_encoding, newline=None) as f:
+        with open(_src_path, mode=_mode, encoding=_encoding, newline=None) as f:
             return f.read()
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e)
+    return None
 
 
 @debug_logger
@@ -63,20 +70,20 @@ def file_write(
         _newline = "\n" if text else None
         if data is None:
             data = "" if text else b""
-        dest_path.parent.mkdir(parents=True, exist_ok=True)
+        _dest_path.parent.mkdir(parents=True, exist_ok=True)
         if backup:
-            file_backup(dest_path)
-        with open(dest_path, mode=_mode, encoding=_encoding, newline=_newline) as f:
+            file_backup(_dest_path)
+        with open(_dest_path, mode=_mode, encoding=_encoding, newline=_newline) as f:
             f.write(data)
             f.flush()
             os.fsync(f.fileno())
-        if not dest_path.exists():
+        if not _dest_path.exists():
             if infosystem.is_gui and infosystem.gui_error_callback:
                 infosystem.gui_error_callback(
-                    "File Error", f"Failed to write file:\n{dest_path}"
+                    "File Error", f"Failed to write file:\n{_dest_path}"
                 )
             else:
-                message_alert(get_caller_name(), f"failed: {dest_path}")
+                message_alert(get_caller_name(), f"failed: {_dest_path}")
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e)
 
@@ -91,11 +98,12 @@ def file_copy(src_path: Path, dest_path: Path, backup: bool = False) -> None:
     """
     _caller = get_caller_name()
     try:
-        dest_path = dest_path.resolve()
-        dest_path.parent.mkdir(parents=True, exist_ok=True)
-        if bool == True:
-            file_backup(dest_path)
-            shutil.copy2(src_path, dest_path)
+        _src_path = src_path.resolve()
+        _dest_path = dest_path.resolve()
+        _dest_path.parent.mkdir(parents=True, exist_ok=True)
+        if bool:
+            file_backup(_dest_path)
+            shutil.copy2(_src_path, _dest_path)
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e)
 
@@ -108,16 +116,16 @@ def file_backup(src_path: Path) -> None:
     """
     _caller = get_caller_name()
     try:
-        src_path = src_path.resolve()
-        if src_path.exists() and src_path.is_file():
+        _src_path = src_path.resolve()
+        if _src_path.exists() and _src_path.is_file():
             # --- backup ------------------------------------------------------
             _timestamp = datetime.now().astimezone().strftime("%Y%m%d%H%M%S_%f")
-            _base_name = src_path.stem
-            _ext = src_path.suffix
-            _backup_path = src_path.with_name(f"{_base_name}_{_timestamp}{_ext}")
-            shutil.copy2(src_path, _backup_path)
+            _base_name = _src_path.stem
+            _ext = _src_path.suffix
+            _backup_path = _src_path.with_name(f"{_base_name}_{_timestamp}{_ext}")
+            shutil.copy2(_src_path, _backup_path)
             # --- history & cleanup -------------------------------------------
-            _all_files = src_path.parent.glob(f"{_base_name}_*{_ext}")
+            _all_files = _src_path.parent.glob(f"{_base_name}_*{_ext}")
             _pattern = re.compile(
                 rf"^{re.escape(_base_name)}_\d{{14}}_\d{{6}}{re.escape(_ext)}$"
             )

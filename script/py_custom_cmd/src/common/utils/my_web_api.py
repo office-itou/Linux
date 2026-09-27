@@ -4,7 +4,6 @@
 import asyncio
 import os
 import shutil
-
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -14,11 +13,15 @@ from pathlib import Path
 import aiofiles  # sudo apt-get install python3-aiofiles
 import aiohttp  # sudo apt-get install python3-aiohttp
 
-
 # --- my library --------------------------------------------------------------
-from my_debug import debug_logger
-from my_error import handle_fatal_error
-from my_message import get_caller_name, message_alert, message_info, message_warn
+from common.utils import (
+    debug_logger,
+    get_caller_name,
+    handle_fatal_error,
+    message_alert,
+    message_info,
+    message_warn,
+)
 from rich.progress import (
     BarColumn,
     DownloadColumn,

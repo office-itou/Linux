@@ -1,27 +1,28 @@
-from __future__ import annotations
-
 """common.cfg I/O"""
+
 # --- Python library ----------------------------------------------------------
 import re
-
 from dataclasses import dataclass, fields
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
+
 
 # --- my library --------------------------------------------------------------
-if TYPE_CHECKING:
-    from my_media_dat import MediaData
-from my_colors import Color
-from my_config import infosystem
-from my_debug import debug_logger
-from my_error import handle_fatal_error
-from my_file_api import file_read
-from my_markdown import list2markdown
-from my_message import get_caller_name, message_alert
-from my_string import eprint
+# ruff: isort: off
+from common.utils import (
+    Color,
+    infosystem,
+    debug_logger,
+    file_read,
+    list2markdown,
+    get_caller_name,
+    message_alert,
+    eprint,
+)
 
 
-# -----------------------------------------------------------------------------
+# ruff: isort: on
+# =============================================================================
 @dataclass
 class ConfigurationData:
     """common.cfg data class"""
@@ -59,9 +60,7 @@ class InfoConfiguration:
     @debug_logger
     def load(self) -> None:
         """Load file"""
-        self.data: list[ConfigurationData] = [
-            ConfigurationData(**d) if isinstance(d, dict) else d for d in load()
-        ]
+        self.data: list[ConfigurationData] = load()
 
     @debug_logger
     def findregexp(self, queries: list[dict[str, str]]) -> list[ConfigurationData]:
@@ -150,7 +149,7 @@ class InfoConfiguration:
             eprint(f"{Color.yellow}{_text}{Color.reset}")
 
     @debug_logger
-    def conv2data(self, src_data: list[MediaData]) -> list[MediaData]:
+    def conv2data(self, src_data: list[dict[str, str]]) -> list[dict[str, str]]:
         """Convert actual data to variable names
         Args:
             src_data (list): Source data
@@ -160,7 +159,7 @@ class InfoConfiguration:
         return conv2data([_class_data.__dict__ for _class_data in self.data], src_data)
 
     @debug_logger
-    def conv2variable(self, src_data: list[MediaData]) -> list[MediaData]:
+    def conv2variable(self, src_data: list[dict[str, str]]) -> list[dict[str, str]]:
         """Convert variable names to actual data
         Args:
             src_data (list): Source data
@@ -194,55 +193,52 @@ def load() -> list[ConfigurationData]:
         list[ConfigurationData]: list[ConfigurationData]
     """
     caller = get_caller_name()
-    try:
-        dirs_data = "/srv/user/share/conf/_data"
-        file_conf = "common.cfg"
-        path_conf = None
-        # --- file search ---------------------------------------------------------
-        for dirs in (".", dirs_data):
-            path = Path(dirs) / file_conf
-            if path.exists():
-                path_conf = path
-                break
-        if not path_conf:
-            message_alert(caller, f"file not found: {file_conf}")
-            raise SystemExit(1)
-        # --- get setting items ---------------------------------------------------
-        data_dist = file_read(path_conf)
-        line_pattern = re.compile(r'^(\w+)="([^"]*)"\s*(?:(#\s*.*))?$')
-        var_pattern = re.compile(r":_([A-Z0-9_]+)_:")
-        dict_conf: dict[str, str] = {}
-        list_conf: list[ConfigurationData] = []
-        for line in data_dist.splitlines():
-            line_raw = line.strip()
-            if not line_raw or not line_raw[0].isupper():
-                continue
-            if match := line_pattern.match(line_raw):
-                key = match.group(1)
-                value = match.group(2)
-                comment = match.group(3) or ""
-                for _ in range(10):
-                    if var_match := var_pattern.search(value):
-                        match_text = var_match.group(0)
-                        match_key = var_match.group(1)
-                        if match_key in dict_conf:
-                            value = value.replace(match_text, dict_conf[match_key])
-                        else:
-                            break
+    # --- file search ---------------------------------------------------------
+    dirs_data = "/srv/user/share/conf/_data"
+    file_conf = "common.cfg"
+    path_conf = None
+    for dirs in (".", dirs_data):
+        path = Path(dirs) / file_conf
+        if path.exists():
+            path_conf = path
+            break
+    if not path_conf:
+        message_alert(caller, f"file not found: {file_conf}")
+        raise SystemExit(1)
+    # --- get setting items ---------------------------------------------------
+    line_pattern = re.compile(r'^(\w+)="([^"]*)"\s*(?:(#\s*.*))?$')
+    var_pattern = re.compile(r":_([A-Z0-9_]+)_:")
+    dict_conf: dict[str, str] = {}
+    list_conf: list[ConfigurationData] = []
+    data_dist: str = str(file_read(path_conf))
+    for line in data_dist.splitlines():
+        line_raw = line.strip()
+        if not line_raw or not line_raw[0].isupper():
+            continue
+        if match := line_pattern.match(line_raw):
+            key = match.group(1)
+            value = match.group(2)
+            comment = match.group(3) or ""
+            for _ in range(10):
+                if var_match := var_pattern.search(value):
+                    match_text = var_match.group(0)
+                    match_key = var_match.group(1)
+                    if match_key in dict_conf:
+                        value = value.replace(match_text, dict_conf[match_key])
                     else:
                         break
-                dict_conf[key] = value
-                list_conf.append(
-                    ConfigurationData(key=key, value=value, comment=comment)
-                )
-        # --- return --------------------------------------------------------------
-        return list_conf
-    except (OSError, Exception) as e:  # noqa: BLE001
-        handle_fatal_error(caller, e)
+                else:
+                    break
+            dict_conf[key] = value
+            list_conf.append(ConfigurationData(key=key, value=value, comment=comment))
+    # --- return --------------------------------------------------------------
+    return list_conf
 
 
 @debug_logger
-def conv2data(list_conf: list[ConfigurationData], list_orig: list) -> list:
+def conv2data(
+    list_conf: list[dict[str, str]], list_orig: list[dict[str, str]]
+) -> list[dict[str, str]]:
     """convert to data format
     Args:
         list_conf (list[ConfigurationData]): list_orig
@@ -250,10 +246,10 @@ def conv2data(list_conf: list[ConfigurationData], list_orig: list) -> list:
     Returns:
         list: list_conv
     """
-    dict_conf = {item["key"]: item["value"] for item in list_conf}
-    pattern = re.compile(r":_([A-Z0-9_]+)_:")
-    list_conv = []
     # --- convert -------------------------------------------------------------
+    pattern = re.compile(r":_([A-Z0-9_]+)_:")
+    dict_conf = {item["key"]: item["value"] for item in list_conf}
+    list_conv = []
     for item in list_orig:
         dict_orig = {}
         for key, value in item.items():
@@ -275,7 +271,9 @@ def conv2data(list_conf: list[ConfigurationData], list_orig: list) -> list:
 
 
 @debug_logger
-def conv2variable(list_conf: list[ConfigurationData], list_orig: list) -> list:
+def conv2variable(
+    list_conf: list[dict[str, str]], list_orig: list[dict[str, str]]
+) -> list[dict[str, str]]:
     """convert to variable format
     Args:
         list_conf (list[ConfigurationData]): list_conf
@@ -283,6 +281,7 @@ def conv2variable(list_conf: list[ConfigurationData], list_orig: list) -> list:
     Returns:
         list: list_conv
     """
+    # --- prepare -------------------------------------------------------------
     reverse_conf = {}
     for item in list_conf:
         key, value = item["key"], item["value"]

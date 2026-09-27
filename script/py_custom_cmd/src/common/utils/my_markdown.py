@@ -2,17 +2,16 @@
 
 # --- Python library ----------------------------------------------------------
 import re
+from pathlib import Path
 
 # ⭕ pandas のインポートを完全に削除
 # --- my library --------------------------------------------------------------
-from my_debug import debug_logger
-from my_file_api import file_read, file_write
-from my_string import count_width
+from common.utils import count_width, debug_logger, file_read, file_write
 
 
 # -----------------------------------------------------------------------------
 @debug_logger
-def list2markdown(dest_path: str, md_title: str, src_datas: list) -> None:
+def list2markdown(dest_path: Path, md_title: str, src_datas: list) -> None:
     """Markdown output of list data
     Args:
         dest_path (str): Destination path
@@ -106,7 +105,7 @@ def list2markdown(dest_path: str, md_title: str, src_datas: list) -> None:
 
 
 # -----------------------------------------------------------------------------
-def markdown2list(src_path: str) -> list:
+def markdown2list(src_path: Path) -> list:
     """List data output of markdown
     Args:
         src_path (str): Source path
@@ -115,7 +114,7 @@ def markdown2list(src_path: str) -> list:
     """
     _table_rows = []
     _headers = []
-    _read_data = file_read(src_path)
+    _read_data: str = str(file_read(src_path))
     for _line in _read_data:
         _line_str = _line.strip()
         if _line_str.startswith("|") and _line_str.endswith("|"):

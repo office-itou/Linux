@@ -1,0 +1,199 @@
+.
+|-- .vscode
+|   `-- settings.json
+|-- Makefile
+|-- Readme_memo.txt
+|-- __init__.py
+|-- __main__.py
+|-- __pycache__
+|   `-- my_env_guard.cpython-313.pyc
+|-- _template
+|   |-- cui
+|   |   `-- _template.py
+|   `-- gui
+|       |-- Makefile
+|       |-- Readme.txt
+|       |-- main.py
+|       |-- menu_data.py
+|       `-- messages.py
+|-- common
+|   |-- Readme_install.txt
+|   |-- __init__.py
+|   |-- __main__.py
+|   |-- common_var.text
+|   |-- packages_apt-install.sh
+|   |-- packages_search.sh
+|   |-- shared
+|   |   |-- __init__.py
+|   |   |-- __main__.py
+|   |   |-- __pycache__
+|   |   |   |-- my_common_cfg.cpython-313.pyc
+|   |   |   |-- my_common_cfg.cpython-314.pyc
+|   |   |   |-- my_convert.cpython-313.pyc
+|   |   |   |-- my_convert.cpython-314.pyc
+|   |   |   |-- my_distribution_dat.cpython-313.pyc
+|   |   |   |-- my_distribution_dat.cpython-314.pyc
+|   |   |   |-- my_media_dat.cpython-313.pyc
+|   |   |   |-- my_media_dat.cpython-314.pyc
+|   |   |   |-- my_shared.cpython-313.pyc
+|   |   |   `-- my_shared.cpython-314.pyc
+|   |   |-- my_common_cfg.py
+|   |   |-- my_convert.py
+|   |   |-- my_distribution_dat.py
+|   |   |-- my_media_dat.py
+|   |   |-- my_shared.py
+|   |   `-- ruff.toml
+|   `-- utils
+|       |-- __init__.py
+|       |-- __main__.py
+|       |-- __pycache__
+|       |   |-- my_argument.cpython-313.pyc
+|       |   |-- my_colors.cpython-313.pyc
+|       |   |-- my_colors.cpython-314.pyc
+|       |   |-- my_config.cpython-313.pyc
+|       |   |-- my_config.cpython-314.pyc
+|       |   |-- my_debug.cpython-313.pyc
+|       |   |-- my_debug.cpython-314.pyc
+|       |   |-- my_error.cpython-313.pyc
+|       |   |-- my_error.cpython-314.pyc
+|       |   |-- my_file_api.cpython-313.pyc
+|       |   |-- my_file_api.cpython-314.pyc
+|       |   |-- my_gui_build_helper.cpython-313.pyc
+|       |   |-- my_gui_build_helper.cpython-314.pyc
+|       |   |-- my_gui_build_log_monitor.cpython-314.pyc
+|       |   |-- my_gui_buttons.cpython-314.pyc
+|       |   |-- my_json.cpython-313.pyc
+|       |   |-- my_json.cpython-314.pyc
+|       |   |-- my_language.cpython-313.pyc
+|       |   |-- my_language.cpython-314.pyc
+|       |   |-- my_markdown.cpython-313.pyc
+|       |   |-- my_markdown.cpython-314.pyc
+|       |   |-- my_mem_usage.cpython-313.pyc
+|       |   |-- my_mem_usage.cpython-314.pyc
+|       |   |-- my_message.cpython-313.pyc
+|       |   |-- my_message.cpython-314.pyc
+|       |   |-- my_string.cpython-313.pyc
+|       |   |-- my_string.cpython-314.pyc
+|       |   |-- my_time.cpython-313.pyc
+|       |   `-- my_time.cpython-314.pyc
+|       |-- my_argument.py
+|       |-- my_colors.py
+|       |-- my_config.py
+|       |-- my_debug.py
+|       |-- my_error.py
+|       |-- my_file_api.py
+|       |-- my_gui_build_helper.py
+|       |-- my_gui_build_log_monitor.py
+|       |-- my_gui_init.py
+|       |-- my_infofile.py
+|       |-- my_infoweb.py
+|       |-- my_json.py
+|       |-- my_language.py
+|       |-- my_markdown - コピー.py
+|       |-- my_markdown.py
+|       |-- my_mem_usage.py
+|       |-- my_message.py
+|       |-- my_process.py
+|       |-- my_string.py
+|       |-- my_time.py
+|       |-- my_web_api.py
+|       `-- ruff.toml
+|-- my_env_guard.py
+|-- prototype
+|   |-- __init__.py
+|   |-- __main__.py
+|   |-- _template
+|   |   |-- Makefile
+|   |   |-- __pycache__
+|   |   |   |-- functions.cpython-314.pyc
+|   |   |   |-- messages.cpython-314.pyc
+|   |   |   `-- ui_main_window.cpython-314.pyc
+|   |   |-- functions.py
+|   |   |-- main.py
+|   |   |-- messages.py
+|   |   |-- ruff.toml
+|   |   `-- ui_main_window.py
+|   |-- _tools
+|   |   |-- Makefile
+|   |   |-- __init__.py
+|   |   |-- __main__.py
+|   |   |-- __pycache__
+|   |   |   |-- async_io.cpython-313.pyc
+|   |   |   |-- gui_main.cpython-313.pyc
+|   |   |   |-- gui_main_build.cpython-313.pyc
+|   |   |   |-- gui_main_build_buttons.cpython-313.pyc
+|   |   |   |-- gui_main_build_tables.cpython-313.pyc
+|   |   |   `-- gui_main_event.cpython-313.pyc
+|   |   |-- async_io.py
+|   |   |-- dist
+|   |   |   `-- my_tools
+|   |   |-- gui_async_handler.py
+|   |   |-- gui_custom_iso.py
+|   |   |-- gui_custom_live.py
+|   |   |-- gui_download.py
+|   |   |-- gui_edit.py
+|   |   |-- gui_ipxe.py
+|   |   |-- gui_main.py
+|   |   |-- gui_main_build.py
+|   |   |-- gui_main_build_buttons.py
+|   |   |-- gui_main_build_tables.py
+|   |   |-- gui_main_event.py
+|   |   |-- gui_main_load_table.py
+|   |   |-- gui_markdown.py
+|   |   |-- main.py
+|   |   |-- memo.txt
+|   |   |-- my_tools.spec
+|   |   |-- ruff.toml
+|   |   `-- ui_definition.json
+|   |-- a.py
+|   |-- distribution.dat.json
+|   |-- editer
+|   |   |-- Makefile
+|   |   |-- __pycache__
+|   |   |   |-- buttons.cpython-314.pyc
+|   |   |   |-- card_editor.cpython-314.pyc
+|   |   |   |-- log_monitor.cpython-314.pyc
+|   |   |   |-- menu_data.cpython-314.pyc
+|   |   |   |-- messages.cpython-314.pyc
+|   |   |   |-- ui_layout.cpython-314.pyc
+|   |   |   `-- utils.cpython-314.pyc
+|   |   |-- buttons.py
+|   |   |-- card_editor.py
+|   |   |-- log_monitor.py
+|   |   |-- main.py
+|   |   |-- menu_data.py
+|   |   |-- messages.py
+|   |   |-- ruff.toml
+|   |   |-- ui_layout.py
+|   |   `-- utils.py
+|   |-- man_pyinstaller.txt
+|   |-- media.dat.json
+|   |-- test_stdscr.py
+|   `-- tools
+|       |-- Makefile
+|       |-- async_io.py
+|       |-- dist
+|       |   `-- template
+|       |-- gui_async_handler.py
+|       |-- gui_build_table.py
+|       |-- gui_window.py
+|       |-- main.py
+|       |-- ruff.toml
+|       |-- template.spec
+|       `-- ui_definition.json
+|-- test
+|   |-- __init__.py
+|   |-- __main__.py
+|   |-- test_get_web_file_info.py
+|   `-- test_text_print.py
+|-- tools
+|   |-- __init__.py
+|   |-- __main__.py
+|   |-- _copy_data_orig.sh
+|   |-- _copy_ipxe.sh
+|   |-- mk_ipxe_menu.py
+|   |-- mk_markdown_table.py
+|   `-- test_get_function.py
+`-- tree.txt
+
+23 directories, 174 files

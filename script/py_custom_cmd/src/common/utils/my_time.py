@@ -3,9 +3,11 @@
 # --- Python library ----------------------------------------------------------
 import time
 
+
 # --- my library --------------------------------------------------------------
-
-
+# ruff: isort: off
+# ruff: isort: on
+# =============================================================================
 class TimeElapsed:
     def __init__(self) -> None:
         self.start_time: float = time.perf_counter()

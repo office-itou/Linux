@@ -2,18 +2,24 @@
 
 # --- Python library ----------------------------------------------------------
 import json
-
 from pathlib import Path
 from typing import Any
 
+
 # --- my library --------------------------------------------------------------
-from my_debug import debug_logger
-from my_error import handle_fatal_error
-from my_file_api import file_read, file_write
-from my_message import get_caller_name, message_alert
+# ruff: isort: off
+from common.utils import (
+    debug_logger,
+    handle_fatal_error,
+    file_read,
+    file_write,
+    get_caller_name,
+    message_alert,
+)
 
 
-# -----------------------------------------------------------------------------
+# ruff: isort: on
+# =============================================================================
 @debug_logger
 def json_load(src_path: Path) -> Any:
     """Load data in json format
@@ -24,7 +30,7 @@ def json_load(src_path: Path) -> Any:
     """
     _caller = get_caller_name()
     try:
-        _read_data = file_read(src_path)
+        _read_data: str = str(file_read(src_path))
         return json.loads(_read_data)
     except (OSError, Exception) as e:  # noqa: BLE001
         message_alert(_caller, f"target file: {src_path}")

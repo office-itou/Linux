@@ -3,14 +3,12 @@
 # --- Python library ----------------------------------------------------------
 import inspect
 import re
-
 from datetime import datetime, timedelta
 from pathlib import Path
 
 # --- my library --------------------------------------------------------------
-from my_colors import Color
-from my_config import infosystem
-from my_string import count_width, eprint, omit_middle
+from common.utils import Color, count_width, eprint, infosystem, omit_middle
+
 
 colsize_mode = 8
 
@@ -26,22 +24,18 @@ def message_out(
         message (str): Message
         omit (bool, optional): Omit. Defaults to False.
     """
-    _colsize = (
-        (infosystem.columns - (colsize_mode + 2)) // 2
-        if infosystem.columns < 100
-        else 50
-    )
-    _prog_text = omit_middle(f"{infosystem.program_name}({func_name})", _colsize)
+    _program_name = infosystem.program_name
+    _columns = infosystem.columns
+    _colsize = (_columns - (colsize_mode + 2)) // 2 if _columns < 100 else 50
+    _prog_text = omit_middle(f"{_program_name}({func_name})", _colsize)
     _mesg_text = (
         message
-        if omit == False
-        else omit_middle(
-            f"{message}", infosystem.columns - (_colsize + colsize_mode + 2)
-        )
+        if not omit
+        else omit_middle(f"{message}", _columns - (_colsize + colsize_mode + 2))
     )
     eprint(
         f"{Color.reset}{color}{_prog_text:<{_colsize}}|{mode:^{colsize_mode}}|{_mesg_text}{Color.reset}",
-        infosystem.columns,
+        _columns,
         wrap=not omit,
     )
 
@@ -131,7 +125,7 @@ def get_caller_name(only: bool = True) -> str:
     frame = inspect.currentframe().f_back
     func_text = str(frame.f_code.co_name)
     file_text = str(Path(frame.f_code.co_filename).stem)
-    call_info = func_text if only == True else f"{file_text}({func_text})"
+    call_info = func_text if only else f"{file_text}({func_text})"
     return call_info
 
 

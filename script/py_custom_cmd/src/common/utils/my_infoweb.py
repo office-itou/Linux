@@ -5,24 +5,27 @@ import asyncio
 import fnmatch
 import posixpath
 import re
-
-
-# import traceback
-# from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
 import aiohttp  # sudo apt-get install python3-aiohttp
-
 from bs4 import BeautifulSoup
+from natsort import natsort_keygen
+
 
 # --- my library --------------------------------------------------------------
-# from my_colors import Color
-from my_debug import debug_logger
-from my_message import get_caller_name, message_alert, message_warn
-from my_web_api import WebData, get_contents, get_header
-from natsort import natsort_keygen
+# ruff: isort: off
+from common.utils import (
+    WebData,
+    debug_logger,
+    get_caller_name,
+    get_contents,
+    get_header,
+    message_alert,
+    message_warn,
+)
+# ruff: isort: on
 
 
 # -----------------------------------------------------------------------------
@@ -155,6 +158,7 @@ async def _expand_regexp_urls(
             _match_after = _match_after.lstrip("/")
             # --- Retrieving HTML text and retrying ---------------------------
             # print(f"{Color.br_cyan}_match_before:{_match_before}{Color.reset}")
+            _web_data = WebData()
             for r in range(5):
                 _web_data = await info_web.get_text(session, _match_before)
                 if _web_data.status in (200, 206, 404):
@@ -164,7 +168,11 @@ async def _expand_regexp_urls(
             if _web_data.status != 200:
                 message_warn(_caller, f"{_web_data.request_url}({_web_data.status})")
                 continue
-            # print(f"{Color.br_yellow}{_web_data.request_url}({_web_data.status}){Color.reset}")
+            # print(
+            #    f"{Color.br_yellow}
+            #    {_web_data.request_url}({_web_data.status})
+            #    {Color.reset}"
+            # )
             # -----------------------------------------------------------------
             _web_data.search_url = search_url
             _web_data.exclude_url = exclude_url
@@ -232,6 +240,7 @@ async def get_infoweb(
     # --- check the header of the confirmed real URL and generate WebData -----
     for _request_url in list(set(_resolved_urls)):
         # print(f"{Color.magenta}{_request_url}{Color.reset}")
+        _web_data = WebData()
         for r in range(5):
             _web_data = await _info_web.get_header(session, _request_url)
             if _web_data.status in (200, 206, 404):
@@ -242,7 +251,11 @@ async def get_infoweb(
         if _web_data.status != 200:
             message_alert(_caller, f"status({_web_data.status}): [{_request_url}]")
             continue
-        # print(f"{Color.br_yellow}{_web_data.request_url}({_web_data.status}){Color.reset}")
+        # print(
+        #    f"{Color.br_yellow}
+        #    {_web_data.request_url}({_web_data.status})
+        #    {Color.reset}"
+        # )
         # ---------------------------------------------------------------------
         _web_data.search_url = search_url
         _web_data.exclude_url = exclude_url

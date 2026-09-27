@@ -4,6 +4,7 @@
 import re
 import unicodedata
 
+
 # --- my library --------------------------------------------------------------
 # from my_colors import Color
 # from my_config import infosystem
@@ -33,7 +34,7 @@ def remove_gui_log_window(window_obj):
 def eprint(full_text, *args, **kwargs):
     import sys
 
-    from my_config import infosystem
+    from common.shared import infosystem
 
     # 📌 登録されているすべての有効なウィンドウに対してループでログを書き込む
     has_written = False
@@ -74,7 +75,7 @@ def count_half_width(src_text: str) -> int:
         int: Count
     """
     _plain_text = re.sub(r"\x1b\[[0-9;]*[mG]", "", src_text)
-    return sum(1 for c in _plain_text if not unicodedata.east_asian_width(c) in "FWA")
+    return sum(1 for c in _plain_text if unicodedata.east_asian_width(c) not in "FWA")
 
 
 def count_width(src_text: str) -> int:

@@ -6,8 +6,9 @@ from dataclasses import dataclass
 
 
 # --- my library --------------------------------------------------------------
-# from my_config                import infosystem
-# from my_debug                 import debug_logger
+# ruff: isort: off
+# ruff: isort: on
+# =============================================================================
 # --- escape code -------------------------------------------------------------
 @dataclass
 class Code:

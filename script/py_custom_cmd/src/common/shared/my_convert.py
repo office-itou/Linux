@@ -2,13 +2,23 @@
 
 # --- Python library ----------------------------------------------------------
 import csv
+from pathlib import Path
+
 
 # --- my library --------------------------------------------------------------
-from my_debug import debug_logger
-from my_file_api import file_read, file_write
+# ruff: isort: off
+from common.utils import (
+    debug_logger,
+    file_write,
+    handle_fatal_error,
+    get_caller_name,
+    message_warn,
+)
 
 
-def spc_encode(src_datas: list) -> list:
+# ruff: isort: on
+# =============================================================================
+def spc_encode(src_datas: list[dict[str, str]]) -> list[dict[str, str]]:
     """Encoding whitespace characters on a per-list basis
     Args:
         src_datas (list): Source data
@@ -33,7 +43,7 @@ def spc_encode(src_datas: list) -> list:
     return _converted_data
 
 
-def spc_decode(src_datas: list) -> list:
+def spc_decode(src_datas: list[dict[str, str]]) -> list[dict[str, str]]:
     """Decoding whitespace characters on a per-list basis
     Args:
         src_data (list): Source data
@@ -53,46 +63,43 @@ def spc_decode(src_datas: list) -> list:
 
 
 @debug_logger
-def get_text2list(src_path: str) -> list[dict[str, str]]:
+def get_text2list(src_path: Path) -> list[dict[str, str]]:
     """Text file to list
     Args:
         src_path (str): Source path
     Returns:
         list[dict[str, str]]: Conversion data
     """
-    _read_data = file_read(src_path)
-    _lines = [l.strip() for l in _read_data.splitlines() if l.strip()]
-    if not _lines:
-        return []
-    # -------------------------------------------------------------------------
-    header_reader = csv.reader([_lines[0]], delimiter=" ", skipinitialspace=True)
-    headers = next(header_reader, [])
-    # -------------------------------------------------------------------------
-    result = []
-    data_reader = csv.reader(_lines[1:], delimiter=" ", skipinitialspace=True)
-    for row in data_reader:
-        if not row:
-            continue
-        # ---------------------------------------------------------------------
-        row_dict = {}
-        for i, header in enumerate(headers):
-            if i < len(row):
-                row_dict[header] = row[i]
-            else:
-                row_dict[header] = ""
-        result.append(row_dict)
-    return result
+    _caller = get_caller_name()
+    _result: list[dict[str, str]] = []
+    try:
+        _src_path = src_path.resolve()
+        with open(_src_path, mode="r", encoding="utf-8", newline=None) as f:
+            _data_reader = csv.reader(f, delimiter=" ", skipinitialspace=True)
+            _headers = next(_data_reader)
+            for _row in _data_reader:
+                _row_dict = {}
+                for i, _header in enumerate(_headers):
+                    _row_dict[_header] = _row[i] if i < len(_row) else ""
+                _result.append(_row_dict)
+    except (OSError, Exception) as e:
+        handle_fatal_error(_caller, e)
+    return _result
 
 
 @debug_logger
-def put_list2text(dst_path: str, src_datas: list, format_str: str) -> None:
+def put_list2text(
+    dst_path: Path, src_datas: list[dict[str, str]], format_str: str
+) -> None:
     """list to text file
     Args:
         dst_path (str): Destination path
         src_data (list): Source data
         format_str (str): Output format
     """
+    _caller = get_caller_name()
     if not src_datas:
+        message_warn(_caller, "No data")
         return
     _header_dict = {k: k for d in src_datas for k, v in d.items()}
     _data_dicts = [d.__dict__ if hasattr(d, "__dict__") else d for d in src_datas]

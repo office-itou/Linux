@@ -421,6 +421,7 @@ def initialize() -> (list[str], str):
 @debug_logger
 def main():
     """Main"""
+    infosystem.initialize(is_gui=False)
     caller = get_caller_name()
     try:
         # --- elapsed start----------------------------------------------------

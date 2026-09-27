@@ -4,11 +4,14 @@
 import resource
 import sys
 
+
 # --- my library --------------------------------------------------------------
-from my_colors import Color
-from my_message import get_caller_name, message_out
+# ruff: isort: off
+from common.utils import Color, get_caller_name, message_out
 
 
+# ruff: isort: on
+# =============================================================================
 def get_peak_memory() -> str:
     """Get maximum memory usage (in KB on Linux, in bytes on macOS)"""
     peek_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
@@ -17,6 +20,7 @@ def get_peak_memory() -> str:
     else:  # for Linux
         peak_mb = peek_usage / 1024
     return f"{peak_mb:.2f} MB (Peak memory usage)"
+
 
 def print_peak_memory() -> None:
     """Get maximum memory usage (in KB on Linux, in bytes on macOS)"""

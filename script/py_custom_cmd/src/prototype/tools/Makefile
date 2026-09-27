@@ -95,6 +95,7 @@ ruff-init:
 	@echo "検出されたローカルモジュール: $(LOCAL_PY_FILES) $(LOCAL_DIR_FILES)"
 	@echo '[lint]' > ruff.toml
 	@echo 'select = ["I", "E", "F"]' >> ruff.toml
+	@echo 'ignore = ["EXE002"]' >> ruff.toml
 	@echo '' >> ruff.toml
 	@echo '[lint.isort]' >> ruff.toml
 	@echo 'lines-after-imports = 2' >> ruff.toml

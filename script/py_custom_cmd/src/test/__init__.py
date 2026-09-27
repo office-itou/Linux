@@ -1,5 +1,7 @@
 """Test module route"""
 
+print("_init_")
+
 import os
 import sys
 from pathlib import Path

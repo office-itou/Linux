@@ -1,0 +1,7 @@
+[lint]
+select = ["I", "E", "F"]
+ignore = ["EXE002"]
+
+[lint.isort]
+lines-after-imports = 2
+known-local-folder = ["test_get_web_file_info", "test_text_print", "__init__", "__main__"]

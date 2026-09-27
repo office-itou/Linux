@@ -1,26 +1,36 @@
+"""media.dat I/O"""
+
+# --- Python library ----------------------------------------------------------
 from __future__ import annotations
 
-"""media.dat I/O"""
-# --- Python library ----------------------------------------------------------
 import re
-
 from dataclasses import dataclass, fields
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
+
 
 # --- my library --------------------------------------------------------------
-if TYPE_CHECKING:
-    from my_common_cfg import InfoConfiguration
-from my_colors import Color
-from my_config import infosystem
-from my_convert import get_text2list, put_list2text, spc_decode, spc_encode
-from my_debug import debug_logger
-from my_json import json_load, json_save
-from my_markdown import list2markdown
-from my_string import eprint
+# ruff: isort: off
+from common.utils import (
+    Color,
+    infosystem,
+    debug_logger,
+    json_load,
+    json_save,
+    list2markdown,
+    eprint,
+)
+from common.shared import (
+    InfoConfiguration,
+    get_text2list,
+    put_list2text,
+    spc_decode,
+    spc_encode,
+)
 
 
-# -----------------------------------------------------------------------------
+# ruff: isort: on
+# =============================================================================
 @dataclass
 class MediaData:
     """media.dat data class"""
@@ -91,7 +101,7 @@ class InfoMedia:
         Args:
             src_path (Path): Source path
         """
-        _raw_data = json_load(src_path) if src_path.exists() else [{None}]
+        _raw_data: list[dict[str, str]] = json_load(src_path)
         _decoded_data = spc_decode(_raw_data)
         _converted_data = self.info_conf.conv2data(_decoded_data)
         self.data: list[MediaData] = [
@@ -104,7 +114,11 @@ class InfoMedia:
         Args:
             dest_path (str): Destination path
         """
-        _data_dicts = [d.__dict__ if hasattr(d, "__dict__") else d for d in self.data]
+        _data_dicts: list[dict[str, str]] = [
+            d.__dict__ if hasattr(d, "__dict__") else getattr(d, f.name)
+            for d in self.data
+            for f in fields(d)
+        ]
         _converted_data = self.info_conf.conv2variable(_data_dicts)
         _encoded_data = spc_encode(_converted_data)
         json_save(dest_path, _encoded_data)
@@ -215,23 +229,37 @@ class InfoMedia:
             dest_path (str): Destination path
             format_str (str): Output format
         """
-        _data_dicts = [d.__dict__ if hasattr(d, "__dict__") else d for d in self.data]
+        _data_dicts: list[dict[str, str]] = [
+            d.__dict__ if hasattr(d, "__dict__") else getattr(d, f.name)
+            for d in self.data
+            for f in fields(d)
+        ]
         _converted_data = self.info_conf.conv2variable(_data_dicts)
         _encoded_data = spc_encode(_converted_data)
         put_list2text(dest_path, _encoded_data, format_str)
 
     @debug_logger
-    def conv2data(self) -> None:
+    def conv2data(self) -> list[dict[str, str]]:
         """Convert actual data to variable names"""
-        return self.info_conf.conv2data(self.data)
+        _data_dicts: list[dict[str, str]] = [
+            d.__dict__ if hasattr(d, "__dict__") else getattr(d, f.name)
+            for d in self.data
+            for f in fields(d)
+        ]
+        return self.info_conf.conv2data(_data_dicts)
 
     @debug_logger
-    def conv2variable(self) -> list[dict[str, Any]]:
+    def conv2variable(self) -> list[MediaData]:
         """Convert variable names to actual data
         Returns:
             list[dict[str, Any]]: Conversion data
         """
-        _converted_data = self.info_conf.conv2variable(self.data)
+        _data_dicts: list[dict[str, str]] = [
+            d.__dict__ if hasattr(d, "__dict__") else getattr(d, f.name)
+            for d in self.data
+            for f in fields(d)
+        ]
+        _converted_data = self.info_conf.conv2variable(_data_dicts)
         if hasattr(self, "_to_mediadata_list"):
             return self._to_mediadata_list(_converted_data)
         else:

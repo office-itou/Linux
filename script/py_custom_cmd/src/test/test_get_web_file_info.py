@@ -5,30 +5,37 @@
 import asyncio
 import os
 import sys
-
 from pathlib import Path
 
 import aiohttp  # sudo apt-get install python3-aiohttp
-
 from aiohttp import ClientTimeout
 
+
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+
 # --- my library --------------------------------------------------------------
-from my_argument import Argument
-from my_colors import Color
-from my_config import infosystem
-from my_debug import debug_logger
-from my_error import handle_fatal_error
-from my_mem_usage import print_peak_memory
-from my_message import (
+# ruff: isort: off
+import my_env_guard  # noqa: F401
+from common.utils import (
+    Argument,
+    Color,
+    TimeElapsed,
+    debug_logger,
     get_caller_name,
+    handle_fatal_error,
+    infosystem,
     message_elapsed,
     message_end,
     message_info,
     message_start,
+    print_peak_memory,
 )
-from my_shared import InfoCommon
-from my_time import TimeElapsed
+from common.shared import (
+    InfoCommon,
+)
 
+# ruff: isort: on
+# --- gui window module ------------------------------------------------------
 # --- 設定項目（後から簡単に件数を変更可能） ----------------------------------
 MAX_CONCURRENT_REQUESTS = 3  # 同時アクセスする上限件数
 # --- マッピングリスト --------------------------------------------------------
@@ -54,12 +61,14 @@ BASE_DIR_MAP = {
 def initialize():
     """Initialize"""
     caller = get_caller_name()
-    if infosystem.debug == True:
+    if infosystem.debug:
         message_info(caller, "Debug mode on", omit=True)
-    if infosystem.debugout == True:
+    if infosystem.debugout:
         message_info(caller, "Debugout mode on", omit=True)
-    message_info(caller, f"exec user:{infosystem.data.exec_user}", omit=True)
-    message_info(caller, f"home dir :{infosystem.data.home_dir}", omit=True)
+    if infosystem.data.exec_user:
+        message_info(caller, f"exec user:{infosystem.data.exec_user}", omit=True)
+    if infosystem.data.home_dir:
+        message_info(caller, f"home dir :{infosystem.data.home_dir}", omit=True)
     # -------------------------------------------------------------------------
     return InfoCommon()
 
@@ -181,13 +190,12 @@ async def _process_single_media(
     async with semaphore:
         message_info(caller, f"[Queue] Fetching: {tget_mdia.web_regexp}", omit=True)
         # 並行実行時のデータ競合を防ぐため、Web/Fileモジュールはタスク内で個別に生成
-        from my_infofile import InfoFile
-        from my_infoweb import InfoWeb
+        from common.utils import InfoFile, InfoWeb
 
         info_web = InfoWeb()
         info_file = InfoFile()
         _web_datas = await info_web.get_info(
-            session, tget_mdia.web_regexp, local_file_path
+            session, tget_mdia.web_regexp, str(local_file_path)
         )
         if not _web_datas:
             return
@@ -200,7 +208,7 @@ async def _process_single_media(
             local_file_path = Path(_web_data.local_file)
             if local_file_path.exists():
                 # ディスクI/Oを伴う重い同期処理は別スレッドで実行
-                await asyncio.to_thread(info_file.get_info, local_file_path)
+                await asyncio.to_thread(info_file.get_info, str(local_file_path))
                 tget_mdia.iso_path = str(info_file.data.path)
                 tget_mdia.iso_tstamp = str(info_file.data.tmstamp)
                 tget_mdia.iso_size = str(info_file.data.size)
