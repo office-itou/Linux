@@ -159,13 +159,13 @@ async def _expand_regexp_urls(
             # --- Retrieving HTML text and retrying ---------------------------
             # print(f"{Color.br_cyan}_match_before:{_match_before}{Color.reset}")
             _web_data = WebData()
-            for r in range(5):
+            for r in range(1):
                 _web_data = await info_web.get_text(session, _match_before)
-                if _web_data.status in (200, 206, 404):
+                if int(_web_data.status, 0) in (200, 206, 404):
                     break
                 message_warn(_caller, f"retry({r}): [{_match_before}]")
                 await asyncio.sleep(3)
-            if _web_data.status != 200:
+            if int(_web_data.status, 0) != 200:
                 message_warn(_caller, f"{_web_data.request_url}({_web_data.status})")
                 continue
             # print(
@@ -241,14 +241,14 @@ async def get_infoweb(
     for _request_url in list(set(_resolved_urls)):
         # print(f"{Color.magenta}{_request_url}{Color.reset}")
         _web_data = WebData()
-        for r in range(5):
+        for r in range(1):
             _web_data = await _info_web.get_header(session, _request_url)
-            if _web_data.status in (200, 206, 404):
+            if int(_web_data.status, 0) in (200, 206, 404):
                 break
             message_warn(_caller, f"retry({r}): [{_request_url}]")
             await asyncio.sleep(3)
         # ---------------------------------------------------------------------
-        if _web_data.status != 200:
+        if int(_web_data.status, 0) != 200:
             message_alert(_caller, f"status({_web_data.status}): [{_request_url}]")
             continue
         # print(

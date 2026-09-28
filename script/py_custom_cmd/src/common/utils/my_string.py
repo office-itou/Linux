@@ -171,7 +171,9 @@ def split_by_width(
     return _lines
 
 
-def omit_middle(src_text: str, max_len: int = 80, placeholder: str = "..") -> str:
+def omit_middle(
+    src_text: str, max_len: int = 80, placeholder: str = ".."
+) -> str | list[str]:
     """Omit the intermediate characters.
     Args:
         src_text (str): Source text

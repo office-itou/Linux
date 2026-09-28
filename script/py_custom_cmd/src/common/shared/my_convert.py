@@ -1,7 +1,6 @@
 """File I/O processing"""
 
 # --- Python library ----------------------------------------------------------
-import csv
 from pathlib import Path
 
 
@@ -75,12 +74,15 @@ def get_text2list(src_path: Path) -> list[dict[str, str]]:
     try:
         _src_path = src_path.resolve()
         with open(_src_path, mode="r", encoding="utf-8", newline=None) as f:
-            _data_reader = csv.reader(f, delimiter=" ", skipinitialspace=True)
-            _headers = next(_data_reader)
-            for _row in _data_reader:
+            _header_line = f.readline()
+            _headers = _header_line.split() 
+            for _line in f:
+                if not _line.strip():
+                    continue
+                _row_data = _line.split()
                 _row_dict = {}
                 for i, _header in enumerate(_headers):
-                    _row_dict[_header] = _row[i] if i < len(_row) else ""
+                    _row_dict[_header] = _row_data[i] if i < len(_row_data) else ""
                 _result.append(_row_dict)
     except (OSError, Exception) as e:
         handle_fatal_error(_caller, e)

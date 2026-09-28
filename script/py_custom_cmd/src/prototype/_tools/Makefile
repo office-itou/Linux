@@ -10,31 +10,24 @@ PROJECT_NAME  := $(notdir $(CURDIR))
 VENV_PATH     := $(HOME)/.venv_$(PROJECT_NAME)
 
 # 💡 実行ファイルの参照先をホームディレクトリの仮想環境へ向けます
-PYTHON        := $(VENV_PATH)/bin/python3
-PYINSTALLER   := $(VENV_PATH)/bin/pyinstaller
+ifneq ($(wildcard $(VENV_PATH)/bin/python3),)
+    PYTHON    := $(VENV_PATH)/bin/python3
+endif
 PIP           := $(VENV_PATH)/bin/pip
+PYINSTALLER   := $(VENV_PATH)/bin/pyinstaller
 PIP_INSTALL   = pyinstaller \
                 ruff \
                 setuptools \
-                python-gettext \
-                fasteners \
-                aiohttp \
-                aiofiles \
-                pandas \
-                python-magic \
-                bs4 \
-                rich \
-                natsort
-PIP_INSTALL   = pyinstaller \
                 pandas \
                 pandas-stubs \
                 python-gettext \
                 fasteners \
                 matplotlib \
-                beautifulsoup4 \
-                aiohttp \
-                aiofiles
-APT_INSTALL   = python3-tk
+                beautifulsoup4
+APT_INSTALL   = python3-tk \
+                python3-aiohttp \
+				python3-aiofiles \
+                python3-natsort
 BUILD_ONEDIR  = --onedir
 BUILD_ONEFILE = --onefile
 BUILD_TYPE    = $(BUILD_ONEFILE)
@@ -54,8 +47,9 @@ WORK_PATH     = --workpath="$(TMP_WORK_DIR)"
 
 # パス定義
 SRC_DIR      = /srv/user/private/src/git/linux/script/py_custom_cmd/src
-UTILS_DIR    = $(SRC_DIR)/common/utils
-SHARED_DIR   = $(SRC_DIR)/common/shared
+LIBS_DIR     = $(SRC_DIR)/common
+UTILS_DIR    = $(LIBS_DIR)/common/utils
+SHARED_DIR   = $(LIBS_DIR)/common/shared
 CURRENT_DIR  = $(CURDIR)
 #LIB_DIRS     = --paths $(CURRENT_DIR):$(UTILS_DIR):$(SHARED_DIR)
 LIB_DIRS     = --paths $(CURRENT_DIR)
@@ -124,7 +118,9 @@ path-init: PTH_FILE      = $(USER_SITE_DIR)/my_lib.pth
 path-init:
 	@echo ".pth ファイルを作成してパスを通しています..."
 	@mkdir -p $(USER_SITE_DIR)
-	@echo "$(UTILS_DIR)" > $(PTH_FILE)
+	@echo "$(SRC_DIR)" > $(PTH_FILE)
+	@echo "$(LIBS_DIR)" >> $(PTH_FILE)
+	@echo "$(UTILS_DIR)" >> $(PTH_FILE)
 	@echo "$(SHARED_DIR)" >> $(PTH_FILE)
 	@echo "以下のパスを登録しました ($(PTH_FILE)):"
 	@cat $(PTH_FILE)

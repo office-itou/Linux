@@ -6,7 +6,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, fields
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 
 # --- my library --------------------------------------------------------------
@@ -114,11 +114,10 @@ class InfoMedia:
         Args:
             dest_path (str): Destination path
         """
-        _data_dicts: list[dict[str, str]] = [
-            d.__dict__ if hasattr(d, "__dict__") else getattr(d, f.name)
-            for d in self.data
-            for f in fields(d)
-        ]
+        _data_dicts: list[dict[str, str]] = cast(
+            list[dict[str, str]],
+            [d.__dict__ if hasattr(d, "__dict__") else d for d in self.data],
+        )
         _converted_data = self.info_conf.conv2variable(_data_dicts)
         _encoded_data = spc_encode(_converted_data)
         json_save(dest_path, _encoded_data)
@@ -229,11 +228,10 @@ class InfoMedia:
             dest_path (str): Destination path
             format_str (str): Output format
         """
-        _data_dicts: list[dict[str, str]] = [
-            d.__dict__ if hasattr(d, "__dict__") else getattr(d, f.name)
-            for d in self.data
-            for f in fields(d)
-        ]
+        _data_dicts: list[dict[str, str]] = cast(
+            list[dict[str, str]],
+            [d.__dict__ if hasattr(d, "__dict__") else d for d in self.data],
+        )
         _converted_data = self.info_conf.conv2variable(_data_dicts)
         _encoded_data = spc_encode(_converted_data)
         put_list2text(dest_path, _encoded_data, format_str)

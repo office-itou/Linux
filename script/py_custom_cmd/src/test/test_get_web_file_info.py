@@ -11,11 +11,8 @@ import aiohttp  # sudo apt-get install python3-aiohttp
 from aiohttp import ClientTimeout
 
 
-sys.path.append(str(Path(__file__).resolve().parents[1]))
-
 # --- my library --------------------------------------------------------------
 # ruff: isort: off
-import my_env_guard  # noqa: F401
 from common.utils import (
     Argument,
     Color,

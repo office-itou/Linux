@@ -4,7 +4,6 @@
 import inspect
 import re
 from datetime import datetime, timedelta
-from pathlib import Path
 
 # --- my library --------------------------------------------------------------
 from common.utils import Color, count_width, eprint, infosystem, omit_middle
@@ -67,7 +66,7 @@ def message_elapsed(func_name: str, elapsed: float, omit: bool = False):
         elapsed (float): Elapsed time
         omit (bool, optional): Omit. Defaults to False.
     """
-    _time_text = timedelta(seconds=elapsed)
+    _time_text:str = str(timedelta(seconds=elapsed))
     message_out(Color.br_yellow, func_name, "Elapsed", _time_text, omit=omit)
 
 
@@ -122,11 +121,16 @@ def get_caller_name(only: bool = True) -> str:
     Returns:
         str: _description_
     """
-    frame = inspect.currentframe().f_back
-    func_text = str(frame.f_code.co_name)
-    file_text = str(Path(frame.f_code.co_filename).stem)
-    call_info = func_text if only else f"{file_text}({func_text})"
-    return call_info
+    _frame = inspect.currentframe()
+    if _frame is not None and _frame.f_back is not None:
+        _func_name = str(_frame.f_back.f_code.co_name)
+        _modu_name = str(_frame.f_back.f_globals.get("__name__"))
+        _call_info = f"{_modu_name}({_func_name})"
+    else:
+        _func_name = "unknown"
+        _modu_name = "unknown"
+        _call_info = "unknown"
+    return _call_info
 
 
 def generate_comment(modu_name: str, func_name: str, para: str = "") -> str:

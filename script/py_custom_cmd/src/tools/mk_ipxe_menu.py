@@ -11,30 +11,26 @@ from collections import defaultdict
 from pathlib import Path
 
 # --- my library --------------------------------------------------------------
-execusr = os.getenv("SUDO_USER", os.getenv("USER"))
-homedir = os.getenv("SUDO_HOME") or os.getenv("HOME") or f"/home/{execusr}"
-libsdir = Path(homedir) / "linux/script/py_custom_cmd/src"
-if str(libsdir) not in sys.path:
-    sys.path.append(str(libsdir))
-from my_distribution_dat import (
+from common.shared import (
+    InfoCommon,
     sort_distribution_data,
     sort_distribution_name,
 )
-from my_shared import InfoCommon
-from my_argument import Argument
-from my_colors import Color
-from my_config import infosystem
-from my_debug import debug_logger
-from my_error import handle_fatal_error
-from my_file_api import file_read, file_write
-from my_mem_usage import print_peak_memory
-from my_message import (
+from common.utils import (
+    Argument,
+    Color,
+    debug_logger,
+    file_read,
+    file_write,
     get_caller_name,
+    handle_fatal_error,
+    infosystem,
     message_elapsed,
     message_end,
     message_info,
     message_start,
     message_warn,
+    print_peak_memory,
 )
 
 # 各ライフサイクルの表示名マッピング

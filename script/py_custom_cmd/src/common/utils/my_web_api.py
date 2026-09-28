@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 
-import aiofiles  # sudo apt-get install python3-aiofiles
+import aiofiles  # type: ignore # sudo apt-get install python3-aiofiles
 import aiohttp  # sudo apt-get install python3-aiohttp
 
 # --- my library --------------------------------------------------------------
@@ -51,7 +51,7 @@ class WebData:
     content: bytes = b""
 
 
-def generate_wget_filename(base_name: str) -> Path:
+def generate_wget_filename(base_name: Path) -> Path:
     base_name_path = Path(base_name)
     if not base_name_path.exists():
         return base_name_path
@@ -68,7 +68,7 @@ async def get_response(
     request_url: str,
     local_file: str = "",
     overwrite: bool = False,
-) -> dict:
+) -> WebData:
     """Get response
     Args:
         request_func (Callable): Request function
@@ -89,6 +89,7 @@ async def get_response(
         )
         _tmp_file_path = f"{_final_file_path}.tmp" if _final_file_path else ""
     else:
+        _local_file_path = Path()
         _final_file_path = ""
         _tmp_file_path = ""
     _web_data = WebData(
@@ -115,10 +116,10 @@ async def get_response(
             async with request_func(
                 request_url, allow_redirects=True, timeout=_timeout, headers=_headers
             ) as _response:
-                _web_data.status = _response.status
+                _web_data.status = str(_response.status)
                 _web_data.reason = _response.reason
                 _web_data.check_date = datetime.now(timezone.utc).isoformat()
-                if _response.status not in (200, 206):
+                if int(_web_data.status, 0) not in (200, 206):
                     message_alert(_caller, f"server returned error: {_response.status}")
                     break
                 # -------------------------------------------------------------
@@ -174,7 +175,7 @@ async def get_response(
                             _atime = datetime.now(tz=timezone.utc).timestamp()
                             os.utime(_final_file_path, (_atime, _mtime))
                 # -------------------------------------------------------------
-                _web_data.status = _response.status
+                _web_data.status = str(_response.status)
                 _web_data.reason = _response.reason
                 _web_data.check_date = datetime.now(timezone.utc).isoformat()
             return _web_data
@@ -189,7 +190,7 @@ async def get_response(
 
 
 @debug_logger
-async def get_header(session: aiohttp.ClientSession, request_url: str) -> dict:
+async def get_header(session: aiohttp.ClientSession, request_url: str) -> WebData:
     """Get header
     Args:
         session (aiohttp.ClientSession): Session object
@@ -206,7 +207,7 @@ async def get_contents(
     request_url: str,
     local_file: str = "",
     overwrite: bool = False,
-) -> dict:
+) -> WebData:
     """Get contents
     Args:
         session (aiohttp.ClientSession): Session object

@@ -10,22 +10,14 @@ PROJECT_NAME  := $(notdir $(CURDIR))
 VENV_PATH     := $(HOME)/.venv_$(PROJECT_NAME)
 
 # 💡 実行ファイルの参照先をホームディレクトリの仮想環境へ向けます
-PYTHON        := $(VENV_PATH)/bin/python3
-PYINSTALLER   := $(VENV_PATH)/bin/pyinstaller
+ifneq ($(wildcard $(VENV_PATH)/bin/python3),)
+    PYTHON    := $(VENV_PATH)/bin/python3
+endif
 PIP           := $(VENV_PATH)/bin/pip
+PYINSTALLER   := $(VENV_PATH)/bin/pyinstaller
 PIP_INSTALL   = pyinstaller \
                 ruff \
                 setuptools \
-                python-gettext \
-                fasteners \
-                aiohttp \
-                aiofiles \
-                pandas \
-                python-magic \
-                bs4 \
-                rich \
-                natsort
-PIP_INSTALL   = pyinstaller \
                 pandas \
                 pandas-stubs \
                 python-gettext \
@@ -34,6 +26,7 @@ PIP_INSTALL   = pyinstaller \
                 beautifulsoup4
 APT_INSTALL   = python3-tk \
                 python3-aiohttp \
+				python3-aiofiles \
                 python3-natsort
 BUILD_ONEDIR  = --onedir
 BUILD_ONEFILE = --onefile
