@@ -26,7 +26,7 @@ PIP_INSTALL   = pyinstaller \
                 beautifulsoup4
 APT_INSTALL   = python3-tk \
                 python3-aiohttp \
-				python3-aiofiles \
+                python3-aiofiles \
                 python3-natsort
 BUILD_ONEDIR  = --onedir
 BUILD_ONEFILE = --onefile

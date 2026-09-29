@@ -26,7 +26,7 @@ PIP_INSTALL   = pyinstaller \
                 beautifulsoup4
 APT_INSTALL   = python3-tk \
                 python3-aiohttp \
-				python3-aiofiles \
+                python3-aiofiles \
                 python3-natsort
 BUILD_ONEDIR  = --onedir
 BUILD_ONEFILE = --onefile
@@ -48,11 +48,11 @@ WORK_PATH     = --workpath="$(TMP_WORK_DIR)"
 # パス定義
 SRC_DIR      = /srv/user/private/src/git/linux/script/py_custom_cmd/src
 LIBS_DIR     = $(SRC_DIR)/common
-UTILS_DIR    = $(LIBS_DIR)/common/utils
-SHARED_DIR   = $(LIBS_DIR)/common/shared
+UTILS_DIR    = $(LIBS_DIR)/utils
+SHARED_DIR   = $(LIBS_DIR)/shared
 CURRENT_DIR  = $(CURDIR)
-#LIB_DIRS     = --paths $(CURRENT_DIR):$(UTILS_DIR):$(SHARED_DIR)
-LIB_DIRS     = --paths $(CURRENT_DIR)
+LIB_DIRS     = --paths $(CURRENT_DIR):$(UTILS_DIR):$(SHARED_DIR)
+#LIB_DIRS     = --paths $(CURRENT_DIR)
 
 .PHONY: help install run build clean ruff-init path-init
 

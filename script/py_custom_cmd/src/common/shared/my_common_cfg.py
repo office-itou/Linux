@@ -1,6 +1,7 @@
 """common.cfg I/O"""
 
 # --- Python library ----------------------------------------------------------
+import os
 import re
 from dataclasses import dataclass, fields
 from pathlib import Path
@@ -181,6 +182,7 @@ class InfoConfiguration:
         _path_str = self.find(key=key).value
         if not _path_str:
             raise ValueError(f"No such key '{key}'")
+        _path_str = os.path.expanduser(os.path.expandvars(_path_str))
         return Path(_path_str).resolve()
 
 

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""IPXE menu"""
+
 # --- Python library ----------------------------------------------------------
 import sys
 from pathlib import Path
@@ -12,6 +14,7 @@ from common.utils import (
     get_caller_name,
     handle_fatal_error,
     infosystem,
+    list2markdown,
     message_elapsed,
     message_end,
     message_info,
@@ -20,66 +23,62 @@ from common.utils import (
 )
 from common.shared import (
     InfoCommon,
+    check_root,
+    generate_markdown,
+    initarg,
 )
+from common.shared.my_distribution_dat import ORDERED_DISTRIBUTIONS
 
 
 # ruff: isort: on
-# --- initialize -------------------------------------------------------------
+# =============================================================================
+ARGS_LIST = [
+    {
+        "arg": "--debugdump",
+        "help": "Debug dump mode for common datas",
+        "default": None,
+        "nargs": "*",
+        "action": Argument.DefaultListAction,
+        "type": "str",
+    },
+    {
+        "arg": "--t2j",
+        "help": "Text -> json convert",
+        "action": "store_true",
+    },
+    {
+        "arg": "--j2t",
+        "help": "Text -> json convert",
+        "action": "store_true",
+    },
+    {
+        "arg": "--md",
+        "help": "json -> Markdown generate",
+        "default": "",
+        "type": "str",
+    },
+]
+
+
+# --- check -------------------------------------------------------------------
+# --- initialize --------------------------------------------------------------
 @debug_logger
 def initialize():
     """Initialize"""
-    caller = get_caller_name()
+    _caller = get_caller_name()
     if infosystem.debug:
-        message_info(caller, "Debug mode on", omit=True)
+        message_info(_caller, "Debug mode on", omit=True)
     if infosystem.debugout:
-        message_info(caller, "Debugout mode on", omit=True)
+        message_info(_caller, "Debugout mode on", omit=True)
     if infosystem.data.exec_user:
-        message_info(caller, f"exec user:{infosystem.data.exec_user}", omit=True)
+        message_info(_caller, f"exec user:{infosystem.data.exec_user}", omit=True)
     if infosystem.data.home_dir:
-        message_info(caller, f"home dir :{infosystem.data.home_dir}", omit=True)
+        message_info(_caller, f"home dir :{infosystem.data.home_dir}", omit=True)
     # -------------------------------------------------------------------------
     return InfoCommon()
 
-@debug_logger
-def initarg() -> None:
-    _description = "Common data manager\n"
-    _arg_manager = Argument(_description)
-    _list_args = [
-        {
-            "arg": "--debugdump",
-            "help": "Debug dump mode for common datas",
-            "default": None,
-            "nargs": "*",
-            "action": Argument.DefaultListAction,
-            "type": "str",
-        },
-        {
-            "arg": "--t2j",
-            "help": "Text -> json convert",
-            "action": "store_true",
-        },
-        {
-            "arg": "--j2t",
-            "help": "Text -> json convert",
-            "action": "store_true",
-        },
-        {
-            "arg": "--md",
-            "help": "json -> Markdown generate",
-            "default": "",
-            "type": "str",
-        },
-    ]
-    # -------------------------------------------------------------------------
-    if _list_args:
-        for _line_arg in _list_args:
-            _arg_name = _line_arg.pop("arg")
-            if isinstance(_arg_name, tuple):
-                _arg_manager.add(*_arg_name, **_line_arg)
-            else:
-                _arg_manager.add(_arg_name, **_line_arg)
-    infosystem.args = _arg_manager.parse()
 
+# --- debug -------------------------------------------------------------------
 @debug_logger
 def debugdump(targets: list, info_comm: InfoCommon) -> None:
     if not targets:
@@ -95,32 +94,21 @@ def debugdump(targets: list, info_comm: InfoCommon) -> None:
             case _:
                 pass
 
-def generate_markdown(dest_dir_path: Path, info_comm: InfoCommon)->None:
-    caller = get_caller_name()
-    message_info(caller, "Generate markdown", omit=True)
-    info_comm.conf.markdown(
-        dest_dir_path / "Readme_Configuration.md",
-        f"Configuration data({info_comm.conf_path.name})",
-    )
-    info_comm.dist.markdown(
-        dest_dir_path / "Readme_Distribution.md",
-        f"Distribution data({info_comm.dist_path.name})",
-    )
-    info_comm.mdia.markdown(
-        dest_dir_path / "Readme_Media.md",
-        f"Media data({info_comm.mdia_path.name})",
-    )
 
-
-# --- main -------------------------------------------------------------------
+# --- procsee -----------------------------------------------------------------
+# --- main --------------------------------------------------------------------
+@debug_logger
 def main():
-    caller = get_caller_name()
+    _caller = get_caller_name()
     try:
+        # --- check the executing user ----------------------------------------
+        if not check_root(bypass=True):
+            return 1
         # --- startup process -------------------------------------------------
         time_elapsed = TimeElapsed()
-        message_start(caller, omit=False)
+        message_start(_caller, omit=False)
         # --- processing block ------------------------------------------------
-        initarg()
+        initarg("Common data manager", ARGS_LIST)
         if infosystem.args:
             info_comm = initialize()
             # --- dump --------------------------------------------------------
@@ -145,14 +133,26 @@ def main():
             # --- markdown ----------------------------------------------------
             if dirs := infosystem.args.md:
                 generate_markdown(dest_dir_path=Path(dirs), info_comm=info_comm)
+                # -------------------------------------------------------------
+                dest_path = Path(dirs) / "Readme_tbl_distribution.md"
+                md_title = f"Distribution data({info_comm.dist_path.name})"
+                list_data = []
+                for distribution in ORDERED_DISTRIBUTIONS:
+                    list_sort = info_comm.dist.sort(distribution, reverse=True)
+                    dict_list = [distribution]
+                    dict_list += [
+                        d.__dict__ if hasattr(d, "__dict__") else d for d in list_sort
+                    ]
+                    list_data.append(dict_list)
+                list2markdown(dest_path, md_title, list_data)
         # --- termination process ---------------------------------------------
-        message_end(get_caller_name(), omit=True)
-        message_elapsed(caller, time_elapsed.elapsed(), omit=True)
+        message_end(_caller, omit=True)
+        message_elapsed(_caller, time_elapsed.elapsed(), omit=True)
         # --- exit ------------------------------------------------------------
         print_peak_memory()
         return 0
     except (OSError, Exception) as e:  # noqa: BLE001
-        handle_fatal_error(caller, e, omit=False)
+        handle_fatal_error(_caller, e, omit=False)
     # -------------------------------------------------------------------------
 
 

@@ -5,12 +5,9 @@
 import sys
 
 
-#sys.path.append(str(Path(__file__).resolve().parents[1]))
 # --- my library --------------------------------------------------------------
 # ruff: isort: off
-#import my_env_guard
 from common.utils import (
-    Argument,
     Color,
     TimeElapsed,
     debug_logger,
@@ -24,39 +21,30 @@ from common.utils import (
     message_start,
     print_peak_memory,
 )
+from common.shared import (
+    check_root,
+    initarg,
+)
 
 
 # ruff: isort: on
 # =============================================================================
+# --- check -------------------------------------------------------------------
+# --- initialize --------------------------------------------------------------
 @debug_logger
 def initialize():
     """Initialize"""
-    caller = get_caller_name()
+    _caller = get_caller_name()
     if infosystem.debug:
-        message_info(caller, "Debug mode on")
+        message_info(_caller, "Debug mode on")
     if infosystem.debugout:
-        message_info(caller, "Debugout mode on")
-    message_info(caller, f"exec user:{infosystem.exec_user}")
-    message_info(caller, f"home dir :{infosystem.home_dir}")
+        message_info(_caller, "Debugout mode on")
+    message_info(_caller, f"exec user:{infosystem.exec_user}")
+    message_info(_caller, f"home dir :{infosystem.home_dir}")
     # -------------------------------------------------------------------------
 
 
-@debug_logger
-def initarg() -> None:
-    """Initialize argument"""
-    description = "Get web information\n"
-    arg_manager = Argument(description)
-    list_args = []
-    if list_args:
-        for line_arg in list_args:
-            arg_name = line_arg.pop("arg")
-            if isinstance(arg_name, tuple):
-                arg_manager.add(*arg_name, **line_arg)
-            else:
-                arg_manager.add(arg_name, **line_arg)
-    infosystem.args = arg_manager.parse()
-
-
+# --- procsee -----------------------------------------------------------------
 @debug_logger
 def test():
     """Test"""
@@ -76,42 +64,31 @@ def test():
         eprint(f"{Color.reset}{text}{text}{Color.reset}", infosystem.columns, wrap=True)
 
 
-# def check_root(bypass: bool = False) -> bool:
-#    if bypass or os.geteuid() == 0:
-#        return True
-#    print(
-#        f"{Color.reset}{Color.br_green}{infosystem.program_name}:\n"
-#        f"{Color.br_yellow} You have standard user privileges. "
-#        f"{Color.underline}Please run this with sudo.{Color.reset}"
-#    )
-#    return False
-
-
+# --- main --------------------------------------------------------------------
+@debug_logger
 def main():
     """Main"""
-    caller = get_caller_name()
+    _caller = get_caller_name()
     try:
         # --- check the executing user ----------------------------------------
-        # if not check_root(bypass=True):
-        #    return 1
-        # --- elapsed start----------------------------------------------------
-        time_elapsed = TimeElapsed()
+        if not check_root(bypass=True):
+            return 1
         # --- startup process -------------------------------------------------
-        message_start(caller)
+        time_elapsed = TimeElapsed()
+        message_start(_caller)
         # --- processing block ------------------------------------------------
-        initarg()
+        initarg("Test text output")
         if infosystem.args:
             initialize()
             test()
         # --- termination process ---------------------------------------------
-        message_end(caller)
-        # --- elapsed end -----------------------------------------------------
-        message_elapsed(caller, time_elapsed.elapsed(), omit=True)
+        message_end(_caller)
+        message_elapsed(_caller, time_elapsed.elapsed(), omit=True)
         # --- exit ------------------------------------------------------------
         print_peak_memory()
         return 0
     except (OSError, Exception) as e:  # noqa: BLE001
-        handle_fatal_error(caller, e, omit=True)
+        handle_fatal_error(_caller, e, omit=True)
     # -------------------------------------------------------------------------
 
 

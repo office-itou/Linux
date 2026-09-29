@@ -8,7 +8,6 @@ from pathlib import Path
 # --- my library --------------------------------------------------------------
 # ruff: isort: off
 from common.utils import (
-    Argument,
     TimeElapsed,
     debug_logger,
     file_read,
@@ -24,6 +23,8 @@ from common.utils import (
 )
 from common.shared import (
     InfoCommon,
+    check_root,
+    initarg,
     sort_distribution_data,
     sort_distribution_name,
 )
@@ -46,41 +47,25 @@ LIFE_LABELS = {
 @debug_logger
 def initialize():
     """Initialize"""
-    caller = get_caller_name()
+    _caller = get_caller_name()
     if infosystem.debug:
-        message_info(caller, "Debug mode on", omit=True)
+        message_info(_caller, "Debug mode on", omit=True)
     if infosystem.debugout:
-        message_info(caller, "Debugout mode on", omit=True)
+        message_info(_caller, "Debugout mode on", omit=True)
     if infosystem.data.exec_user:
-        message_info(caller, f"exec user:{infosystem.data.exec_user}", omit=True)
+        message_info(_caller, f"exec user:{infosystem.data.exec_user}", omit=True)
     if infosystem.data.home_dir:
-        message_info(caller, f"home dir :{infosystem.data.home_dir}", omit=True)
+        message_info(_caller, f"home dir :{infosystem.data.home_dir}", omit=True)
     # -------------------------------------------------------------------------
     return InfoCommon()
-
-
-@debug_logger
-def initarg() -> None:
-    _description = "Common data manager\n"
-    _arg_manager = Argument(_description)
-    _list_args = []
-    # -------------------------------------------------------------------------
-    if _list_args:
-        for _line_arg in _list_args:
-            _arg_name = _line_arg.pop("arg")
-            if isinstance(_arg_name, tuple):
-                _arg_manager.add(*_arg_name, **_line_arg)
-            else:
-                _arg_manager.add(_arg_name, **_line_arg)
-    infosystem.args = _arg_manager.parse()
 
 
 @debug_logger
 def generate_ipxe_menu_file(
     info_comm: InfoCommon, _path_src: Path, _path_dest: Path, _dist_name: str
 ) -> None:
-    caller = get_caller_name()
-    message_info(caller, f"Generate ipxe menu ({_dist_name})", omit=True)
+    _caller = get_caller_name()
+    message_info(_caller, f"Generate ipxe menu ({_dist_name})", omit=True)
     # -------------------------------------------------------------------------
     _query_version = ""
     match _dist_name:
@@ -109,7 +94,7 @@ def generate_ipxe_menu_file(
             _query_version = r"(windows-|winpe-|ati[0-9]{4}|memtest86plus-)"
         case _:
             pass
-    _sort_results = ""
+    _sort_results: list = []
     if _query_version:
         _find_results = info_comm.dist.finds(
             version=_query_version, life="^(?!.*EOL).*$"
@@ -131,17 +116,22 @@ def generate_ipxe_menu_file(
     # -------------------------------------------------------------------------
     for _data_dist in _sort_results:
         _goto_name = re.sub(r"\s+", "_", f"{_data_dist.name}-{_data_dist.version_id}")
-        _item_text = f"{f'item -- {_goto_name}':<{_item_width}} - {_data_dist.name} ${{edition}} {_data_dist.version_id}"
+        _item_text = (
+            f"{f'item -- {_goto_name}':<{_item_width}} "
+            f"- {_data_dist.name} ${{edition}} {_data_dist.version_id}"
+        )
         if _data_dist.code_name:
             _item_text += f" ({_data_dist.code_name})"
         life_key = _data_dist.life if _data_dist.life else "CURRENT"
         _items_by_life[life_key].append(_item_text)
         _goto_selection_lines.append(
-            f"{f'iseq ${{selected}} {_goto_name}':<{_item_width}} && goto {_data_dist.name}-{_data_dist.version_id} ||"
+            f"{f'iseq ${{selected}} {_goto_name}':<{_item_width}} "
+            f"&& goto {_data_dist.name}-{_data_dist.version_id} ||"
         )
         _goto_target_lines.append(f":{_goto_name}")
         _code_selection_lines.append(
-            f"{f'iseq ${{selected}} {_goto_name}':<{_item_width}} && set vers {_data_dist.version_id} ||"
+            f"{f'iseq ${{selected}} {_goto_name}':<{_item_width}} "
+            f"&& set vers {_data_dist.version_id} ||"
         )
     # -------------------------------------------------------------------------
     for _read_line in _conv_dist.splitlines():
@@ -168,8 +158,8 @@ def generate_ipxe_menu_file(
 
 @debug_logger
 def generate_ipxe_menu(info_comm: InfoCommon) -> None:
-    caller = get_caller_name()
-    message_info(caller, "Generate ipxe menu", omit=True)
+    _caller = get_caller_name()
+    message_info(_caller, "Generate ipxe menu", omit=True)
     # -------------------------------------------------------------------------
     _path_autoexec_ipxe = info_comm.conf.get_path(key="PATH_IPXE")
     _path_tmpl_ipxe_dir = info_comm.conf.get_path(key="DIRS_TMPL") / "ipxe"
@@ -192,24 +182,27 @@ def generate_ipxe_menu(info_comm: InfoCommon) -> None:
 
 # --- main -------------------------------------------------------------------
 def main():
-    caller = get_caller_name()
+    _caller = get_caller_name()
     try:
+        # --- check the executing user ----------------------------------------
+        if not check_root(bypass=True):
+            return 1
         # --- startup process -------------------------------------------------
         time_elapsed = TimeElapsed()
-        message_start(caller, omit=False)
+        message_start(_caller)
         # --- processing block ------------------------------------------------
-        initarg()
+        initarg("iPXE menu")
         if infosystem.args:
             info_comm = initialize()
             generate_ipxe_menu(info_comm=info_comm)
         # --- termination process ---------------------------------------------
-        message_end(get_caller_name(), omit=True)
-        message_elapsed(caller, time_elapsed.elapsed(), omit=True)
+        message_end(_caller, omit=True)
+        message_elapsed(_caller, time_elapsed.elapsed(), omit=True)
         # --- exit ------------------------------------------------------------
         print_peak_memory()
         return 0
     except (OSError, Exception) as e:  # noqa: BLE001
-        handle_fatal_error(caller, e, omit=False)
+        handle_fatal_error(_caller, e, omit=False)
     # -------------------------------------------------------------------------
 
 

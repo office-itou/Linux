@@ -20,10 +20,10 @@ def list2markdown(dest_path: Path, md_title: str, src_datas: list) -> None:
     """
     _spc_str = " " * 2
     _url_pattern = re.compile(
-        r"^https?://(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}"
-        r"(?:/[a-zA-Z0-9._~:/?#\[\]@!\(&\'()*+,;=\%-]*)?\)"
+        r"^https?://(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?:/[a-zA-Z0-9._~:/?#\[\]@!\(&\'()*+,;=\%-]*)?"
     )
-    _comment_pattern = re.compile(r"^#.*\$")
+    _comment_pattern = re.compile(r"^#.*$")
+    _under_line_pattern = re.compile(r"^.*:_[a-zA-Z0-9_]+_:.*$")
 
     def _conversion_url(list_data: list) -> list:
         _conv_list_data = []
@@ -32,7 +32,11 @@ def list2markdown(dest_path: Path, md_title: str, src_datas: list) -> None:
                 _key: f"`{_value}`"
                 if (
                     isinstance(_value, str)
-                    and (_url_pattern.match(_value) or _comment_pattern.match(_value))
+                    and (
+                        _url_pattern.match(_value)
+                        or _comment_pattern.match(_value)
+                        or _under_line_pattern.match(_value)
+                    )
                 )
                 else _value
                 for _key, _value in _dict_data.items()

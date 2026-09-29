@@ -1,4 +1,4 @@
-"""Common Function Package: utils [generated: 2026/09/29 21:04:22 JST (+0900)]"""
+"""Common Function Package: utils [generated: 2026/09/29 16:16:03 JST (+0900)]"""
 
 # ruff: isort: off
 from . import my_env_guard
