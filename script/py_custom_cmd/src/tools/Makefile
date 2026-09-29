@@ -41,7 +41,6 @@ CFG_GUI       = --windowed
 MAIN_SCRIPT   = 
 EXE_NAME      = 
 
-TARGET_SCRIPT = my_tool.py
 TARGET_SCRIPT = creation_of_functions_init_file.py \
                 creation_of_the_ipxe_menu.py \
                 management_of_shared_data.py \
@@ -100,9 +99,87 @@ build: $(TARGET_EXES)
 # 🌟 ターゲットごとの個別最適化設定（自動挿入領域）
 # =============================================================================
 
-	# --- my_tool.py --------------------------------------
-my_tool                                  :   IMPORT_PKGS     =
-my_tool                                  :   EXCLUDE_PKGS    = $(EXCLUDE_CUI)
+	# --- creation_of_functions_init_file.py --------------------------------------
+creation_of_functions_init_file          :   IMPORT_PKGS     =
+creation_of_functions_init_file          :   EXCLUDE_PKGS    = $(EXCLUDE_CUI)
+
+# --- creation_of_the_ipxe_menu.py --------------------------------------
+creation_of_the_ipxe_menu                :   IMPORT_PKGS     = \
+                                                --hidden-import="common.shared.my_common_cfg" \
+                                                --hidden-import="common.shared.my_convert" \
+                                                --hidden-import="common.shared.my_distribution_dat" \
+                                                --hidden-import="common.shared.my_func_check_root" \
+                                                --hidden-import="common.shared.my_func_initarg" \
+                                                --hidden-import="common.shared.my_media_dat" \
+                                                --hidden-import="common.shared.my_shared" \
+                                                --hidden-import="common.utils.my_argument" \
+                                                --hidden-import="common.utils.my_colors" \
+                                                --hidden-import="common.utils.my_config" \
+                                                --hidden-import="common.utils.my_debug" \
+                                                --hidden-import="common.utils.my_error" \
+                                                --hidden-import="common.utils.my_file_api" \
+                                                --hidden-import="common.utils.my_json" \
+                                                --hidden-import="common.utils.my_language" \
+                                                --hidden-import="common.utils.my_markdown" \
+                                                --hidden-import="common.utils.my_mem_usage" \
+                                                --hidden-import="common.utils.my_message" \
+                                                --hidden-import="common.utils.my_string" \
+                                                --hidden-import="common.utils.my_time"
+creation_of_the_ipxe_menu                :   EXCLUDE_PKGS    = $(EXCLUDE_CUI)
+
+# --- management_of_shared_data.py --------------------------------------
+management_of_shared_data                :   IMPORT_PKGS     = \
+                                                --hidden-import="common.shared.my_common_cfg" \
+                                                --hidden-import="common.shared.my_convert" \
+                                                --hidden-import="common.shared.my_distribution_dat" \
+                                                --hidden-import="common.shared.my_func_check_root" \
+                                                --hidden-import="common.shared.my_func_generate_markdown" \
+                                                --hidden-import="common.shared.my_func_initarg" \
+                                                --hidden-import="common.shared.my_media_dat" \
+                                                --hidden-import="common.shared.my_shared" \
+                                                --hidden-import="common.utils.my_argument" \
+                                                --hidden-import="common.utils.my_colors" \
+                                                --hidden-import="common.utils.my_config" \
+                                                --hidden-import="common.utils.my_debug" \
+                                                --hidden-import="common.utils.my_error" \
+                                                --hidden-import="common.utils.my_file_api" \
+                                                --hidden-import="common.utils.my_json" \
+                                                --hidden-import="common.utils.my_language" \
+                                                --hidden-import="common.utils.my_markdown" \
+                                                --hidden-import="common.utils.my_mem_usage" \
+                                                --hidden-import="common.utils.my_message" \
+                                                --hidden-import="common.utils.my_string" \
+                                                --hidden-import="common.utils.my_time"
+management_of_shared_data                :   EXCLUDE_PKGS    = $(EXCLUDE_CUI)
+
+# --- test_get_web_file_info.py --------------------------------------
+test_get_web_file_info                   :   IMPORT_PKGS     = \
+                                                --hidden-import="common.shared.my_common_cfg" \
+                                                --hidden-import="common.shared.my_convert" \
+                                                --hidden-import="common.shared.my_distribution_dat" \
+                                                --hidden-import="common.shared.my_func_check_root" \
+                                                --hidden-import="common.shared.my_func_generate_markdown" \
+                                                --hidden-import="common.shared.my_func_initarg" \
+                                                --hidden-import="common.shared.my_media_dat" \
+                                                --hidden-import="common.shared.my_shared" \
+                                                --hidden-import="common.utils.my_argument" \
+                                                --hidden-import="common.utils.my_colors" \
+                                                --hidden-import="common.utils.my_config" \
+                                                --hidden-import="common.utils.my_debug" \
+                                                --hidden-import="common.utils.my_error" \
+                                                --hidden-import="common.utils.my_file_api" \
+                                                --hidden-import="common.utils.my_infofile" \
+                                                --hidden-import="common.utils.my_infoweb" \
+                                                --hidden-import="common.utils.my_json" \
+                                                --hidden-import="common.utils.my_language" \
+                                                --hidden-import="common.utils.my_markdown" \
+                                                --hidden-import="common.utils.my_mem_usage" \
+                                                --hidden-import="common.utils.my_message" \
+                                                --hidden-import="common.utils.my_process" \
+                                                --hidden-import="common.utils.my_string" \
+                                                --hidden-import="common.utils.my_time" \
+                                                --hidden-import="common.utils.my_web_api"
+test_get_web_file_info                   :   EXCLUDE_PKGS    = $(EXCLUDE_CUI)
 
 
 # =============================================================================

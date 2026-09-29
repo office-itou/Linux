@@ -6,11 +6,11 @@ a = Analysis(
     pathex=['/srv/hgfs/linux/script/py_custom_cmd/src/tools'],
     binaries=[],
     datas=[],
-    hiddenimports=[],
+    hiddenimports=['common.shared.my_common_cfg', 'common.shared.my_convert', 'common.shared.my_distribution_dat', 'common.shared.my_func_check_root', 'common.shared.my_func_generate_markdown', 'common.shared.my_func_initarg', 'common.shared.my_media_dat', 'common.shared.my_shared', 'common.utils.my_argument', 'common.utils.my_colors', 'common.utils.my_config', 'common.utils.my_debug', 'common.utils.my_error', 'common.utils.my_file_api', 'common.utils.my_json', 'common.utils.my_language', 'common.utils.my_markdown', 'common.utils.my_mem_usage', 'common.utils.my_message', 'common.utils.my_string', 'common.utils.my_time'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=['matplotlib', 'numpy', 'scipy', 'PIL', 'unittest', 'pydoc', 'openpyxl', 'lxml', 'tkinter', 'tkinter.test', 'Tkinter', '_tkinter'],
     noarchive=False,
     optimize=0,
 )
