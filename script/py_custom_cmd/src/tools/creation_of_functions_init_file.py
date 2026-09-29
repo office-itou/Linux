@@ -10,6 +10,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+
 # --- my library --------------------------------------------------------------
 # ruff: isort: off
 # ruff: isort: on
@@ -21,9 +22,12 @@ src_dir_path = prj_top_dir_path / "src"
 lib_dir_path = src_dir_path / "common"
 utils_dir_path = lib_dir_path / "utils"
 shared_dir_path = lib_dir_path / "shared"
-import_fast = ["my_env_guard"]
-import_pkgs = ["infosystem"]
-file_pattern = re.compile(r"^my_[a-z_]+.py")
+project_dir = src_dir_path / "prototype/_tools"
+target_dirs = (utils_dir_path, shared_dir_path)
+target_dirs = (project_dir, None)
+import_fast = []
+import_pkgs = []
+file_pattern = re.compile(r"^[a-z_]+.py")
 func_pattern = re.compile(
     r"^(?:async\s+def|def)\s+([a-zA-Z_][a-zA-Z0-9_]*)"
     r"|"
@@ -35,7 +39,7 @@ func_pattern = re.compile(
 # -----------------------------------------------------------------------------
 def get_data(target_dir: Path) -> list[dict[str, Any]]:
     list_datas: list[dict[str, Any]] = []
-    for target_path in target_dir.glob("my_*.py"):
+    for target_path in target_dir.glob("*.py"):
         target_path = target_path.resolve()
         match = file_pattern.search(str(target_path.name))
         if match:
@@ -72,7 +76,7 @@ def get_data(target_dir: Path) -> list[dict[str, Any]]:
 
 
 # -----------------------------------------------------------------------------
-def generate_data(list_datas: list[dict[str, Any]]) -> list[str]:
+def generate_data(target_dir:Path, list_datas: list[dict[str, Any]]) -> list[str]:
     list_texts = []
     if list_datas:
         list_datas.sort(key=lambda d: d["function"])
@@ -193,9 +197,11 @@ def generate_file(dest_path: Path, list_texts: list[str]) -> None:
 try:
     pattern_str = rf"^({'|'.join(import_pkgs)})[ ]*=.+$"
     pkgs_pattern = re.compile(pattern_str)
-    for target_dir in (utils_dir_path, shared_dir_path):
+    for target_dir in target_dirs:
+        if not target_dir:
+            continue
         list_datas = get_data(target_dir=target_dir)
-        list_texts = generate_data(list_datas=list_datas)
+        list_texts = generate_data(target_dir=target_dir, list_datas=list_datas)
         dest_path = Path(target_dir / "__init__.py").resolve()
         generate_file(dest_path=dest_path, list_texts=list_texts)
 except (OSError, Exception) as e:

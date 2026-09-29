@@ -3,14 +3,14 @@
 
 a = Analysis(
     ['test_get_web_file_info.py'],
-    pathex=['/srv/hgfs/linux/script/py_custom_cmd/src/tools.test'],
+    pathex=['/srv/hgfs/linux/script/py_custom_cmd/src/tools'],
     binaries=[],
     datas=[],
-    hiddenimports=['common.shared.my_common_cfg', 'common.shared.my_convert', 'common.shared.my_distribution_dat', 'common.shared.my_func_check_root', 'common.shared.my_func_generate_markdown', 'common.shared.my_func_initarg', 'common.shared.my_media_dat', 'common.shared.my_shared', 'common.utils.my_argument', 'common.utils.my_colors', 'common.utils.my_config', 'common.utils.my_debug', 'common.utils.my_error', 'common.utils.my_file_api', 'common.utils.my_infofile', 'common.utils.my_infoweb', 'common.utils.my_json', 'common.utils.my_language', 'common.utils.my_markdown', 'common.utils.my_mem_usage', 'common.utils.my_message', 'common.utils.my_process', 'common.utils.my_string', 'common.utils.my_time', 'common.utils.my_web_api'],
+    hiddenimports=[],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=['matplotlib', 'numpy', 'scipy', 'PIL', 'tkinter', 'tkinter.test', 'Tkinter', '_tkinter', 'unittest', 'pydoc', 'openpyxl', 'lxml'],
+    excludes=[],
     noarchive=False,
     optimize=0,
 )

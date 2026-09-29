@@ -8,7 +8,7 @@ from tkinter import ttk
 
 # --- my library --------------------------------------------------------------
 # ruff: isort: off
-from my_gui_build_helper import build_buttons
+from common.utils import build_buttons
 
 
 # ruff: isort: on

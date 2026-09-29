@@ -100,38 +100,7 @@ build: $(TARGET_EXES)
 # 🌟 ターゲットごとの個別最適化設定（自動挿入領域）
 # =============================================================================
 
-	# --- my_tool.py (GUI Mode) --------------------------------------
-my_tool                                  :   IMPORT_PKGS     = \
-                                                --hidden-import="async_io" \
-                                                --hidden-import="common.shared.my_common_cfg" \
-                                                --hidden-import="common.shared.my_convert" \
-                                                --hidden-import="common.shared.my_distribution_dat" \
-                                                --hidden-import="common.shared.my_media_dat" \
-                                                --hidden-import="common.shared.my_shared" \
-                                                --hidden-import="common.utils.my_colors" \
-                                                --hidden-import="common.utils.my_config" \
-                                                --hidden-import="common.utils.my_debug" \
-                                                --hidden-import="common.utils.my_error" \
-                                                --hidden-import="common.utils.my_file_api" \
-                                                --hidden-import="common.utils.my_gui_build_helper" \
-                                                --hidden-import="common.utils.my_json" \
-                                                --hidden-import="common.utils.my_language" \
-                                                --hidden-import="common.utils.my_markdown" \
-                                                --hidden-import="common.utils.my_mem_usage" \
-                                                --hidden-import="common.utils.my_message" \
-                                                --hidden-import="common.utils.my_string" \
-                                                --hidden-import="common.utils.my_time" \
-                                                --hidden-import="gui_main" \
-                                                --hidden-import="gui_main_build" \
-                                                --hidden-import="gui_main_build_buttons" \
-                                                --hidden-import="gui_main_build_tables" \
-                                                --hidden-import="gui_main_event" \
-                                                --hidden-import="my_tool"
-my_tool                                  :   ADD_DATA_FILE   = \
-                                                --add-data="ui_definition.json:."
-my_tool                                  :   BUILD_WINTYPE   = CFG_GUI
-my_tool                                  :   EXCLUDE_PKGS    = $(EXCLUDE_GUI)
-
+	@TARGET_SPECIFIC_CONFIGS@
 
 # =============================================================================
 # 💡 共通ビルドルール (静的パターンルール)

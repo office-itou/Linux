@@ -8,6 +8,8 @@ from tkinter import font, ttk
 # --- my library --------------------------------------------------------------
 # ruff: isort: off
 # ruff: isort: on
+
+
 # --- gui window module ------------------------------------------------------
 # ruff: isort: off
 # ruff: isort: on
@@ -78,7 +80,7 @@ class MainWindowBuildTables:
             # --- data load ---------------------------------------------------
             for row_index, item_obj in enumerate(self.info_comm.mdia.data):
                 value = []
-                for k,v in item_obj.__dict__.items():
+                for k, v in item_obj.__dict__.items():
                     value.append(v)
                 tree.insert("", "end", iid=str(row_index), values=value)
         # --- style -----------------------------------------------------------

@@ -8,7 +8,8 @@ from tkinter import ttk
 
 # --- my library --------------------------------------------------------------
 # ruff: isort: off
-from my_gui_build_helper import build_menu_bar
+from common.utils import build_menu_bar
+
 
 # ruff: isort: on
 # --- gui window module ------------------------------------------------------
@@ -37,7 +38,7 @@ class MainWindowBuild(MainWindowBuildButtons, MainWindowBuildTables):
                 except Exception:
                     pass
         # --- language settings and message updates ---------------------------
-        from my_config import infosystem
+        from common.utils.my_config import infosystem
 
         infosystem.lang = self.current_lang_strvar.get()
         self.current_messages = self.ui_def["messages"].get(infosystem.lang, {})

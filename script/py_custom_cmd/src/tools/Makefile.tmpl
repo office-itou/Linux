@@ -33,28 +33,38 @@ APT_INSTALL   = python3-tk \
 
 BUILD_ONEDIR  = --onedir
 BUILD_ONEFILE = --onefile
-BUILD_TYPE    = $(BUILD_ONEFILE) --console
+BUILD_ONETYPE = $(BUILD_ONEFILE)
+
+CFG_CUI       = --console
+CFG_GUI       = --windowed
 
 MAIN_SCRIPT   = 
 EXE_NAME      = 
+
+TARGET_SCRIPT = my_tool.py
 TARGET_SCRIPT = creation_of_functions_init_file.py \
                 creation_of_the_ipxe_menu.py \
                 management_of_shared_data.py \
                 test_get_web_file_info.py
+
 TARGET_EXES   = $(TARGET_SCRIPT:.py=)
 
-EXCLUDE_CUI   = --exclude-module="matplotlib" \
+EXCLUDE_BASE  = --exclude-module="matplotlib" \
                 --exclude-module="numpy" \
                 --exclude-module="scipy" \
                 --exclude-module="PIL" \
-                --exclude-module="tkinter" \
-                --exclude-module="tkinter.test" \
-                --exclude-module="Tkinter" \
-                --exclude-module="_tkinter" \
                 --exclude-module="unittest" \
                 --exclude-module="pydoc" \
                 --exclude-module="openpyxl" \
                 --exclude-module="lxml"
+
+EXCLUDE_CUI   = $(EXCLUDE_BASE) \
+                --exclude-module="tkinter" \
+                --exclude-module="tkinter.test" \
+                --exclude-module="Tkinter" \
+                --exclude-module="_tkinter"
+
+EXCLUDE_GUI   = $(EXCLUDE_BASE)
 
 UNIQUE_SUFFIX := $(USER)_$(PROJECT_NAME)
 TMP_WORK_DIR  := /tmp/pyinstaller_work_$(UNIQUE_SUFFIX)
@@ -71,22 +81,18 @@ LIB_DIRS     = --paths $(CURRENT_DIR)
 
 help:
 	@echo "利用可能なコマンド一覧:"
-	@echo "  make gen-make - スクリプトのインポート関係を解析し Makefile を再生成します"
+	@echo "  make gen-make - スクリプトのインポート関係を自動解析し Makefile を再生成します"
 	@echo "  make install  - ホームディレクトリ配下に仮想環境を作成しライブラリを揃えます"
-	@echo "  make run      - 離れた場所にある仮想環境のPythonでアプリを起動します"
-	@echo "  make build    - 各ターゲットの個別最適化 hidden-import で最軽量ビルドを行います"
-	@echo "  make clean    - ビルド一時ファイルやホームの仮想環境まで一括でクリーンアップします"
+	@echo "  make build    - 各ターゲットの個別最適化 (CUI/GUI自動切り替え) で最軽量ビルドを行います"
+	@echo "  make clean    - ビルド一時ファイルや仮想環境まで一括でクリーンアップします"
 
 install:
-	@echo "📦 ホームディレクトリ配下に仮想環境を作成しています: $(VENV_PATH)"
+	@echo "📦 仮想環境を作成しています: $(VENV_PATH)"
 	@if [ -n "$(VENV_PATH)" ] && [ -d "$(VENV_PATH)" ]; then rm -rf "$(VENV_PATH)"; fi
 	python3 -m venv --system-site-packages $(VENV_PATH)
 	$(PIP) install --upgrade pip $(PIP_INSTALL)
 	$(MAKE) ruff-init
 	$(MAKE) path-init
-
-run:
-	$(PYTHON) $(MAIN_SCRIPT)
 
 build: $(TARGET_EXES)
 
@@ -102,7 +108,7 @@ build: $(TARGET_EXES)
 $(TARGET_EXES): %: %.py
 	@mkdir -p $(TMP_WORK_DIR)
 	@echo "🚀 ビルド中: $< -> dist/$@ (個別最適化モード)"
-	$(PYINSTALLER) $(BUILD_TYPE) $(LIB_DIRS) $(IMPORT_PKGS) $(EXCLUDE_PKGS) $(ADD_DATA_FILE) $(WORK_PATH) --name=$@ $<
+	$(PYINSTALLER) $(BUILD_ONETYPE) $($(BUILD_WINTYPE)) $(LIB_DIRS) $(IMPORT_PKGS) $(EXCLUDE_PKGS) $(ADD_DATA_FILE) $(WORK_PATH) --name=$@ $<
 	@if [ -d $(TMP_WORK_DIR) ]; then rm -rf $(TMP_WORK_DIR); fi
 	@echo "--------------------------------------------------"
 	@echo "ビルド成功！ 'dist/$*' が生成されました。"

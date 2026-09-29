@@ -3,14 +3,14 @@
 
 a = Analysis(
     ['creation_of_functions_init_file.py'],
-    pathex=['/srv/hgfs/linux/script/py_custom_cmd/src/tools.test'],
+    pathex=['/srv/hgfs/linux/script/py_custom_cmd/src/tools'],
     binaries=[],
     datas=[],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=['matplotlib', 'numpy', 'scipy', 'PIL', 'tkinter', 'tkinter.test', 'Tkinter', '_tkinter', 'unittest', 'pydoc', 'openpyxl', 'lxml'],
+    excludes=[],
     noarchive=False,
     optimize=0,
 )

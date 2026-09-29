@@ -7,8 +7,9 @@ from collections.abc import Callable
 
 # --- my library --------------------------------------------------------------
 # ruff: isort: off
-from my_gui_build_helper import load_ui_definition
-from my_shared import InfoCommon
+from common.shared import InfoCommon
+from common.utils import load_ui_definition
+
 
 # ruff: isort: on
 # --- gui window module ------------------------------------------------------

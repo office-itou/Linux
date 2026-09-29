@@ -2,15 +2,9 @@
 """main task"""
 
 # --- python library ----------------------------------------------------------
-import sys
 import tkinter as tk
-from pathlib import Path
 
-
-sys.path.append(str(Path(__file__).resolve().parents[2]))
 # --- my library --------------------------------------------------------------
-# ruff: isort: off
-import my_env_guard  # noqa: F401
 from common.utils import (
     TimeElapsed,
     get_caller_name,
@@ -20,6 +14,7 @@ from common.utils import (
     message_start,
     print_peak_memory,
 )
+
 
 # ruff: isort: on
 # --- gui window module ------------------------------------------------------

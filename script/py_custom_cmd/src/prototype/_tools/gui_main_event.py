@@ -6,8 +6,8 @@ import tkinter as tk
 
 # --- my library --------------------------------------------------------------
 # ruff: isort: off
-from my_config import infosystem
-from my_string import eprint, set_gui_log_window
+from common.utils import infosystem
+from common.utils import eprint, set_gui_log_window
 
 
 # ruff: isort: on
