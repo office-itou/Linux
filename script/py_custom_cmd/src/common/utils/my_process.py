@@ -6,7 +6,11 @@ import subprocess
 
 # --- my library --------------------------------------------------------------
 # ruff: isort: off
-from common.utils import Color, debug_logger, get_caller_name, message_alert
+from common.utils import (
+    debug_logger,
+    get_caller_name,
+    handle_fatal_error,
+)
 
 
 # ruff: isort: on
@@ -20,23 +24,14 @@ def run_subprocess(*args, **kwargs) -> str:
     Returns:
         str: stdout
     """
+    _caller = get_caller_name()
     kwargs["check"] = True
     kwargs["capture_output"] = True
     kwargs["text"] = True
     try:
         _res = subprocess.run(*args, **kwargs)  # noqa: PLW1510
-    except subprocess.CalledProcessError as e:
-        message_alert(
-            get_caller_name(),
-            f"Subprocess error status {e.returncode}: {e.stderr}{Color.reset}",
-        )
-        raise SystemExit
-    except FileNotFoundError as e:
-        message_alert(
-            get_caller_name(),
-            f"Subprocess file not found error: {e.filename}{Color.reset}",
-        )
-        raise SystemExit
+    except (OSError, Exception) as e:  # noqa: BLE001
+        handle_fatal_error(_caller, e)
     # -------------------------------------------------------------------------
     return str(_res.stdout.strip())
 

@@ -1,4 +1,4 @@
-"""Common Function Package: shared [generated: 2026/09/29 21:04:22 JST (+0900)]"""
+"""Common Function Package: shared [generated: 2026/09/30 21:50:40 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -21,6 +21,7 @@ __all__ = [
     "conv2variable",
     "generate_markdown",
     "get_text2list",
+    "get_web_file_info",
     "initarg",
     "load",
     "parse_version_to_tuple",
@@ -47,6 +48,7 @@ _MODULE_MAP = {
     "conv2variable": ".my_common_cfg",
     "generate_markdown": ".my_func_generate_markdown",
     "get_text2list": ".my_convert",
+    "get_web_file_info": ".my_async_api",
     "initarg": ".my_func_initarg",
     "load": ".my_common_cfg",
     "parse_version_to_tuple": ".my_distribution_dat",

@@ -2,6 +2,7 @@
 """Test text output"""
 
 # --- Python library ----------------------------------------------------------
+import argparse
 import os
 import re
 import shutil
@@ -15,68 +16,62 @@ from typing import Any
 # ruff: isort: off
 # ruff: isort: on
 # =============================================================================
-prj_top_dir_path = Path("/srv/user/private/src/git/linux/script/py_custom_cmd")
+prj_top_dir_path = Path(
+    "/srv/user/private/src/git/linux/script/py_custom_cmd"
+).resolve()
 bin_dir_path = prj_top_dir_path / "bin"
 doc_dir_path = prj_top_dir_path / "doc"
 src_dir_path = prj_top_dir_path / "src"
 lib_dir_path = src_dir_path / "common"
+# 固定パスの定義
 utils_dir_path = lib_dir_path / "utils"
 shared_dir_path = lib_dir_path / "shared"
-project_dir = src_dir_path / "prototype/_tools"
-target_dirs = (utils_dir_path, shared_dir_path)
-target_dirs = (project_dir, None)
-import_fast = []
-import_pkgs = []
-file_pattern = re.compile(r"^[a-z_]+.py")
+import_fast = ["check_root"]
+import_pkgs = ["infosystem"]
+file_pattern = re.compile(r"^[^_][a-z_]+.py")
 func_pattern = re.compile(
-    r"^(?:async\s+def|def)\s+([a-zA-Z_][a-zA-Z0-9_]*)"
+    r"^(?:async\s+def|def)\s+([^_][a-zA-Z_][a-zA-Z0-9_]*)"
     r"|"
-    r"^(?:class)\s+([a-zA-Z_][a-zA-Z0-9_]*)",
+    r"^(?:class)\s+([^_][a-zA-Z_][a-zA-Z0-9_]*)",
     re.MULTILINE,
 )
 
 
 # -----------------------------------------------------------------------------
 def get_data(target_dir: Path) -> list[dict[str, Any]]:
-    list_datas: list[dict[str, Any]] = []
-    for target_path in target_dir.glob("*.py"):
-        target_path = target_path.resolve()
-        match = file_pattern.search(str(target_path.name))
+    _list_datas: list[dict[str, Any]] = []
+    for _target_path in target_dir.glob("*.py"):
+        _target_path = _target_path.resolve()
+        match = file_pattern.search(str(_target_path.name))
         if match:
-            with open(target_path, mode="r", encoding="utf-8", newline=None) as f:
-                target_data: str = str(f.read())
-            dict_data = {"path": target_path, "function": ""}
-            list_datas.append(dict_data)
-            for line in target_data.splitlines():
-                dict_data = ""
-                match = func_pattern.search(line)
+            with open(_target_path, mode="r", encoding="utf-8", newline=None) as f:
+                _target_data: str = str(f.read())
+            _dict_data = {"path": _target_path, "function": ""}
+            _list_datas.append(_dict_data)
+            for _line in _target_data.splitlines():
+                _dict_data = ""
+                _func = ""
+                match = func_pattern.search(_line)
                 if match:
                     if match.group(1):
-                        dict_data = {
-                            "path": target_path,
-                            "function": match.group(1),
-                        }
+                        _func = match.group(1)
                     elif match.group(2):
-                        dict_data = {
-                            "path": target_path,
-                            "function": match.group(2),
-                        }
-                    if dict_data:
-                        list_datas.append(dict_data)
+                        _func = match.group(2)
                 else:
-                    match = pkgs_pattern.search(line)
+                    match = pkgs_pattern.search(_line)
                     if match:
-                        dict_data = {
-                            "path": target_path,
-                            "function": match.group(1),
-                        }
-                    if dict_data:
-                        list_datas.append(dict_data)
-    return list_datas
+                        _func = match.group(1)
+                if _func and _func not in ("main", "initialize"):
+                    _dict_data = {
+                        "path": _target_path,
+                        "function": _func,
+                    }
+                    _list_datas.append(_dict_data)
+    return _list_datas
 
 
 # -----------------------------------------------------------------------------
-def generate_data(target_dir:Path, list_datas: list[dict[str, Any]]) -> list[str]:
+def generate_data(target_dir: Path, list_datas: list[dict[str, Any]]) -> list[str]:
     list_texts = []
     if list_datas:
         list_datas.sort(key=lambda d: d["function"])
@@ -131,8 +126,9 @@ def generate_data(target_dir:Path, list_datas: list[dict[str, Any]]) -> list[str
         list_texts.append("__all__ = [")
         for pkg in pkg_module_paths:
             list_texts.append(f'    "{pkg}",')
-        for pkg in missing_pkgs:
-            list_texts.append(f'    "{pkg}",')
+        if target_dir in (utils_dir_path, shared_dir_path):
+            for pkg in missing_pkgs:
+                list_texts.append(f'    "{pkg}",')
         for dict_data in list_datas:
             _func = dict_data["function"]
             if _func and _func not in import_pkgs:
@@ -143,8 +139,9 @@ def generate_data(target_dir:Path, list_datas: list[dict[str, Any]]) -> list[str
         list_texts.append("_MODULE_MAP = {")
         for pkg, path in pkg_module_paths.items():
             list_texts.append(f'    "{pkg}": "{path}",')
-        for pkg in missing_pkgs:
-            list_texts.append(f'    "{pkg}": "..utils.my_config",')
+        if target_dir in (utils_dir_path, shared_dir_path):
+            for pkg in missing_pkgs:
+                list_texts.append(f'    "{pkg}": "..utils.my_config",')
         for dict_data in list_datas:
             _func = dict_data["function"]
             if _func and _func not in import_pkgs:
@@ -193,22 +190,50 @@ def generate_file(dest_path: Path, list_texts: list[str]) -> None:
         f.write("\n".join(list_texts) + "\n")
 
 
+def process_directory(target_dir: Path) -> None:
+    """指定されたディレクトリの__init__.pyを自動生成する"""
+    if not target_dir or not target_dir.exists():
+        print(f"Warning: Directory does not exist: {target_dir}")
+        return
+    print(f"Processing: {target_dir}")
+    list_datas = get_data(target_dir=target_dir)
+    list_texts = generate_data(target_dir=target_dir, list_datas=list_datas)
+    dest_path = Path(target_dir / "__init__.py").resolve()
+    generate_file(dest_path=dest_path, list_texts=list_texts)
+
+
 # -----------------------------------------------------------------------------
-try:
-    pattern_str = rf"^({'|'.join(import_pkgs)})[ ]*=.+$"
-    pkgs_pattern = re.compile(pattern_str)
-    for target_dir in target_dirs:
-        if not target_dir:
-            continue
-        list_datas = get_data(target_dir=target_dir)
-        list_texts = generate_data(target_dir=target_dir, list_datas=list_datas)
-        dest_path = Path(target_dir / "__init__.py").resolve()
-        generate_file(dest_path=dest_path, list_texts=list_texts)
-except (OSError, Exception) as e:
-    _summary = traceback.extract_tb(e.__traceback__)[-1]
-    print(f"Fatal error: {e}")
-    if not isinstance(e, OSError):
-        print(f"file name  : {_summary.filename}")
-    print(f"line number: {_summary.lineno}")
-    raise SystemExit from e
+if __name__ == "__main__":
+    # コマンドライン引数の解析定義
+    parser = argparse.ArgumentParser(
+        description="Generate __init__.py for specific directories."
+    )
+    parser.format_help
+    parser.add_argument(
+        "-p",
+        "--project-dir",
+        type=str,
+        default=str(src_dir_path / "tools"),
+        help="Path to the custom project directory (default: src/tools)",
+    )
+    args = parser.parse_args()
+    # 引数からproject_dirパスを生成
+    project_dir = Path(args.project_dir).resolve()
+    try:
+        pattern_str = rf"^({'|'.join(import_pkgs)})[ ]*=.+$"
+        pkgs_pattern = re.compile(pattern_str)
+        # 1. 共通ライブラリ(utils, shared)の実行
+        print("--- Step 1: Processing Common Libraries ---")
+        for common_dir in (utils_dir_path, shared_dir_path):
+            process_directory(common_dir)
+        # 2. プロジェクトディレクトリの実行（完全に分離して実行）
+        print("\n--- Step 2: Processing Project Directory ---")
+        process_directory(project_dir)
+    except (OSError, Exception) as e:
+        _summary = traceback.extract_tb(e.__traceback__)[-1]
+        print(f"Fatal error: {e}")
+        if not isinstance(e, OSError):
+            print(f"file name  : {_summary.filename}")
+        print(f"line number: {_summary.lineno}")
+        raise SystemExit from e
 # --- eof ---------------------------------------------------------------------

@@ -99,11 +99,14 @@ build: $(TARGET_EXES)
 # 🌟 ターゲットごとの個別最適化設定（自動挿入領域）
 # =============================================================================
 
-	# --- creation_of_functions_init_file.py --------------------------------------
-creation_of_functions_init_file          :   IMPORT_PKGS     =
+	# --- creation_of_functions_init_file.py (CUI Mode) --------------------------------------
+creation_of_functions_init_file          :   IMPORT_PKGS     = \
+                                                --hidden-import="creation_of_functions_init_file"
+creation_of_functions_init_file          :   ADD_DATA_FILE   =
+creation_of_functions_init_file          :   BUILD_WINTYPE   = CFG_CUI
 creation_of_functions_init_file          :   EXCLUDE_PKGS    = $(EXCLUDE_CUI)
 
-# --- creation_of_the_ipxe_menu.py --------------------------------------
+# --- creation_of_the_ipxe_menu.py (CUI Mode) --------------------------------------
 creation_of_the_ipxe_menu                :   IMPORT_PKGS     = \
                                                 --hidden-import="common.shared.my_common_cfg" \
                                                 --hidden-import="common.shared.my_convert" \
@@ -124,10 +127,13 @@ creation_of_the_ipxe_menu                :   IMPORT_PKGS     = \
                                                 --hidden-import="common.utils.my_mem_usage" \
                                                 --hidden-import="common.utils.my_message" \
                                                 --hidden-import="common.utils.my_string" \
-                                                --hidden-import="common.utils.my_time"
+                                                --hidden-import="common.utils.my_time" \
+                                                --hidden-import="creation_of_the_ipxe_menu"
+creation_of_the_ipxe_menu                :   ADD_DATA_FILE   =
+creation_of_the_ipxe_menu                :   BUILD_WINTYPE   = CFG_CUI
 creation_of_the_ipxe_menu                :   EXCLUDE_PKGS    = $(EXCLUDE_CUI)
 
-# --- management_of_shared_data.py --------------------------------------
+# --- management_of_shared_data.py (CUI Mode) --------------------------------------
 management_of_shared_data                :   IMPORT_PKGS     = \
                                                 --hidden-import="common.shared.my_common_cfg" \
                                                 --hidden-import="common.shared.my_convert" \
@@ -149,11 +155,15 @@ management_of_shared_data                :   IMPORT_PKGS     = \
                                                 --hidden-import="common.utils.my_mem_usage" \
                                                 --hidden-import="common.utils.my_message" \
                                                 --hidden-import="common.utils.my_string" \
-                                                --hidden-import="common.utils.my_time"
+                                                --hidden-import="common.utils.my_time" \
+                                                --hidden-import="management_of_shared_data"
+management_of_shared_data                :   ADD_DATA_FILE   =
+management_of_shared_data                :   BUILD_WINTYPE   = CFG_CUI
 management_of_shared_data                :   EXCLUDE_PKGS    = $(EXCLUDE_CUI)
 
-# --- test_get_web_file_info.py --------------------------------------
+# --- test_get_web_file_info.py (CUI Mode) --------------------------------------
 test_get_web_file_info                   :   IMPORT_PKGS     = \
+                                                --hidden-import="common.shared.my_async_api" \
                                                 --hidden-import="common.shared.my_common_cfg" \
                                                 --hidden-import="common.shared.my_convert" \
                                                 --hidden-import="common.shared.my_distribution_dat" \
@@ -178,7 +188,10 @@ test_get_web_file_info                   :   IMPORT_PKGS     = \
                                                 --hidden-import="common.utils.my_process" \
                                                 --hidden-import="common.utils.my_string" \
                                                 --hidden-import="common.utils.my_time" \
-                                                --hidden-import="common.utils.my_web_api"
+                                                --hidden-import="common.utils.my_web_api" \
+                                                --hidden-import="test_get_web_file_info"
+test_get_web_file_info                   :   ADD_DATA_FILE   =
+test_get_web_file_info                   :   BUILD_WINTYPE   = CFG_CUI
 test_get_web_file_info                   :   EXCLUDE_PKGS    = $(EXCLUDE_CUI)
 
 

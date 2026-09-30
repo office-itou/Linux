@@ -1,10 +1,4 @@
-"""Common Function Package: utils [generated: 2026/09/29 21:04:22 JST (+0900)]"""
-
-# ruff: isort: off
-from . import my_env_guard
-
-del my_env_guard
-# ruff: isort: on
+"""Common Function Package: utils [generated: 2026/09/30 21:50:40 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -25,8 +19,6 @@ __all__ = [
     "SystemData",
     "TimeElapsed",
     "WebData",
-    "_compile_exclude_regex",
-    "_expand_regexp_urls",
     "build_buttons",
     "build_menu_bar",
     "count_full_width",
@@ -90,8 +82,6 @@ _MODULE_MAP = {
     "SystemData": ".my_config",
     "TimeElapsed": ".my_time",
     "WebData": ".my_web_api",
-    "_compile_exclude_regex": ".my_infoweb",
-    "_expand_regexp_urls": ".my_infoweb",
     "build_buttons": ".my_gui_build_helper",
     "build_menu_bar": ".my_gui_build_helper",
     "count_full_width": ".my_string",
