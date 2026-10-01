@@ -43,7 +43,7 @@ class DebugLogWindow:
             target_y = parent_y + (current_step * title_height)
 
         # 📌 geometryの適用（位置を設定）
-        self.win.geometry(f"600x400+{target_x}+{target_y}")
+        self.win.geometry(f"800x600+{target_x}+{target_y}")
 
         # カスケードのステップ更新（最大4枚まで重ねたらリセット）
         if current_step >= 3:
@@ -123,8 +123,8 @@ class DebugLogWindow:
         remove_gui_log_window(self)
 
         # もし開いているサブウィンドウが完全にゼロになったらアクティブフラグを落とす
-        from common.utils import _gui_log_windows
-        if not _gui_log_windows:
+        from common.utils import gui_log_windows
+        if not gui_log_windows:
             infosystem.log_window_active = False
 
         self.win.destroy()

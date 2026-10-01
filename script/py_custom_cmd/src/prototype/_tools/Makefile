@@ -41,11 +41,7 @@ CFG_GUI       = --windowed
 MAIN_SCRIPT   = 
 EXE_NAME      = 
 
-TARGET_SCRIPT = my_tool.py
-               #creation_of_functions_init_file.py \
-               #creation_of_the_ipxe_menu.py \
-               #management_of_shared_data.py \
-               #test_get_web_file_info.py
+TARGET_SCRIPT = my_tools.py
 
 TARGET_EXES   = $(TARGET_SCRIPT:.py=)
 
@@ -100,9 +96,10 @@ build: $(TARGET_EXES)
 # 🌟 ターゲットごとの個別最適化設定（自動挿入領域）
 # =============================================================================
 
-	# --- my_tool.py (GUI Mode) --------------------------------------
-my_tool                                  :   IMPORT_PKGS     = \
+	# --- my_tools.py (GUI Mode) --------------------------------------
+my_tools                                 :   IMPORT_PKGS     = \
                                                 --hidden-import="async_io" \
+                                                --hidden-import="common.shared.my_async_api" \
                                                 --hidden-import="common.shared.my_common_cfg" \
                                                 --hidden-import="common.shared.my_convert" \
                                                 --hidden-import="common.shared.my_distribution_dat" \
@@ -113,24 +110,30 @@ my_tool                                  :   IMPORT_PKGS     = \
                                                 --hidden-import="common.utils.my_debug" \
                                                 --hidden-import="common.utils.my_error" \
                                                 --hidden-import="common.utils.my_file_api" \
+                                                --hidden-import="common.utils.my_format" \
                                                 --hidden-import="common.utils.my_gui_build_helper" \
+                                                --hidden-import="common.utils.my_gui_build_log_monitor" \
+                                                --hidden-import="common.utils.my_infofile" \
+                                                --hidden-import="common.utils.my_infoweb" \
                                                 --hidden-import="common.utils.my_json" \
                                                 --hidden-import="common.utils.my_language" \
                                                 --hidden-import="common.utils.my_markdown" \
                                                 --hidden-import="common.utils.my_mem_usage" \
                                                 --hidden-import="common.utils.my_message" \
+                                                --hidden-import="common.utils.my_process" \
                                                 --hidden-import="common.utils.my_string" \
                                                 --hidden-import="common.utils.my_time" \
+                                                --hidden-import="common.utils.my_web_api" \
                                                 --hidden-import="gui_main" \
                                                 --hidden-import="gui_main_build" \
                                                 --hidden-import="gui_main_build_buttons" \
                                                 --hidden-import="gui_main_build_tables" \
                                                 --hidden-import="gui_main_event" \
-                                                --hidden-import="my_tool"
-my_tool                                  :   ADD_DATA_FILE   = \
+                                                --hidden-import="my_tools"
+my_tools                                 :   ADD_DATA_FILE   = \
                                                 --add-data="ui_definition.json:."
-my_tool                                  :   BUILD_WINTYPE   = CFG_GUI
-my_tool                                  :   EXCLUDE_PKGS    = $(EXCLUDE_GUI)
+my_tools                                 :   BUILD_WINTYPE   = CFG_GUI
+my_tools                                 :   EXCLUDE_PKGS    = $(EXCLUDE_GUI)
 
 
 # =============================================================================
@@ -152,7 +155,7 @@ clean:
 	@echo "クリーンアップが完了しました。Makefileも削除されたため必要に応じて make -f Makefile.tmpl gen-make を実行してください。"
 
 gen-make:
-	$(PYTHON) generate_hidden_imports.py
+	generate_hidden_imports.py
 
 ruff-init: LOCAL_PY_FILES   = $(shell find . -maxdepth 1 -name "*.py" ! -name "$(MAIN_SCRIPT)" | sed 's|.*/||;s|\.py$$||')
 ruff-init: LOCAL_DIR_FILES  = $(shell find . -maxdepth 1 -type d ! -name "." ! -name "__pycache__" ! -name "build" ! -name "dist" ! -name ".*" | sed 's|.*/||')

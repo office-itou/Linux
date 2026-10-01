@@ -10,25 +10,25 @@ import unicodedata
 # from my_config import infosystem
 
 # --- Manage all open windows in a list. --------------------------------------
-_gui_log_windows = []
+gui_log_windows = []
 
 
 def set_gui_log_window(window_obj):
     """ウィンドウの登録・解除を行う関数"""
-    global _gui_log_windows
+    global gui_log_windows
     if window_obj is None:
         # None が渡されたら全クリア（アプリ終了時など）
-        _gui_log_windows.clear()
+        gui_log_windows.clear()
     else:
         # 新しいウィンドウをリストに追加
-        _gui_log_windows.append(window_obj)
+        gui_log_windows.append(window_obj)
 
 
 def remove_gui_log_window(window_obj):
     """特定のウィンドウが手動で閉じられた時にリストから除外する関数"""
-    global _gui_log_windows
-    if window_obj in _gui_log_windows:
-        _gui_log_windows.remove(window_obj)
+    global gui_log_windows
+    if window_obj in gui_log_windows:
+        gui_log_windows.remove(window_obj)
 
 
 def eprint(full_text, *args, **kwargs):
@@ -40,14 +40,14 @@ def eprint(full_text, *args, **kwargs):
     has_written = False
     if infosystem.is_gui and infosystem.log_window_active:
         # リストのコピーを使って、ループ中の要素削除によるエラーを防ぐ
-        for win in list(_gui_log_windows):
+        for win in list(gui_log_windows):
             try:
                 # ウィンドウの tkinter 要素がまだ存在しているか最終チェック
                 if hasattr(win, "win") and win.win.winfo_exists():
                     win.append_ansi_text(full_text + "\n")
                     has_written = True
                 else:
-                    _gui_log_windows.remove(win)  # 存在しなければリストから掃除
+                    gui_log_windows.remove(win)  # 存在しなければリストから掃除
             except Exception:  # noqa: BLE001, S110
                 pass
 

@@ -49,7 +49,7 @@ async def _process_single_media(
     """1件のメディアデータを処理する非同期タスク (セマフォによる流量制限付き)"""
     if tget_mdia.entry_name == "menu-entry":
         return
-    local_file_path = ""
+    local_file_path = Path()
     if tget_mdia.iso_path:
         local_file_path = Path(tget_mdia.iso_path)
     else:
@@ -73,7 +73,7 @@ async def _process_single_media(
                 tget_mdia.web_check = str(_web_data.check_date)
                 tget_mdia.web_status = str(_web_data.status)
                 local_file_path = Path(_web_data.local_file)
-        message_info(caller, f"[Queue] Fetching: {local_file_path}", omit=True)
+        # message_info(caller, f"[Queue] Fetching: {local_file_path}", omit=True)
         if local_file_path.exists():
             info_file = InfoFile()
             await asyncio.to_thread(info_file.get_info, str(local_file_path))
@@ -83,9 +83,9 @@ async def _process_single_media(
             tget_mdia.iso_volume = str(info_file.data.volume)
         else:
             tget_mdia.iso_path = str(local_file_path)
-            tget_mdia.iso_tstamp = "-"
-            tget_mdia.iso_size = "-"
-            tget_mdia.iso_volume = "-"
+            tget_mdia.iso_tstamp = ""
+            tget_mdia.iso_size = ""
+            tget_mdia.iso_volume = ""
 
 
 @debug_logger

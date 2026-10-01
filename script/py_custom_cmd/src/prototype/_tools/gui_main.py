@@ -28,7 +28,7 @@ class MainWindow(MainWindowEvent, MainWindowBuild):
             root (tk.Tk): the generated window object
         """
         super().__init__(root)
-        self.root.geometry("800x600")
+        self.root.geometry("1024x768")
         # --- initialization of state variables -------------------------------
         self.ui_def = load_ui_definition("ui_definition.json")
         self.info_comm = InfoCommon()
@@ -52,6 +52,7 @@ class MainWindow(MainWindowEvent, MainWindowBuild):
             "event_exec": self.event_exec,
             "event_confirm": self.event_confirm,
             "event_debug_mon": self.event_debug_mon,
+            "event_markdown": self.event_markdown,
             "event_active_select_all": lambda: self.event_toggle_all_checks(
                 "active_table", "☑"
             ),

@@ -24,7 +24,11 @@
         }
     },
     "python.analysis.typeCheckingMode": "standard",
-    "security.promptForLocalFileProtocolHandling": false,
+    "python.analysis.extraPaths": [
+        "./",
+        "/srv/user/private/src/git/linux/script/py_custom_cmd/src/"
+    ],
+   "security.promptForLocalFileProtocolHandling": false,
     "chat.disableAIFeatures": true,
     "chat.extensionUnification.enabled": false,
     "dictation.experimental.llmCleanup": false,

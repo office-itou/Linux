@@ -14,14 +14,22 @@
       "btn_exec": "Run",
       "btn_exit": "Exit",
       "btn_debug": "Monitor",
+      "btn_markdown": "Markdown",
+      "lbl_table_active": "📊 Active data",
+      "lbl_table_archive": "🗄️ Archive data",
+      "msg_info": "",
+      "msg_warn": "",
+      "msg_alert": "",
+      "msg_error": "Error",
+      "msg_warn_already_running": "Already running",
       "is_checked": "✅",
       "type": "Type",
       "entry_disp": "Display",
       "release": "Release",
       "support": "Support",
-      "memo": "Memo",
-      "lbl_table_active": "📊 Active data",
-      "lbl_table_archive": "🗄️ Archive data"
+      "web_tstamp": "Time stamp",
+      "web_check": "Checked time",
+      "memo": "Memo"
     },
     "ja": {
       "title": "テスト画面",
@@ -37,14 +45,22 @@
       "btn_exec": "実行",
       "btn_exit": "終了",
       "btn_debug": "モニター",
+      "btn_markdown": "Markdown",
+      "lbl_table_active": "📊 アクティブデータ",
+      "lbl_table_archive": "🗄️ アーカイブデータ",
+      "msg_info": "",
+      "msg_warn": "",
+      "msg_alert": "",
+      "msg_error": "エラー",
+      "msg_warn_already_running": "すでに実行中",
       "is_checked": "✅",
       "type": "種別",
       "entry_disp": "表示名",
       "release": "リリース",
       "support": "サポート",
-      "memo": "メモ",
-      "lbl_table_active": "📊 アクティブデータ",
-      "lbl_table_archive": "🗄️ アーカイブデータ"
+      "web_tstamp": "タイムスタンプ",
+      "web_check": "チェック時刻",
+      "memo": "メモ"
     }
   },
   "menus": [
@@ -111,11 +127,21 @@
   },
   "buttons": [
     {
+      "label_key": "btn_markdown",
+      "command_name": "event_markdown",
+      "grid_layout": {
+        "row": 0,
+        "column": 0,
+        "padx": 5,
+        "pady": 5
+      }
+    },
+    {
       "label_key": "btn_exec",
       "command_name": "event_exec",
       "grid_layout": {
         "row": 0,
-        "column": 0,
+        "column": 1,
         "padx": 5,
         "pady": 5
       }
@@ -125,7 +151,7 @@
       "command_name": "event_confirm",
       "grid_layout": {
         "row": 0,
-        "column": 1,
+        "column": 2,
         "padx": 5,
         "pady": 5
       }
@@ -135,7 +161,7 @@
       "command_name": "event_quit_app",
       "grid_layout": {
         "row": 0,
-        "column": 2,
+        "column": 3,
         "padx": 5,
         "pady": 5
       }
@@ -145,7 +171,7 @@
       "command_name": "event_debug_mon",
       "grid_layout": {
         "row": 0,
-        "column": 3,
+        "column": 4,
         "padx": 5,
         "pady": 5
       }
@@ -165,49 +191,50 @@
         "column": 0,
         "row_span": 1,
         "column_span": 1,
-        "padx": 10,
-        "pady": 10,
+        "padx": 0,
+        "pady": 0,
         "sticky": "nsew"
       },
       "columns": [
         {
           "field": "is_checked",
-          "width": 40,
+          "width": 16,
           "anchor": "center"
         },
         {
           "field": "type",
-          "width": -1,
+          "width": 64,
           "anchor": "center"
         },
         {
           "field": "entry_disp",
-          "width": 100,
+          "width": 240,
           "anchor": "w"
         },
         {
           "field": "release",
-          "width": -1,
+          "width": 80,
           "anchor": "center"
         },
         {
           "field": "support",
-          "width": -1,
+          "width": 80,
           "anchor": "center"
         },
         {
           "field": "web_tstamp",
-          "width": -1,
+          "width": 128,
+          "anchor": "center",
+          "format": "{:%Y/%m/%d %H:%M}"
+        },
+        {
+          "field": "web_check",
+          "width": 128,
           "anchor": "center",
           "format": "{:%Y/%m/%d %H:%M}"
         },
         {
           "field": "memo",
-          "width": -1,
-          "anchor": "w"
-        },
-        {
-          "field": "memo2",
           "width": -1,
           "anchor": "w"
         }

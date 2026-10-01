@@ -27,7 +27,7 @@ lib_dir_path = src_dir_path / "common"
 utils_dir_path = lib_dir_path / "utils"
 shared_dir_path = lib_dir_path / "shared"
 import_fast = ["check_root"]
-import_pkgs = ["infosystem"]
+import_pkgs = ["infosystem", "gui_log_windows"]
 file_pattern = re.compile(r"^[^_][a-z_]+.py")
 func_pattern = re.compile(
     r"^(?:async\s+def|def)\s+([^_][a-zA-Z_][a-zA-Z0-9_]*)"

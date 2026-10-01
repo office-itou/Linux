@@ -1,4 +1,4 @@
-"""Common Function Package: utils [generated: 2026/09/30 21:50:40 JST (+0900)]"""
+"""Common Function Package: utils [generated: 2026/10/01 19:21:06 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -6,6 +6,7 @@ import importlib  # noqa: E402
 
 # --- my library --------------------------------------------------------------
 __all__ = [
+    "gui_log_windows",
     "infosystem",
     "Argument",
     "Code",
@@ -64,11 +65,13 @@ __all__ = [
     "print_peak_memory",
     "remove_gui_log_window",
     "run_subprocess",
+    "safe_format",
     "set_gui_log_window",
     "split_by_width",
 ]
 
 _MODULE_MAP = {
+    "gui_log_windows": ".my_string",
     "infosystem": ".my_config",
     "Argument": ".my_argument",
     "Code": ".my_colors",
@@ -127,6 +130,7 @@ _MODULE_MAP = {
     "print_peak_memory": ".my_mem_usage",
     "remove_gui_log_window": ".my_string",
     "run_subprocess": ".my_process",
+    "safe_format": ".my_format",
     "set_gui_log_window": ".my_string",
     "split_by_width": ".my_string",
 }

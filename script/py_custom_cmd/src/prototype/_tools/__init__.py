@@ -1,4 +1,4 @@
-"""Common Function Package: _tools [generated: 2026/09/30 21:17:44 JST (+0900)]"""
+"""Common Function Package: _tools [generated: 2026/10/01 05:38:03 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -6,7 +6,6 @@ import importlib  # noqa: E402
 
 # --- my library --------------------------------------------------------------
 __all__ = [
-    "infosystem",
     "AsyncProcessHandler",
     "CustomIsoWindow",
     "CustomLiveWindow",
@@ -23,14 +22,12 @@ __all__ = [
     "check_is_gui",
     "generate_target_block",
     "load_module_map",
-    "main",
     "parse_actual_imports",
     "resolve_dependencies_recursive",
     "scan_required_resources",
 ]
 
 _MODULE_MAP = {
-    "infosystem": "..utils.my_config",
     "AsyncProcessHandler": ".async_io",
     "CustomIsoWindow": ".gui_custom_iso",
     "CustomLiveWindow": ".gui_custom_live",
@@ -47,7 +44,6 @@ _MODULE_MAP = {
     "check_is_gui": ".generate_hidden_imports",
     "generate_target_block": ".generate_hidden_imports",
     "load_module_map": ".generate_hidden_imports",
-    "main": ".generate_hidden_imports",
     "parse_actual_imports": ".generate_hidden_imports",
     "resolve_dependencies_recursive": ".generate_hidden_imports",
     "scan_required_resources": ".generate_hidden_imports",

@@ -6,16 +6,19 @@ import tkinter as tk
 
 # --- my library --------------------------------------------------------------
 # ruff: isort: off
-from common.utils import infosystem
-from common.utils import eprint, set_gui_log_window
+from common.utils import DebugLogWindow, eprint, infosystem, set_gui_log_window
 
 
 # ruff: isort: on
 # --- gui window module ------------------------------------------------------
 # ruff: isort: off
+from async_io import AsyncProcessHandler
+from gui_main_build import MainWindowBuild
+
+
 # ruff: isort: on
 # --- main --------------------------------------------------------------------
-class MainWindowEvent:
+class MainWindowEvent(MainWindowBuild):
     def __init__(self, root: tk.Tk) -> None:
         """initialization
         Args:
@@ -24,6 +27,7 @@ class MainWindowEvent:
         self.root: tk.Tk = root
         self.current_lang_strvar: tk.StringVar = tk.StringVar(value=infosystem.lang)
         self.current_messages: dict[str, str] = {}
+        self.async_handler = AsyncProcessHandler(self)
 
     def event_open_file(self) -> None:
         """open event"""
@@ -60,10 +64,16 @@ class MainWindowEvent:
         eprint(f"{message}({self.current_lang_strvar.get()})")
         self.generate_window()
 
+    def event_markdown(self) -> None:
+        """markdown event"""
+        message = self.current_messages.get("btn_markdown", "Markdown")
+        eprint(message)
+
     def event_exec(self) -> None:
         """exec event"""
         message = self.current_messages.get("btn_exec", "Run")
         eprint(message)
+        self.async_handler.start_async_process()
 
     def event_confirm(self) -> None:
         """confirm event"""
@@ -74,6 +84,8 @@ class MainWindowEvent:
         """debug monitor event"""
         message = self.current_messages.get("btn_debug", "Debug monitor")
         eprint(message)
+        new_log_win = DebugLogWindow(self.root)
+        set_gui_log_window(new_log_win)
 
     def event_toggle_all_checks(self, table_id: str, check_char: str) -> None:
         """toggle all checks event

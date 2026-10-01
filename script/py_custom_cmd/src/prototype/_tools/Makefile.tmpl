@@ -41,11 +41,7 @@ CFG_GUI       = --windowed
 MAIN_SCRIPT   = 
 EXE_NAME      = 
 
-TARGET_SCRIPT = my_tool.py
-               #creation_of_functions_init_file.py \
-               #creation_of_the_ipxe_menu.py \
-               #management_of_shared_data.py \
-               #test_get_web_file_info.py
+TARGET_SCRIPT = my_tools.py
 
 TARGET_EXES   = $(TARGET_SCRIPT:.py=)
 
@@ -121,7 +117,7 @@ clean:
 	@echo "クリーンアップが完了しました。Makefileも削除されたため必要に応じて make -f Makefile.tmpl gen-make を実行してください。"
 
 gen-make:
-	$(PYTHON) generate_hidden_imports.py
+	generate_hidden_imports.py
 
 ruff-init: LOCAL_PY_FILES   = $(shell find . -maxdepth 1 -name "*.py" ! -name "$(MAIN_SCRIPT)" | sed 's|.*/||;s|\.py$$||')
 ruff-init: LOCAL_DIR_FILES  = $(shell find . -maxdepth 1 -type d ! -name "." ! -name "__pycache__" ! -name "build" ! -name "dist" ! -name ".*" | sed 's|.*/||')

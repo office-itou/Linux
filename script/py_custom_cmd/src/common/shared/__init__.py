@@ -1,4 +1,4 @@
-"""Common Function Package: shared [generated: 2026/09/30 21:50:40 JST (+0900)]"""
+"""Common Function Package: shared [generated: 2026/10/01 19:21:06 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -7,6 +7,7 @@ import importlib  # noqa: E402
 # --- my library --------------------------------------------------------------
 __all__ = [
     "infosystem",
+    "gui_log_windows",
     "CommonData",
     "ConfigurationData",
     "DistributionData",
@@ -34,6 +35,7 @@ __all__ = [
 
 _MODULE_MAP = {
     "infosystem": "..utils.my_config",
+    "gui_log_windows": "..utils.my_config",
     "CommonData": ".my_shared",
     "ConfigurationData": ".my_common_cfg",
     "DistributionData": ".my_distribution_dat",
