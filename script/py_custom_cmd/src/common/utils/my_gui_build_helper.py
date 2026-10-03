@@ -91,16 +91,19 @@ def build_buttons(
             # gridレイアウトの設定取得
             grid_info = btn_info.get("grid_layout", {})
             # gridのパラメータを動的にマッピング (省略された場合はデフォルト値)
-            grid_kwargs = {
-                "row": grid_info.get("row", 0),
-                "column": grid_info.get("column", 0),
-                "rowspan": grid_info.get("row_span", 1),
-                "columnspan": grid_info.get("column_span", 1),
-                "padx": grid_info.get("padx", 0),
-                "pady": grid_info.get("pady", 0),
-                "sticky": grid_info.get("sticky", ""),
-            }
-            # グリッド配置を実行
-            btn.grid(**grid_kwargs)
-            created_buttons.append(btn)
+            row = grid_info.get("row", 0)
+            column = grid_info.get("column", 0)
+            if row >=0 and column >= 0:
+                grid_kwargs = {
+                    "row": row,
+                    "column": column,
+                    "rowspan": grid_info.get("row_span", 1),
+                    "columnspan": grid_info.get("column_span", 1),
+                    "padx": grid_info.get("padx", 0),
+                    "pady": grid_info.get("pady", 0),
+                    "sticky": grid_info.get("sticky", ""),
+                }
+                # グリッド配置を実行
+                btn.grid(**grid_kwargs)
+                created_buttons.append(btn)
     return created_buttons

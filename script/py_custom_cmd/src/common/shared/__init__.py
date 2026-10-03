@@ -1,4 +1,4 @@
-"""Common Function Package: shared [generated: 2026/10/01 19:21:06 JST (+0900)]"""
+"""Common Function Package: shared [generated: 2026/10/03 16:01:56 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -20,6 +20,7 @@ __all__ = [
     "check_root",
     "conv2data",
     "conv2variable",
+    "generate_ipxe_menu",
     "generate_markdown",
     "get_text2list",
     "get_web_file_info",
@@ -48,6 +49,7 @@ _MODULE_MAP = {
     "check_root": ".my_func_check_root",
     "conv2data": ".my_common_cfg",
     "conv2variable": ".my_common_cfg",
+    "generate_ipxe_menu": ".my_func_generate_ipxe_menu",
     "generate_markdown": ".my_func_generate_markdown",
     "get_text2list": ".my_convert",
     "get_web_file_info": ".my_async_api",

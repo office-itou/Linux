@@ -42,6 +42,7 @@ if __name__ == "__main__":
     # --- main window creation ------------------------------------------------
     root: tk.Tk = tk.Tk()
     app: MainWindow = MainWindow(root)
+    setattr(root, "app", app)
     # --- binding the termination protocol and starting the main loop ---------
     root.protocol("WM_DELETE_WINDOW", app.event_quit_app)
     root.mainloop()

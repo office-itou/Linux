@@ -10,20 +10,21 @@ from tkinter import ttk
 # ruff: isort: off
 from common.utils import build_menu_bar
 
-
-# ruff: isort: on
 # --- gui window module ------------------------------------------------------
-# ruff: isort: off
 from gui_main_build_buttons import MainWindowBuildButtons
 from gui_main_build_tables import MainWindowBuildTables
 
+# 💡 新しいファイルをインポート
+from gui_main_build_status import MainWindowBuildStatus
 
-# ruff: isort: on
-# --- main --------------------------------------------------------------------
-# 🌟 パーツクラスたちを多重継承で合体させる
-class MainWindowBuild(MainWindowBuildButtons, MainWindowBuildTables):
+
+# 🌟 新しいクラスを多重継承の親リストに追加
+class MainWindowBuild(
+    MainWindowBuildButtons, MainWindowBuildTables, MainWindowBuildStatus
+):
     root: tk.Tk
     current_lang_strvar: tk.StringVar
+    current_monitor_boolvar: tk.BooleanVar
     current_messages: dict[str, str]
     ui_def: dict
     _get_command_map: Callable[[], dict[str, Callable]]
@@ -54,7 +55,7 @@ class MainWindowBuild(MainWindowBuildButtons, MainWindowBuildTables):
             commands=_cmd_map,
             variables=_var_map,
         )
-        # --- 🌟 ボタン処理の呼び出し (別ファイルから引き継いだメソッド) -----------
+        # --- ボタン処理の呼び出し -----------
         self._generate_bottom_buttons(cmd_map=_cmd_map)
         # --- generate center mainframe  --------------------------------------
         _main_frame = ttk.Frame(self.root, padding=10)
@@ -62,5 +63,11 @@ class MainWindowBuild(MainWindowBuildButtons, MainWindowBuildTables):
         _main_frame.columnconfigure(0, weight=1)
         _main_frame.rowconfigure(0, weight=1)
         _main_frame.rowconfigure(1, weight=1)
-        # --- 🌟 テーブル処理の呼び出し (別ファイルから引き継いだメソッド) ---------
+        # 💡 ステータス表示エリアを確保するために行の重みを設定
+        _main_frame.rowconfigure(3, weight=0)
+
+        # --- テーブル処理の呼び出し ---------
         self._generate_center_tables(parent_frame=_main_frame)
+
+        # 💡 🌟 テーブルの下部にログモニターとバーを生成するメソッドを呼び出し
+        self._generate_status_monitor(parent_frame=_main_frame)

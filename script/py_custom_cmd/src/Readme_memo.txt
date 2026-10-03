@@ -1,3 +1,9 @@
+# --- ACL ---------------------------------------------------------------------
+sudo setfacl -R -m u:master:rwX /srv/user/share/conf/_data/
+sudo setfacl -R -d -m u:master:rwX /srv/user/share/conf/_data/
+getfacl /srv/user/share/conf/_data/distribution.dat
+# -----------------------------------------------------------------------------
+
 python3 -m site --user-site
 
 python3 -c "import site; print(site.getsitepackages())"

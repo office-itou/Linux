@@ -120,7 +120,7 @@ def debugout(color: str, func_name: str, mode: str, message: str, omit: bool = F
         message (str): Message
         omit (bool, optional): Omit. Defaults to False.
     """
-    if infosystem.debugout:
+    if infosystem.debug or infosystem.debugout:
         message_debug(color, func_name, mode, message, omit=omit)
 
 

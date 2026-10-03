@@ -1,2 +1,0 @@
-class IpxeWindow:
-    pass

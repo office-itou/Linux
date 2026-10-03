@@ -105,7 +105,13 @@ async def main():
         initarg("Get web information")
         if infosystem.args:
             info_comm = initialize()
+            for info_mdia_data in info_comm.mdia.data:
+                if not hasattr(info_mdia_data, "is_target"):
+                    setattr(info_mdia_data, "is_target", True)
             await get_web_file_info(info_comm)
+            for info_mdia_data in info_comm.mdia.data:
+                if hasattr(info_mdia_data, "is_target"):
+                    delattr(info_mdia_data, "is_target")
             dirs_rmak = info_comm.conf.get_path("DIRS_RMAK")
             for info_mdia_data in info_comm.mdia.data:
                 if info_mdia_data.cfg_path:

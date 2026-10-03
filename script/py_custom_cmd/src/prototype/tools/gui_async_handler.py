@@ -3,9 +3,8 @@ import asyncio
 import threading
 from typing import Any
 
+from my_async_api import get_web_file_info
 from my_string import eprint
-
-from async_io import get_web_file_info
 
 
 class AsyncProcessHandler:

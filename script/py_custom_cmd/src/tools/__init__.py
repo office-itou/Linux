@@ -1,4 +1,4 @@
-"""Common Function Package: tools [generated: 2026/10/01 19:21:06 JST (+0900)]"""
+"""Common Function Package: tools [generated: 2026/10/03 16:01:56 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -12,8 +12,6 @@ __all__ = [
     "debugdump",
     "generate_data",
     "generate_file",
-    "generate_ipxe_menu",
-    "generate_ipxe_menu_file",
     "generate_target_block",
     "get_data",
     "load_module_map",
@@ -30,8 +28,6 @@ _MODULE_MAP = {
     "debugdump": ".management_of_shared_data",
     "generate_data": ".creation_of_functions_init_file",
     "generate_file": ".creation_of_functions_init_file",
-    "generate_ipxe_menu": ".creation_of_the_ipxe_menu",
-    "generate_ipxe_menu_file": ".creation_of_the_ipxe_menu",
     "generate_target_block": ".generate_hidden_imports",
     "get_data": ".creation_of_functions_init_file",
     "load_module_map": ".generate_hidden_imports",

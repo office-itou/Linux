@@ -80,17 +80,21 @@ class InfoSystem:
             log_window_active = True
             columns = 120
             rows = 40
-            debugout = True
+            debug = False  # 💡 🌟 ここを追加！
+            debugout = False
         else:
             gui_error_callback = None
             gui_info_callback = None
             log_window_active = False
             columns = terminal_size.columns
             rows = terminal_size.lines
+            debug = False  # 💡 🌟 ここを追加！
             debugout = False
+
         return SystemData(
             lang=lang,
             is_gui=is_gui,
+            debug=debug,  # 💡 🌟 dataclassの生成時にも忘れず渡す
             debugout=debugout,
             program_name=program_name,
             columns=columns,

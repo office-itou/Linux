@@ -16,7 +16,7 @@ from common.utils import load_ui_definition
 # ruff: isort: off
 from gui_main_event import MainWindowEvent
 from gui_main_build import MainWindowBuild
-from async_io import AsyncProcessHandler
+from gui_async_handler import AsyncProcessHandler
 
 
 # ruff: isort: on
@@ -47,16 +47,23 @@ class MainWindow(MainWindowEvent, MainWindowBuild):
             "event_open_file": self.event_open_file,
             "event_save_file": self.event_save_file,
             "event_save_file_as": self.event_save_file_as,
+            "event_switch_monitor": self.event_switch_monitor,
+            "event_toggle_all_checks": self.event_toggle_all_checks,
             "event_quit_app": self.event_quit_app,
             "event_switch_language": self.event_switch_language,
             "event_exec": self.event_exec,
             "event_confirm": self.event_confirm,
             "event_debug_mon": self.event_debug_mon,
+            "event_update": self.event_update,
+            "event_download": self.event_download,
             "event_markdown": self.event_markdown,
-            "event_active_select_all": lambda: self.event_toggle_all_checks(
+            "event_custom_iso": self.event_custom_iso,
+            "event_custom_live": self.event_custom_live,
+            "event_ipxe_menu": self.event_ipxe_menu,
+            "event_active_select_all": lambda *args: self.event_toggle_all_checks(
                 "active_table", "☑"
             ),
-            "event_active_deselect_all": lambda: self.event_toggle_all_checks(
+            "event_active_deselect_all": lambda *args: self.event_toggle_all_checks(
                 "active_table", "☐"
             ),
         }
@@ -66,4 +73,8 @@ class MainWindow(MainWindowEvent, MainWindowBuild):
         Returns:
             dict[str, tk.Variable]: _description_
         """
-        return {"current_lang_strvar": self.current_lang_strvar}
+        # 💡 重複定義を排除し、言語設定とモニター設定の両方を網羅した1つの関数に統合
+        return {
+            "current_lang_strvar": self.current_lang_strvar,
+            "current_monitor_boolvar": self.current_monitor_boolvar,
+        }

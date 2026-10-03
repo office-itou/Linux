@@ -1,22 +1,34 @@
 {
   "messages": {
     "en": {
-      "title": "Test Window",
+      "title": "Customization tool",
       "menu_file": "File",
       "menu_open": "Open File...",
       "menu_save": "Save",
       "menu_save_as": "Save As...",
       "menu_exit": "Exit",
       "menu_lang": "Language",
+      "menu_monitor": "Monitor",
+      "menu_select_all": "Select All",
+      "menu_deselect_all": "Deselect All",
+      "rdo_monitor_on": "ON",
+      "rdo_monitor_off": "OFF",
       "rdo_lang_en": "English",
       "rdo_lang_ja": "Japanese",
       "btn_confirm": "✅ Confirm",
       "btn_exec": "Run",
+      "btn_cancel": "❌ Cancel",
       "btn_exit": "Exit",
       "btn_debug": "Monitor",
+      "btn_update": "Update",
+      "btn_download": "Download",
       "btn_markdown": "Markdown",
+      "btn_custom_iso": "ISO custom",
+      "btn_custom_live": "Live custom",
+      "btn_ipxe_menu": "iPXE menu",
       "lbl_table_active": "📊 Active data",
       "lbl_table_archive": "🗄️ Archive data",
+      "lbl_status_complete": "✨ Complete",
       "msg_info": "",
       "msg_warn": "",
       "msg_alert": "",
@@ -32,22 +44,34 @@
       "memo": "Memo"
     },
     "ja": {
-      "title": "テスト画面",
+      "title": "カスタマイズ・ツール",
       "menu_file": "ファイル",
       "menu_open": "ファイルを開く...",
       "menu_save": "上書き保存",
       "menu_save_as": "名前を付けて保存...",
       "menu_exit": "終了",
       "menu_lang": "言語設定",
+      "menu_monitor": "モニター",
+      "menu_select_all": "全選択",
+      "menu_deselect_all": "全解除",
+      "rdo_monitor_on": "オン",
+      "rdo_monitor_off": "オフ",
       "rdo_lang_en": "英語(English)",
       "rdo_lang_ja": "日本語(Japanese)",
       "btn_confirm": "✅ 確定",
       "btn_exec": "実行",
+      "btn_cancel": "❌ 中断",
       "btn_exit": "終了",
       "btn_debug": "モニター",
+      "btn_update": "更新",
+      "btn_download": "ダウンロード",
       "btn_markdown": "Markdown",
+      "btn_custom_iso": "ISOカスタム",
+      "btn_custom_live": "Liveカスタム",
+      "btn_ipxe_menu": "iPXEメニュー",
       "lbl_table_active": "📊 アクティブデータ",
       "lbl_table_archive": "🗄️ アーカイブデータ",
+      "lbl_status_complete": "✨ 更新完了",
       "msg_info": "",
       "msg_warn": "",
       "msg_alert": "",
@@ -92,6 +116,40 @@
           "type": "separator"
         },
         {
+          "type": "radio",
+          "label_key": "rdo_monitor_on",
+          "command_name": "event_switch_monitor",
+          "variable_name": "current_monitor_boolvar",
+          "value": true
+        },
+        {
+          "type": "radio",
+          "label_key": "rdo_monitor_off",
+          "command_name": "event_switch_monitor",
+          "variable_name": "current_monitor_boolvar",
+          "value": false
+        },
+        {
+          "type": "separator"
+        },
+        {
+          "type": "command",
+          "label_key": "menu_select_all",
+          "command_name": "event_toggle_all_checks",
+          "accelerator": "Ctrl+A",
+          "bind": "<Control-a>"
+        },
+        {
+          "type": "command",
+          "label_key": "menu_deselect_all",
+          "command_name": "event_active_deselect_all",
+          "accelerator": "Ctrl+Shift+A",
+          "bind": "<Control-Shift-A>"
+        },
+        {
+          "type": "separator"
+        },
+        {
           "type": "command",
           "label_key": "menu_exit",
           "command_name": "event_quit_app",
@@ -127,8 +185,8 @@
   },
   "buttons": [
     {
-      "label_key": "btn_markdown",
-      "command_name": "event_markdown",
+      "label_key": "btn_update",
+      "command_name": "event_update",
       "grid_layout": {
         "row": 0,
         "column": 0,
@@ -137,8 +195,8 @@
       }
     },
     {
-      "label_key": "btn_exec",
-      "command_name": "event_exec",
+      "label_key": "btn_download",
+      "command_name": "event_download",
       "grid_layout": {
         "row": 0,
         "column": 1,
@@ -147,11 +205,41 @@
       }
     },
     {
-      "label_key": "btn_confirm",
-      "command_name": "event_confirm",
+      "label_key": "btn_markdown",
+      "command_name": "event_markdown",
       "grid_layout": {
         "row": 0,
         "column": 2,
+        "padx": 5,
+        "pady": 5
+      }
+    },
+    {
+      "label_key": "btn_custom_iso",
+      "command_name": "event_custom_iso",
+      "grid_layout": {
+        "row": 0,
+        "column": 3,
+        "padx": 5,
+        "pady": 5
+      }
+    },
+    {
+      "label_key": "btn_custom_live",
+      "command_name": "event_custom_live",
+      "grid_layout": {
+        "row": 0,
+        "column": 4,
+        "padx": 5,
+        "pady": 5
+      }
+    },
+    {
+      "label_key": "btn_ipxe_menu",
+      "command_name": "event_ipxe_menu",
+      "grid_layout": {
+        "row": 0,
+        "column": 5,
         "padx": 5,
         "pady": 5
       }
@@ -161,7 +249,27 @@
       "command_name": "event_quit_app",
       "grid_layout": {
         "row": 0,
-        "column": 3,
+        "column": 7,
+        "padx": 5,
+        "pady": 5
+      }
+    },
+    {
+      "label_key": "btn_exec",
+      "command_name": "event_exec",
+      "grid_layout": {
+        "row": 0,
+        "column": -1,
+        "padx": 5,
+        "pady": 5
+      }
+    },
+    {
+      "label_key": "btn_confirm",
+      "command_name": "event_confirm",
+      "grid_layout": {
+        "row": 0,
+        "column": -1,
         "padx": 5,
         "pady": 5
       }
@@ -171,7 +279,7 @@
       "command_name": "event_debug_mon",
       "grid_layout": {
         "row": 0,
-        "column": 4,
+        "column": -1,
         "padx": 5,
         "pady": 5
       }

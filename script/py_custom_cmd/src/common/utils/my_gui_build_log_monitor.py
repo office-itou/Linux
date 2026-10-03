@@ -16,36 +16,36 @@ from common.utils import infosystem
 # -----------------------------------------------------------------------------
 class DebugLogWindow:
     def __init__(self, parent_root: tk.Tk) -> None:
+        self.parent_root = parent_root  # 💡 親の参照を保持
         self.win = tk.Toplevel(parent_root, name="debug_log_win")
         self.win.title("📂 Debug Log Monitor")
-        self.win.attributes("-topmost", True)
+
+        # 💡 修正: OS全体の最前面指定（-topmost）をやめ、
+        # 親ウィンドウ（parent_root）に対してのみ常に前面に位置付ける
+        # （背後に隠れない）設定にします
+        self.win.transient(parent_root)
 
         # 親の最新の座標・サイズ情報を同期
         parent_root.update_idletasks()
         parent_x = parent_root.winfo_x()
         parent_y = parent_root.winfo_y()
-        # parent_w = parent_root.winfo_width()
 
         # 📌 基準となるタイトルの高さ（約35px）を「ずらし幅」として使用
         title_height = 35
 
         from common.utils import infosystem
+
         current_step = getattr(infosystem, "win_cascade_step", 0)
 
-        # 📌 最初の1個目は「親の右上端」にピタッと合わせる
-        # 2個目以降は、タイトルの高さ分だけ「右」かつ「上」へずらしていく
+        # 📌 位置計算
         target_x = parent_x + ((current_step + 1) * title_height)
         target_y = parent_y - ((current_step + 3) * title_height)
 
-        # Ubuntuの上部黒バー（システムバー）に潜り込まないための安全対策（Y座標の最低値）  # noqa: E501
-        # もし画面上部（バーの下）に収まらない場合は下方向へカスケードさせます
         if target_y < 40:
             target_y = parent_y + (current_step * title_height)
 
-        # 📌 geometryの適用（位置を設定）
         self.win.geometry(f"800x600+{target_x}+{target_y}")
 
-        # カスケードのステップ更新（最大4枚まで重ねたらリセット）
         if current_step >= 3:
             infosystem.win_cascade_step = 0
         else:
@@ -78,13 +78,7 @@ class DebugLogWindow:
         scrollbar_y.pack(side="right", fill="y")
         scrollbar_x.pack(side="bottom", fill="x")
         self.text_area.pack(side="left", fill="both", expand=True)
-        self.text_area.tag_configure("red", foreground="#ff6b6b")
-        self.text_area.tag_configure("green", foreground="#4caf50")
-        self.text_area.tag_configure("yellow", foreground="#ffeb3b")
-        self.text_area.tag_configure("blue", foreground="#64b5f6")
-        self.text_area.tag_configure("magenta", foreground="#e040fb")
-        self.text_area.tag_configure("cyan", foreground="#00e5ff")
-        self.text_area.tag_configure("underline", underline=True)
+
         self.ansi_regex = re.compile(r"\x1b\[([0-9;]*)m")
 
     def append_ansi_text(self, text: str) -> None:
@@ -118,13 +112,23 @@ class DebugLogWindow:
         self.text_area.see("end")
 
     def on_close(self) -> None:
-        # 📌 自分が閉じられたら、my_string の管理リストから自分自身を削除する
+        """💡 ウィンドウが閉じられる時の処理"""
+        # 1. ログウィンドウのグローバル管理リストから自分を削除
         from common.utils import remove_gui_log_window
+
         remove_gui_log_window(self)
 
-        # もし開いているサブウィンドウが完全にゼロになったらアクティブフラグを落とす
         from common.utils import gui_log_windows
+
         if not gui_log_windows:
             infosystem.log_window_active = False
 
+        # 2. 💡 【重要】親ウィンドウ(MainWindow)にアタッチされている 
+        # app インスタンスを探し、ラジオボタンの連動変数を False にリセットします。
+        # これによりXで閉じてもメニューが「オフ」になります。
+        main_window = getattr(self.parent_root, "app", None)
+        if main_window and hasattr(main_window, "current_monitor_boolvar"):
+            main_window.current_monitor_boolvar.set(False)
+
+        # 3. 実際のウィンドウ破棄
         self.win.destroy()
