@@ -22,6 +22,7 @@ class SystemData:
     debugout: bool = False
     # --- global: system ------------------------------------------------------
     program_name: str | None = None
+    program_path: Path | None = None
     columns: int = 0
     rows: int = 0
     # --- global: user --------------------------------------------------------
@@ -63,11 +64,10 @@ class InfoSystem:
         terminal_size = shutil.get_terminal_size()
 
         # 実行中のプログラム名とユーザー環境情報の取得
-        program_name = (
-            Path(__main__.__file__).stem
-            if hasattr(__main__, "__file__")
-            else "interactive"
+        program_path = (
+            Path(__main__.__file__) if hasattr(__main__, "__file__") else None
         )
+        program_name = program_path.stem if program_path else "interactive"
         exec_user = os.getenv("SUDO_USER", os.getenv("USER"))
         home_dir = os.getenv("SUDO_HOME") or os.getenv("HOME") or f"/home/{exec_user}"
         lang = detect_language() or "en"
@@ -80,7 +80,7 @@ class InfoSystem:
             log_window_active = True
             columns = 120
             rows = 40
-            debug = False  # 💡 🌟 ここを追加！
+            debug = True  # 💡 🌟 ここを追加！
             debugout = False
         else:
             gui_error_callback = None
@@ -97,6 +97,7 @@ class InfoSystem:
             debug=debug,  # 💡 🌟 dataclassの生成時にも忘れず渡す
             debugout=debugout,
             program_name=program_name,
+            program_path=program_path,
             columns=columns,
             rows=rows,
             exec_user=exec_user if exec_user else "",

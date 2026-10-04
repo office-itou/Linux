@@ -1,4 +1,4 @@
-"""Common Function Package: shared [generated: 2026/10/03 16:01:56 JST (+0900)]"""
+"""Common Function Package: shared [generated: 2026/10/04 11:31:45 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -15,15 +15,16 @@ __all__ = [
     "InfoConfiguration",
     "InfoDistribution",
     "InfoMedia",
+    "InfoWebFile",
     "MediaData",
     "Text_fmat",
+    "WebFileData",
     "check_root",
     "conv2data",
     "conv2variable",
     "generate_ipxe_menu",
     "generate_markdown",
     "get_text2list",
-    "get_web_file_info",
     "initarg",
     "load",
     "parse_version_to_tuple",
@@ -44,15 +45,16 @@ _MODULE_MAP = {
     "InfoConfiguration": ".my_common_cfg",
     "InfoDistribution": ".my_distribution_dat",
     "InfoMedia": ".my_media_dat",
+    "InfoWebFile": ".my_async_api",
     "MediaData": ".my_media_dat",
     "Text_fmat": ".my_shared",
+    "WebFileData": ".my_async_api",
     "check_root": ".my_func_check_root",
     "conv2data": ".my_common_cfg",
     "conv2variable": ".my_common_cfg",
     "generate_ipxe_menu": ".my_func_generate_ipxe_menu",
     "generate_markdown": ".my_func_generate_markdown",
     "get_text2list": ".my_convert",
-    "get_web_file_info": ".my_async_api",
     "initarg": ".my_func_initarg",
     "load": ".my_common_cfg",
     "parse_version_to_tuple": ".my_distribution_dat",

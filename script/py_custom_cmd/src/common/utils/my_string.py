@@ -90,13 +90,22 @@ def count_width(src_text: str) -> int:
 
 
 def get_char_width(src_char: str) -> int:
-    """character count for full-width and half-width characters on the screen
+    """Character count for full-width and half-width characters on the screen
     Args:
         char (str): Source character
     Returns:
         int: Length
     """
     return 2 if unicodedata.east_asian_width(src_char) in ("W", "F", "A") else 1
+
+
+def ljust(text: str, width: int, fillchar: str = " ") -> str:
+    """Left-aligned padding for full-width and half-width characters"""
+    _current_width = count_width(text)
+    _padding_size = width - _current_width
+    if _padding_size <= 0:
+        return text
+    return text + (fillchar * _padding_size)
 
 
 def split_by_width(

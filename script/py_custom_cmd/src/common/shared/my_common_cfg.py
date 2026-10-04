@@ -52,6 +52,8 @@ class InfoConfiguration:
         Returns:
             Any: Attribute value [(self.data[0], name) or ""]
         """
+        if name.startswith("__"):
+            return super().__getattribute__(name)
         if name in self._valid_fields:
             return getattr(self.data[0], name) if self.data else ""
         raise AttributeError(

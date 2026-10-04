@@ -123,7 +123,10 @@ class DebugLogWindow:
         if not gui_log_windows:
             infosystem.log_window_active = False
 
-        # 2. 💡 【重要】親ウィンドウ(MainWindow)にアタッチされている 
+        infosystem.debug = getattr(self, "saved_debug", False)
+        infosystem.debugout = getattr(self, "saved_debugout", False)
+
+        # 2. 💡 【重要】親ウィンドウ(MainWindow)にアタッチされている
         # app インスタンスを探し、ラジオボタンの連動変数を False にリセットします。
         # これによりXで閉じてもメニューが「オフ」になります。
         main_window = getattr(self.parent_root, "app", None)

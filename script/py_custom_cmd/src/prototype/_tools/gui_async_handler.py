@@ -5,79 +5,60 @@ import asyncio
 import threading
 from typing import Any
 
-
 # --- my library --------------------------------------------------------------
-# ruff: isort: off
-from common.shared import get_web_file_info  # 💡 本来の通信関数を確実にインポート
-from common.utils import get_caller_name, message_warn
+# ruff: isort: of
+from common.utils import (
+    get_caller_name,
+    message_warn,
+)
 
 
 # --- main --------------------------------------------------------------------
 class AsyncProcessHandler:
-    ui_def: dict
+    current_messages: dict[str, str]
 
     def __init__(self, window_instance: Any) -> None:
-        self.win = window_instance  # MainWindowインスタンスへの参照
-        self.is_cancelled = False  # キャンセルフラグを初期化
-
-    def start_async_process(self) -> None:
-        """バックグラウンドで非同期通信処理スレッドを安全に起動する"""
-        _caller = get_caller_name()
-        if self.win.is_running_async:
-            message = self.ui_def["msg_warn_already_running"]
-            message_warn(func_name=_caller, message=message, omit=False)
-            return
-
-        # 💡 🌟 重要: 実際に通信処理を通過する項目だけを
-        # 正確にフィルタリングして分母(total_count)にする
-        self.target_items = [
-            item
-            for item in self.win.info_comm.mdia.data
-            if getattr(item, "is_target", False)
-            and getattr(item, "entry_name", "") != "menu-entry"
-        ]
-        self.total_count = len(self.target_items)
-
-        if self.total_count == 0:
-            self.win.append_log("⚠ 処理対象がチェックされていません。")
-            self.win.update_progress(0, 0, is_complete=True)  # 完了状態にする
-            return
-
+        self.win = window_instance
         self.is_cancelled = False
-        self.win.append_log(f"［通信開始］対象件数: {self.total_count} 件")
-        # 💡 初期状態を通知
-        self.win.update_progress(0, self.total_count, is_complete=False)
 
-        self.win.is_running_async = True
-
+    def _on_complete(self) -> None:
+        self.win.is_running_async = False
+        if self.is_cancelled:
+            _message = self.win.current_messages.get(
+                "msg_info_cancel_complete",
+                "🎉 The cancellation process has been completed.",
+            )
+        else:
+            _message = self.win.current_messages.get(
+                "msg_info_complete_reload",
+                "🎉 All communication processes have completed.\n"
+                "Reloading the data model.",
+            )
+        self.win.append_log(_message)
+        if hasattr(self.win, "reload_table_data"):
+            self.win.reload_table_data()
         if hasattr(self.win, "refresh_exec_button_text"):
             self.win.refresh_exec_button_text()
 
-        t = threading.Thread(target=self._thread_entry, daemon=True)
-        t.start()
-
-    def cancel_async_process(self) -> None:
-        """外部から通信中断を要求された際にフラグを立てるメソッド"""
-        if self.win.is_running_async:
-            self.is_cancelled = True
-            self.win.append_log(
-                "⏳ キャンセル処理を受け付けました。"
-                "現在の通信タスク終了後に停止します..."
-            )
-
     def _thread_entry(self) -> None:
-        """💡 サブスレッドのエントリポイント"""
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-
+        _loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(_loop)
         self.current_processed_count = 0
 
-        def progress_notifier(log_msg: str) -> None:
+        # ---------------------------------------------------------------------
+        def _progress_notifier(log_msg: str) -> None:
+            if self.is_cancelled:
+                def _safe_cancel():
+                    for _task in asyncio.all_tasks(_loop):
+                        _task.cancel()
+                _loop.call_soon_threadsafe(_safe_cancel)
+                return
             self.win.root.after(0, self.win.append_log, log_msg)
-
-            if "✓ 完了" in log_msg:
+            _message = self.win.current_messages.get(
+                "msg_info_complete", "✓ Completed."
+            )
+            if _message in log_msg:
                 self.current_processed_count += 1
-                # 💡 通信中は is_complete=False
                 self.win.root.after(
                     0,
                     self.win.update_progress,
@@ -87,41 +68,95 @@ class AsyncProcessHandler:
                 )
             self.win.root.after(0, self.win.root.update)
 
+        # ---------------------------------------------------------------------
         try:
-            loop.run_until_complete(
-                get_web_file_info(
-                    self.win.info_comm, on_progress_callback=progress_notifier
+            self.win.info_webfile.on_progress_callback = _progress_notifier
+            _loop.run_until_complete(self.win.info_webfile.get_web_file_info())
+            # -----------------------------------------------------------------
+            if not self.is_cancelled:
+                self.win.root.after(
+                    0,
+                    self.win.update_progress,
+                    self.total_count,
+                    self.total_count,
+                    True,
                 )
-            )
 
-            # 💡 通信ループが正常終了したら、バーを最大値にして「完了状態」へ更新する
-            self.win.root.after(
-                0,
-                self.win.update_progress,
-                self.total_count,
-                self.total_count,
-                True,  # is_complete = True
+        except asyncio.CancelledError:
+            _message = self.win.current_messages.get(
+                "msg_info_cancel_progress", "⏳ Cancellation in progress..."
             )
-
+            self.win.root.after(0, self.win.append_log, _message)
         except Exception as e:
-            message = f"❌ {self.ui_def.get('msg_error', 'Error')}: {e}"
-            self.win.root.after(0, self.win.append_log, message)
+            _message = (
+                f"{self.win.current_messages.get('msg_error', 'Already Error')}: {e}"
+            )
+            self.win.root.after(0, self.win.append_log, _message)
         finally:
-            loop.close()
+            try:
+                pending_tasks = asyncio.all_tasks(_loop)
+                if pending_tasks:
+                    _loop.run_until_complete(asyncio.wait(pending_tasks, timeout=2.0))
+            except Exception:
+                pass
+            _loop.close()
             self.win.root.after(0, self._on_complete)
 
-    def _on_complete(self) -> None:
-        """【メインスレッド側】完了後の全体UI更新"""
-        self.win.is_running_async = False
-        if self.is_cancelled:
-            self.win.append_log("🎉 キャンセル処理が完了しました。")
-        else:
-            self.win.append_log(
-                "🎉 すべての通信処理が完了しました。データモデルを再読込します。"
+    # -------------------------------------------------------------------------
+    def start_async_process(self) -> None:
+        """Safely launch an asynchronous communication thread in the background."""
+        _caller = get_caller_name()
+        if self.win.is_running_async:
+            _message = self.win.current_messages.get(
+                "msg_warn_already_running", "Already running"
             )
-        # 表のデータのみを最新状態にクリア＆再ロード
-        if hasattr(self.win, "reload_table_data"):
-            self.win.reload_table_data()
-        # ボタンのテキストを「更新/実行」に戻す
+            message_warn(func_name=_caller, message=_message, omit=False)
+            return
+        # --- listing ---------------------------------------------------------
+        _active_data = self.win.datas_map.get("active_table", [])
+        self.target_items = [
+            _item
+            for _item in _active_data
+            if getattr(_item, "is_target", False)
+            and getattr(_item.mdia_data, "entry_flag", "") == "o"
+        ]
+        # --- counter ---------------------------------------------------------
+        self.total_count = len(self.target_items)
+        if self.total_count == 0:
+            _message = self.win.current_messages.get(
+                "msg_warn_not_selected", "⚠ No items have been selected for processing."
+            )
+            self.win.append_log(_message)
+            self.win.update_progress(0, 0, is_complete=True)
+            return
+        _key = "msg_info_target_info"
+        _default = "Communication target"
+        _message = (
+            f"{self.win.current_messages.get(_key, _default)}:"
+            f" {self.total_count} "
+            f"{self.win.current_messages.get('msg_info_target_items', 'items')}"
+        )
+        self.win.append_log(_message)
+        # ---------------------------------------------------------------------
+        self.is_cancelled = False
+        self.win.update_progress(0, self.total_count, is_complete=False)
+        self.win.is_running_async = True
         if hasattr(self.win, "refresh_exec_button_text"):
             self.win.refresh_exec_button_text()
+        _t = threading.Thread(target=self._thread_entry, daemon=True)
+        _t.start()
+
+    # -------------------------------------------------------------------------
+    def cancel_async_process(self) -> None:
+        _message = f"{
+            self.win.current_messages.get(
+                'msg_info_cancel_accepted',
+                (
+                    '⏳ The cancellation request has been accepted.\n'
+                    'It will stop after the current communication task completes....'
+                ),
+            )
+        }:"
+        if self.win.is_running_async:
+            self.is_cancelled = True
+            self.win.append_log(_message)

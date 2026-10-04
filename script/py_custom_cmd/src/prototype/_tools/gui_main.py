@@ -3,12 +3,13 @@
 # --- python library ----------------------------------------------------------
 import tkinter as tk
 from collections.abc import Callable
+from pathlib import Path
 
 
 # --- my library --------------------------------------------------------------
 # ruff: isort: off
 from common.shared import InfoCommon
-from common.utils import load_ui_definition
+from common.utils import infosystem, load_ui_definition
 
 
 # ruff: isort: on
@@ -23,14 +24,11 @@ from gui_async_handler import AsyncProcessHandler
 # --- main --------------------------------------------------------------------
 class MainWindow(MainWindowEvent, MainWindowBuild):
     def __init__(self, root: tk.Tk) -> None:
-        """initialization
-        Args:
-            root (tk.Tk): the generated window object
-        """
         super().__init__(root)
         self.root.geometry("1024x768")
         # --- initialization of state variables -------------------------------
-        self.ui_def = load_ui_definition("ui_definition.json")
+        ui_file_path = infosystem.program_path.parent / Path("ui_definition.json")
+        self.ui_def = load_ui_definition(ui_file_path)
         self.info_comm = InfoCommon()
         # --- instantiation of an asynchronous processing handler -------------
         self.is_running_async = False
@@ -39,10 +37,6 @@ class MainWindow(MainWindowEvent, MainWindowBuild):
         self.generate_window()
 
     def _get_command_map(self) -> dict[str, Callable]:
-        """commands mapping
-        Returns:
-            dict[str, Callable]: _description_
-        """
         return {
             "event_open_file": self.event_open_file,
             "event_save_file": self.event_save_file,
@@ -69,11 +63,6 @@ class MainWindow(MainWindowEvent, MainWindowBuild):
         }
 
     def _get_variable_map(self) -> dict[str, tk.Variable]:
-        """variables mapping
-        Returns:
-            dict[str, tk.Variable]: _description_
-        """
-        # 💡 重複定義を排除し、言語設定とモニター設定の両方を網羅した1つの関数に統合
         return {
             "current_lang_strvar": self.current_lang_strvar,
             "current_monitor_boolvar": self.current_monitor_boolvar,

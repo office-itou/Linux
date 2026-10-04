@@ -13,12 +13,8 @@ from common.utils import build_menu_bar
 # --- gui window module ------------------------------------------------------
 from gui_main_build_buttons import MainWindowBuildButtons
 from gui_main_build_tables import MainWindowBuildTables
-
-# 💡 新しいファイルをインポート
 from gui_main_build_status import MainWindowBuildStatus
 
-
-# 🌟 新しいクラスを多重継承の親リストに追加
 class MainWindowBuild(
     MainWindowBuildButtons, MainWindowBuildTables, MainWindowBuildStatus
 ):
@@ -32,10 +28,10 @@ class MainWindowBuild(
 
     def generate_window(self) -> None:
         """generate screen"""
-        for child in self.root.winfo_children():
-            if child.winfo_exists() and "debug_log_win" not in str(child):
+        for _child in self.root.winfo_children():
+            if _child.winfo_exists() and "debug_log_win" not in str(_child):
                 try:
-                    child.destroy()
+                    _child.destroy()
                 except Exception:
                     pass
         # --- language settings and message updates ---------------------------
@@ -55,7 +51,7 @@ class MainWindowBuild(
             commands=_cmd_map,
             variables=_var_map,
         )
-        # --- ボタン処理の呼び出し -----------
+        # --- calling the button handling routine -----------------------------
         self._generate_bottom_buttons(cmd_map=_cmd_map)
         # --- generate center mainframe  --------------------------------------
         _main_frame = ttk.Frame(self.root, padding=10)
@@ -63,11 +59,9 @@ class MainWindowBuild(
         _main_frame.columnconfigure(0, weight=1)
         _main_frame.rowconfigure(0, weight=1)
         _main_frame.rowconfigure(1, weight=1)
-        # 💡 ステータス表示エリアを確保するために行の重みを設定
+        # --- set row weights to reserve space for the status display area. ---
         _main_frame.rowconfigure(3, weight=0)
-
-        # --- テーブル処理の呼び出し ---------
+        # --- calling a table operation ---------------------------------------
         self._generate_center_tables(parent_frame=_main_frame)
-
-        # 💡 🌟 テーブルの下部にログモニターとバーを生成するメソッドを呼び出し
+        # --- call the methods that generate the log monitor and the bar. -----
         self._generate_status_monitor(parent_frame=_main_frame)

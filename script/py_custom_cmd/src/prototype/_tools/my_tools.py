@@ -2,6 +2,7 @@
 """main task"""
 
 # --- python library ----------------------------------------------------------
+import sys
 import tkinter as tk
 
 # --- my library --------------------------------------------------------------
@@ -34,21 +35,25 @@ from gui_main import MainWindow
 # ruff: isort: on
 # --- main --------------------------------------------------------------------
 if __name__ == "__main__":
-    # --- initialization ------------------------------------------------------
-    infosystem.initialize(is_gui=True)
-    caller = get_caller_name()
-    time_elapsed = TimeElapsed()
-    message_start(caller)
-    # --- main window creation ------------------------------------------------
-    root: tk.Tk = tk.Tk()
-    app: MainWindow = MainWindow(root)
-    setattr(root, "app", app)
-    # --- binding the termination protocol and starting the main loop ---------
-    root.protocol("WM_DELETE_WINDOW", app.event_quit_app)
-    root.mainloop()
-    # --- complete ------------------------------------------------------------
-    message_end(caller)
-    message_elapsed(caller, time_elapsed.elapsed(), omit=True)
-    print_peak_memory()
-    root.destroy()
+    try:
+        # --- initialization ------------------------------------------------------
+        infosystem.initialize(is_gui=True)
+        _caller = get_caller_name()
+        _time_elapsed = TimeElapsed()
+        message_start(_caller)
+        # --- main window creation ------------------------------------------------
+        root: tk.Tk = tk.Tk()
+        app: MainWindow = MainWindow(root)
+        setattr(root, "app", app)
+        # --- binding the termination protocol and starting the main loop ---------
+        root.protocol("WM_DELETE_WINDOW", app.event_quit_app)
+        root.mainloop()
+        # --- complete ------------------------------------------------------------
+        message_end(_caller)
+        message_elapsed(_caller, _time_elapsed.elapsed(), omit=True)
+        print_peak_memory()
+        root.destroy()
+    except (OSError, Exception) as e:
+        sys.exit(e)
+
 # --- eof ---------------------------------------------------------------------

@@ -9,6 +9,13 @@ from pathlib import Path
 
 # --- my library --------------------------------------------------------------
 # ruff: isort: off
+from common.shared import (
+    InfoCommon,
+    InfoWebFile,
+    check_root,
+    generate_markdown,
+    initarg,
+)
 from common.utils import (
     TimeElapsed,
     debug_logger,
@@ -21,39 +28,12 @@ from common.utils import (
     message_start,
     print_peak_memory,
 )
-from common.shared import (
-    InfoCommon,
-    check_root,
-    generate_markdown,
-    get_web_file_info,
-    initarg,
-)
+
 
 # ruff: isort: on
 # --- my module ---------------------------------------------------------------
 # --- gui window module -------------------------------------------------------
 # =============================================================================
-# --- 設定項目（後から簡単に件数を変更可能） ----------------------------------
-MAX_CONCURRENT_REQUESTS = 3  # 同時アクセスする上限件数
-# --- マッピングリスト --------------------------------------------------------
-BASE_DIR_MAP = {
-    "debian": "BASE_DEBI",
-    "ubuntu": "BASE_UBUN",
-    "fedora": "BASE_FEDO",
-    "centos": "BASE_CENT",
-    "almalinux": "BASE_ALMA",
-    "rockylinux": "BASE_ROCK",
-    "miraclelinux": "BASE_MIRA",
-    "opensuse": "BASE_SUSE",
-    "memtest86plus": "BASE_TEST",
-    "windows-10": "BASE_WI10",
-    "windows-11": "BASE_WI11",
-    "winpe": "BASE_WINP",
-    "ati": "BASE_ATIW",
-    "aomei": "BASE_AOME",
-}
-
-
 # --- check -------------------------------------------------------------------
 # --- initialize --------------------------------------------------------------
 @debug_logger
@@ -105,13 +85,10 @@ async def main():
         initarg("Get web information")
         if infosystem.args:
             info_comm = initialize()
-            for info_mdia_data in info_comm.mdia.data:
-                if not hasattr(info_mdia_data, "is_target"):
-                    setattr(info_mdia_data, "is_target", True)
-            await get_web_file_info(info_comm)
-            for info_mdia_data in info_comm.mdia.data:
-                if hasattr(info_mdia_data, "is_target"):
-                    delattr(info_mdia_data, "is_target")
+            info_webfile = InfoWebFile(info_comm)
+            for _data in info_webfile.data:
+                _data.is_target = _data.mdia_data.entry_flag == "o"
+            await info_webfile.get_web_file_info()
             dirs_rmak = info_comm.conf.get_path("DIRS_RMAK")
             for info_mdia_data in info_comm.mdia.data:
                 if info_mdia_data.cfg_path:
