@@ -2,12 +2,19 @@
 """IPXE menu"""
 
 # --- Python library ----------------------------------------------------------
-import sys
 from pathlib import Path
 
 
 # --- my library --------------------------------------------------------------
 # ruff: isort: off
+from common.shared import (
+    InfoCommon,
+    check_root,
+    generate_markdown,
+    proc_comp,
+    proc_init,
+)
+from common.shared.my_distribution_dat import ORDERED_DISTRIBUTIONS
 from common.utils import (
     Argument,
     TimeElapsed,
@@ -22,18 +29,11 @@ from common.utils import (
     message_start,
     print_peak_memory,
 )
-from common.shared import (
-    InfoCommon,
-    check_root,
-    generate_markdown,
-    initarg,
-)
-from common.shared.my_distribution_dat import ORDERED_DISTRIBUTIONS
 
 
 # ruff: isort: on
 # =============================================================================
-ARGS_LIST = [
+_ARGS_LIST = [
     {
         "arg": "--debugdump",
         "help": "Debug dump mode for common datas",
@@ -66,16 +66,6 @@ ARGS_LIST = [
 @debug_logger
 def initialize():
     """Initialize"""
-    _caller = get_caller_name()
-    if infosystem.debug:
-        message_info(_caller, "Debug mode on", omit=True)
-    if infosystem.debugout:
-        message_info(_caller, "Debugout mode on", omit=True)
-    if infosystem.data.exec_user:
-        message_info(_caller, f"exec user:{infosystem.data.exec_user}", omit=True)
-    if infosystem.data.home_dir:
-        message_info(_caller, f"home dir :{infosystem.data.home_dir}", omit=True)
-    # -------------------------------------------------------------------------
     return InfoCommon()
 
 
@@ -99,7 +89,8 @@ def debugdump(targets: list, info_comm: InfoCommon) -> None:
 # --- procsee -----------------------------------------------------------------
 # --- main --------------------------------------------------------------------
 @debug_logger
-def main():
+def main_cui() -> int:
+    """main for cui"""
     _caller = get_caller_name()
     try:
         # --- check the executing user ----------------------------------------
@@ -109,20 +100,22 @@ def main():
         time_elapsed = TimeElapsed()
         message_start(_caller, omit=False)
         # --- processing block ------------------------------------------------
-        initarg("Common data manager", ARGS_LIST)
         if infosystem.args:
             info_comm = initialize()
             # --- dump --------------------------------------------------------
-            if (targets := infosystem.args.debugdump) is not None:
-                debugdump(targets, info_comm)
+            #if (targets := infosystem.args.debugdump) is not None:
+            #    debugdump(targets, info_comm)
             # --- text -> json ------------------------------------------------
             if infosystem.args.t2j:
+                message_info(_caller, "start   : text -> json", omit=False)
                 info_comm.dist.get_text2list(info_comm.dist_path)
                 info_comm.mdia.get_text2list(info_comm.mdia_path)
                 info_comm.dist.save(info_comm.dist_json)
                 info_comm.mdia.save(info_comm.mdia_json)
+                message_info(_caller, "complete: text -> json", omit=False)
             # --- json -> text ------------------------------------------------
             if infosystem.args.j2t:
+                message_info(_caller, "start   : json -> text", omit=False)
                 info_comm.dist.load(info_comm.dist_json)
                 info_comm.mdia.load(info_comm.mdia_json)
                 info_comm.dist.put_list2text(
@@ -131,6 +124,7 @@ def main():
                 info_comm.mdia.put_list2text(
                     info_comm.mdia_path, info_comm.text_fmat.mdia
                 )
+                message_info(_caller, "complete: json -> text", omit=False)
             # --- markdown ----------------------------------------------------
             if dirs := infosystem.args.md:
                 generate_markdown(dest_dir_path=Path(dirs), info_comm=info_comm)
@@ -151,13 +145,29 @@ def main():
         message_elapsed(_caller, time_elapsed.elapsed(), omit=True)
         # --- exit ------------------------------------------------------------
         print_peak_memory()
-        return 0
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e, omit=False)
-    # -------------------------------------------------------------------------
+    return 0
 
+
+@debug_logger
+def main_gui() -> None:
+    """main for gui"""
 
 if __name__ == "__main__":
-    infosystem.initialize(is_gui=False)
-    sys.exit(main())
+#    try:
+        # --- initialization --------------------------------------------------
+        _caller = get_caller_name()
+        proc_init(description="My tools", list_args=_ARGS_LIST, caller=_caller)
+        # --- processing block ------------------------------------------------
+        initialize()
+        if infosystem.args:
+            if not infosystem.is_gui:
+                main_cui()
+            else:
+                main_gui()
+        # --- complete --------------------------------------------------------
+        proc_comp(caller=_caller)
+#    except (OSError, Exception) as e:
+#        raise SystemExit from e
 # --- eof ---------------------------------------------------------------------

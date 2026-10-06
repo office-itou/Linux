@@ -4,6 +4,7 @@
 import inspect
 import sys
 from collections.abc import Callable
+from functools import wraps
 
 
 # --- my library --------------------------------------------------------------
@@ -17,16 +18,19 @@ def debug_logger(func: Callable):
     """Debug output decorator"""
 
     # -------------------------------------------------------------------------
+    @wraps(func)
     def _wrapper(*args, **kwargs):
         if not infosystem:
             raise SystemExit("no initialize")
         # --- get the caller's frame ------------------------------------------
         _frame = inspect.currentframe()
         if _frame is not None and _frame.f_back is not None:
+            _func_line = _frame.f_back.f_code.co_firstlineno
             _func_name = str(_frame.f_back.f_code.co_name)
             _modu_name = str(_frame.f_back.f_globals.get("__name__"))
-            _call_info = f"{_modu_name}({_func_name})"
+            _call_info = f"{_modu_name}({_func_name})[{_func_line:4d}]"
         else:
+            _func_line = 0
             _func_name = "unknown"
             _modu_name = "unknown"
             _call_info = "unknown"

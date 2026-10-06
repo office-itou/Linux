@@ -19,7 +19,10 @@ BKUP_XCLD = --exclude='__pycache__' \
             --exclude='dist' \
             --exclude='*.egg-info' \
             --exclude='.git'
-BKUP_REGX = .*/((distribution|media)(.dat)?_[0-9]{14}_[0-9]{6}\.(dat|json)|.*(\.(BAK|bak)|~))
+BKUP_REGX = .*/((distribution|media)(.dat)?_[0-9]{14}_[0-9]{6}\.(dat|json) \
+            |(autoexec|booting|menu(_.+)?)_[0-9]{14}_[0-9]{6}\.ipxe \
+            |(__init__)_[0-9]{14}_[0-9]{6}\.py \
+            |.*(\.(BAK|bak)|~))
 
 # -----------------------------------------------------------------------------
 .PHONY: archive-src clean-backups clean-python clean-build clean-all
@@ -43,14 +46,18 @@ clean-backups:
 	@echo "--- データバックアップファイルを削除します ---"
 	@find $(TGET_DIRS) -type f -regextype posix-extended -regex "$(BKUP_REGX)" -exec rm -f {} +
 
+clean-pybackups:
+	@echo "--- Pythonのバックアップファイルを削除します ---"
+	@find $(DIRS_SRCS) -type f -regextype posix-extended -regex ".*/(__init__|__main__)_[0-9]{14}_[0-9]{6}\.py" -exec rm -f {} +
+
 clean-python:
 	@echo "--- Pythonのキャッシュ・ワークファイルを削除します ---"
 	@find $(DIRS_SRCS) -type d \( -name "__pycache__" -o -name ".pytest_cache" -o -name ".mypy_cache" \) -exec rm -rf {} +
-	@find $(DIRS_SRCS) -type f \( -name "*.pyc" -o -name "*.pyo" -o -name ".coverage" \) -exec rm -f {} +
+	@find $(DIRS_SRCS) -type f \( -name "*.pyc" -o -name "*.pyo" -o -name ".coverage" -o -name "*.spec" \) -exec rm -f {} +
 
 clean-build:
 	@echo "--- Pythonのビルド成果物（build/dist/egg-info）を削除します ---"
 	@find $(DIRS_SRCS) -type d \( -name "build" -o -name "dist" -o -name "*.egg-info" \) -exec rm -rf {} +
 
-clean-all: archive-src clean-backups clean-python clean-build
+clean-all: archive-src clean-backups clean-python clean-build clean-pybackups
 	@echo "すべてのクリーンアップ処理が正常に完了しました。"

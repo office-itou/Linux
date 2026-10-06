@@ -36,19 +36,19 @@ from gui_main import MainWindow
 # --- main --------------------------------------------------------------------
 if __name__ == "__main__":
     try:
-        # --- initialization ------------------------------------------------------
+        # --- initialization --------------------------------------------------
         infosystem.initialize(is_gui=True)
         _caller = get_caller_name()
         _time_elapsed = TimeElapsed()
         message_start(_caller)
-        # --- main window creation ------------------------------------------------
+        # --- main window creation --------------------------------------------
         root: tk.Tk = tk.Tk()
         app: MainWindow = MainWindow(root)
         setattr(root, "app", app)
-        # --- binding the termination protocol and starting the main loop ---------
+        # --- binding the termination protocol and starting the main loop -----
         root.protocol("WM_DELETE_WINDOW", app.event_quit_app)
         root.mainloop()
-        # --- complete ------------------------------------------------------------
+        # --- complete --------------------------------------------------------
         message_end(_caller)
         message_elapsed(_caller, _time_elapsed.elapsed(), omit=True)
         print_peak_memory()

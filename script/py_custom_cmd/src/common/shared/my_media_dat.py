@@ -35,7 +35,7 @@ from common.shared import (
 class MediaData:
     """media.dat data class"""
 
-    type: str = ""
+    mdia_type: str = ""
     entry_flag: str = ""
     entry_name: str = ""
     entry_disp: str = ""
@@ -64,6 +64,7 @@ class MediaData:
     lnk_path: str = ""
     options: str = ""
     create_flag: str = ""
+    target_flag: str = ""
 
 
 class InfoMedia:

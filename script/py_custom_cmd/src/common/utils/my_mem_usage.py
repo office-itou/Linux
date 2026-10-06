@@ -22,7 +22,6 @@ def get_peak_memory() -> str:
     return f"{peak_mb:.2f} MB (Peak memory usage)"
 
 
-def print_peak_memory() -> None:
+def print_peak_memory(caller: str = get_caller_name()) -> None:
     """Get maximum memory usage (in KB on Linux, in bytes on macOS)"""
-    caller = get_caller_name()
     message_out(Color.yellow, caller, "MemUsage", get_peak_memory())

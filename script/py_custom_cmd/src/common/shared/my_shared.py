@@ -24,15 +24,15 @@ class Text_fmat:
         r"{create_flag:<11} {sort_flag:<11} "
     )
     mdia = (
-        r"{type:<11} {entry_flag:<11} {entry_name:<39} {entry_disp:<39} "
+        r"{mdia_type:<11} "
+        r"{entry_flag:<11} {entry_name:<39} {entry_disp:<39} "
         r"{version:<23} {latest:<23} {release:<15} {support:<15} "
-        r"{web_regexp:<143} {web_path:<143} {web_tstamp:<47} "
-        r"{web_size:<15} {web_check:<47} {web_status:<15} "
-        r"{iso_path:<87} {iso_tstamp:<47} {iso_size:<15} "
-        r"{iso_volume:<43} {rmk_path:<87} {rmk_tstamp:<47} "
-        r"{rmk_size:<15} {rmk_volume:<43} {ldr_initrd:<87} "
-        r"{ldr_kernel:<87} {cfg_path:<87} {cfg_tstamp:<47} "
-        r"{lnk_path:<87} {options:<59} {create_flag:<11} "
+        r"{web_regexp:<143} {web_path:<143} {web_tstamp:<47} {web_size:<15} "
+        r"{web_check:<47} {web_status:<15} "
+        r"{iso_path:<87} {iso_tstamp:<47} {iso_size:<15} {iso_volume:<43} "
+        r"{rmk_path:<87} {rmk_tstamp:<47} {rmk_size:<15} {rmk_volume:<43} "
+        r"{ldr_initrd:<87} {ldr_kernel:<87} {cfg_path:<87} {cfg_tstamp:<47} "
+        r"{lnk_path:<87} {options:<59} {create_flag:<11} {exec_flag:<11} "
     )
 
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # --- Python library ----------------------------------------------------------
+import os
 import sys
 
 
@@ -9,13 +10,12 @@ from common.shared import (
     InfoCommon,
     check_root,
     generate_ipxe_menu,
-    initarg,
 )
 from common.utils import (
+    Argument,
     TimeElapsed,
     debug_logger,
     get_caller_name,
-    handle_fatal_error,
     infosystem,
     message_elapsed,
     message_end,
@@ -31,14 +31,15 @@ from common.utils import (
 def initialize():
     """Initialize"""
     _caller = get_caller_name()
-    if infosystem.debug:
-        message_info(_caller, "Debug mode on", omit=True)
     if infosystem.debugout:
-        message_info(_caller, "Debugout mode on", omit=True)
-    if infosystem.data.exec_user:
-        message_info(_caller, f"exec user:{infosystem.data.exec_user}", omit=True)
-    if infosystem.data.home_dir:
-        message_info(_caller, f"home dir :{infosystem.data.home_dir}", omit=True)
+        for _message in (
+            f"GUI mode : {getattr(infosystem, 'is_gui', '')}",
+            f"Debug    : {getattr(infosystem, 'debug', '')}",
+            f"Debugout : {getattr(infosystem, 'debugout', '')}",
+            f"exec user: {getattr(infosystem.data, 'exec_user', '')}",
+            f"home dir : {getattr(infosystem.data, 'home_dir', '')}",
+        ):
+            message_info(_caller, _message, omit=True)
     # -------------------------------------------------------------------------
     return InfoCommon()
 
@@ -50,26 +51,30 @@ def main():
         # --- check the executing user ----------------------------------------
         if not check_root(bypass=True):
             return 1
-        # --- startup process -------------------------------------------------
-        time_elapsed = TimeElapsed()
+        # --- initialization --------------------------------------------------
+        Argument("iPXE menu")
+        _gui = (
+            bool(os.getenv("DISPLAY"))
+            if not getattr(infosystem.args, "force_cui", True)
+            else False
+        )
+        infosystem.initialize(is_gui=_gui)
+        _caller = get_caller_name()
+        _time_elapsed = TimeElapsed()
         message_start(_caller)
         # --- processing block ------------------------------------------------
-        initarg("iPXE menu")
+        initialize()
         if infosystem.args:
             info_comm = initialize()
             generate_ipxe_menu(info_comm=info_comm)
-        # --- termination process ---------------------------------------------
-        message_end(_caller, omit=True)
-        message_elapsed(_caller, time_elapsed.elapsed(), omit=True)
-        # --- exit ------------------------------------------------------------
+        # --- complete --------------------------------------------------------
+        message_end(_caller)
+        message_elapsed(_caller, _time_elapsed.elapsed(), omit=True)
         print_peak_memory()
-        return 0
-    except (OSError, Exception) as e:  # noqa: BLE001
-        handle_fatal_error(_caller, e, omit=False)
-    # -------------------------------------------------------------------------
+    except (OSError, Exception) as e:
+        raise SystemExit from e
 
 
 if __name__ == "__main__":
-    infosystem.initialize(is_gui=False)
     sys.exit(main())
 # --- eof ---------------------------------------------------------------------

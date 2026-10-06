@@ -112,6 +112,7 @@ creation_of_the_ipxe_menu                :   IMPORT_PKGS     = \
                                                 --hidden-import="common.shared.my_convert" \
                                                 --hidden-import="common.shared.my_distribution_dat" \
                                                 --hidden-import="common.shared.my_func_check_root" \
+                                                --hidden-import="common.shared.my_func_generate_ipxe_menu" \
                                                 --hidden-import="common.shared.my_func_initarg" \
                                                 --hidden-import="common.shared.my_media_dat" \
                                                 --hidden-import="common.shared.my_shared" \

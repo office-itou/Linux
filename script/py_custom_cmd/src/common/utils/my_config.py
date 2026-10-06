@@ -6,9 +6,12 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-
 # --- my library --------------------------------------------------------------
-# ruff: isort: off
+from common.utils import (
+    TimeElapsed,
+)
+
+
 # ruff: isort: on
 # =============================================================================
 @dataclass
@@ -25,6 +28,7 @@ class SystemData:
     program_path: Path | None = None
     columns: int = 0
     rows: int = 0
+    elapsed: float = 0.0
     # --- global: user --------------------------------------------------------
     exec_user: str | None = None
     home_dir: str | None = None
@@ -51,6 +55,7 @@ class InfoSystem:
         # __init__ はインスタンス変数の枠だけを用意し、
         # 重い処理やインポートは一切行わない
         self.data: SystemData | None = None
+        self.elapsed = TimeElapsed()
 
     def _create_system_data(self, is_gui: bool) -> SystemData:
         """引数の is_gui に応じて、環境情報を解析し
@@ -62,7 +67,6 @@ class InfoSystem:
         import __main__
 
         terminal_size = shutil.get_terminal_size()
-
         # 実行中のプログラム名とユーザー環境情報の取得
         program_path = (
             Path(__main__.__file__) if hasattr(__main__, "__file__") else None
@@ -73,14 +77,16 @@ class InfoSystem:
         lang = detect_language() or "en"
         # GUIとCUIによるパラメータの振り分け処理（一本化）
         if is_gui:
-            from tkinter import messagebox
-
+            try:
+                from tkinter import messagebox
+            except (OSError, Exception) as e:
+                raise SystemExit from e
             gui_error_callback = messagebox.showerror
             gui_info_callback = messagebox.showinfo
             log_window_active = True
             columns = 120
             rows = 40
-            debug = True  # 💡 🌟 ここを追加！
+            debug = False  # 💡 🌟 ここを追加！
             debugout = False
         else:
             gui_error_callback = None
@@ -90,7 +96,6 @@ class InfoSystem:
             rows = terminal_size.lines
             debug = False  # 💡 🌟 ここを追加！
             debugout = False
-
         return SystemData(
             lang=lang,
             is_gui=is_gui,

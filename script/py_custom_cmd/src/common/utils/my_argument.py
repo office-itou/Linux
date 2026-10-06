@@ -8,12 +8,17 @@ import argparse
 # ruff: isort: off
 from common.utils import (
     infosystem,
-    debug_chk_cui,
 )
-
 
 # ruff: isort: on
 # =============================================================================
+_ARGS_LIST = [
+    {"arg": "--force-cui", "help": "Forced CUI mode", "action": "store_true"},
+    {"arg": "--debug", "help": "Debug mode", "action": "store_true"},
+    {"arg": "--debugout", "help": "Debug out", "action": "store_true"},
+]
+
+
 class Argument:
     """argparse wrapper class."""
 
@@ -24,15 +29,18 @@ class Argument:
             setattr(namespace, self.dest, values)
 
     # -------------------------------------------------------------------------
-    @debug_chk_cui
-    def __init__(self, description: str = ""):
+    # @debug_chk_cui
+    def __init__(self, description: str = "", list_args: list[dict[str, str]] = []):
         """Method for initializing the Argument class."""
-        self.parser = argparse.ArgumentParser(description, allow_abbrev=False)
-        self.parser.add_argument("--debug", help="Debug mode", action="store_true")
-        self.parser.add_argument(
-            "--debugout", help="Debug mode for display only", action="store_true"
-        )
-        self.args = None
+        self.parser = argparse.ArgumentParser(f"{description}\n", allow_abbrev=False)
+        for _line_arg in (*_ARGS_LIST, *list_args):
+            if _line_arg:
+                _arg_name = _line_arg.pop("arg")
+                if isinstance(_arg_name, tuple):
+                    self.add(*_arg_name, **_line_arg)
+                else:
+                    self.add(_arg_name, **_line_arg)
+        infosystem.args = self.parse()
 
     # -------------------------------------------------------------------------
     def add(self, *args, **kwargs):
@@ -54,10 +62,10 @@ class Argument:
         self.args = self.parser.parse_args()
         if self.args:
             infosystem.args = self.args
-            if self.args.debug:
-                self.args.debugout = True
-                infosystem.debug = self.args.debug
-                infosystem.debugout = self.args.debugout
+            infosystem.debug = getattr(self.args, "debug", False)
+            infosystem.debugout = (
+                getattr(self.args, "debugout", False) or infosystem.debug
+            )
         return self.args
 
 

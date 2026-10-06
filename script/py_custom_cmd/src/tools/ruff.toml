@@ -4,4 +4,4 @@ ignore = ["EXE002"]
 
 [lint.isort]
 lines-after-imports = 2
-known-local-folder = ["creation_of_functions_init_file", "creation_of_the_ipxe_menu", "generate_hidden_imports", "management_of_shared_data", "test_get_web_file_info", "__init__", "__init___20260930213522_402644", "__init___20260930214131_970818", "__init___20260930215040_707024", "__main__", "my_document"]
+known-local-folder = ["creation_of_functions_init_file", "creation_of_the_ipxe_menu", "generate_hidden_imports", "management_of_shared_data", "test_get_web_file_info", "__init__", "__init___20261005072744_427902", "__init___20261005072804_863448", "__main__", "my_document"]

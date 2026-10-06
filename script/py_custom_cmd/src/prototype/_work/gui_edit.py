@@ -1,0 +1,2 @@
+class EditWindow:
+    pass

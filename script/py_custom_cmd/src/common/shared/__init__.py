@@ -1,4 +1,4 @@
-"""Common Function Package: shared [generated: 2026/10/04 11:31:45 JST (+0900)]"""
+"""Common Function Package: shared [generated: 2026/10/06 21:51:23 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -28,6 +28,8 @@ __all__ = [
     "initarg",
     "load",
     "parse_version_to_tuple",
+    "proc_comp",
+    "proc_init",
     "put_list2text",
     "sort_distribution_data",
     "sort_distribution_name",
@@ -58,6 +60,8 @@ _MODULE_MAP = {
     "initarg": ".my_func_initarg",
     "load": ".my_common_cfg",
     "parse_version_to_tuple": ".my_distribution_dat",
+    "proc_comp": ".my_func_init_comp",
+    "proc_init": ".my_func_init_comp",
     "put_list2text": ".my_convert",
     "sort_distribution_data": ".my_distribution_dat",
     "sort_distribution_name": ".my_distribution_dat",
