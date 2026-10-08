@@ -1,4 +1,4 @@
-"""Common Function Package: shared [generated: 2026/10/06 21:51:23 JST (+0900)]"""
+"""Common Function Package: shared [generated: 2026/10/08 09:48:05 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -18,7 +18,6 @@ __all__ = [
     "InfoWebFile",
     "MediaData",
     "Text_fmat",
-    "WebFileData",
     "check_root",
     "conv2data",
     "conv2variable",
@@ -50,7 +49,6 @@ _MODULE_MAP = {
     "InfoWebFile": ".my_async_api",
     "MediaData": ".my_media_dat",
     "Text_fmat": ".my_shared",
-    "WebFileData": ".my_async_api",
     "check_root": ".my_func_check_root",
     "conv2data": ".my_common_cfg",
     "conv2variable": ".my_common_cfg",

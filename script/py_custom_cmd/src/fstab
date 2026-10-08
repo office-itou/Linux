@@ -1,0 +1,36 @@
+# /etc/fstab: static file system information.
+#
+# Use 'blkid' to print the universally unique identifier for a
+# device; this may be used with UUID= as a more robust way to name devices
+# that works even if disks are added and removed. See fstab(5).
+#
+# systemd generates mount units based on this file, see systemd.mount(5).
+# Please run 'systemctl daemon-reload' after making changes here.
+#
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+/dev/mapper/sv--developer--vg-root /               ext4    errors=remount-ro 0       1
+# /boot was on /dev/nvme0n1p2 during installation
+UUID=ad782aef-b719-4f24-8762-3c05d1c86ef1 /boot           ext4    defaults        0       2
+# /boot/efi was on /dev/nvme0n1p1 during installation
+UUID=C8AB-9149  /boot/efi       vfat    umask=0077      0       1
+/dev/mapper/sv--developer--vg-swap_1 none            swap    sw              0       0
+/dev/sr0        /media/cdrom0   udf,iso9660 user,noauto     0       0
+# <file system>             <mount point>           <type>              <options>                   <dump>  <pass>
+.host:/                     /srv/hgfs               fuse.vmhgfs-fuse    allow_other,defaults        0       0
+# <file system>             <mount point>                       <type>  <options>                   <dump>  <pass>
+/srv/user/share/conf/script /srv/user/share/conf/_mkosi/script  none    bind,ro,_netdev             0       0
+/srv/user/share/conf        /srv/exports/nfs/conf               none    bind,ro,_netdev             0       0
+/srv/user/share/imgs        /srv/exports/nfs/imgs               none    bind,ro,_netdev             0       0
+/srv/user/share/conf        /srv/exports/smb/conf               none    bind,ro,_netdev             0       0
+/srv/user/share/imgs        /srv/exports/smb/imgs               none    bind,ro,_netdev             0       0
+/srv/user/share/isos        /srv/exports/smb/isos               none    bind,ro,_netdev             0       0
+/srv/user/share/load        /srv/exports/smb/load               none    bind,ro,_netdev             0       0
+/srv/user/share/rmak        /srv/exports/smb/rmak               none    bind,ro,_netdev             0       0
+# <file system>             <mount point>                       <type>  <options>                   <dump>  <pass>
+#sv-server:/srv/exports     /srv/exports                        nfs     defaults,bg                 0       0
+#sv-server:/srv/hgfs        /srv/hgfs                           nfs     defaults,bg                 0       0
+#sv-server:/srv/http        /srv/http                           nfs     defaults,bg                 0       0
+#sv-server:/srv/samba       /srv/samba                          nfs     defaults,bg                 0       0
+sv-server:/srv/tftp         /srv/tftp                           nfs     defaults,bg                 0       0
+sv-server:/srv/user         /srv/user                           nfs     defaults,bg                 0       0
+sv-server:/srv/exports/nbd  /srv/exports/nbd                    nfs     defaults,bg                 0       0

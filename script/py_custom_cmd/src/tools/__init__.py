@@ -1,4 +1,4 @@
-"""Common Function Package: tools [generated: 2026/10/06 07:44:53 JST (+0900)]"""
+"""Common Function Package: tools [generated: 2026/10/08 09:48:05 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -15,6 +15,8 @@ __all__ = [
     "generate_target_block",
     "get_data",
     "load_module_map",
+    "main_cui",
+    "main_gui",
     "parse_actual_imports",
     "process_directory",
     "resolve_dependencies_recursive",
@@ -31,6 +33,8 @@ _MODULE_MAP = {
     "generate_target_block": ".generate_hidden_imports",
     "get_data": ".creation_of_functions_init_file",
     "load_module_map": ".generate_hidden_imports",
+    "main_cui": ".management_of_shared_data",
+    "main_gui": ".management_of_shared_data",
     "parse_actual_imports": ".generate_hidden_imports",
     "process_directory": ".creation_of_functions_init_file",
     "resolve_dependencies_recursive": ".generate_hidden_imports",

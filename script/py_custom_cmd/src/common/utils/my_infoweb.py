@@ -124,12 +124,13 @@ async def _expand_regexp_urls(
     _regex_pattern = re.compile(r"(\[[^\]]+\]|\([^)]+\))[+*?]?")
     _current_urls = [search_url]
     # -------------------------------------------------------------------------
+    #print(f"{Color.blue}{info_web},{session},{search_url},{exclude_url},{latest}{Color.reset}")
     while True:
         _next_urls = []
         _has_any_regex = False
         # ---------------------------------------------------------------------
         for _url in _current_urls:
-            # print(f"{Color.blue}request_url:{_url}{Color.reset}")
+            #print(f"{Color.blue}request_url:{_url}{Color.reset}")
             # -----------------------------------------------------------------
             _match_regex = _regex_pattern.search(_url)
             if not _match_regex:
@@ -159,6 +160,7 @@ async def _expand_regexp_urls(
             # --- Retrieving HTML text and retrying ---------------------------
             # print(f"{Color.br_cyan}_match_before:{_match_before}{Color.reset}")
             _web_data = WebData()
+            #print(session, _match_before,True if session else False)
             for r in range(1):
                 _web_data = await info_web.get_text(session, _match_before)
                 if int(_web_data.status, 0) in (200, 206, 404):
@@ -234,12 +236,13 @@ async def get_infoweb(
     # --- creating an exclusion pattern ---------------------------------------
     _exclude_url = _compile_exclude_regex(exclude_url)
     # --- expanding multi-level URLs ------------------------------------------
+    #print(_info_web, session, search_url, _exclude_url)
     _resolved_urls = await _expand_regexp_urls(
         _info_web, session, search_url, _exclude_url
     )
     # --- check the header of the confirmed real URL and generate WebData -----
     for _request_url in list(set(_resolved_urls)):
-        # print(f"{Color.magenta}{_request_url}{Color.reset}")
+        #print(f"{Color.magenta}{_request_url}{Color.reset}")
         _web_data = WebData()
         for r in range(1):
             _web_data = await _info_web.get_header(session, _request_url)

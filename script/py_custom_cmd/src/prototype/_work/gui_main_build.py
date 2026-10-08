@@ -9,7 +9,7 @@ from tkinter import ttk
 
 # --- my library --------------------------------------------------------------
 # ruff: isort: off
-from common.shared import InfoCommon
+from common.shared import InfoCommon, InfoWebFile
 from common.utils import (
     build_menu_bar,
     debug_logger,
@@ -20,11 +20,11 @@ from common.utils import (
 # ruff: isort: on
 # --- gui window module ------------------------------------------------------
 # ruff: isort: off
+from gui_async_handler import AsyncProcessHandler
 from gui_main_buttons import MainWindowButtons
+from gui_main_events import MainWindowEvents
 from gui_main_status import MainWindowStatus
 from gui_main_tables import MainWindowTables
-
-from gui_main_events import MainWindowEvents
 
 
 # ruff: isort: on
@@ -38,19 +38,31 @@ class MainWindow(
     MainWindowButtons,
     MainWindowTables,
     MainWindowStatus,
+    AsyncProcessHandler,
+    InfoWebFile,
 ):
     root: tk.Tk
+    ui_def: dict
     current_lang_strvar: tk.StringVar
     current_monitor_boolvar: tk.BooleanVar
     current_messages: dict[str, str]
-    ui_def: dict
+    _is_switching_lang: bool
 
     def __init__(self, root: tk.Tk) -> None:
-        super().__init__(root)
+        # super().__init__(root)
         self.root: tk.Tk = root
         self.root.geometry(_GEOMETRY)
         self.ui_def = load_ui_definition(_UI_FILE_PATH)
         self.info_comm: InfoCommon = InfoCommon()
+        self.current_lang_strvar: tk.StringVar = tk.StringVar(value=infosystem.lang)
+        self.current_monitor_boolvar: tk.BooleanVar = tk.BooleanVar(value=False)
+        self.current_messages = self.ui_def["messages"].get(infosystem.lang, {})
+        self._is_switching_lang: bool = False
+        # --- instantiation of an asynchronous processing handler -------------
+        self.is_running_async: bool = False
+        self.async_handler: AsyncProcessHandler = AsyncProcessHandler(
+            window_instance=self
+        )
         self.build()
 
     def _get_command_map(self) -> dict[str, Callable]:

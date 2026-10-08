@@ -68,6 +68,7 @@ async def get_response(
     request_url: str,
     local_file: str = "",
     overwrite: bool = False,
+    show_progress: bool = True,
 ) -> WebData:
     """Get response
     Args:
@@ -144,27 +145,35 @@ async def get_response(
                 # -------------------------------------------------------------
                 if _tmp_file_path:
                     message_info(_caller, f"download: {_final_file_path}")
-                    with Progress(
-                        TextColumn("[bold blue]{task.description}"),
-                        BarColumn(),
-                        "[progress.percentage]{task.percentage:>3.0f}%",
-                        DownloadColumn(),
-                        TransferSpeedColumn(),
-                        TimeRemainingColumn(),
-                    ) as _progress:
-                        _task_id = _progress.add_task(
-                            description=os.path.basename(_final_file_path),
-                            total=_total_size,
-                            completed=_downloaded_bytes,
-                        )
-                        _local_file_path.parent.mkdir(parents=True, exist_ok=True)
+                    _local_file_path.parent.mkdir(parents=True, exist_ok=True)
+                    if show_progress:
+                        with Progress(
+                            TextColumn("[bold blue]{task.description}"),
+                            BarColumn(),
+                            "[progress.percentage]{task.percentage:>3.0f}%",
+                            DownloadColumn(),
+                            TransferSpeedColumn(),
+                            TimeRemainingColumn(),
+                        ) as _progress:
+                            _task_id = _progress.add_task(
+                                description=os.path.basename(_final_file_path),
+                                total=_total_size,
+                                completed=_downloaded_bytes,
+                            )
+                            async with aiofiles.open(_tmp_file_path, mode="ab") as f:
+                                while True:
+                                    _chunk = await _response.content.read(_chunk_size)
+                                    if not _chunk:
+                                        break
+                                    await f.write(_chunk)
+                                    _progress.update(_task_id, advance=len(_chunk))
+                    else:
                         async with aiofiles.open(_tmp_file_path, mode="ab") as f:
                             while True:
                                 _chunk = await _response.content.read(_chunk_size)
                                 if not _chunk:
                                     break
                                 await f.write(_chunk)
-                                _progress.update(_task_id, advance=len(_chunk))
                     # ---------------------------------------------------------
                     if Path(_tmp_file_path).exists():
                         shutil.move(_tmp_file_path, _final_file_path)
@@ -184,7 +193,7 @@ async def get_response(
             if _attempt < _max_retries:
                 await asyncio.sleep(3)
         except (OSError, Exception) as e:  # noqa: BLE001
-            handle_fatal_error(_caller, e)
+            handle_fatal_error(_caller, e, raise_exit=False)
             break
     return _web_data
 
@@ -207,6 +216,7 @@ async def get_contents(
     request_url: str,
     local_file: str = "",
     overwrite: bool = False,
+    show_progress: bool = True,
 ) -> WebData:
     """Get contents
     Args:
@@ -217,4 +227,6 @@ async def get_contents(
     Returns:
         dict: Result
     """
-    return await get_response(session.get, request_url, local_file, overwrite)
+    return await get_response(
+        session.get, request_url, local_file, overwrite, show_progress
+    )

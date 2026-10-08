@@ -5,14 +5,14 @@ from typing import Any
 
 # --- my library --------------------------------------------------------------
 # ruff: isort: off
-from common.utils import (
-    debug_logger,
-)
+#from common.utils import (
+#    debug_logger,
+#)
 
 
 # ruff: isort: on
 # =============================================================================
-@debug_logger
+#@debug_logger
 def safe_format(value: Any, fmt_str: str | None) -> str:
     """
     値を安全にフォーマット文字列へ適用するヘルパー関数。

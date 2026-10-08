@@ -55,12 +55,12 @@ class InfoFile:
 
 
 @debug_logger
-def get_volume_uuid(device: str) -> str:
+def get_volume_uuid(device: str) -> str | None:
     """Get volume uuid"""
     _caller = get_caller_name()
 
     @debug_logger
-    def _file_access(device: str) -> None:
+    def _file_access(device: str) -> str | None:
         with open(device, "rb") as f:
             f.seek(0x8000 + 813)
             dt_bytes = f.read(16)

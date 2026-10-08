@@ -32,7 +32,7 @@ class Text_fmat:
         r"{iso_path:<87} {iso_tstamp:<47} {iso_size:<15} {iso_volume:<43} "
         r"{rmk_path:<87} {rmk_tstamp:<47} {rmk_size:<15} {rmk_volume:<43} "
         r"{ldr_initrd:<87} {ldr_kernel:<87} {cfg_path:<87} {cfg_tstamp:<47} "
-        r"{lnk_path:<87} {options:<59} {create_flag:<11} {exec_flag:<11} "
+        r"{lnk_path:<87} {options:<59} {create_flag:<11} {target_flag:<11} "
     )
 
 

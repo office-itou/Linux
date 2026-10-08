@@ -13,7 +13,9 @@ from common.utils import infosystem, debug_logger, message_alert
 # ruff: isort: on
 # =============================================================================
 @debug_logger
-def handle_fatal_error(caller: str, e: Exception, omit: bool = False) -> None:
+def handle_fatal_error(
+    caller: str, e: Exception, omit: bool = False, raise_exit: bool = True
+) -> None:
     """Fatal error handler (For both CUI/GUI)
     Args:
         caller (str): Function name
@@ -44,7 +46,10 @@ def handle_fatal_error(caller: str, e: Exception, omit: bool = False) -> None:
         else:
             message_alert(caller, f"file name  : {_summary.filename}", omit)
             message_alert(caller, f"line number: {_summary.lineno}", omit)
+    if raise_exit:
         raise SystemExit from e
+    else:
+        raise e
 
 
 # --- eof ---------------------------------------------------------------------

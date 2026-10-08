@@ -1,6 +1,6 @@
 [
     {
-        "type": "mini",
+        "mdia_type": "mini",
         "entry_flag": "m",
         "entry_name": "menu-entry",
         "entry_disp": "Auto%20install%20mini.iso",
@@ -14,9 +14,9 @@
         "web_size": "-",
         "web_check": "-",
         "web_status": "-",
-        "iso_path": ":_DIRS_HGFS_:/linux/script/py_custom_cmd/src",
-        "iso_tstamp": "2026-10-04T04:50:29+00:00",
-        "iso_size": "16384",
+        "iso_path": "-",
+        "iso_tstamp": "-",
+        "iso_size": "-",
         "iso_volume": "-",
         "rmk_path": "-",
         "rmk_tstamp": "-",
@@ -28,10 +28,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "mini",
+        "mdia_type": "mini",
         "entry_flag": "L",
         "entry_name": "debian-mini-11",
         "entry_disp": "Debian%2011",
@@ -43,7 +44,7 @@
         "web_path": "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/netboot/mini.iso",
         "web_tstamp": "2024-08-27T06:14:31+00:00",
         "web_size": "54525952",
-        "web_check": "2026-10-04T11:09:49.233743+00:00",
+        "web_check": "2026-09-30T20:23:25.124817+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/mini-bullseye-amd64.iso",
         "iso_tstamp": "-",
@@ -59,10 +60,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "mini",
+        "mdia_type": "mini",
         "entry_flag": "L",
         "entry_name": "debian-mini-12",
         "entry_disp": "Debian%2012",
@@ -74,7 +76,7 @@
         "web_path": "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/netboot/mini.iso",
         "web_tstamp": "2026-07-06T18:34:10+00:00",
         "web_size": "65011712",
-        "web_check": "2026-10-04T11:09:49.550430+00:00",
+        "web_check": "2026-09-30T20:23:25.381796+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/mini-bookworm-amd64.iso",
         "iso_tstamp": "2026-07-06T18:34:10+00:00",
@@ -90,10 +92,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "mini",
+        "mdia_type": "mini",
         "entry_flag": "o",
         "entry_name": "debian-mini-13",
         "entry_disp": "Debian%2013",
@@ -105,7 +108,7 @@
         "web_path": "https://deb.debian.org/debian/dists/trixie/main/installer-amd64/current/images/netboot/mini.iso",
         "web_tstamp": "2026-09-07T16:33:57+00:00",
         "web_size": "67108864",
-        "web_check": "2026-10-04T11:09:49.483601+00:00",
+        "web_check": "2026-10-08T07:28:43.077337+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/mini-trixie-amd64.iso",
         "iso_tstamp": "2026-09-07T16:33:57+00:00",
@@ -121,10 +124,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "mini",
+        "mdia_type": "mini",
         "entry_flag": "U",
         "entry_name": "debian-mini-14",
         "entry_disp": "Debian%2014",
@@ -136,7 +140,7 @@
         "web_path": "https://deb.debian.org/debian/dists/forky/main/installer-amd64/current/images/netboot/mini.iso",
         "web_tstamp": "2025-08-03T00:51:41+00:00",
         "web_size": "67108864",
-        "web_check": "2026-10-04T11:09:49.549974+00:00",
+        "web_check": "2026-09-30T20:23:25.459010+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/mini-forky-amd64.iso",
         "iso_tstamp": "2025-08-03T00:51:41+00:00",
@@ -152,10 +156,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "mini",
+        "mdia_type": "mini",
         "entry_flag": "-",
         "entry_name": "debian-mini-15",
         "entry_disp": "Debian%2015",
@@ -183,10 +188,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "mini",
+        "mdia_type": "mini",
         "entry_flag": "o",
         "entry_name": "debian-mini-testing",
         "entry_disp": "Debian%20testing",
@@ -198,7 +204,7 @@
         "web_path": "https://deb.debian.org/debian/dists/testing/main/installer-amd64/current/images/netboot/mini.iso",
         "web_tstamp": "2025-08-03T00:51:41+00:00",
         "web_size": "67108864",
-        "web_check": "2026-10-04T11:09:49.552055+00:00",
+        "web_check": "2026-10-08T07:28:43.062630+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/mini-testing-amd64.iso",
         "iso_tstamp": "2025-08-03T00:51:41+00:00",
@@ -214,10 +220,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "mini",
+        "mdia_type": "mini",
         "entry_flag": "o",
         "entry_name": "debian-mini-testing-daily",
         "entry_disp": "Debian%20testing%20daily",
@@ -227,13 +234,13 @@
         "support": "20xx-xx-xx",
         "web_regexp": "https://d-i.debian.org/daily-images/amd64/daily/netboot/mini.iso",
         "web_path": "https://d-i.debian.org/daily-images/amd64/daily/netboot/mini.iso",
-        "web_tstamp": "2026-10-04T00:03:03+00:00",
-        "web_size": "76886016",
-        "web_check": "2026-10-04T11:09:50.140606+00:00",
+        "web_tstamp": "2026-10-08T00:02:08+00:00",
+        "web_size": "77934592",
+        "web_check": "2026-10-08T07:28:43.288324+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/mini-testing-daily-amd64.iso",
-        "iso_tstamp": "2026-09-30T00:03:02+00:00",
-        "iso_size": "76886016",
+        "iso_tstamp": "2026-10-08T00:02:08+00:00",
+        "iso_size": "77934592",
         "iso_volume": "ISOIMAGE",
         "rmk_path": ":_DIRS_RMAK_:/mini-testing-daily-amd64_preseed.iso",
         "rmk_tstamp": "-",
@@ -245,10 +252,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "mini",
+        "mdia_type": "mini",
         "entry_flag": "L",
         "entry_name": "ubuntu-mini-20.04",
         "entry_disp": "Ubuntu%2020.04",
@@ -260,7 +268,7 @@
         "web_path": "https://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/netboot/mini.iso",
         "web_tstamp": "2023-03-14T22:28:31+00:00",
         "web_size": "82837504",
-        "web_check": "2026-10-04T11:09:50.557730+00:00",
+        "web_check": "2026-09-30T20:23:26.431678+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/mini-focal-updates-amd64.iso",
         "iso_tstamp": "-",
@@ -276,10 +284,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "mini",
+        "mdia_type": "mini",
         "entry_flag": "m",
         "entry_name": "menu-entry",
         "entry_disp": "-",
@@ -293,9 +302,9 @@
         "web_size": "-",
         "web_check": "-",
         "web_status": "-",
-        "iso_path": ":_DIRS_HGFS_:/linux/script/py_custom_cmd/src",
-        "iso_tstamp": "2026-10-04T04:50:29+00:00",
-        "iso_size": "16384",
+        "iso_path": "-",
+        "iso_tstamp": "-",
+        "iso_size": "-",
         "iso_volume": "-",
         "rmk_path": "-",
         "rmk_tstamp": "-",
@@ -307,10 +316,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "netinst",
+        "mdia_type": "netinst",
         "entry_flag": "m",
         "entry_name": "menu-entry",
         "entry_disp": "Auto%20install%20Net%20install",
@@ -324,9 +334,9 @@
         "web_size": "-",
         "web_check": "-",
         "web_status": "-",
-        "iso_path": ":_DIRS_HGFS_:/linux/script/py_custom_cmd/src",
-        "iso_tstamp": "2026-10-04T04:50:29+00:00",
-        "iso_size": "16384",
+        "iso_path": "-",
+        "iso_tstamp": "-",
+        "iso_size": "-",
         "iso_volume": "-",
         "rmk_path": "-",
         "rmk_tstamp": "-",
@@ -338,10 +348,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "netinst",
+        "mdia_type": "netinst",
         "entry_flag": "L",
         "entry_name": "debian-netinst-11",
         "entry_disp": "Debian%2011",
@@ -353,7 +364,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-cd/debian-11.11.0-amd64-netinst.iso",
         "web_tstamp": "2024-08-31T16:11:10+00:00",
         "web_size": "408944640",
-        "web_check": "2026-10-04T11:09:52.128861+00:00",
+        "web_check": "2026-09-30T20:23:28.485835+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-11.11.0-amd64-netinst.iso",
         "iso_tstamp": "-",
@@ -369,10 +380,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "netinst",
+        "mdia_type": "netinst",
         "entry_flag": "L",
         "entry_name": "debian-netinst-12",
         "entry_disp": "Debian%2012",
@@ -384,7 +396,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-12.15.0-amd64-netinst.iso",
         "web_tstamp": "2026-07-11T15:44:52+00:00",
         "web_size": "709885952",
-        "web_check": "2026-10-04T11:09:52.198226+00:00",
+        "web_check": "2026-09-30T20:23:28.408673+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-12.15.0-amd64-netinst.iso",
         "iso_tstamp": "2026-07-11T15:44:52+00:00",
@@ -400,10 +412,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "netinst",
+        "mdia_type": "netinst",
         "entry_flag": "o",
         "entry_name": "debian-netinst-13",
         "entry_disp": "Debian%2013",
@@ -415,7 +428,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-13.7.0-amd64-netinst.iso",
         "web_tstamp": "2026-09-12T11:34:07+00:00",
         "web_size": "792723456",
-        "web_check": "2026-10-04T11:09:52.012356+00:00",
+        "web_check": "2026-10-08T07:28:45.055725+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-13.7.0-amd64-netinst.iso",
         "iso_tstamp": "2026-09-12T11:34:07+00:00",
@@ -431,10 +444,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "netinst",
+        "mdia_type": "netinst",
         "entry_flag": "U",
         "entry_name": "debian-netinst-14",
         "entry_disp": "Debian%2014",
@@ -448,11 +462,11 @@
         "web_size": "-",
         "web_check": "-",
         "web_status": "-",
-        "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-netinst-14.iso",
+        "iso_path": ":_DIRS_ISOS_:/linux/debian/_dummy.iso",
         "iso_tstamp": "-",
         "iso_size": "-",
         "iso_volume": "-",
-        "rmk_path": "-",
+        "rmk_path": ":_DIRS_RMAK_:/_dummy_preseed.iso",
         "rmk_tstamp": "-",
         "rmk_size": "-",
         "rmk_volume": "-",
@@ -462,10 +476,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "netinst",
+        "mdia_type": "netinst",
         "entry_flag": "o",
         "entry_name": "debian-netinst-testing-weekly",
         "entry_disp": "Debian%20testing%20weekly",
@@ -475,14 +490,14 @@
         "support": "20xx-xx-xx",
         "web_regexp": "https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso",
         "web_path": "https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso",
-        "web_tstamp": "2026-09-28T07:35:36+00:00",
-        "web_size": "972029952",
-        "web_check": "2026-10-04T11:09:51.847296+00:00",
+        "web_tstamp": "2026-10-05T05:37:18+00:00",
+        "web_size": "975175680",
+        "web_check": "2026-10-08T07:28:44.739437+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-testing-weekly-builds-amd64-netinst.iso",
-        "iso_tstamp": "-",
-        "iso_size": "-",
-        "iso_volume": "-",
+        "iso_tstamp": "2026-10-05T05:37:18+00:00",
+        "iso_size": "975175680",
+        "iso_volume": "Debian%20testing%20amd64%20n",
         "rmk_path": ":_DIRS_RMAK_:/debian-testing-weekly-builds-amd64-netinst_preseed.iso",
         "rmk_tstamp": "-",
         "rmk_size": "-",
@@ -493,10 +508,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "netinst",
+        "mdia_type": "netinst",
         "entry_flag": "o",
         "entry_name": "debian-netinst-testing-daily-current",
         "entry_disp": "Debian%20testing%20daily%20current",
@@ -506,14 +522,14 @@
         "support": "20xx-xx-xx",
         "web_regexp": "https://cdimage.debian.org/cdimage/daily-builds/daily/current/amd64/iso-cd/debian-testing-amd64-netinst.iso",
         "web_path": "https://cdimage.debian.org/cdimage/daily-builds/daily/current/amd64/iso-cd/debian-testing-amd64-netinst.iso",
-        "web_tstamp": "2026-10-04T09:16:05+00:00",
-        "web_size": "975175680",
-        "web_check": "2026-10-04T11:09:52.185929+00:00",
+        "web_tstamp": "2026-10-08T03:16:13+00:00",
+        "web_size": "976224256",
+        "web_check": "2026-10-08T07:28:44.827191+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-testing-daily-builds-current-amd64-netinst.iso",
-        "iso_tstamp": "-",
-        "iso_size": "-",
-        "iso_volume": "-",
+        "iso_tstamp": "2026-10-08T03:16:13+00:00",
+        "iso_size": "976224256",
+        "iso_volume": "Debian%20testing%20amd64%20n",
         "rmk_path": ":_DIRS_RMAK_:/debian-testing-daily-builds-current-amd64-netinst_preseed.iso",
         "rmk_tstamp": "-",
         "rmk_size": "-",
@@ -524,10 +540,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "netinst",
+        "mdia_type": "netinst",
         "entry_flag": "o",
         "entry_name": "debian-netinst-testing-daily-latest",
         "entry_disp": "Debian%20testing%20daily%20arch-latest",
@@ -537,14 +554,14 @@
         "support": "20xx-xx-xx",
         "web_regexp": "https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso",
         "web_path": "https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso",
-        "web_tstamp": "2026-10-04T09:16:05+00:00",
-        "web_size": "975175680",
-        "web_check": "2026-10-04T11:09:52.913432+00:00",
+        "web_tstamp": "2026-10-08T03:16:13+00:00",
+        "web_size": "976224256",
+        "web_check": "2026-10-08T07:28:44.940346+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-testing-daily-builds-arch-latest-amd64-netinst.iso",
-        "iso_tstamp": "-",
-        "iso_size": "-",
-        "iso_volume": "-",
+        "iso_tstamp": "2026-10-08T03:16:13+00:00",
+        "iso_size": "976224256",
+        "iso_volume": "Debian%20testing%20amd64%20n",
         "rmk_path": ":_DIRS_RMAK_:/debian-testing-daily-builds-arch-latest-amd64-netinst_preseed.iso",
         "rmk_tstamp": "-",
         "rmk_size": "-",
@@ -555,10 +572,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "netinst",
+        "mdia_type": "netinst",
         "entry_flag": "o",
         "entry_name": "fedora-netinst-43",
         "entry_disp": "Fedora%20Server%2043",
@@ -570,7 +588,7 @@
         "web_path": "https://download.fedoraproject.org/pub/fedora/linux/releases/43/Server/x86_64/iso/Fedora-Server-netinst-x86_64-43-1.6.iso",
         "web_tstamp": "2025-10-23T03:26:02+00:00",
         "web_size": "1182896128",
-        "web_check": "2026-10-04T11:09:52.903968+00:00",
+        "web_check": "2026-10-08T07:28:44.650393+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/fedora/Fedora-Server-netinst-x86_64-43-1.6.iso",
         "iso_tstamp": "2025-10-23T03:26:02+00:00",
@@ -586,10 +604,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "netinst",
+        "mdia_type": "netinst",
         "entry_flag": "o",
         "entry_name": "fedora-netinst-44",
         "entry_disp": "Fedora%20Server%2044",
@@ -601,7 +620,7 @@
         "web_path": "https://download.fedoraproject.org/pub/fedora/linux/releases/44/Server/x86_64/iso/Fedora-Server-netinst-x86_64-44-1.7.iso",
         "web_tstamp": "2026-04-22T13:39:55+00:00",
         "web_size": "1228384256",
-        "web_check": "2026-10-04T11:09:52.913184+00:00",
+        "web_check": "2026-10-08T07:28:45.085424+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/fedora/Fedora-Server-netinst-x86_64-44-1.7.iso",
         "iso_tstamp": "2026-04-22T13:39:55+00:00",
@@ -617,10 +636,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "netinst",
+        "mdia_type": "netinst",
         "entry_flag": "o",
         "entry_name": "centos-stream-netinst-9",
         "entry_disp": "CentOS%20Stream%209",
@@ -630,12 +650,12 @@
         "support": "2027-05-31",
         "web_regexp": "https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso",
         "web_path": "https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso",
-        "web_tstamp": "2026-09-30T03:55:42+00:00",
-        "web_size": "1572438016",
-        "web_check": "2026-10-04T11:09:52.430123+00:00",
+        "web_tstamp": "2026-10-06T03:56:24+00:00",
+        "web_size": "1570897920",
+        "web_check": "2026-10-08T07:28:44.974808+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/centos/CentOS-Stream-9-latest-x86_64-boot.iso",
-        "iso_tstamp": "2026-09-29T03:55:42+00:00",
+        "iso_tstamp": "2026-10-06T03:56:24+00:00",
         "iso_size": "1570897920",
         "iso_volume": "CentOS-Stream-9-BaseOS-x86_64",
         "rmk_path": ":_DIRS_RMAK_:/CentOS-Stream-9-latest-x86_64-boot_kickstart.iso",
@@ -648,10 +668,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "netinst",
+        "mdia_type": "netinst",
         "entry_flag": "o",
         "entry_name": "centos-stream-netinst-10",
         "entry_disp": "CentOS%20Stream%2010",
@@ -661,13 +682,13 @@
         "support": "2030-05-31",
         "web_regexp": "https://mirror.stream.centos.org/10-stream/BaseOS/x86_64/iso/CentOS-Stream-10-latest-x86_64-boot.iso",
         "web_path": "https://mirror.stream.centos.org/10-stream/BaseOS/x86_64/iso/CentOS-Stream-10-latest-x86_64-boot.iso",
-        "web_tstamp": "2026-09-30T04:15:57+00:00",
-        "web_size": "936314880",
-        "web_check": "2026-10-04T11:09:52.429655+00:00",
+        "web_tstamp": "2026-10-06T04:16:32+00:00",
+        "web_size": "937039872",
+        "web_check": "2026-10-08T07:28:44.972530+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/centos/CentOS-Stream-10-latest-x86_64-boot.iso",
-        "iso_tstamp": "2026-09-28T04:16:24+00:00",
-        "iso_size": "936316928",
+        "iso_tstamp": "2026-10-06T04:16:32+00:00",
+        "iso_size": "937039872",
         "iso_volume": "CentOS-Stream-10-BaseOS-x86_64",
         "rmk_path": ":_DIRS_RMAK_:/CentOS-Stream-10-latest-x86_64-boot_kickstart.iso",
         "rmk_tstamp": "-",
@@ -679,10 +700,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "netinst",
+        "mdia_type": "netinst",
         "entry_flag": "o",
         "entry_name": "almalinux-netinst-9",
         "entry_disp": "Alma%20Linux%209",
@@ -694,7 +716,7 @@
         "web_path": "https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-9-latest-x86_64-boot.iso",
         "web_tstamp": "2026-05-24T07:15:35+00:00",
         "web_size": "1519271936",
-        "web_check": "2026-10-04T11:09:52.512857+00:00",
+        "web_check": "2026-10-08T07:28:45.012263+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/almalinux/AlmaLinux-9-latest-x86_64-boot.iso",
         "iso_tstamp": "2026-05-24T07:15:35+00:00",
@@ -710,10 +732,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "netinst",
+        "mdia_type": "netinst",
         "entry_flag": "o",
         "entry_name": "almalinux-netinst-10",
         "entry_disp": "Alma%20Linux%2010",
@@ -725,7 +748,7 @@
         "web_path": "https://repo.almalinux.org/almalinux/10/isos/x86_64/AlmaLinux-10-latest-x86_64-boot.iso",
         "web_tstamp": "2026-05-23T21:25:40+00:00",
         "web_size": "1056202752",
-        "web_check": "2026-10-04T11:09:52.514043+00:00",
+        "web_check": "2026-10-08T07:28:45.037424+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/almalinux/AlmaLinux-10-latest-x86_64-boot.iso",
         "iso_tstamp": "2026-05-23T21:25:40+00:00",
@@ -741,10 +764,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "netinst",
+        "mdia_type": "netinst",
         "entry_flag": "o",
         "entry_name": "rockylinux-netinst-9",
         "entry_disp": "Rocky%20Linux%209",
@@ -756,7 +780,7 @@
         "web_path": "https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-boot.iso",
         "web_tstamp": "2026-05-25T17:10:54+00:00",
         "web_size": "1480048640",
-        "web_check": "2026-10-04T11:09:53.004919+00:00",
+        "web_check": "2026-10-08T07:28:45.455722+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/rockylinux/Rocky-9-latest-x86_64-boot.iso",
         "iso_tstamp": "2026-05-25T17:10:54+00:00",
@@ -772,10 +796,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "netinst",
+        "mdia_type": "netinst",
         "entry_flag": "o",
         "entry_name": "rockylinux-netinst-10",
         "entry_disp": "Rocky%20Linux%2010",
@@ -787,7 +812,7 @@
         "web_path": "https://download.rockylinux.org/pub/rocky/10/isos/x86_64/Rocky-10-latest-x86_64-boot.iso",
         "web_tstamp": "2026-05-25T20:58:27+00:00",
         "web_size": "1049538560",
-        "web_check": "2026-10-04T11:09:53.028615+00:00",
+        "web_check": "2026-10-08T07:28:45.457943+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/rockylinux/Rocky-10-latest-x86_64-boot.iso",
         "iso_tstamp": "2026-05-25T20:58:27+00:00",
@@ -803,10 +828,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "netinst",
+        "mdia_type": "netinst",
         "entry_flag": "o",
         "entry_name": "miraclelinux-netinst-9",
         "entry_disp": "Miracle%20Linux%209",
@@ -818,7 +844,7 @@
         "web_path": "https://repo.dist.miraclelinux.net/miraclelinux/isos/9.6-released/x86_64/MIRACLELINUX-9.6-rtm-minimal-x86_64.iso",
         "web_tstamp": "2025-07-09T05:20:51+00:00",
         "web_size": "2676490240",
-        "web_check": "2026-10-04T11:09:53.206621+00:00",
+        "web_check": "2026-10-08T07:28:45.259264+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/miraclelinux/MIRACLELINUX-9.6-rtm-minimal-x86_64.iso",
         "iso_tstamp": "2025-07-09T05:20:51+00:00",
@@ -834,10 +860,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "netinst",
+        "mdia_type": "netinst",
         "entry_flag": "x",
         "entry_name": "opensuse-leap-netinst-15.6",
         "entry_disp": "openSUSE%20Leap%2015.6",
@@ -849,7 +876,7 @@
         "web_path": "https://download.opensuse.org/distribution/leap/15.6/iso/openSUSE-Leap-15.6-NET-x86_64-Media.iso",
         "web_tstamp": "2024-06-20T11:42:39+00:00",
         "web_size": "273678336",
-        "web_check": "2026-10-04T11:09:53.783127+00:00",
+        "web_check": "2026-09-30T20:23:33.050481+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/opensuse/openSUSE-Leap-15.6-NET-x86_64-Media.iso",
         "iso_tstamp": "2024-06-20T11:42:39+00:00",
@@ -865,10 +892,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "netinst",
+        "mdia_type": "netinst",
         "entry_flag": "o",
         "entry_name": "opensuse-leap-netinst-16.0",
         "entry_disp": "openSUSE%20Leap%2016.0",
@@ -880,7 +908,7 @@
         "web_path": "https://download.opensuse.org/distribution/leap/16.0/offline/Leap-16.0-online-installer-x86_64.install.iso",
         "web_tstamp": "2026-06-20T11:22:14+00:00",
         "web_size": "746586112",
-        "web_check": "2026-10-04T11:09:53.806590+00:00",
+        "web_check": "2026-10-08T07:28:46.000710+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/opensuse/Leap-16.0-online-installer-x86_64.install.iso",
         "iso_tstamp": "2026-06-20T11:22:14+00:00",
@@ -896,10 +924,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "netinst",
+        "mdia_type": "netinst",
         "entry_flag": "o",
         "entry_name": "opensuse-leap-netinst-16.1",
         "entry_disp": "openSUSE%20Leap%2016.1",
@@ -909,13 +938,13 @@
         "support": "20xx-xx-xx",
         "web_regexp": "https://download.opensuse.org/distribution/leap/16.1/offline/Leap-16.1-online-installer-x86_64.install.iso",
         "web_path": "https://download.opensuse.org/distribution/leap/16.1/offline/Leap-16.1-online-installer-x86_64.install.iso",
-        "web_tstamp": "2026-09-24T19:29:23+00:00",
-        "web_size": "763363328",
-        "web_check": "2026-10-04T11:09:53.882476+00:00",
+        "web_tstamp": "2026-10-05T10:15:30+00:00",
+        "web_size": "764411904",
+        "web_check": "2026-10-08T07:28:45.928013+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/opensuse/Leap-16.1-online-installer-x86_64.install.iso",
-        "iso_tstamp": "2026-09-24T19:29:23+00:00",
-        "iso_size": "763363328",
+        "iso_tstamp": "2026-10-05T10:15:30+00:00",
+        "iso_size": "764411904",
         "iso_volume": "Install-Leap-16.1-x86_64",
         "rmk_path": ":_DIRS_RMAK_:/Leap-16.1-online-installer-x86_64.install_agama.iso",
         "rmk_tstamp": "-",
@@ -927,10 +956,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "netinst",
+        "mdia_type": "netinst",
         "entry_flag": "o",
         "entry_name": "opensuse-tumbleweed-netinst",
         "entry_disp": "openSUSE%20Tumbleweed",
@@ -940,13 +970,13 @@
         "support": "20xx-xx-xx",
         "web_regexp": "https://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso",
         "web_path": "https://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso",
-        "web_tstamp": "2026-10-03T02:25:17+00:00",
+        "web_tstamp": "2026-10-06T04:25:02+00:00",
         "web_size": "420478976",
-        "web_check": "2026-10-04T11:09:55.036316+00:00",
+        "web_check": "2026-10-08T07:28:46.930070+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/opensuse/openSUSE-Tumbleweed-NET-x86_64-Current.iso",
-        "iso_tstamp": "2026-09-25T07:25:53+00:00",
-        "iso_size": "419430400",
+        "iso_tstamp": "2026-10-06T04:25:02+00:00",
+        "iso_size": "420478976",
         "iso_volume": "openSUSE-Tumbleweed-NET-x86_64",
         "rmk_path": ":_DIRS_RMAK_:/openSUSE-Tumbleweed-NET-x86_64-Current_autoyast.iso",
         "rmk_tstamp": "-",
@@ -958,10 +988,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "netinst",
+        "mdia_type": "netinst",
         "entry_flag": "m",
         "entry_name": "menu-entry",
         "entry_disp": "-",
@@ -975,9 +1006,9 @@
         "web_size": "-",
         "web_check": "-",
         "web_status": "-",
-        "iso_path": ":_DIRS_HGFS_:/linux/script/py_custom_cmd/src",
-        "iso_tstamp": "2026-10-04T04:50:29+00:00",
-        "iso_size": "16384",
+        "iso_path": "-",
+        "iso_tstamp": "-",
+        "iso_size": "-",
         "iso_volume": "-",
         "rmk_path": "-",
         "rmk_tstamp": "-",
@@ -989,10 +1020,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "m",
         "entry_name": "menu-entry",
         "entry_disp": "Auto%20install%20DVD%20media",
@@ -1006,9 +1038,9 @@
         "web_size": "-",
         "web_check": "-",
         "web_status": "-",
-        "iso_path": ":_DIRS_HGFS_:/linux/script/py_custom_cmd/src",
-        "iso_tstamp": "2026-10-04T04:50:29+00:00",
-        "iso_size": "16384",
+        "iso_path": "-",
+        "iso_tstamp": "-",
+        "iso_size": "-",
         "iso_volume": "-",
         "rmk_path": "-",
         "rmk_tstamp": "-",
@@ -1020,10 +1052,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "L",
         "entry_name": "debian-11",
         "entry_disp": "Debian%2011",
@@ -1035,7 +1068,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-11.11.0-amd64-DVD-1.iso",
         "web_tstamp": "2024-08-31T16:11:53+00:00",
         "web_size": "3992977408",
-        "web_check": "2026-10-04T11:09:55.543978+00:00",
+        "web_check": "2026-09-30T20:23:35.345634+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-11.11.0-amd64-DVD-1.iso",
         "iso_tstamp": "-",
@@ -1051,10 +1084,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "L",
         "entry_name": "debian-12",
         "entry_disp": "Debian%2012",
@@ -1066,7 +1100,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-12.15.0-amd64-DVD-1.iso",
         "web_tstamp": "2026-07-11T15:45:43+00:00",
         "web_size": "3989078016",
-        "web_check": "2026-10-04T11:09:56.200207+00:00",
+        "web_check": "2026-09-30T20:23:35.419277+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-12.15.0-amd64-DVD-1.iso",
         "iso_tstamp": "2026-07-11T15:45:43+00:00",
@@ -1082,10 +1116,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "o",
         "entry_name": "debian-13",
         "entry_disp": "Debian%2013",
@@ -1097,7 +1132,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-13.7.0-amd64-DVD-1.iso",
         "web_tstamp": "2026-09-12T11:35:33+00:00",
         "web_size": "3992977408",
-        "web_check": "2026-10-04T11:09:56.032220+00:00",
+        "web_check": "2026-10-08T07:28:47.733750+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-13.7.0-amd64-DVD-1.iso",
         "iso_tstamp": "2026-09-12T11:35:33+00:00",
@@ -1113,10 +1148,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "U",
         "entry_name": "debian-14",
         "entry_disp": "Debian%2014",
@@ -1130,11 +1166,11 @@
         "web_size": "-",
         "web_check": "-",
         "web_status": "-",
-        "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-14.iso",
+        "iso_path": ":_DIRS_ISOS_:/linux/debian/_dummy.iso",
         "iso_tstamp": "-",
         "iso_size": "-",
         "iso_volume": "-",
-        "rmk_path": "-",
+        "rmk_path": ":_DIRS_RMAK_:/_dummy_preseed.iso",
         "rmk_tstamp": "-",
         "rmk_size": "-",
         "rmk_volume": "-",
@@ -1144,10 +1180,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "o",
         "entry_name": "debian-testing",
         "entry_disp": "Debian%20testing",
@@ -1157,13 +1194,13 @@
         "support": "20xx-xx-xx",
         "web_regexp": "https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso",
         "web_path": "https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso",
-        "web_tstamp": "2026-09-28T07:37:21+00:00",
-        "web_size": "3992977408",
-        "web_check": "2026-10-04T11:09:55.622683+00:00",
+        "web_tstamp": "2026-10-05T05:38:52+00:00",
+        "web_size": "3981279232",
+        "web_check": "2026-10-08T07:28:47.439423+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-testing-amd64-DVD-1.iso",
-        "iso_tstamp": "2026-09-28T07:37:21+00:00",
-        "iso_size": "3992977408",
+        "iso_tstamp": "2026-10-05T05:38:52+00:00",
+        "iso_size": "3981279232",
         "iso_volume": "Debian%20testing%20amd64%201",
         "rmk_path": ":_DIRS_RMAK_:/debian-testing-amd64-DVD-1_preseed.iso",
         "rmk_tstamp": "-",
@@ -1175,10 +1212,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "L",
         "entry_name": "ubuntu-live-20.04",
         "entry_disp": "Ubuntu%2020.04%20Live%20Server",
@@ -1190,7 +1228,7 @@
         "web_path": "https://releases.ubuntu.com/20.04/ubuntu-20.04.6-live-server-amd64.iso",
         "web_tstamp": "2023-03-14T23:02:35+00:00",
         "web_size": "1487339520",
-        "web_check": "2026-10-04T11:09:56.465485+00:00",
+        "web_check": "2026-09-30T20:23:37.283425+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-20.04.6-live-server-amd64.iso",
         "iso_tstamp": "-",
@@ -1206,10 +1244,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "L",
         "entry_name": "ubuntu-live-22.04",
         "entry_disp": "Ubuntu%2022.04%20Live%20Server",
@@ -1221,7 +1260,7 @@
         "web_path": "https://releases.ubuntu.com/22.04/ubuntu-22.04.5-live-server-amd64.iso",
         "web_tstamp": "2024-09-11T18:46:55+00:00",
         "web_size": "2136926208",
-        "web_check": "2026-10-04T11:09:56.514406+00:00",
+        "web_check": "2026-09-30T20:23:37.454399+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-22.04.5-live-server-amd64.iso",
         "iso_tstamp": "-",
@@ -1237,10 +1276,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "L",
         "entry_name": "ubuntu-live-24.04",
         "entry_disp": "Ubuntu%2024.04%20Live%20Server",
@@ -1252,7 +1292,7 @@
         "web_path": "https://releases.ubuntu.com/24.04/ubuntu-24.04.5-live-server-amd64.iso",
         "web_tstamp": "2026-09-09T09:12:52+00:00",
         "web_size": "4080486400",
-        "web_check": "2026-10-04T11:09:56.683769+00:00",
+        "web_check": "2026-09-30T20:23:38.077948+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-24.04.5-live-server-amd64.iso",
         "iso_tstamp": "-",
@@ -1268,10 +1308,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "x",
         "entry_name": "ubuntu-live-24.10",
         "entry_disp": "Ubuntu%2024.10%20Live%20Server",
@@ -1283,7 +1324,7 @@
         "web_path": "https://old-releases.ubuntu.com/releases/24.10/ubuntu-24.10-live-server-amd64.iso",
         "web_tstamp": "2024-10-07T21:19:04+00:00",
         "web_size": "2098460672",
-        "web_check": "2026-10-04T11:09:57.721274+00:00",
+        "web_check": "2026-09-30T20:23:39.433367+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-24.10-live-server-amd64.iso",
         "iso_tstamp": "-",
@@ -1299,10 +1340,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "x",
         "entry_name": "ubuntu-live-25.04",
         "entry_disp": "Ubuntu%2025.04%20Live%20Server",
@@ -1314,7 +1356,7 @@
         "web_path": "https://old-releases.ubuntu.com/releases/25.04/ubuntu-25.04-live-server-amd64.iso",
         "web_tstamp": "2025-04-15T22:38:47+00:00",
         "web_size": "2021750784",
-        "web_check": "2026-10-04T11:09:57.874546+00:00",
+        "web_check": "2026-09-30T20:23:39.067424+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-25.04-live-server-amd64.iso",
         "iso_tstamp": "-",
@@ -1330,10 +1372,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "L",
         "entry_name": "ubuntu-live-25.10",
         "entry_disp": "Ubuntu%2025.10%20Live%20Server",
@@ -1345,7 +1388,7 @@
         "web_path": "https://releases.ubuntu.com/25.10/ubuntu-25.10-live-server-amd64.iso",
         "web_tstamp": "2025-10-07T19:35:49+00:00",
         "web_size": "2283360256",
-        "web_check": "2026-10-04T11:09:57.118703+00:00",
+        "web_check": "2026-09-30T20:23:38.729879+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-25.10-live-server-amd64.iso",
         "iso_tstamp": "2025-10-07T19:35:49+00:00",
@@ -1361,10 +1404,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "o",
         "entry_name": "ubuntu-live-26.04",
         "entry_disp": "Ubuntu%2026.04%20Live%20Server",
@@ -1376,7 +1420,7 @@
         "web_path": "https://releases.ubuntu.com/26.04/ubuntu-26.04.1-live-server-amd64.iso",
         "web_tstamp": "2026-08-26T05:14:44+00:00",
         "web_size": "2927861760",
-        "web_check": "2026-10-04T11:09:57.214726+00:00",
+        "web_check": "2026-10-08T07:28:47.195108+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-26.04.1-live-server-amd64.iso",
         "iso_tstamp": "2026-08-26T05:14:44+00:00",
@@ -1392,11 +1436,76 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
+        "entry_flag": "U",
+        "entry_name": "ubuntu-live-26.10",
+        "entry_disp": "Ubuntu%2026.10%20Live%20Server",
+        "version": "ubuntu-26.10",
+        "latest": "ubuntu-26.10",
+        "release": "2026-10-15",
+        "support": "2027-07-15",
+        "web_regexp": "https://releases.ubuntu.com/26.10/ubuntu-26.10[0-9.-]*-live-server-amd64.iso",
+        "web_path": "-",
+        "web_tstamp": "-",
+        "web_size": "-",
+        "web_check": "-",
+        "web_status": "-",
+        "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-26.10-live-server-amd64.iso",
+        "iso_tstamp": "-",
+        "iso_size": "-",
+        "iso_volume": "-",
+        "rmk_path": "-",
+        "rmk_tstamp": "-",
+        "rmk_size": "-",
+        "rmk_volume": "-",
+        "ldr_initrd": ":_DIRS_LOAD_:/ubuntu-live-26.10/casper/initrd",
+        "ldr_kernel": ":_DIRS_LOAD_:/ubuntu-live-26.10/casper/vmlinuz",
+        "cfg_path": ":_DIRS_CONF_:/nocloud/ubuntu_server",
+        "cfg_tstamp": "-",
+        "lnk_path": "-",
+        "options": "-",
+        "create_flag": "-",
+        "target_flag": "x"
+    },
+    {
+        "mdia_type": "dvd",
         "entry_flag": "o",
+        "entry_name": "ubuntu-live-26.10",
+        "entry_disp": "Ubuntu%2026.10%20Live%20Server",
+        "version": "ubuntu-26.10",
+        "latest": "ubuntu-26.10",
+        "release": "2026-10-15",
+        "support": "2027-07-15",
+        "web_regexp": "https://releases.ubuntu.com/26.10/ubuntu-26.10[0-9.-]*-beta-live-server-amd64.iso",
+        "web_path": "https://releases.ubuntu.com/26.10/ubuntu-26.10-beta-live-server-amd64.iso",
+        "web_tstamp": "2026-09-29T12:07:59+00:00",
+        "web_size": "3003731968",
+        "web_check": "2026-10-08T07:28:47.180278+00:00",
+        "web_status": "200",
+        "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-26.10-beta-live-server-amd64.iso",
+        "iso_tstamp": "2026-09-29T12:07:59+00:00",
+        "iso_size": "3003731968",
+        "iso_volume": "-",
+        "rmk_path": "-",
+        "rmk_tstamp": "-",
+        "rmk_size": "-",
+        "rmk_volume": "-",
+        "ldr_initrd": ":_DIRS_LOAD_:/ubuntu-live-26.10/casper/initrd",
+        "ldr_kernel": ":_DIRS_LOAD_:/ubuntu-live-26.10/casper/vmlinuz",
+        "cfg_path": ":_DIRS_CONF_:/nocloud/ubuntu_server",
+        "cfg_tstamp": "-",
+        "lnk_path": "-",
+        "options": "-",
+        "create_flag": "-",
+        "target_flag": "o"
+    },
+    {
+        "mdia_type": "dvd",
+        "entry_flag": "x",
         "entry_name": "ubuntu-live-26.10",
         "entry_disp": "Ubuntu%2026.10%20Live%20Server",
         "version": "ubuntu-26.10",
@@ -1407,7 +1516,7 @@
         "web_path": "https://cdimage.ubuntu.com/ubuntu/releases/26.10/release/snapshot-4/ubuntu-26.10-snapshot4-live-server-amd64.iso",
         "web_tstamp": "2026-09-15T09:26:31+00:00",
         "web_size": "2972950528",
-        "web_check": "2026-10-04T11:09:58.858997+00:00",
+        "web_check": "2026-09-30T20:23:41.229120+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-26.10-snapshot4-live-server-amd64.iso",
         "iso_tstamp": "2026-09-15T09:26:31+00:00",
@@ -1423,10 +1532,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "o",
         "entry_name": "fedora-43",
         "entry_disp": "Fedora%20Server%2043",
@@ -1438,7 +1548,7 @@
         "web_path": "https://download.fedoraproject.org/pub/fedora/linux/releases/43/Server/x86_64/iso/Fedora-Server-dvd-x86_64-43-1.6.iso",
         "web_tstamp": "2025-10-23T03:43:07+00:00",
         "web_size": "3484483584",
-        "web_check": "2026-10-04T11:09:57.377383+00:00",
+        "web_check": "2026-10-08T07:28:47.326234+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/fedora/Fedora-Server-dvd-x86_64-43-1.6.iso",
         "iso_tstamp": "2025-10-23T03:43:07+00:00",
@@ -1454,10 +1564,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "o",
         "entry_name": "fedora-44",
         "entry_disp": "Fedora%20Server%2044",
@@ -1469,7 +1580,7 @@
         "web_path": "https://download.fedoraproject.org/pub/fedora/linux/releases/44/Server/x86_64/iso/Fedora-Server-dvd-x86_64-44-1.7.iso",
         "web_tstamp": "2026-04-22T13:55:18+00:00",
         "web_size": "3913023488",
-        "web_check": "2026-10-04T11:09:58.310535+00:00",
+        "web_check": "2026-10-08T07:28:47.448384+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/fedora/Fedora-Server-dvd-x86_64-44-1.7.iso",
         "iso_tstamp": "2026-04-22T13:55:18+00:00",
@@ -1485,10 +1596,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "o",
         "entry_name": "centos-stream-9",
         "entry_disp": "CentOS%20Stream%209",
@@ -1498,13 +1610,13 @@
         "support": "2027-05-31",
         "web_regexp": "https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso",
         "web_path": "https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso",
-        "web_tstamp": "2026-09-30T04:04:53+00:00",
-        "web_size": "15677718528",
-        "web_check": "2026-10-04T11:09:57.417100+00:00",
+        "web_tstamp": "2026-10-06T04:04:47+00:00",
+        "web_size": "15678177280",
+        "web_check": "2026-10-08T07:28:47.227723+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/centos/CentOS-Stream-9-latest-x86_64-dvd1.iso",
-        "iso_tstamp": "2026-09-29T04:04:51+00:00",
-        "iso_size": "15676801024",
+        "iso_tstamp": "2026-10-06T04:04:47+00:00",
+        "iso_size": "15678177280",
         "iso_volume": "CentOS-Stream-9-BaseOS-x86_64",
         "rmk_path": ":_DIRS_RMAK_:/CentOS-Stream-9-latest-x86_64-dvd1_kickstart.iso",
         "rmk_tstamp": "-",
@@ -1516,10 +1628,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "o",
         "entry_name": "centos-stream-10",
         "entry_disp": "CentOS%20Stream%2010",
@@ -1529,13 +1642,13 @@
         "support": "2030-05-31",
         "web_regexp": "https://mirror.stream.centos.org/10-stream/BaseOS/x86_64/iso/CentOS-Stream-10-latest-x86_64-dvd1.iso",
         "web_path": "https://mirror.stream.centos.org/10-stream/BaseOS/x86_64/iso/CentOS-Stream-10-latest-x86_64-dvd1.iso",
-        "web_tstamp": "2026-09-30T04:22:48+00:00",
-        "web_size": "10730405888",
-        "web_check": "2026-10-04T11:09:57.449859+00:00",
+        "web_tstamp": "2026-10-06T04:23:07+00:00",
+        "web_size": "10736631808",
+        "web_check": "2026-10-08T07:28:47.261673+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/centos/CentOS-Stream-10-latest-x86_64-dvd1.iso",
-        "iso_tstamp": "2026-09-28T04:22:57+00:00",
-        "iso_size": "10729291776",
+        "iso_tstamp": "2026-10-06T04:23:07+00:00",
+        "iso_size": "10736631808",
         "iso_volume": "CentOS-Stream-10-BaseOS-x86_64",
         "rmk_path": ":_DIRS_RMAK_:/CentOS-Stream-10-latest-x86_64-dvd1_kickstart.iso",
         "rmk_tstamp": "-",
@@ -1547,10 +1660,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "o",
         "entry_name": "almalinux-9",
         "entry_disp": "Alma%20Linux%209",
@@ -1562,7 +1676,7 @@
         "web_path": "https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-9-latest-x86_64-dvd.iso",
         "web_tstamp": "2026-05-24T07:51:05+00:00",
         "web_size": "15151923200",
-        "web_check": "2026-10-04T11:09:57.511174+00:00",
+        "web_check": "2026-10-08T07:28:47.296899+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/almalinux/AlmaLinux-9-latest-x86_64-dvd.iso",
         "iso_tstamp": "2026-05-24T07:51:05+00:00",
@@ -1578,10 +1692,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "o",
         "entry_name": "almalinux-10",
         "entry_disp": "Alma%20Linux%2010",
@@ -1593,7 +1708,7 @@
         "web_path": "https://repo.almalinux.org/almalinux/10/isos/x86_64/AlmaLinux-10-latest-x86_64-dvd.iso",
         "web_tstamp": "2026-05-23T21:44:03+00:00",
         "web_size": "10106372096",
-        "web_check": "2026-10-04T11:09:57.550999+00:00",
+        "web_check": "2026-10-08T07:28:47.322652+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/almalinux/AlmaLinux-10-latest-x86_64-dvd.iso",
         "iso_tstamp": "2026-05-23T21:44:03+00:00",
@@ -1609,10 +1724,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "o",
         "entry_name": "rockylinux-9",
         "entry_disp": "Rocky%20Linux%209",
@@ -1624,7 +1740,7 @@
         "web_path": "https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-dvd.iso",
         "web_tstamp": "2026-05-25T19:55:35+00:00",
         "web_size": "15194259456",
-        "web_check": "2026-10-04T11:09:58.033094+00:00",
+        "web_check": "2026-10-08T07:28:47.793663+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/rockylinux/Rocky-9-latest-x86_64-dvd.iso",
         "iso_tstamp": "2026-05-25T19:55:35+00:00",
@@ -1640,10 +1756,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "o",
         "entry_name": "rockylinux-10",
         "entry_disp": "Rocky%20Linux%2010",
@@ -1655,7 +1772,7 @@
         "web_path": "https://download.rockylinux.org/pub/rocky/10/isos/x86_64/Rocky-10-latest-x86_64-dvd.iso",
         "web_tstamp": "2026-05-26T00:19:37+00:00",
         "web_size": "10226171904",
-        "web_check": "2026-10-04T11:09:57.905727+00:00",
+        "web_check": "2026-10-08T07:28:47.819557+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/rockylinux/Rocky-10-latest-x86_64-dvd.iso",
         "iso_tstamp": "2026-05-26T00:19:37+00:00",
@@ -1671,10 +1788,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "o",
         "entry_name": "miraclelinux-9",
         "entry_disp": "Miracle%20Linux%209",
@@ -1686,7 +1804,7 @@
         "web_path": "https://repo.dist.miraclelinux.net/miraclelinux/isos/9.6-released/x86_64/MIRACLELINUX-9.6-rtm-x86_64.iso",
         "web_tstamp": "2025-07-09T05:49:31+00:00",
         "web_size": "12297824256",
-        "web_check": "2026-10-04T11:09:58.000264+00:00",
+        "web_check": "2026-10-08T07:28:47.589674+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/miraclelinux/MIRACLELINUX-9.6-rtm-x86_64.iso",
         "iso_tstamp": "2025-07-09T05:49:31+00:00",
@@ -1702,10 +1820,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "o",
         "entry_name": "miraclelinux-9",
         "entry_disp": "Miracle%20Linux%209",
@@ -1717,7 +1836,7 @@
         "web_path": "https://repo.dist.miraclelinux.net/miraclelinux/isos/9.8-released/x86_64/MIRACLELINUX-9.8-rtm-x86_64.iso",
         "web_tstamp": "2026-07-13T07:36:49+00:00",
         "web_size": "13542518784",
-        "web_check": "2026-10-04T11:09:58.252476+00:00",
+        "web_check": "2026-10-08T07:28:47.631706+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/miraclelinux/MIRACLELINUX-9.8-rtm-x86_64.iso",
         "iso_tstamp": "2026-07-13T07:36:49+00:00",
@@ -1733,10 +1852,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "x",
         "entry_name": "opensuse-leap-15.6",
         "entry_disp": "openSUSE%20Leap%2015.6",
@@ -1748,7 +1868,7 @@
         "web_path": "https://download.opensuse.org/distribution/leap/15.6/iso/openSUSE-Leap-15.6-DVD-x86_64-Media.iso",
         "web_tstamp": "2024-06-20T11:56:54+00:00",
         "web_size": "4631560192",
-        "web_check": "2026-10-04T11:09:59.276718+00:00",
+        "web_check": "2026-09-30T20:23:41.776765+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/opensuse/openSUSE-Leap-15.6-DVD-x86_64-Media.iso",
         "iso_tstamp": "2024-06-20T11:56:54+00:00",
@@ -1764,10 +1884,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "o",
         "entry_name": "opensuse-leap-16.0",
         "entry_disp": "openSUSE%20Leap%2016.0",
@@ -1779,7 +1900,7 @@
         "web_path": "https://download.opensuse.org/distribution/leap/16.0/offline/Leap-16.0-offline-installer-x86_64.install.iso",
         "web_tstamp": "2026-06-20T11:22:58+00:00",
         "web_size": "4538236928",
-        "web_check": "2026-10-04T11:09:58.968038+00:00",
+        "web_check": "2026-10-08T07:28:48.384621+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/opensuse/Leap-16.0-offline-installer-x86_64.install.iso",
         "iso_tstamp": "2026-06-20T11:22:58+00:00",
@@ -1795,10 +1916,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "o",
         "entry_name": "opensuse-leap-16.1",
         "entry_disp": "openSUSE%20Leap%2016.1",
@@ -1808,13 +1930,13 @@
         "support": "20xx-xx-xx",
         "web_regexp": "https://download.opensuse.org/distribution/leap/16.1/offline/Leap-16.1-offline-installer-x86_64.install.iso",
         "web_path": "https://download.opensuse.org/distribution/leap/16.1/offline/Leap-16.1-offline-installer-x86_64.install.iso",
-        "web_tstamp": "2026-09-24T19:34:02+00:00",
-        "web_size": "4599054336",
-        "web_check": "2026-10-04T11:09:59.071057+00:00",
+        "web_tstamp": "2026-10-05T10:21:55+00:00",
+        "web_size": "4600102912",
+        "web_check": "2026-10-08T07:28:48.454580+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/opensuse/Leap-16.1-offline-installer-x86_64.install.iso",
-        "iso_tstamp": "2026-09-24T19:34:02+00:00",
-        "iso_size": "4599054336",
+        "iso_tstamp": "2026-10-05T10:21:55+00:00",
+        "iso_size": "4600102912",
         "iso_volume": "Install-Leap-16.1-x86_64",
         "rmk_path": ":_DIRS_RMAK_:/Leap-16.1-offline-installer-x86_64.install_agama.iso",
         "rmk_tstamp": "-",
@@ -1826,10 +1948,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "o",
         "entry_name": "opensuse-tumbleweed",
         "entry_disp": "openSUSE%20Tumbleweed",
@@ -1839,13 +1962,13 @@
         "support": "20xx-xx-xx",
         "web_regexp": "https://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso",
         "web_path": "https://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso",
-        "web_tstamp": "2026-10-03T02:28:46+00:00",
+        "web_tstamp": "2026-10-06T04:28:10+00:00",
         "web_size": "4679794688",
-        "web_check": "2026-10-04T11:10:00.400630+00:00",
+        "web_check": "2026-10-08T07:28:49.332784+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/opensuse/openSUSE-Tumbleweed-DVD-x86_64-Current.iso",
-        "iso_tstamp": "2026-09-25T07:28:48+00:00",
-        "iso_size": "4654628864",
+        "iso_tstamp": "2026-10-06T04:28:10+00:00",
+        "iso_size": "4679794688",
         "iso_volume": "openSUSE-Tumbleweed-DVD-x86_64",
         "rmk_path": ":_DIRS_RMAK_:/openSUSE-Tumbleweed-DVD-x86_64-Current_autoyast.iso",
         "rmk_tstamp": "-",
@@ -1857,10 +1980,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "o",
         "entry_name": "windows-10",
         "entry_disp": "Windows%2010",
@@ -1888,11 +2012,76 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "o",
+        "entry_name": "windows-11",
+        "entry_disp": "Windows%2011%20x64",
+        "version": "windows-11-26h2",
+        "latest": "windows-11-26h2",
+        "release": "2026-09-30",
+        "support": "20xx-xx-xx",
+        "web_regexp": "-",
+        "web_path": "-",
+        "web_tstamp": "-",
+        "web_size": "-",
+        "web_check": "-",
+        "web_status": "-",
+        "iso_path": ":_DIRS_ISOS_:/windows/windows-11/Windows11_Client_x64_ja-jp_26300_9457.iso",
+        "iso_tstamp": "2026-09-29T23:10:43+00:00",
+        "iso_size": "8952782848",
+        "iso_volume": "CCCOMA_X64FRE_JA-JP_DV9",
+        "rmk_path": "-",
+        "rmk_tstamp": "-",
+        "rmk_size": "-",
+        "rmk_volume": "-",
+        "ldr_initrd": "-",
+        "ldr_kernel": "-",
+        "cfg_path": "-",
+        "cfg_tstamp": "-",
+        "lnk_path": "-",
+        "options": "-",
+        "create_flag": "-",
+        "target_flag": "o"
+    },
+    {
+        "mdia_type": "dvd",
+        "entry_flag": "o",
+        "entry_name": "windows-11-arm64",
+        "entry_disp": "Windows%2011%20Arm64",
+        "version": "windows-11-26h2",
+        "latest": "windows-11-26h2",
+        "release": "2026-09-30",
+        "support": "20xx-xx-xx",
+        "web_regexp": "-",
+        "web_path": "-",
+        "web_tstamp": "-",
+        "web_size": "-",
+        "web_check": "-",
+        "web_status": "-",
+        "iso_path": ":_DIRS_ISOS_:/windows/windows-11/Windows11_Client_arm64_ja-jp_26300_9457.iso",
+        "iso_tstamp": "2026-09-29T23:09:53+00:00",
+        "iso_size": "8695900160",
+        "iso_volume": "CCCOMA_A64FRE_JA-JP_DV9",
+        "rmk_path": "-",
+        "rmk_tstamp": "-",
+        "rmk_size": "-",
+        "rmk_volume": "-",
+        "ldr_initrd": "-",
+        "ldr_kernel": "-",
+        "cfg_path": "-",
+        "cfg_tstamp": "-",
+        "lnk_path": "-",
+        "options": "-",
+        "create_flag": "-",
+        "target_flag": "o"
+    },
+    {
+        "mdia_type": "dvd",
+        "entry_flag": "x",
         "entry_name": "windows-11",
         "entry_disp": "Windows%2011",
         "version": "windows-11-25h2",
@@ -1919,10 +2108,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "x",
         "entry_name": "windows-10",
         "entry_disp": "Windows%2010",
@@ -1950,10 +2140,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "x",
         "entry_name": "windows-11",
         "entry_disp": "Windows%2011",
@@ -1981,10 +2172,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "x",
         "entry_name": "windows-11",
         "entry_disp": "Windows%2011",
@@ -2012,10 +2204,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "x",
         "entry_name": "windows-11",
         "entry_disp": "Windows%2011%20custom",
@@ -2043,10 +2236,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "dvd",
+        "mdia_type": "dvd",
         "entry_flag": "m",
         "entry_name": "menu-entry",
         "entry_disp": "-",
@@ -2060,9 +2254,9 @@
         "web_size": "-",
         "web_check": "-",
         "web_status": "-",
-        "iso_path": ":_DIRS_HGFS_:/linux/script/py_custom_cmd/src",
-        "iso_tstamp": "2026-10-04T04:50:29+00:00",
-        "iso_size": "16384",
+        "iso_path": "-",
+        "iso_tstamp": "-",
+        "iso_size": "-",
         "iso_volume": "-",
         "rmk_path": "-",
         "rmk_tstamp": "-",
@@ -2074,10 +2268,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "m",
         "entry_name": "menu-entry",
         "entry_disp": "Live%20media%20Install%20mode",
@@ -2091,9 +2286,9 @@
         "web_size": "-",
         "web_check": "-",
         "web_status": "-",
-        "iso_path": ":_DIRS_HGFS_:/linux/script/py_custom_cmd/src",
-        "iso_tstamp": "2026-10-04T04:50:29+00:00",
-        "iso_size": "16384",
+        "iso_path": "-",
+        "iso_tstamp": "-",
+        "iso_size": "-",
         "iso_volume": "-",
         "rmk_path": "-",
         "rmk_tstamp": "-",
@@ -2105,10 +2300,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "L",
         "entry_name": "debian-live-11-standard",
         "entry_disp": "Debian%2011%20Live%20standard",
@@ -2120,7 +2316,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-11.11.0-amd64-standard.iso",
         "web_tstamp": "2024-08-31T14:43:10+00:00",
         "web_size": "990904320",
-        "web_check": "2026-10-04T11:10:00.942511+00:00",
+        "web_check": "2026-09-30T20:23:44.515661+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-11.11.0-amd64-standard.iso",
         "iso_tstamp": "-",
@@ -2136,10 +2332,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "L",
         "entry_name": "debian-live-12-standard",
         "entry_disp": "Debian%2012%20Live%20standard",
@@ -2151,7 +2348,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-12.15.0-amd64-standard.iso",
         "web_tstamp": "2026-07-11T10:16:37+00:00",
         "web_size": "1594884096",
-        "web_check": "2026-10-04T11:10:01.013062+00:00",
+        "web_check": "2026-09-30T20:23:44.729789+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-12.15.0-amd64-standard.iso",
         "iso_tstamp": "-",
@@ -2167,10 +2364,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "=",
         "entry_name": "debian-live-13-standard",
         "entry_disp": "Debian%2013%20Live%20standard",
@@ -2182,7 +2380,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-13.7.0-amd64-standard.iso",
         "web_tstamp": "2026-09-12T07:55:41+00:00",
         "web_size": "2020130816",
-        "web_check": "2026-10-04T11:10:00.891442+00:00",
+        "web_check": "2026-09-30T20:23:45.842224+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-13.7.0-amd64-standard.iso",
         "iso_tstamp": "-",
@@ -2198,10 +2396,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "=",
         "entry_name": "debian-live-testing-standard",
         "entry_disp": "Debian%20testing%20Live%20standard",
@@ -2213,7 +2412,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-standard.iso",
         "web_tstamp": "2026-09-28T02:09:10+00:00",
         "web_size": "2671247360",
-        "web_check": "2026-10-04T11:10:00.379291+00:00",
+        "web_check": "2026-09-30T20:23:45.661764+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-testing-amd64-standard.iso",
         "iso_tstamp": "-",
@@ -2229,10 +2428,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "L",
         "entry_name": "debian-live-11-gnome",
         "entry_disp": "Debian%2011%20Live%20gnome",
@@ -2244,7 +2444,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-11.11.0-amd64-gnome.iso",
         "web_tstamp": "2024-08-31T15:16:28+00:00",
         "web_size": "2774138880",
-        "web_check": "2026-10-04T11:10:02.281792+00:00",
+        "web_check": "2026-09-30T20:23:46.471724+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-11.11.0-amd64-gnome.iso",
         "iso_tstamp": "-",
@@ -2260,10 +2460,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "L",
         "entry_name": "debian-live-12-gnome",
         "entry_disp": "Debian%2012%20Live%20gnome",
@@ -2275,7 +2476,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-12.15.0-amd64-gnome.iso",
         "web_tstamp": "2026-07-11T10:16:37+00:00",
         "web_size": "3533078528",
-        "web_check": "2026-10-04T11:10:02.226219+00:00",
+        "web_check": "2026-09-30T20:23:47.960364+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-12.15.0-amd64-gnome.iso",
         "iso_tstamp": "2026-07-11T10:16:37+00:00",
@@ -2291,10 +2492,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "o",
         "entry_name": "debian-live-13-gnome",
         "entry_disp": "Debian%2013%20Live%20gnome",
@@ -2306,7 +2508,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-13.7.0-amd64-gnome.iso",
         "web_tstamp": "2026-09-12T07:55:41+00:00",
         "web_size": "3804708864",
-        "web_check": "2026-10-04T11:10:02.787287+00:00",
+        "web_check": "2026-10-08T07:28:50.283689+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-13.7.0-amd64-gnome.iso",
         "iso_tstamp": "2026-09-12T07:55:41+00:00",
@@ -2322,10 +2524,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "o",
         "entry_name": "debian-live-testing-gnome",
         "entry_disp": "Debian%20testing%20Live%20gnome",
@@ -2335,13 +2538,13 @@
         "support": "20xx-xx-xx",
         "web_regexp": "https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-gnome.iso",
         "web_path": "https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-gnome.iso",
-        "web_tstamp": "2026-09-28T02:09:10+00:00",
-        "web_size": "4439457792",
-        "web_check": "2026-10-04T11:10:02.086270+00:00",
+        "web_tstamp": "2026-10-05T02:11:49+00:00",
+        "web_size": "4461391872",
+        "web_check": "2026-10-08T07:28:49.213431+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-testing-amd64-gnome.iso",
-        "iso_tstamp": "2026-09-28T02:09:10+00:00",
-        "iso_size": "4439457792",
+        "iso_tstamp": "2026-10-05T02:11:49+00:00",
+        "iso_size": "4461391872",
         "iso_volume": "d-live%20testing%20gn%20amd64",
         "rmk_path": ":_DIRS_RMAK_:/debian-live-testing-amd64-gnome_preseed.iso",
         "rmk_tstamp": "-",
@@ -2353,10 +2556,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "L",
         "entry_name": "debian-live-11-lxde",
         "entry_disp": "Debian%2011%20Live%20lxde",
@@ -2368,7 +2572,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-11.11.0-amd64-lxde.iso",
         "web_tstamp": "2024-08-31T15:15:29+00:00",
         "web_size": "2566914048",
-        "web_check": "2026-10-04T11:10:02.743421+00:00",
+        "web_check": "2026-09-30T20:23:49.447996+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-11.11.0-amd64-lxde.iso",
         "iso_tstamp": "-",
@@ -2384,10 +2588,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "L",
         "entry_name": "debian-live-12-lxde",
         "entry_disp": "Debian%2012%20Live%20lxde",
@@ -2399,7 +2604,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-12.15.0-amd64-lxde.iso",
         "web_tstamp": "2026-07-11T10:16:37+00:00",
         "web_size": "3228516352",
-        "web_check": "2026-10-04T11:10:03.867216+00:00",
+        "web_check": "2026-09-30T20:23:49.717856+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-12.15.0-amd64-lxde.iso",
         "iso_tstamp": "-",
@@ -2415,10 +2620,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "=",
         "entry_name": "debian-live-13-lxde",
         "entry_disp": "Debian%2013%20Live%20lxde",
@@ -2430,7 +2636,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-13.7.0-amd64-lxde.iso",
         "web_tstamp": "2026-09-12T07:55:41+00:00",
         "web_size": "3800989696",
-        "web_check": "2026-10-04T11:10:04.140495+00:00",
+        "web_check": "2026-09-30T20:23:50.116303+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-13.7.0-amd64-lxde.iso",
         "iso_tstamp": "-",
@@ -2446,10 +2652,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "=",
         "entry_name": "debian-live-testing-lxde",
         "entry_disp": "Debian%20testing%20Live%20lxde",
@@ -2461,7 +2668,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso",
         "web_tstamp": "2026-09-28T02:09:10+00:00",
         "web_size": "4373655552",
-        "web_check": "2026-10-04T11:10:03.443042+00:00",
+        "web_check": "2026-09-30T20:23:50.596371+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-testing-amd64-lxde.iso",
         "iso_tstamp": "-",
@@ -2477,10 +2684,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "L",
         "entry_name": "debian-live-11-cinnamon",
         "entry_disp": "Debian%2011%20Live%20cinnamon",
@@ -2492,7 +2700,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-11.11.0-amd64-cinnamon.iso",
         "web_tstamp": "2024-08-31T15:22:52+00:00",
         "web_size": "2874408960",
-        "web_check": "2026-10-04T11:10:04.467877+00:00",
+        "web_check": "2026-09-30T20:23:51.420424+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-11.11.0-amd64-cinnamon.iso",
         "iso_tstamp": "-",
@@ -2508,10 +2716,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "L",
         "entry_name": "debian-live-12-cinnamon",
         "entry_disp": "Debian%2012%20Live%20cinnamon",
@@ -2523,7 +2732,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-12.15.0-amd64-cinnamon.iso",
         "web_tstamp": "2026-07-11T10:16:37+00:00",
         "web_size": "3456106496",
-        "web_check": "2026-10-04T11:10:04.576340+00:00",
+        "web_check": "2026-09-30T20:23:51.858745+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-12.15.0-amd64-cinnamon.iso",
         "iso_tstamp": "2026-07-11T10:16:37+00:00",
@@ -2539,10 +2748,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "o",
         "entry_name": "debian-live-13-cinnamon",
         "entry_disp": "Debian%2013%20Live%20cinnamon",
@@ -2554,7 +2764,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-13.7.0-amd64-cinnamon.iso",
         "web_tstamp": "2026-09-12T07:55:41+00:00",
         "web_size": "4115103744",
-        "web_check": "2026-10-04T11:10:05.357542+00:00",
+        "web_check": "2026-10-08T07:28:50.182413+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-13.7.0-amd64-cinnamon.iso",
         "iso_tstamp": "2026-09-12T07:55:41+00:00",
@@ -2570,10 +2780,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "o",
         "entry_name": "debian-live-testing-cinnamon",
         "entry_disp": "Debian%20testing%20Live%20cinnamon",
@@ -2583,13 +2794,13 @@
         "support": "20xx-xx-xx",
         "web_regexp": "https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-cinnamon.iso",
         "web_path": "https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-cinnamon.iso",
-        "web_tstamp": "2026-09-28T02:09:10+00:00",
-        "web_size": "4610672640",
-        "web_check": "2026-10-04T11:10:05.015280+00:00",
+        "web_tstamp": "2026-10-05T02:11:49+00:00",
+        "web_size": "4635574272",
+        "web_check": "2026-10-08T07:28:50.461392+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-testing-amd64-cinnamon.iso",
-        "iso_tstamp": "2026-09-28T02:09:10+00:00",
-        "iso_size": "4610672640",
+        "iso_tstamp": "2026-10-05T02:11:49+00:00",
+        "iso_size": "4635574272",
         "iso_volume": "d-live%20testing%20ci%20amd64",
         "rmk_path": ":_DIRS_RMAK_:/debian-live-testing-amd64-cinnamon_preseed.iso",
         "rmk_tstamp": "-",
@@ -2601,10 +2812,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "L",
         "entry_name": "ubuntu-desktop-20.04",
         "entry_disp": "Ubuntu%2020.04%20Desktop",
@@ -2616,7 +2828,7 @@
         "web_path": "https://releases.ubuntu.com/20.04/ubuntu-20.04.6-desktop-amd64.iso",
         "web_tstamp": "2023-03-16T15:58:09+00:00",
         "web_size": "4351463424",
-        "web_check": "2026-10-04T11:10:05.349347+00:00",
+        "web_check": "2026-09-30T20:23:53.056011+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-20.04.6-desktop-amd64.iso",
         "iso_tstamp": "-",
@@ -2632,10 +2844,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "L",
         "entry_name": "ubuntu-desktop-22.04",
         "entry_disp": "Ubuntu%2022.04%20Desktop",
@@ -2647,7 +2860,7 @@
         "web_path": "https://releases.ubuntu.com/22.04/ubuntu-22.04.5-desktop-amd64.iso",
         "web_tstamp": "2024-09-11T14:38:59+00:00",
         "web_size": "4762707968",
-        "web_check": "2026-10-04T11:10:05.437861+00:00",
+        "web_check": "2026-09-30T20:23:53.424161+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-22.04.5-desktop-amd64.iso",
         "iso_tstamp": "-",
@@ -2663,10 +2876,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "L",
         "entry_name": "ubuntu-desktop-24.04",
         "entry_disp": "Ubuntu%2024.04%20Desktop",
@@ -2678,7 +2892,7 @@
         "web_path": "https://releases.ubuntu.com/24.04/ubuntu-24.04.5.1-desktop-amd64.iso",
         "web_tstamp": "2026-09-14T23:20:53+00:00",
         "web_size": "6250332160",
-        "web_check": "2026-10-04T11:10:05.608502+00:00",
+        "web_check": "2026-09-30T20:23:53.809475+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-24.04.5.1-desktop-amd64.iso",
         "iso_tstamp": "-",
@@ -2694,10 +2908,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "x",
         "entry_name": "ubuntu-desktop-24.10",
         "entry_disp": "Ubuntu%2024.10%20Desktop",
@@ -2709,7 +2924,7 @@
         "web_path": "https://old-releases.ubuntu.com/releases/24.10/ubuntu-24.10-desktop-amd64.iso",
         "web_tstamp": "2024-10-09T14:32:32+00:00",
         "web_size": "5665497088",
-        "web_check": "2026-10-04T11:10:06.420744+00:00",
+        "web_check": "2026-09-30T20:23:55.099720+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-24.10-desktop-amd64.iso",
         "iso_tstamp": "-",
@@ -2725,10 +2940,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "x",
         "entry_name": "ubuntu-desktop-25.04",
         "entry_disp": "Ubuntu%2025.04%20Desktop",
@@ -2740,7 +2956,7 @@
         "web_path": "https://old-releases.ubuntu.com/releases/25.04/ubuntu-25.04-desktop-amd64.iso",
         "web_tstamp": "2025-04-15T18:47:56+00:00",
         "web_size": "6278520832",
-        "web_check": "2026-10-04T11:10:07.460040+00:00",
+        "web_check": "2026-09-30T20:23:54.954020+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-25.04-desktop-amd64.iso",
         "iso_tstamp": "-",
@@ -2756,10 +2972,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "x",
         "entry_name": "ubuntu-desktop-25.10",
         "entry_disp": "Ubuntu%2025.10%20Desktop",
@@ -2771,7 +2988,7 @@
         "web_path": "https://releases.ubuntu.com/25.10/ubuntu-25.10-desktop-amd64.iso",
         "web_tstamp": "2025-10-07T03:55:53+00:00",
         "web_size": "5702520832",
-        "web_check": "2026-10-04T11:10:06.027755+00:00",
+        "web_check": "2026-09-30T20:23:54.492670+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-25.10-desktop-amd64.iso",
         "iso_tstamp": "2025-10-07T03:55:53+00:00",
@@ -2787,10 +3004,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "o",
         "entry_name": "ubuntu-desktop-26.04",
         "entry_disp": "Ubuntu%2026.04%20Desktop",
@@ -2802,7 +3020,7 @@
         "web_path": "https://releases.ubuntu.com/26.04/ubuntu-26.04.1-desktop-amd64.iso",
         "web_tstamp": "2026-08-26T06:38:13+00:00",
         "web_size": "6482409472",
-        "web_check": "2026-10-04T11:10:06.134707+00:00",
+        "web_check": "2026-10-08T07:28:49.861970+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-26.04.1-desktop-amd64.iso",
         "iso_tstamp": "2026-08-26T06:38:13+00:00",
@@ -2818,11 +3036,76 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
+        "entry_flag": "U",
+        "entry_name": "ubuntu-desktop-26.10",
+        "entry_disp": "Ubuntu%2026.10%20Desktop",
+        "version": "ubuntu-26.10",
+        "latest": "ubuntu-26.10",
+        "release": "2026-10-15",
+        "support": "2027-07-15",
+        "web_regexp": "https://releases.ubuntu.com/26.10/ubuntu-26.10[0-9.-]*-desktop-amd64.iso",
+        "web_path": "-",
+        "web_tstamp": "-",
+        "web_size": "-",
+        "web_check": "-",
+        "web_status": "-",
+        "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-26.10-desktop-amd64.iso",
+        "iso_tstamp": "-",
+        "iso_size": "-",
+        "iso_volume": "-",
+        "rmk_path": "-",
+        "rmk_tstamp": "-",
+        "rmk_size": "-",
+        "rmk_volume": "-",
+        "ldr_initrd": ":_DIRS_LOAD_:/ubuntu-live-26.10/casper/initrd",
+        "ldr_kernel": ":_DIRS_LOAD_:/ubuntu-live-26.10/casper/vmlinuz",
+        "cfg_path": ":_DIRS_CONF_:/nocloud/ubuntu_server",
+        "cfg_tstamp": "-",
+        "lnk_path": "-",
+        "options": "-",
+        "create_flag": "-",
+        "target_flag": "x"
+    },
+    {
+        "mdia_type": "liveinst",
         "entry_flag": "o",
+        "entry_name": "ubuntu-desktop-26.10",
+        "entry_disp": "Ubuntu%2026.10%20Desktop",
+        "version": "ubuntu-26.10",
+        "latest": "ubuntu-26.10",
+        "release": "2026-10-15",
+        "support": "2027-07-15",
+        "web_regexp": "https://releases.ubuntu.com/26.10/ubuntu-26.10[0-9.-]*-beta-desktop-amd64.iso",
+        "web_path": "https://releases.ubuntu.com/26.10/ubuntu-26.10-beta-desktop-amd64.iso",
+        "web_tstamp": "2026-09-29T12:14:43+00:00",
+        "web_size": "6324629504",
+        "web_check": "2026-10-08T07:28:49.958398+00:00",
+        "web_status": "200",
+        "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-26.10-beta-desktop-amd64.iso",
+        "iso_tstamp": "2026-09-29T12:14:43+00:00",
+        "iso_size": "6324629504",
+        "iso_volume": "Ubuntu%2026.10%20amd64",
+        "rmk_path": "-",
+        "rmk_tstamp": "-",
+        "rmk_size": "-",
+        "rmk_volume": "-",
+        "ldr_initrd": ":_DIRS_LOAD_:/ubuntu-live-26.10/casper/initrd",
+        "ldr_kernel": ":_DIRS_LOAD_:/ubuntu-live-26.10/casper/vmlinuz",
+        "cfg_path": ":_DIRS_CONF_:/nocloud/ubuntu_server",
+        "cfg_tstamp": "-",
+        "lnk_path": "-",
+        "options": "-",
+        "create_flag": "-",
+        "target_flag": "o"
+    },
+    {
+        "mdia_type": "liveinst",
+        "entry_flag": "x",
         "entry_name": "ubuntu-desktop-26.10",
         "entry_disp": "Ubuntu%2026.10%20Desktop",
         "version": "ubuntu-26.10",
@@ -2833,7 +3116,7 @@
         "web_path": "https://cdimage.ubuntu.com/ubuntu/releases/26.10/release/snapshot-4/ubuntu-26.10-snapshot4-desktop-amd64.iso",
         "web_tstamp": "2026-09-15T05:33:44+00:00",
         "web_size": "6301954048",
-        "web_check": "2026-10-04T11:10:07.525087+00:00",
+        "web_check": "2026-09-30T20:23:56.870640+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-26.10-snapshot4-desktop-amd64.iso",
         "iso_tstamp": "2026-09-15T05:33:44+00:00",
@@ -2849,10 +3132,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "liveinst",
+        "mdia_type": "liveinst",
         "entry_flag": "m",
         "entry_name": "menu-entry",
         "entry_disp": "-",
@@ -2866,9 +3150,9 @@
         "web_size": "-",
         "web_check": "-",
         "web_status": "-",
-        "iso_path": ":_DIRS_HGFS_:/linux/script/py_custom_cmd/src",
-        "iso_tstamp": "2026-10-04T04:50:29+00:00",
-        "iso_size": "16384",
+        "iso_path": "-",
+        "iso_tstamp": "-",
+        "iso_size": "-",
         "iso_volume": "-",
         "rmk_path": "-",
         "rmk_tstamp": "-",
@@ -2880,10 +3164,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "m",
         "entry_name": "menu-entry",
         "entry_disp": "Live%20media%20Live%20mode",
@@ -2897,9 +3182,9 @@
         "web_size": "-",
         "web_check": "-",
         "web_status": "-",
-        "iso_path": ":_DIRS_HGFS_:/linux/script/py_custom_cmd/src",
-        "iso_tstamp": "2026-10-04T04:50:29+00:00",
-        "iso_size": "16384",
+        "iso_path": "-",
+        "iso_tstamp": "-",
+        "iso_size": "-",
         "iso_volume": "-",
         "rmk_path": "-",
         "rmk_tstamp": "-",
@@ -2911,10 +3196,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "L",
         "entry_name": "debian-live-11-standard",
         "entry_disp": "Debian%2011%20Live%20standard",
@@ -2926,7 +3212,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-11.11.0-amd64-standard.iso",
         "web_tstamp": "2024-08-31T14:43:10+00:00",
         "web_size": "990904320",
-        "web_check": "2026-10-04T11:10:07.789559+00:00",
+        "web_check": "2026-09-30T20:23:56.840582+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-11.11.0-amd64-standard.iso",
         "iso_tstamp": "-",
@@ -2942,10 +3228,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "L",
         "entry_name": "debian-live-12-standard",
         "entry_disp": "Debian%2012%20Live%20standard",
@@ -2957,7 +3244,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-12.15.0-amd64-standard.iso",
         "web_tstamp": "2026-07-11T10:16:37+00:00",
         "web_size": "1594884096",
-        "web_check": "2026-10-04T11:10:07.939865+00:00",
+        "web_check": "2026-09-30T20:23:57.681335+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-12.15.0-amd64-standard.iso",
         "iso_tstamp": "-",
@@ -2973,10 +3260,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "=",
         "entry_name": "debian-live-13-standard",
         "entry_disp": "Debian%2013%20Live%20standard",
@@ -2988,7 +3276,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-13.7.0-amd64-standard.iso",
         "web_tstamp": "2026-09-12T07:55:41+00:00",
         "web_size": "2020130816",
-        "web_check": "2026-10-04T11:10:08.313244+00:00",
+        "web_check": "2026-09-30T20:23:58.718504+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-13.7.0-amd64-standard.iso",
         "iso_tstamp": "-",
@@ -3004,10 +3292,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "=",
         "entry_name": "debian-live-testing-standard",
         "entry_disp": "Debian%20testing%20Live%20standard",
@@ -3019,7 +3308,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-standard.iso",
         "web_tstamp": "2026-09-28T02:09:10+00:00",
         "web_size": "2671247360",
-        "web_check": "2026-10-04T11:10:08.608159+00:00",
+        "web_check": "2026-09-30T20:23:58.023939+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-testing-amd64-standard.iso",
         "iso_tstamp": "-",
@@ -3035,10 +3324,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "L",
         "entry_name": "debian-live-11-gnome",
         "entry_disp": "Debian%2011%20Live%20gnome",
@@ -3050,7 +3340,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-11.11.0-amd64-gnome.iso",
         "web_tstamp": "2024-08-31T15:16:28+00:00",
         "web_size": "2774138880",
-        "web_check": "2026-10-04T11:10:09.283108+00:00",
+        "web_check": "2026-09-30T20:23:59.416480+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-11.11.0-amd64-gnome.iso",
         "iso_tstamp": "-",
@@ -3066,10 +3356,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "L",
         "entry_name": "debian-live-12-gnome",
         "entry_disp": "Debian%2012%20Live%20gnome",
@@ -3081,7 +3372,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-12.15.0-amd64-gnome.iso",
         "web_tstamp": "2026-07-11T10:16:37+00:00",
         "web_size": "3533078528",
-        "web_check": "2026-10-04T11:10:09.570626+00:00",
+        "web_check": "2026-09-30T20:23:59.770860+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-12.15.0-amd64-gnome.iso",
         "iso_tstamp": "2026-07-11T10:16:37+00:00",
@@ -3097,10 +3388,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "o",
         "entry_name": "debian-live-13-gnome",
         "entry_disp": "Debian%2013%20Live%20gnome",
@@ -3112,7 +3404,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-13.7.0-amd64-gnome.iso",
         "web_tstamp": "2026-09-12T07:55:41+00:00",
         "web_size": "3804708864",
-        "web_check": "2026-10-04T11:10:09.823140+00:00",
+        "web_check": "2026-10-08T07:28:51.943320+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-13.7.0-amd64-gnome.iso",
         "iso_tstamp": "2026-09-12T07:55:41+00:00",
@@ -3128,10 +3420,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "o",
         "entry_name": "debian-live-testing-gnome",
         "entry_disp": "Debian%20testing%20Live%20gnome",
@@ -3141,13 +3434,13 @@
         "support": "20xx-xx-xx",
         "web_regexp": "https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-gnome.iso",
         "web_path": "https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-gnome.iso",
-        "web_tstamp": "2026-09-28T02:09:10+00:00",
-        "web_size": "4439457792",
-        "web_check": "2026-10-04T11:10:09.452440+00:00",
+        "web_tstamp": "2026-10-05T02:11:49+00:00",
+        "web_size": "4461391872",
+        "web_check": "2026-10-08T07:28:51.302622+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-testing-amd64-gnome.iso",
-        "iso_tstamp": "2026-09-28T02:09:10+00:00",
-        "iso_size": "4439457792",
+        "iso_tstamp": "2026-10-05T02:11:49+00:00",
+        "iso_size": "4461391872",
         "iso_volume": "d-live%20testing%20gn%20amd64",
         "rmk_path": "-",
         "rmk_tstamp": "-",
@@ -3159,10 +3452,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "L",
         "entry_name": "debian-live-11-lxde",
         "entry_disp": "Debian%2011%20Live%20lxde",
@@ -3174,7 +3468,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-11.11.0-amd64-lxde.iso",
         "web_tstamp": "2024-08-31T15:15:29+00:00",
         "web_size": "2566914048",
-        "web_check": "2026-10-04T11:10:10.338494+00:00",
+        "web_check": "2026-09-30T20:24:01.529443+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-11.11.0-amd64-lxde.iso",
         "iso_tstamp": "-",
@@ -3190,10 +3484,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "L",
         "entry_name": "debian-live-12-lxde",
         "entry_disp": "Debian%2012%20Live%20lxde",
@@ -3205,7 +3500,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-12.15.0-amd64-lxde.iso",
         "web_tstamp": "2026-07-11T10:16:37+00:00",
         "web_size": "3228516352",
-        "web_check": "2026-10-04T11:10:11.066027+00:00",
+        "web_check": "2026-09-30T20:24:02.334038+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-12.15.0-amd64-lxde.iso",
         "iso_tstamp": "-",
@@ -3221,10 +3516,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "=",
         "entry_name": "debian-live-13-lxde",
         "entry_disp": "Debian%2013%20Live%20lxde",
@@ -3236,7 +3532,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-13.7.0-amd64-lxde.iso",
         "web_tstamp": "2026-09-12T07:55:41+00:00",
         "web_size": "3800989696",
-        "web_check": "2026-10-04T11:10:11.454638+00:00",
+        "web_check": "2026-09-30T20:24:02.502292+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-13.7.0-amd64-lxde.iso",
         "iso_tstamp": "-",
@@ -3252,10 +3548,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "=",
         "entry_name": "debian-live-testing-lxde",
         "entry_disp": "Debian%20testing%20Live%20lxde",
@@ -3267,7 +3564,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso",
         "web_tstamp": "2026-09-28T02:09:10+00:00",
         "web_size": "4373655552",
-        "web_check": "2026-10-04T11:10:10.730041+00:00",
+        "web_check": "2026-09-30T20:24:03.213525+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-testing-amd64-lxde.iso",
         "iso_tstamp": "-",
@@ -3283,10 +3580,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "L",
         "entry_name": "debian-live-11-cinnamon",
         "entry_disp": "Debian%2011%20Live%20cinnamon",
@@ -3298,7 +3596,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-11.11.0-amd64-cinnamon.iso",
         "web_tstamp": "2024-08-31T15:22:52+00:00",
         "web_size": "2874408960",
-        "web_check": "2026-10-04T11:10:11.628226+00:00",
+        "web_check": "2026-09-30T20:24:04.164616+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-11.11.0-amd64-cinnamon.iso",
         "iso_tstamp": "-",
@@ -3314,10 +3612,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "L",
         "entry_name": "debian-live-12-cinnamon",
         "entry_disp": "Debian%2012%20Live%20cinnamon",
@@ -3329,7 +3628,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-12.15.0-amd64-cinnamon.iso",
         "web_tstamp": "2026-07-11T10:16:37+00:00",
         "web_size": "3456106496",
-        "web_check": "2026-10-04T11:10:12.074835+00:00",
+        "web_check": "2026-09-30T20:24:04.247158+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-12.15.0-amd64-cinnamon.iso",
         "iso_tstamp": "2026-07-11T10:16:37+00:00",
@@ -3345,10 +3644,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "o",
         "entry_name": "debian-live-13-cinnamon",
         "entry_disp": "Debian%2013%20Live%20cinnamon",
@@ -3360,7 +3660,7 @@
         "web_path": "https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-13.7.0-amd64-cinnamon.iso",
         "web_tstamp": "2026-09-12T07:55:41+00:00",
         "web_size": "4115103744",
-        "web_check": "2026-10-04T11:10:12.500030+00:00",
+        "web_check": "2026-10-08T07:28:52.156644+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-13.7.0-amd64-cinnamon.iso",
         "iso_tstamp": "2026-09-12T07:55:41+00:00",
@@ -3376,10 +3676,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "o",
         "entry_name": "debian-live-testing-cinnamon",
         "entry_disp": "Debian%20testing%20Live%20cinnamon",
@@ -3389,13 +3690,13 @@
         "support": "20xx-xx-xx",
         "web_regexp": "https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-cinnamon.iso",
         "web_path": "https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-cinnamon.iso",
-        "web_tstamp": "2026-09-28T02:09:10+00:00",
-        "web_size": "4610672640",
-        "web_check": "2026-10-04T11:10:12.144130+00:00",
+        "web_tstamp": "2026-10-05T02:11:49+00:00",
+        "web_size": "4635574272",
+        "web_check": "2026-10-08T07:28:51.703682+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-live-testing-amd64-cinnamon.iso",
-        "iso_tstamp": "2026-09-28T02:09:10+00:00",
-        "iso_size": "4610672640",
+        "iso_tstamp": "2026-10-05T02:11:49+00:00",
+        "iso_size": "4635574272",
         "iso_volume": "d-live%20testing%20ci%20amd64",
         "rmk_path": "-",
         "rmk_tstamp": "-",
@@ -3407,10 +3708,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "L",
         "entry_name": "ubuntu-desktop-20.04",
         "entry_disp": "Ubuntu%2020.04%20Desktop",
@@ -3422,7 +3724,7 @@
         "web_path": "https://releases.ubuntu.com/20.04/ubuntu-20.04.6-desktop-amd64.iso",
         "web_tstamp": "2023-03-16T15:58:09+00:00",
         "web_size": "4351463424",
-        "web_check": "2026-10-04T11:10:12.651516+00:00",
+        "web_check": "2026-09-30T20:24:05.422719+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-20.04.6-desktop-amd64.iso",
         "iso_tstamp": "-",
@@ -3438,10 +3740,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "L",
         "entry_name": "ubuntu-desktop-22.04",
         "entry_disp": "Ubuntu%2022.04%20Desktop",
@@ -3453,7 +3756,7 @@
         "web_path": "https://releases.ubuntu.com/22.04/ubuntu-22.04.5-desktop-amd64.iso",
         "web_tstamp": "2024-09-11T14:38:59+00:00",
         "web_size": "4762707968",
-        "web_check": "2026-10-04T11:10:12.558977+00:00",
+        "web_check": "2026-09-30T20:24:06.117791+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-22.04.5-desktop-amd64.iso",
         "iso_tstamp": "-",
@@ -3469,10 +3772,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "L",
         "entry_name": "ubuntu-desktop-24.04",
         "entry_disp": "Ubuntu%2024.04%20Desktop",
@@ -3484,7 +3788,7 @@
         "web_path": "https://releases.ubuntu.com/24.04/ubuntu-24.04.5.1-desktop-amd64.iso",
         "web_tstamp": "2026-09-14T23:20:53+00:00",
         "web_size": "6250332160",
-        "web_check": "2026-10-04T11:10:13.058704+00:00",
+        "web_check": "2026-09-30T20:24:06.379863+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-24.04.5.1-desktop-amd64.iso",
         "iso_tstamp": "-",
@@ -3500,10 +3804,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "x",
         "entry_name": "ubuntu-desktop-24.10",
         "entry_disp": "Ubuntu%2024.10%20Desktop",
@@ -3515,7 +3820,7 @@
         "web_path": "https://old-releases.ubuntu.com/releases/24.10/ubuntu-24.10-desktop-amd64.iso",
         "web_tstamp": "2024-10-09T14:32:32+00:00",
         "web_size": "5665497088",
-        "web_check": "2026-10-04T11:10:13.147112+00:00",
+        "web_check": "2026-09-30T20:24:06.916755+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-24.10-desktop-amd64.iso",
         "iso_tstamp": "-",
@@ -3531,10 +3836,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "x",
         "entry_name": "ubuntu-desktop-25.04",
         "entry_disp": "Ubuntu%2025.04%20Desktop",
@@ -3546,7 +3852,7 @@
         "web_path": "https://old-releases.ubuntu.com/releases/25.04/ubuntu-25.04-desktop-amd64.iso",
         "web_tstamp": "2025-04-15T18:47:56+00:00",
         "web_size": "6278520832",
-        "web_check": "2026-10-04T11:10:13.865691+00:00",
+        "web_check": "2026-09-30T20:24:07.573722+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-25.04-desktop-amd64.iso",
         "iso_tstamp": "-",
@@ -3562,10 +3868,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "x",
         "entry_name": "ubuntu-desktop-25.10",
         "entry_disp": "Ubuntu%2025.10%20Desktop",
@@ -3577,7 +3884,7 @@
         "web_path": "https://releases.ubuntu.com/25.10/ubuntu-25.10-desktop-amd64.iso",
         "web_tstamp": "2025-10-07T03:55:53+00:00",
         "web_size": "5702520832",
-        "web_check": "2026-10-04T11:10:13.148595+00:00",
+        "web_check": "2026-09-30T20:24:07.007949+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-25.10-desktop-amd64.iso",
         "iso_tstamp": "2025-10-07T03:55:53+00:00",
@@ -3593,10 +3900,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "o",
         "entry_name": "ubuntu-desktop-26.04",
         "entry_disp": "Ubuntu%2026.04%20Desktop",
@@ -3608,7 +3916,7 @@
         "web_path": "https://releases.ubuntu.com/26.04/ubuntu-26.04.1-desktop-amd64.iso",
         "web_tstamp": "2026-08-26T06:38:13+00:00",
         "web_size": "6482409472",
-        "web_check": "2026-10-04T11:10:13.390266+00:00",
+        "web_check": "2026-10-08T07:28:51.115190+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-26.04.1-desktop-amd64.iso",
         "iso_tstamp": "2026-08-26T06:38:13+00:00",
@@ -3624,11 +3932,76 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
+        "entry_flag": "U",
+        "entry_name": "ubuntu-desktop-26.10",
+        "entry_disp": "Ubuntu%2026.10%20Desktop",
+        "version": "ubuntu-26.10",
+        "latest": "ubuntu-26.10",
+        "release": "2026-10-15",
+        "support": "2027-07-15",
+        "web_regexp": "https://releases.ubuntu.com/26.10/ubuntu-26.10[0-9.-]*-desktop-amd64.iso",
+        "web_path": "-",
+        "web_tstamp": "-",
+        "web_size": "-",
+        "web_check": "-",
+        "web_status": "-",
+        "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-26.10-desktop-amd64.iso",
+        "iso_tstamp": "-",
+        "iso_size": "-",
+        "iso_volume": "-",
+        "rmk_path": "-",
+        "rmk_tstamp": "-",
+        "rmk_size": "-",
+        "rmk_volume": "-",
+        "ldr_initrd": ":_DIRS_LOAD_:/ubuntu-live-26.10/casper/initrd",
+        "ldr_kernel": ":_DIRS_LOAD_:/ubuntu-live-26.10/casper/vmlinuz",
+        "cfg_path": ":_DIRS_CONF_:/nocloud/-",
+        "cfg_tstamp": "-",
+        "lnk_path": "-",
+        "options": "-",
+        "create_flag": "-",
+        "target_flag": "x"
+    },
+    {
+        "mdia_type": "live",
         "entry_flag": "o",
+        "entry_name": "ubuntu-desktop-26.10",
+        "entry_disp": "Ubuntu%2026.10%20Desktop",
+        "version": "ubuntu-26.10",
+        "latest": "ubuntu-26.10",
+        "release": "2026-10-15",
+        "support": "2027-07-15",
+        "web_regexp": "https://releases.ubuntu.com/26.10/ubuntu-26.10[0-9.-]*-beta-desktop-amd64.iso",
+        "web_path": "https://releases.ubuntu.com/26.10/ubuntu-26.10-beta-desktop-amd64.iso",
+        "web_tstamp": "2026-09-29T12:14:43+00:00",
+        "web_size": "6324629504",
+        "web_check": "2026-10-08T07:28:51.744272+00:00",
+        "web_status": "200",
+        "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-26.10-beta-desktop-amd64.iso",
+        "iso_tstamp": "2026-09-29T12:14:43+00:00",
+        "iso_size": "6324629504",
+        "iso_volume": "Ubuntu%2026.10%20amd64",
+        "rmk_path": "-",
+        "rmk_tstamp": "-",
+        "rmk_size": "-",
+        "rmk_volume": "-",
+        "ldr_initrd": ":_DIRS_LOAD_:/ubuntu-live-26.10/casper/initrd",
+        "ldr_kernel": ":_DIRS_LOAD_:/ubuntu-live-26.10/casper/vmlinuz",
+        "cfg_path": ":_DIRS_CONF_:/nocloud/-",
+        "cfg_tstamp": "-",
+        "lnk_path": "-",
+        "options": "-",
+        "create_flag": "-",
+        "target_flag": "o"
+    },
+    {
+        "mdia_type": "live",
+        "entry_flag": "x",
         "entry_name": "ubuntu-desktop-26.10",
         "entry_disp": "Ubuntu%2026.10%20Desktop",
         "version": "ubuntu-26.10",
@@ -3639,7 +4012,7 @@
         "web_path": "https://cdimage.ubuntu.com/ubuntu/releases/26.10/release/snapshot-4/ubuntu-26.10-snapshot4-desktop-amd64.iso",
         "web_tstamp": "2026-09-15T05:33:44+00:00",
         "web_size": "6301954048",
-        "web_check": "2026-10-04T11:10:14.981945+00:00",
+        "web_check": "2026-09-30T20:24:08.976035+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/ubuntu/ubuntu-26.10-snapshot4-desktop-amd64.iso",
         "iso_tstamp": "2026-09-15T05:33:44+00:00",
@@ -3655,10 +4028,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "o",
         "entry_name": "almalinux-live-10",
         "entry_disp": "Alma%20Linux%2010%20Live",
@@ -3670,7 +4044,7 @@
         "web_path": "https://repo.almalinux.org/almalinux/10/live/x86_64/AlmaLinux-10-latest-x86_64-Live-GNOME.iso",
         "web_tstamp": "2026-05-27T12:55:48+00:00",
         "web_size": "1930422272",
-        "web_check": "2026-10-04T11:10:13.218046+00:00",
+        "web_check": "2026-10-08T07:28:51.322482+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/almalinux/AlmaLinux-10-latest-x86_64-Live-GNOME.iso",
         "iso_tstamp": "2026-05-27T12:55:48+00:00",
@@ -3686,10 +4060,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "live",
+        "mdia_type": "live",
         "entry_flag": "m",
         "entry_name": "menu-entry",
         "entry_disp": "-",
@@ -3703,9 +4078,9 @@
         "web_size": "-",
         "web_check": "-",
         "web_status": "-",
-        "iso_path": ":_DIRS_HGFS_:/linux/script/py_custom_cmd/src",
-        "iso_tstamp": "2026-10-04T04:50:29+00:00",
-        "iso_size": "16384",
+        "iso_path": "-",
+        "iso_tstamp": "-",
+        "iso_size": "-",
         "iso_volume": "-",
         "rmk_path": "-",
         "rmk_tstamp": "-",
@@ -3717,10 +4092,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "tool",
+        "mdia_type": "tool",
         "entry_flag": "m",
         "entry_name": "menu-entry",
         "entry_disp": "System%20tools",
@@ -3734,9 +4110,9 @@
         "web_size": "-",
         "web_check": "-",
         "web_status": "-",
-        "iso_path": ":_DIRS_HGFS_:/linux/script/py_custom_cmd/src",
-        "iso_tstamp": "2026-10-04T04:50:29+00:00",
-        "iso_size": "16384",
+        "iso_path": "-",
+        "iso_tstamp": "-",
+        "iso_size": "-",
         "iso_volume": "-",
         "rmk_path": "-",
         "rmk_tstamp": "-",
@@ -3748,10 +4124,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "tool",
+        "mdia_type": "tool",
         "entry_flag": "x",
         "entry_name": "memtest86plus",
         "entry_disp": "Memtest86+%208.00",
@@ -3763,7 +4140,7 @@
         "web_path": "https://www.memtest.org/download/v8.00/mt86plus_8.00_x86_64.grub.iso.zip",
         "web_tstamp": "2025-11-23T23:36:53+00:00",
         "web_size": "6454333",
-        "web_check": "2026-10-04T11:10:14.256044+00:00",
+        "web_check": "2026-09-30T20:24:08.615232+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/memtest86plus/mt86plus_8.00_x86_64.grub.iso.zip",
         "iso_tstamp": "2025-11-23T23:36:53+00:00",
@@ -3779,10 +4156,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "tool",
+        "mdia_type": "tool",
         "entry_flag": "o",
         "entry_name": "memtest86plus",
         "entry_disp": "Memtest86+%208.10",
@@ -3794,7 +4172,7 @@
         "web_path": "https://www.memtest.org/download/v8.10/mt86plus_8.10_x86_64.grub.iso.zip",
         "web_tstamp": "2026-05-16T15:15:27+00:00",
         "web_size": "6593407",
-        "web_check": "2026-10-04T11:10:14.261942+00:00",
+        "web_check": "2026-10-08T07:28:52.379216+00:00",
         "web_status": "200",
         "iso_path": ":_DIRS_ISOS_:/linux/memtest86plus/mt86plus_8.10_x86_64.grub.iso.zip",
         "iso_tstamp": "2026-05-16T15:15:27+00:00",
@@ -3810,10 +4188,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "tool",
+        "mdia_type": "tool",
         "entry_flag": "=",
         "entry_name": "winpe-x86",
         "entry_disp": "WinPE%20x86",
@@ -3841,10 +4220,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "tool",
+        "mdia_type": "tool",
         "entry_flag": "o",
         "entry_name": "winpe-x64",
         "entry_disp": "WinPE%20x64",
@@ -3872,10 +4252,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "tool",
+        "mdia_type": "tool",
         "entry_flag": "o",
         "entry_name": "ati2020x86",
         "entry_disp": "Acronis%20True%20Image%202020x86",
@@ -3903,10 +4284,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "tool",
+        "mdia_type": "tool",
         "entry_flag": "o",
         "entry_name": "ati2020x64",
         "entry_disp": "Acronis%20True%20Image%202020x64",
@@ -3934,10 +4316,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "tool",
+        "mdia_type": "tool",
         "entry_flag": "o",
         "entry_name": "aomei-backupper",
         "entry_disp": "AOMEI%20Backupper%20Standard",
@@ -3965,10 +4348,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "tool",
+        "mdia_type": "tool",
         "entry_flag": "m",
         "entry_name": "menu-entry",
         "entry_disp": "-",
@@ -3982,9 +4366,9 @@
         "web_size": "-",
         "web_check": "-",
         "web_status": "-",
-        "iso_path": ":_DIRS_HGFS_:/linux/script/py_custom_cmd/src",
-        "iso_tstamp": "2026-10-04T04:50:29+00:00",
-        "iso_size": "16384",
+        "iso_path": "-",
+        "iso_tstamp": "-",
+        "iso_size": "-",
         "iso_volume": "-",
         "rmk_path": "-",
         "rmk_tstamp": "-",
@@ -3996,10 +4380,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "m",
         "entry_name": "menu-entry",
         "entry_disp": "Custom%20Live%20Media",
@@ -4013,9 +4398,9 @@
         "web_size": "-",
         "web_check": "-",
         "web_status": "-",
-        "iso_path": ":_DIRS_HGFS_:/linux/script/py_custom_cmd/src",
-        "iso_tstamp": "2026-10-04T04:50:29+00:00",
-        "iso_size": "16384",
+        "iso_path": "-",
+        "iso_tstamp": "-",
+        "iso_size": "-",
         "iso_volume": "-",
         "rmk_path": "-",
         "rmk_tstamp": "-",
@@ -4027,10 +4412,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "L",
         "entry_name": "live-debian-11-x86_64-server",
         "entry_disp": "Live%20Debian%2011%20Server",
@@ -4058,10 +4444,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "L",
         "entry_name": "live-debian-11-x86_64-desktop",
         "entry_disp": "Live%20Debian%2011%20Desktop",
@@ -4089,10 +4476,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "L",
         "entry_name": "live-debian-12-x86_64-server",
         "entry_disp": "Live%20Debian%2012%20Server",
@@ -4120,10 +4508,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "L",
         "entry_name": "live-debian-12-x86_64-desktop",
         "entry_disp": "Live%20Debian%2012%20Desktop",
@@ -4151,10 +4540,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-debian-13-x86_64-server",
         "entry_disp": "Live%20Debian%2013%20Server",
@@ -4182,10 +4572,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-debian-13-x86_64-desktop",
         "entry_disp": "Live%20Debian%2013%20Desktop",
@@ -4200,9 +4591,9 @@
         "web_check": "-",
         "web_status": "-",
         "iso_path": ":_DIRS_RMAK_:/live-debian-13.0-x86_64-desktop.iso",
-        "iso_tstamp": "-",
-        "iso_size": "-",
-        "iso_volume": "-",
+        "iso_tstamp": "2026-07-17T23:27:04.275272+00:00",
+        "iso_size": "3729614848",
+        "iso_volume": "DEBIAN13_0X64D",
         "rmk_path": "-",
         "rmk_tstamp": "-",
         "rmk_size": "-",
@@ -4213,10 +4604,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-debian-14-x86_64-server",
         "entry_disp": "Live%20Debian%2014%20Server",
@@ -4244,10 +4636,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-debian-14-x86_64-desktop",
         "entry_disp": "Live%20Debian%2014%20Desktop",
@@ -4275,10 +4668,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-debian-testing-x86_64-server",
         "entry_disp": "Live%20Debian%20xx%20Server",
@@ -4306,10 +4700,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-debian-testing-x86_64-desktop",
         "entry_disp": "Live%20Debian%20xx%20Desktop",
@@ -4337,10 +4732,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "L",
         "entry_name": "live-ubuntu-22.04-x86_64-server",
         "entry_disp": "Live%20Ubuntu%2022.04%20Server",
@@ -4368,10 +4764,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "L",
         "entry_name": "live-ubuntu-22.04-x86_64-desktop",
         "entry_disp": "Live%20Ubuntu%2022.04%20Desktop",
@@ -4399,10 +4796,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "L",
         "entry_name": "live-ubuntu-24.04-x86_64-server",
         "entry_disp": "Live%20Ubuntu%2024.04%20Server",
@@ -4430,10 +4828,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "L",
         "entry_name": "live-ubuntu-24.04-x86_64-desktop",
         "entry_disp": "Live%20Ubuntu%2024.04%20Desktop",
@@ -4461,10 +4860,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "x",
         "entry_name": "live-ubuntu-24.10-x86_64-server",
         "entry_disp": "Live%20Ubuntu%2024.10%20Server",
@@ -4492,10 +4892,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "x",
         "entry_name": "live-ubuntu-24.10-x86_64-desktop",
         "entry_disp": "Live%20Ubuntu%2024.10%20Desktop",
@@ -4523,10 +4924,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "x",
         "entry_name": "live-ubuntu-25.04-x86_64-server",
         "entry_disp": "Live%20Ubuntu%2025.04%20Server",
@@ -4554,10 +4956,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "x",
         "entry_name": "live-ubuntu-25.04-x86_64-desktop",
         "entry_disp": "Live%20Ubuntu%2025.04%20Desktop",
@@ -4585,10 +4988,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "x",
         "entry_name": "live-ubuntu-25.10-x86_64-server",
         "entry_disp": "Live%20Ubuntu%2025.10%20Server",
@@ -4616,10 +5020,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "x",
         "entry_name": "live-ubuntu-25.10-x86_64-desktop",
         "entry_disp": "Live%20Ubuntu%2025.10%20Desktop",
@@ -4647,10 +5052,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-ubuntu-26.04-x86_64-server",
         "entry_disp": "Live%20Ubuntu%2026.04%20Server",
@@ -4678,10 +5084,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-ubuntu-26.04-x86_64-desktop",
         "entry_disp": "Live%20Ubuntu%2026.04%20Desktop",
@@ -4696,9 +5103,9 @@
         "web_check": "-",
         "web_status": "-",
         "iso_path": ":_DIRS_RMAK_:/live-ubuntu-26.04-x86_64-desktop.iso",
-        "iso_tstamp": "-",
-        "iso_size": "-",
-        "iso_volume": "-",
+        "iso_tstamp": "2026-07-19T23:24:33.665199+00:00",
+        "iso_size": "5754353664",
+        "iso_volume": "UBUNTU26_04X64D",
         "rmk_path": "-",
         "rmk_tstamp": "-",
         "rmk_size": "-",
@@ -4709,10 +5116,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-ubuntu-26.10-x86_64-server",
         "entry_disp": "Live%20Ubuntu%2026.10%20Server",
@@ -4740,10 +5148,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-ubuntu-26.10-x86_64-desktop",
         "entry_disp": "Live%20Ubuntu%2026.10%20Desktop",
@@ -4758,9 +5167,9 @@
         "web_check": "-",
         "web_status": "-",
         "iso_path": ":_DIRS_RMAK_:/live-ubuntu-26.10-x86_64-desktop.iso",
-        "iso_tstamp": "-",
-        "iso_size": "-",
-        "iso_volume": "-",
+        "iso_tstamp": "2026-07-19T23:56:26.647007+00:00",
+        "iso_size": "5772879872",
+        "iso_volume": "UBUNTU26_10X64D",
         "rmk_path": "-",
         "rmk_tstamp": "-",
         "rmk_size": "-",
@@ -4771,10 +5180,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=apparmor%20apparmor=1",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-fedora-43-x86_64-server",
         "entry_disp": "Live%20Fedora%2043%20Server",
@@ -4802,10 +5212,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=selinux%20selinux=1%20enforcing=0",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-fedora-43-x86_64-desktop",
         "entry_disp": "Live%20Fedora%2043%20Desktop",
@@ -4833,10 +5244,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=selinux%20selinux=1%20enforcing=0",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-fedora-44-x86_64-server",
         "entry_disp": "Live%20Fedora%2044%20Server",
@@ -4864,10 +5276,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=selinux%20selinux=1%20enforcing=0",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-fedora-44-x86_64-desktop",
         "entry_disp": "Live%20Fedora%2044%20Desktop",
@@ -4895,10 +5308,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=selinux%20selinux=1%20enforcing=0",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-centos-stream-9-x86_64-server",
         "entry_disp": "Live%20CentOS%20Stream%2010%20Server",
@@ -4926,10 +5340,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=selinux%20selinux=1%20enforcing=0",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-centos-stream-9-x86_64-desktop",
         "entry_disp": "Live%20CentOS%20Stream%2010%20Desktop",
@@ -4957,10 +5372,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=selinux%20selinux=1%20enforcing=0",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-centos-stream-10-x86_64-server",
         "entry_disp": "Live%20CentOS%20Stream%2010%20Server",
@@ -4988,10 +5404,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=selinux%20selinux=1%20enforcing=0",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-centos-stream-10-x86_64-desktop",
         "entry_disp": "Live%20CentOS%20Stream%2010%20Desktop",
@@ -5019,10 +5436,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=selinux%20selinux=1%20enforcing=0",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-almalinux-10-x86_64-server",
         "entry_disp": "Live%20Alma%20Linux%2010%20Server",
@@ -5050,10 +5468,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=selinux%20selinux=1%20enforcing=0",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-almalinux-10-x86_64-desktop",
         "entry_disp": "Live%20Alma%20Linux%2010%20Desktop",
@@ -5081,10 +5500,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=selinux%20selinux=1%20enforcing=0",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-rockylinux-10-x86_64-server",
         "entry_disp": "Live%20Rocky%20Linux%2010%20Server",
@@ -5112,10 +5532,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=selinux%20selinux=1%20enforcing=0",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-rockylinux-10-x86_64-desktop",
         "entry_disp": "Live%20Rocky%20Linux%2010%20Desktop",
@@ -5143,10 +5564,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=selinux%20selinux=1%20enforcing=0",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-opensuse-leap-16.0-x86_64-server",
         "entry_disp": "Live%20openSUSE%20Leap%2016.0%20Server",
@@ -5174,10 +5596,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=selinux%20selinux=1%20enforcing=0",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-opensuse-leap-16.0-x86_64-desktop",
         "entry_disp": "Live%20openSUSE%20Leap%2016.0%20Desktop",
@@ -5205,10 +5628,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=selinux%20selinux=1%20enforcing=0",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-opensuse-leap-16.1-x86_64-server",
         "entry_disp": "Live%20openSUSE%20Leap%2016.1%20Server",
@@ -5236,10 +5660,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=selinux%20selinux=1%20enforcing=0",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-opensuse-leap-16.1-x86_64-desktop",
         "entry_disp": "Live%20openSUSE%20Leap%2016.1%20Desktop",
@@ -5267,10 +5692,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=selinux%20selinux=1%20enforcing=0",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-opensuse-tumbleweed-x86_64-server",
         "entry_disp": "Live%20openSUSE%20Tumbleweed%20Server",
@@ -5298,10 +5724,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=selinux%20selinux=1%20enforcing=0",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "o",
         "entry_name": "live-opensuse-tumbleweed-x86_64-desktop",
         "entry_disp": "Live%20openSUSE%20Tumbleweed%20Desktop",
@@ -5329,10 +5756,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "security=selinux%20selinux=1%20enforcing=0",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "clive",
+        "mdia_type": "clive",
         "entry_flag": "m",
         "entry_name": "menu-entry",
         "entry_disp": "-",
@@ -5346,9 +5774,9 @@
         "web_size": "-",
         "web_check": "-",
         "web_status": "-",
-        "iso_path": ":_DIRS_HGFS_:/linux/script/py_custom_cmd/src",
-        "iso_tstamp": "2026-10-04T04:50:29+00:00",
-        "iso_size": "16384",
+        "iso_path": "-",
+        "iso_tstamp": "-",
+        "iso_size": "-",
         "iso_volume": "-",
         "rmk_path": "-",
         "rmk_tstamp": "-",
@@ -5360,10 +5788,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "cnetinst",
+        "mdia_type": "cnetinst",
         "entry_flag": "m",
         "entry_name": "menu-entry",
         "entry_disp": "Custom%20Initramfs%20boot",
@@ -5377,9 +5806,9 @@
         "web_size": "-",
         "web_check": "-",
         "web_status": "-",
-        "iso_path": ":_DIRS_HGFS_:/linux/script/py_custom_cmd/src",
-        "iso_tstamp": "2026-10-04T04:50:29+00:00",
-        "iso_size": "16384",
+        "iso_path": "-",
+        "iso_tstamp": "-",
+        "iso_size": "-",
         "iso_volume": "-",
         "rmk_path": "-",
         "rmk_tstamp": "-",
@@ -5391,10 +5820,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "cnetinst",
+        "mdia_type": "cnetinst",
         "entry_flag": "o",
         "entry_name": "_loader",
         "entry_disp": "Custom%20Initramfs",
@@ -5408,10 +5838,10 @@
         "web_size": "-",
         "web_check": "-",
         "web_status": "-",
-        "iso_path": ":_DIRS_XNBD_:/debian-testing-amd64-netinst.iso",
-        "iso_tstamp": "-",
-        "iso_size": "-",
-        "iso_volume": "-",
+        "iso_path": ":_DIRS_ISOS_:/linux/debian/debian-testing-amd64-netinst.iso",
+        "iso_tstamp": "2026-10-04T09:16:05+00:00",
+        "iso_size": "975175680",
+        "iso_volume": "Debian%20testing%20amd64%20n",
         "rmk_path": "-",
         "rmk_tstamp": "-",
         "rmk_size": "-",
@@ -5422,10 +5852,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "o"
     },
     {
-        "type": "cnetinst",
+        "mdia_type": "cnetinst",
         "entry_flag": "L",
         "entry_name": "netinst-debian-11",
         "entry_disp": "Net%20Installer%20Debian%2011",
@@ -5453,10 +5884,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "cnetinst",
+        "mdia_type": "cnetinst",
         "entry_flag": "L",
         "entry_name": "netinst-debian-12",
         "entry_disp": "Net%20Installer%20Debian%2012",
@@ -5484,10 +5916,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "cnetinst",
+        "mdia_type": "cnetinst",
         "entry_flag": "=",
         "entry_name": "netinst-debian-13",
         "entry_disp": "Net%20Installer%20Debian%2013",
@@ -5515,10 +5948,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "cnetinst",
+        "mdia_type": "cnetinst",
         "entry_flag": "=",
         "entry_name": "netinst-debian-sid",
         "entry_disp": "Net%20Installer%20Debian%20sid",
@@ -5546,10 +5980,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "cnetinst",
+        "mdia_type": "cnetinst",
         "entry_flag": "m",
         "entry_name": "menu-entry",
         "entry_disp": "-",
@@ -5563,9 +5998,9 @@
         "web_size": "-",
         "web_check": "-",
         "web_status": "-",
-        "iso_path": ":_DIRS_HGFS_:/linux/script/py_custom_cmd/src",
-        "iso_tstamp": "2026-10-04T04:50:29+00:00",
-        "iso_size": "16384",
+        "iso_path": "-",
+        "iso_tstamp": "-",
+        "iso_size": "-",
         "iso_volume": "-",
         "rmk_path": "-",
         "rmk_tstamp": "-",
@@ -5577,10 +6012,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "system",
+        "mdia_type": "system",
         "entry_flag": "m",
         "entry_name": "menu-entry",
         "entry_disp": "System%20command",
@@ -5594,9 +6030,9 @@
         "web_size": "-",
         "web_check": "-",
         "web_status": "-",
-        "iso_path": ":_DIRS_HGFS_:/linux/script/py_custom_cmd/src",
-        "iso_tstamp": "2026-10-04T04:50:29+00:00",
-        "iso_size": "16384",
+        "iso_path": "-",
+        "iso_tstamp": "-",
+        "iso_size": "-",
         "iso_volume": "-",
         "rmk_path": "-",
         "rmk_tstamp": "-",
@@ -5608,10 +6044,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "system",
+        "mdia_type": "system",
         "entry_flag": "=",
         "entry_name": "hdt",
         "entry_disp": "Hardware%20info",
@@ -5639,10 +6076,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "system",
+        "mdia_type": "system",
         "entry_flag": "=",
         "entry_name": "restart",
         "entry_disp": "System%20restart",
@@ -5670,10 +6108,11 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     },
     {
-        "type": "system",
+        "mdia_type": "system",
         "entry_flag": "m",
         "entry_name": "menu-entry",
         "entry_disp": "-",
@@ -5687,9 +6126,9 @@
         "web_size": "-",
         "web_check": "-",
         "web_status": "-",
-        "iso_path": ":_DIRS_HGFS_:/linux/script/py_custom_cmd/src",
-        "iso_tstamp": "2026-10-04T04:50:29+00:00",
-        "iso_size": "16384",
+        "iso_path": "-",
+        "iso_tstamp": "-",
+        "iso_size": "-",
         "iso_volume": "-",
         "rmk_path": "-",
         "rmk_tstamp": "-",
@@ -5701,6 +6140,7 @@
         "cfg_tstamp": "-",
         "lnk_path": "-",
         "options": "-",
-        "create_flag": "-"
+        "create_flag": "-",
+        "target_flag": "x"
     }
 ]

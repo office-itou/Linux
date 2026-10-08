@@ -7,14 +7,13 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 
-
 # --- my library --------------------------------------------------------------
-# ruff: isort: off
+# ruff: isort: of
 from common.utils import (
-    infosystem,
     debug_logger,
-    handle_fatal_error,
     get_caller_name,
+    handle_fatal_error,
+    infosystem,
     message_alert,
 )
 

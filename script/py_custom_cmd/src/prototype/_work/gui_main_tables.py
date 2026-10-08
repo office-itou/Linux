@@ -8,8 +8,8 @@ from typing import Any
 
 # --- my library --------------------------------------------------------------
 # ruff: isort: off
-from common.shared import InfoCommon
-from common.utils import safe_format
+from common.shared import InfoCommon, InfoWebFile
+from common.utils import debug_logger, safe_format
 
 
 # --- main --------------------------------------------------------------------
@@ -100,13 +100,13 @@ class MainWindowTables:
         if not hasattr(self, "datas_map"):
             self.datas_map = {}
         # ---------------------------------------------------------------------
-        # self.info_webfile = InfoWebFile(self)
-        # self.datas_map["active_table"] = self.info_webfile.data
+        self.info_webfile = InfoWebFile(self)
+        #self.datas_map["active_table"] = self.info_webfile.data
         # for _data in self.datas_map["active_table"]:
         #    _data.target_flag = _data.mdia_data.entry_flag == "o"
         self.datas_map["active_table"] = self.info_comm.mdia.data
         for _data in self.datas_map["active_table"]:
-            _data.target_flag = _data.entry_flag == "o"
+            _data.target_flag = "o" if _data.entry_flag == "o" else "x"
         # ---------------------------------------------------------------------
         self.reload_table_data()
         # --- style -----------------------------------------------------------
@@ -150,7 +150,7 @@ class MainWindowTables:
         col_idx = int(column.replace("#", "")) - 1
         col_name = cols[col_idx]
         # ---------------------------------------------------------------------
-        if "checked" in col_name.lower():
+        if "target_flag" in col_name.lower():
             current_values = list(_tree.item(item_id, "values"))
             next_state = "☑" if current_values[col_idx] == "☐" else "☐"
             current_values[col_idx] = next_state
@@ -166,12 +166,15 @@ class MainWindowTables:
                     if t_widget == _tree:
                         target_data = datas_map.get(t_id, [])
                         if row_idx < len(target_data):
-                            target_data[row_idx].target_flag = next_state == "☑"
+                            target_data[row_idx].target_flag = (
+                                "o" if next_state == "☑" else "x"
+                            )
                         break
             except Exception:  # noqa: BLE001, S110
                 pass
 
     # -------------------------------------------------------------------------
+    @debug_logger
     def reload_table_data(self) -> None:
         """A method to clear and reload only the table contents from the data model."""
         if not hasattr(self, "main_center_table_widgets"):
@@ -194,7 +197,7 @@ class MainWindowTables:
             _odd_tag = f"{_table_id}_odd"
             # -----------------------------------------------------------------
             for _c_idx, _col_info in enumerate(_table_data.get("columns", [])):
-                if "checked" in _col_info.get("field", "").lower():
+                if "target_flag" in _col_info.get("field", "").lower():
                     break
             _visible_row_count = 0
             _target_list = self.datas_map.get(_table_id, [])

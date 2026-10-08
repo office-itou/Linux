@@ -1,4 +1,4 @@
-"""Common Function Package: utils [generated: 2026/10/06 21:51:23 JST (+0900)]"""
+"""Common Function Package: utils [generated: 2026/10/08 09:48:05 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402

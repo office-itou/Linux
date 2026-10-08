@@ -1,0 +1,181 @@
+[0m[92mmy_tools(__main__(<module>))                      | Start  |2026/10/08 11:29:48 JST (+0900)[0m
+[0m[32mmy_tools(common.shared.m..(_process_single_media))|  info  |[Queue] Fetching: https://deb..rrent/images/netboot/mini.iso[0m
+[0m[32mmy_tools(common.shared.m..(_process_single_media))|  info  |[Queue] Fetching: https://deb..rrent/images/netboot/mini.iso[0m
+[0m[32mmy_tools(common.shared.m..(_process_single_media))|  info  |[Queue] Fetching: https://d-i../amd64/daily/netboot/mini.iso[0m
+[0m[32mmy_tools(common.shared.m..(_process_single_media))|  info  |[Queue] Fetching: https://cdi..bian[0-9.-]+amd64-netinst.iso[0m
+[0m[32mmy_tools(common.shared.m..(_process_single_media))|  info  |[Queue] Fetching: https://cdi..ian-testing-amd64-netinst.iso[0m
+[0m[32mmy_tools(common.shared.m..(_process_single_media))|  info  |[Queue] Fetching: https://cdi..ian-testing-amd64-netinst.iso[0m
+[0m[32mmy_tools(common.shared.m..(_process_single_media))|  info  |[Queue] Fetching: https://cdi..ian-testing-amd64-netinst.iso[0m
+[0m[31mmy_tools(common.utils.my_web_api(get_response))   | alert  |Fatal error: Session is closed[0m
+[0m[92mmy_tools(__main__(<module>))                      |Complete|2026/10/08 11:29:56 JST (+0900)[0m
+[0m[93mmy_tools(__main__(<module>))                      |Elapsed |0:00:07.924684[0m
+[0m[33mmy_tools(__main__(<module>))                      |MemUsage|74.82 MB (Peak memory usage)[0m
+🔍 Loading UI definition from: /srv/hgfs/linux/script/py_custom_cmd/src/prototype/_work/ui_definition.json
+Task exception was never retrieved
+future: <Task finished name='Task-3' coro=<InfoWebFile._process_single_media() done, defined at /srv/user/private/src/git/linux/script/py_custom_cmd/src/common/shared/my_async_api.py:52> exception=AttributeError("'AsyncProcessHandler' object has no attribute 'total_count'")>
+Traceback (most recent call last):
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/shared/my_async_api.py", line 152, in _process_single_media
+    self.on_progress_callback(f"{_message}: {_disp_name} ({_mdia_type})...")
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/srv/hgfs/linux/script/py_custom_cmd/src/prototype/_work/gui_async_handler.py", line 216, in _progress_notifier
+    self.total_count,
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'AsyncProcessHandler' object has no attribute 'total_count'
+Task exception was never retrieved
+future: <Task finished name='Task-8' coro=<InfoWebFile._process_single_media() done, defined at /srv/user/private/src/git/linux/script/py_custom_cmd/src/common/shared/my_async_api.py:52> exception=SystemExit(1)>
+Traceback (most recent call last):
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_web_api.py", line 117, in get_response
+    async with request_func(
+               ~~~~~~~~~~~~^
+        request_url, allow_redirects=True, timeout=_timeout, headers=_headers
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as _response:
+    ^
+  File "/usr/lib/python3/dist-packages/aiohttp/client.py", line 1425, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/aiohttp/client.py", line 512, in _request
+    raise RuntimeError("Session is closed")
+RuntimeError: Session is closed
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.13/threading.py", line 1043, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/threading.py", line 994, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/srv/hgfs/linux/script/py_custom_cmd/src/prototype/_work/gui_async_handler.py", line 318, in _thread_download_entry
+    _loop.run_until_complete(asyncio.wait(pending_tasks, timeout=2.0))
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/asyncio/base_events.py", line 712, in run_until_complete
+    self.run_forever()
+    ~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.13/asyncio/base_events.py", line 683, in run_forever
+    self._run_once()
+    ~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.13/asyncio/base_events.py", line 2042, in _run_once
+    handle._run()
+    ~~~~~~~~~~~^^
+  File "/usr/lib/python3.13/asyncio/events.py", line 89, in _run
+    self._context.run(self._callback, *self._args)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/shared/my_async_api.py", line 91, in _process_single_media
+    _web_datas: list[WebData] = await info_web.get_info(
+                                ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_infoweb.py", line 70, in get_info
+    self.data = await get_infoweb(session, request_urls, local_file, exclude_urls)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_infoweb.py", line 248, in get_infoweb
+    _web_data = await _info_web.get_header(session, _request_url)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_infoweb.py", line 54, in get_header
+    return await get_header(session, request_url)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_web_api.py", line 210, in get_header
+    return await get_response(session.head, request_url)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_web_api.py", line 196, in get_response
+    handle_fatal_error(_caller, e)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_debug.py", line 50, in _wrapper
+    result = func(*args, **kwargs)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_error.py", line 38, in handle_fatal_error
+    sys.exit(1)  # Safely terminate the GUI thread
+    ~~~~~~~~^^^
+SystemExit: 1
+[0m[31mmy_tools(common.utils.my_web_api(get_response))   | alert  |Fatal error: Event loop is closed[0m
+Exception ignored in: <coroutine object InfoWebFile._process_single_media at 0x7ff3f690c040>
+Traceback (most recent call last):
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/shared/my_async_api.py", line 91, in _process_single_media
+    _web_datas: list[WebData] = await info_web.get_info(
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_infoweb.py", line 70, in get_info
+    self.data = await get_infoweb(session, request_urls, local_file, exclude_urls)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_infoweb.py", line 248, in get_infoweb
+    _web_data = await _info_web.get_header(session, _request_url)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_infoweb.py", line 54, in get_header
+    return await get_header(session, request_url)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_web_api.py", line 210, in get_header
+    return await get_response(session.head, request_url)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_web_api.py", line 196, in get_response
+    handle_fatal_error(_caller, e)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_debug.py", line 50, in _wrapper
+    result = func(*args, **kwargs)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_error.py", line 38, in handle_fatal_error
+    sys.exit(1)  # Safely terminate the GUI thread
+SystemExit: 1
+[0m[31mmy_tools(common.utils.my_web_api(get_response))   | alert  |Fatal error: Event loop is closed[0m
+Exception ignored in: <coroutine object InfoWebFile._process_single_media at 0x7ff3f68b6f20>
+Traceback (most recent call last):
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/shared/my_async_api.py", line 91, in _process_single_media
+    _web_datas: list[WebData] = await info_web.get_info(
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_infoweb.py", line 70, in get_info
+    self.data = await get_infoweb(session, request_urls, local_file, exclude_urls)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_infoweb.py", line 248, in get_infoweb
+    _web_data = await _info_web.get_header(session, _request_url)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_infoweb.py", line 54, in get_header
+    return await get_header(session, request_url)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_web_api.py", line 210, in get_header
+    return await get_response(session.head, request_url)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_web_api.py", line 196, in get_response
+    handle_fatal_error(_caller, e)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_debug.py", line 50, in _wrapper
+    result = func(*args, **kwargs)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_error.py", line 38, in handle_fatal_error
+    sys.exit(1)  # Safely terminate the GUI thread
+SystemExit: 1
+[0m[31mmy_tools(common.utils.my_web_api(get_response))   | alert  |Fatal error: Event loop is closed[0m
+Exception ignored in: <coroutine object InfoWebFile._process_single_media at 0x7ff3f68b7d30>
+Traceback (most recent call last):
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/shared/my_async_api.py", line 91, in _process_single_media
+    _web_datas: list[WebData] = await info_web.get_info(
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_infoweb.py", line 70, in get_info
+    self.data = await get_infoweb(session, request_urls, local_file, exclude_urls)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_infoweb.py", line 240, in get_infoweb
+    _resolved_urls = await _expand_regexp_urls(
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_infoweb.py", line 165, in _expand_regexp_urls
+    _web_data = await info_web.get_text(session, _match_before)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_infoweb.py", line 60, in get_text
+    return await get_contents(session, request_url)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_web_api.py", line 230, in get_contents
+    return await get_response(
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_web_api.py", line 196, in get_response
+    handle_fatal_error(_caller, e)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_debug.py", line 50, in _wrapper
+    result = func(*args, **kwargs)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_error.py", line 38, in handle_fatal_error
+    sys.exit(1)  # Safely terminate the GUI thread
+SystemExit: 1
+[0m[31mmy_tools(common.utils.my_web_api(get_response))   | alert  |Fatal error: Event loop is closed[0m
+Exception ignored in: <coroutine object InfoWebFile._process_single_media at 0x7ff3f68b7ba0>
+Traceback (most recent call last):
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/shared/my_async_api.py", line 91, in _process_single_media
+    _web_datas: list[WebData] = await info_web.get_info(
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_infoweb.py", line 70, in get_info
+    self.data = await get_infoweb(session, request_urls, local_file, exclude_urls)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_infoweb.py", line 248, in get_infoweb
+    _web_data = await _info_web.get_header(session, _request_url)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_infoweb.py", line 54, in get_header
+    return await get_header(session, request_url)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_web_api.py", line 210, in get_header
+    return await get_response(session.head, request_url)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_web_api.py", line 196, in get_response
+    handle_fatal_error(_caller, e)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_debug.py", line 50, in _wrapper
+    result = func(*args, **kwargs)
+  File "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils/my_error.py", line 38, in handle_fatal_error
+    sys.exit(1)  # Safely terminate the GUI thread
+SystemExit: 1
+Task was destroyed but it is pending!
+task: <Task cancelling name='Task-96' coro=<staggered_race.<locals>.run_one_coro() done, defined at /usr/lib/python3/dist-packages/aiohappyeyeballs/_staggered.py:115> wait_for=<Future cancelled> cb=[_wait.<locals>._on_completion() at /usr/lib/python3.13/asyncio/tasks.py:521]>
+Task was destroyed but it is pending!
+task: <Task cancelling name='Task-93' coro=<staggered_race.<locals>.run_one_coro() running at /usr/lib/python3/dist-packages/aiohappyeyeballs/_staggered.py:132> wait_for=<Future cancelled>>
+Task was destroyed but it is pending!
+task: <Task cancelling name='Task-94' coro=<staggered_race.<locals>.run_one_coro() running at /usr/lib/python3/dist-packages/aiohappyeyeballs/_staggered.py:132> wait_for=<Future cancelled>>
+Task was destroyed but it is pending!
+task: <Task cancelling name='Task-91' coro=<staggered_race.<locals>.run_one_coro() running at /usr/lib/python3/dist-packages/aiohappyeyeballs/_staggered.py:132> wait_for=<Future cancelled>>
