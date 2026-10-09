@@ -1,4 +1,4 @@
-"""Common Function Package: utils [generated: 2026/10/08 09:48:05 JST (+0900)]"""
+"""Common Function Package: utils [generated: 2026/10/09 16:50:09 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -53,6 +53,8 @@ __all__ = [
     "list2markdown",
     "ljust",
     "load_ui_definition",
+    "main_cui",
+    "main_gui",
     "markdown2list",
     "message_alert",
     "message_debug",
@@ -119,6 +121,8 @@ _MODULE_MAP = {
     "list2markdown": ".my_markdown",
     "ljust": ".my_string",
     "load_ui_definition": ".my_gui_build_helper",
+    "main_cui": ".my_tools",
+    "main_gui": ".my_tools",
     "markdown2list": ".my_markdown",
     "message_alert": ".my_message",
     "message_debug": ".my_message",

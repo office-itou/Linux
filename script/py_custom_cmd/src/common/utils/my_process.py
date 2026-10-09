@@ -32,8 +32,9 @@ def run_subprocess(*args, **kwargs) -> str:
         _res = subprocess.run(*args, **kwargs)  # noqa: PLW1510
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e)
-    # -------------------------------------------------------------------------
-    return str(_res.stdout.strip())
+    else:
+        return str(_res.stdout.strip())
+    return ""
 
 
 # --- eof ---------------------------------------------------------------------

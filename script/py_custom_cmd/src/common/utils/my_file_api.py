@@ -82,7 +82,7 @@ def file_write(
                     "File Error", f"Failed to write file:\n{_dest_path}"
                 )
             else:
-                message_alert(get_caller_name(), f"failed: {_dest_path}")
+                message_alert(_caller, f"failed: {_dest_path}")
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e)
 

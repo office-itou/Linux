@@ -1,4 +1,4 @@
-"""Common Function Package: shared [generated: 2026/10/08 09:48:05 JST (+0900)]"""
+"""Common Function Package: shared [generated: 2026/10/09 16:50:09 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -55,7 +55,7 @@ _MODULE_MAP = {
     "generate_ipxe_menu": ".my_func_generate_ipxe_menu",
     "generate_markdown": ".my_func_generate_markdown",
     "get_text2list": ".my_convert",
-    "initarg": ".my_func_initarg",
+    "initarg": ".my_func_init_arg",
     "load": ".my_common_cfg",
     "parse_version_to_tuple": ".my_distribution_dat",
     "proc_comp": ".my_func_init_comp",
