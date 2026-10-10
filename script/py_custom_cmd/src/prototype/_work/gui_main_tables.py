@@ -2,6 +2,7 @@
 
 # --- python library ----------------------------------------------------------
 import tkinter as tk
+from collections.abc import Callable
 from tkinter import ttk
 from typing import Any
 
@@ -15,13 +16,20 @@ from common.utils import debug_logger, safe_format
 # --- main --------------------------------------------------------------------
 class MainWindowTables:
     root: tk.Tk
-    current_messages: dict[str, str]
-    ui_def: dict
-    main_center_table_widgets: dict[str, ttk.Treeview]
-    datas_map: dict[str, list[Any]]
-    info_comm: InfoCommon
-    _main_frame: ttk.Frame
 
+    current_messages: dict[str, str]
+
+    info_comm: InfoCommon
+    info_webfile: InfoWebFile
+    datas_map: dict[str, list[Any]]
+
+    append_log: Callable
+    refresh_exec_button_text: Callable
+    #reload_table_data: Callable
+    update_progress: Callable
+
+    _main_frame:ttk.Frame
+    ui_def: dict
     def _generate_center_tables(self) -> None:
         if not hasattr(self, "main_center_table_widgets"):
             self.main_center_table_widgets = {}

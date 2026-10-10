@@ -26,7 +26,11 @@ from common.utils import (
 # ruff: isort: on
 # --- gui window module ------------------------------------------------------
 # ruff: isort: off
-from gui_async_handler import AsyncProcessHandler
+# from gui_async_handler import AsyncProcessHandler
+#from async_base_handler import BaseAsyncProcessHandler
+#from async_download_handler import DownloadAsyncHandler
+#from async_rsync_handler import RsyncAsyncHandler
+#from async_web_info_handler import WebInfoAsyncHandler
 
 
 # ruff: isort: on
@@ -41,11 +45,19 @@ class MainWindowEvents:
     build: Callable
     datas_map: dict
     reload_table_data: Callable
-    async_handler: AsyncProcessHandler
+    # async_handler: AsyncProcessHandler
+    # async_base_handler: BaseAsyncProcessHandler
+    # async_download_handler: DownloadAsyncHandler
+    # async_rsync_handler: RsyncAsyncHandler
+    # async_web_info_handler: WebInfoAsyncHandler
     append_log: Callable
     current_messages: dict[str, str]
     ui_def: dict
     monitor_window_instance: DebugLogWindow = None
+
+    cancel_async_process: Callable
+    start_web_info_process: Callable
+    start_async_download_process: Callable
 
     # def __init__(self, root: tk.Tk) -> None:
     #    self.root: tk.Tk = root
@@ -176,28 +188,28 @@ class MainWindowEvents:
     @debug_logger
     def event_update(self) -> None:
         """update event"""
-        #_btn_label = self.current_messages.get("btn_update", "Update")
-        #_message = self.current_messages.get("msg_info_processing", "Processing...")
-        #self.append_log(f"{_btn_label}: {_message}")
+        # _btn_label = self.current_messages.get("btn_update", "Update")
+        # _message = self.current_messages.get("msg_info_processing", "Processing...")
+        # self.append_log(f"{_btn_label}: {_message}")
         if getattr(self, "is_running_async", False):
-            self.async_handler.cancel_async_process()
+            self.cancel_async_process()
         else:
-            self.async_handler.start_async_process()
-        #_message = self.current_messages.get("msg_info_complete", "✓ Completed.")
-        #self.append_log(f"{_btn_label}: {_message}")
+            self.start_web_info_process()
+        # _message = self.current_messages.get("msg_info_complete", "✓ Completed.")
+        # self.append_log(f"{_btn_label}: {_message}")
 
     @debug_logger
     def event_download(self) -> None:
         """download event"""
-        #_btn_label = self.current_messages.get("btn_download", "Download")
-        #_message = self.current_messages.get("msg_info_processing", "Processing...")
-        #self.append_log(f"{_btn_label}: {_message}")
+        # _btn_label = self.current_messages.get("btn_download", "Download")
+        # _message = self.current_messages.get("msg_info_processing", "Processing...")
+        # self.append_log(f"{_btn_label}: {_message}")
         if getattr(self, "is_running_async", False):
-            self.async_handler.cancel_async_process()
+            self.cancel_async_process()
         else:
-            self.async_handler.start_async_download()
-        #_message = self.current_messages.get("msg_info_complete", "✓ Completed.")
-        #self.append_log(f"{_btn_label}: {_message}")
+            self.start_async_download_process()
+        # _message = self.current_messages.get("msg_info_complete", "✓ Completed.")
+        # self.append_log(f"{_btn_label}: {_message}")
 
     @debug_logger
     def event_markdown(self) -> None:

@@ -1,4 +1,4 @@
-"""Common Function Package: _work [generated: 2026/10/06 21:51:23 JST (+0900)]"""
+"""Common Function Package: _work [generated: 2026/10/11 00:55:14 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -6,7 +6,10 @@ import importlib  # noqa: E402
 
 # --- my library --------------------------------------------------------------
 __all__ = [
-    "AsyncProcessHandler",
+    "AsyncDownload",
+    "AsyncRsync",
+    "AsyncWebInfo",
+    "BaseAsyncProcessHandler",
     "CustomIsoWindow",
     "CustomLiveWindow",
     "DownloadWindow",
@@ -18,10 +21,15 @@ __all__ = [
     "MainWindowTables",
     "main_cui",
     "main_gui",
+    "pre_authenticate_sudo",
+    "process_rsync",
 ]
 
 _MODULE_MAP = {
-    "AsyncProcessHandler": ".gui_async_handler",
+    "AsyncDownload": ".async_download_handler",
+    "AsyncRsync": ".async_rsync_handler",
+    "AsyncWebInfo": ".async_web_info_handler",
+    "BaseAsyncProcessHandler": ".async_base_handler",
     "CustomIsoWindow": ".gui_custom_iso",
     "CustomLiveWindow": ".gui_custom_live",
     "DownloadWindow": ".gui_download",
@@ -33,6 +41,8 @@ _MODULE_MAP = {
     "MainWindowTables": ".gui_main_tables",
     "main_cui": ".my_tools",
     "main_gui": ".my_tools",
+    "pre_authenticate_sudo": ".test_rsync",
+    "process_rsync": ".test_rsync",
 }
 
 

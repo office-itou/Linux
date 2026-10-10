@@ -42,7 +42,7 @@ class InfoFile:
         return self.data
 
     def get_info(self, target_path: str) -> FileData:
-        self.data = get_info(target_path)
+        self.data = get_infofile(target_path)
         return self.data
 
     def get_volume_uuid(self, device: str) -> str:
@@ -124,7 +124,7 @@ def get_volume_label(device: str) -> str | None:
 
 
 @debug_logger
-def get_info(target_path: str) -> FileData:
+def get_infofile(target_path: str) -> FileData:
     """Get file information data
     Args:
         target_path (str): Target path

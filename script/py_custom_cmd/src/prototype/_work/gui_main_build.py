@@ -1,69 +1,64 @@
-"""main window"""
+"""gui main build"""
 
-# --- python library ----------------------------------------------------------
+# --- Python library ----------------------------------------------------------
+import asyncio
+import threading
 import tkinter as tk
 from collections.abc import Callable
-from pathlib import Path
 from tkinter import ttk
+from types import SimpleNamespace
 
+import aiohttp
+from aiohttp import ClientTimeout
 
 # --- my library --------------------------------------------------------------
-# ruff: isort: off
-from common.shared import InfoCommon, InfoWebFile
+from common.shared import InfoCommon
 from common.utils import (
     build_menu_bar,
-    debug_logger,
     infosystem,
     load_ui_definition,
 )
 
-# ruff: isort: on
-# --- gui window module ------------------------------------------------------
-# ruff: isort: off
-from gui_async_handler import AsyncProcessHandler
+# --- import module -----------------------------------------------------------
+from async_download_handler import AsyncDownload
+from async_rsync_handler import AsyncRsync
+from async_web_info_handler import AsyncWebInfo
 from gui_main_buttons import MainWindowButtons
 from gui_main_events import MainWindowEvents
 from gui_main_status import MainWindowStatus
 from gui_main_tables import MainWindowTables
 
 
-# ruff: isort: on
-_GEOMETRY = "1024x768"
-_UI_FILE_PATH = infosystem.program_path.parent / Path("ui_definition.json")
-
-
-# --- main --------------------------------------------------------------------
+# --- class and function ------------------------------------------------------
 class MainWindow(
-    MainWindowEvents,
+    InfoCommon,
+    AsyncDownload,
+    AsyncRsync,
+    AsyncWebInfo,
     MainWindowButtons,
-    MainWindowTables,
+    MainWindowEvents,
     MainWindowStatus,
-    AsyncProcessHandler,
-    InfoWebFile,
+    MainWindowTables,
 ):
-    root: tk.Tk
-    ui_def: dict
-    current_lang_strvar: tk.StringVar
-    current_monitor_boolvar: tk.BooleanVar
-    current_messages: dict[str, str]
-    _is_switching_lang: bool
+    _geometry = "1024x768"
+    _ui_file = "ui_definition.json"
+    _ui_path = infosystem.program_path.parent / _ui_file
 
     def __init__(self, root: tk.Tk) -> None:
-        # super().__init__(root)
-        self.root: tk.Tk = root
-        self.root.geometry(_GEOMETRY)
-        self.ui_def = load_ui_definition(_UI_FILE_PATH)
         self.info_comm: InfoCommon = InfoCommon()
+        # --- gui -------------------------------------------------------------
+        self.root: tk.Tk = root
+        self.root.geometry(self._geometry)
+        self.ui_def = load_ui_definition(self._ui_path)
         self.current_lang_strvar: tk.StringVar = tk.StringVar(value=infosystem.lang)
         self.current_monitor_boolvar: tk.BooleanVar = tk.BooleanVar(value=False)
         self.current_messages = self.ui_def["messages"].get(infosystem.lang, {})
         self._is_switching_lang: bool = False
-        # --- instantiation of an asynchronous processing handler -------------
-        self.is_running_async: bool = False
-        self.async_handler: AsyncProcessHandler = AsyncProcessHandler(
-            window_instance=self
-        )
-        self.build()
+        # --- async -----------------------------------------------------------
+        self.semaphore = SimpleNamespace()
+        self.semaphore.infowebs = 5
+        self.semaphore.download = 3
+        self.semaphore.rsync = 2
 
     def _get_command_map(self) -> dict[str, Callable]:
         return {
@@ -97,7 +92,6 @@ class MainWindow(
             "current_monitor_boolvar": self.current_monitor_boolvar,
         }
 
-    @debug_logger
     def quit(self) -> None:
         for _child in self.root.winfo_children():
             if isinstance(_child, tk.Toplevel) and _child.winfo_exists():
@@ -107,9 +101,7 @@ class MainWindow(
                     pass
         self.root.quit()
 
-    @debug_logger
     def build(self) -> None:
-        """generate screen"""
         for _child in self.root.winfo_children():
             if _child.winfo_exists():
                 try:
@@ -145,3 +137,29 @@ class MainWindow(
         self._generate_center_tables()
         # --- call the methods that generate the log monitor and the bar. -----
         self._generate_status_monitor()
+
+        threading.Thread(
+            target=self.start_async_loop,
+            daemon=True,
+        ).start()
+
+    async def task(self) -> None:
+        self.semaphore.infowebs = asyncio.Semaphore(self.semaphore.infowebs)
+        self.semaphore.download = asyncio.Semaphore(self.semaphore.download)
+        self.semaphore.rsync = asyncio.Semaphore(self.semaphore.rsync)
+
+        timeout = ClientTimeout(total=60, sock_connect=10, sock_read=30)
+        async with aiohttp.ClientSession(
+            timeout=timeout, raise_for_status=False
+        ) as session:
+            self.session = session
+
+            await asyncio.gather(
+                self.get_infowebs(), self.get_downloads(), self.get_rsyncs()
+            )
+
+    def start_async_loop(self):
+        asyncio.run(self.task())
+
+
+# --- eof ---------------------------------------------------------------------

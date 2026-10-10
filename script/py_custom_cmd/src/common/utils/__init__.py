@@ -1,4 +1,4 @@
-"""Common Function Package: utils [generated: 2026/10/09 16:50:09 JST (+0900)]"""
+"""Common Function Package: utils [generated: 2026/10/11 00:55:14 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -41,7 +41,7 @@ __all__ = [
     "get_char_width",
     "get_contents",
     "get_header",
-    "get_info",
+    "get_infofile",
     "get_infoweb",
     "get_peak_memory",
     "get_response",
@@ -109,7 +109,7 @@ _MODULE_MAP = {
     "get_char_width": ".my_string",
     "get_contents": ".my_web_api",
     "get_header": ".my_web_api",
-    "get_info": ".my_infofile",
+    "get_infofile": ".my_infofile",
     "get_infoweb": ".my_infoweb",
     "get_peak_memory": ".my_mem_usage",
     "get_response": ".my_web_api",
