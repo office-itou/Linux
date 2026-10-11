@@ -36,10 +36,11 @@ class MainWindowStatus:
             height=5,
             wrap="char",
             state="disabled",
-            font=("", 9),
+            font=("monospace", 9),
             background="#f8fafc",
             foreground="#334155",
         )
+        # "'BIZ UDゴシック', Consolas, 'Courier New', monospace"
         self.main_status_widgets.grid(row=0, column=0, sticky="ew")
         # ---------------------------------------------------------------------
         _log_scroll = ttk.Scrollbar(
@@ -55,7 +56,9 @@ class MainWindowStatus:
             f"{self.current_messages.get('msg_info_standby', 'Standby')}"
             f"(0/0 {self.current_messages.get('msg_info_target_items', 'items')})"
         )
-        self.progress_label = ttk.Label(_bar_container, text=_messages, font=("", 9))
+        self.progress_label = ttk.Label(
+            _bar_container, text=_messages, font=("monospace", 9)
+        )
         self.progress_label.pack(anchor="w", pady=(0, 2))
         # ---------------------------------------------------------------------
         self.progress_bar = ttk.Progressbar(

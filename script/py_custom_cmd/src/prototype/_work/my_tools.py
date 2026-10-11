@@ -66,6 +66,7 @@ def main_gui() -> None:
     app: MainWindow = MainWindow(root)
     # --- binding the termination protocol and starting the main loop ---------
     root.protocol("WM_DELETE_WINDOW", app.quit)
+    app.build()
     root.mainloop()
     root.destroy()
 

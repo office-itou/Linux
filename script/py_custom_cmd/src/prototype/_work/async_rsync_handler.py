@@ -3,14 +3,17 @@
 # --- Python library ----------------------------------------------------------
 import asyncio
 import tempfile
+import threading
 from pathlib import Path
-from types import SimpleNamespace
-from typing import Any, Callable, Mapping
+from typing import Any, Mapping
 
 import aiohttp
+from aiohttp import ClientTimeout
 
 # --- my library --------------------------------------------------------------
-from common.shared import InfoCommon
+from common.shared import (
+    MediaData,
+)
 from common.utils import (
     get_caller_name,
     handle_fatal_error,
@@ -22,13 +25,6 @@ from common.utils import (
 # --- import module -----------------------------------------------------------
 # --- class and function ------------------------------------------------------
 class AsyncRsync:
-    info_comm: InfoCommon
-    semaphore: SimpleNamespace
-    session: aiohttp.ClientSession
-    search_url: str
-    local_file: str
-    exclude_url: str
-    current_messages: dict
     # --- rsync options -------------------------------------------------------
     _rsync_opt = [
         "--recursive",
@@ -52,41 +48,114 @@ class AsyncRsync:
         "stderr": asyncio.subprocess.PIPE,
     }
 
-    def __init__(self) -> None:
-        self.on_progress_callback: Callable[[str], None] | None = None
+    def __init__(self, win) -> None:
+        self.win = win
+        self.is_running = False
+        self.is_cancelled = False
+        self.semaphore = asyncio.Semaphore(5)
+        self.session = None
+
+    def start_process(self) -> None:
+        if self.is_running:
+            return
+        self.is_running = True
+        self.is_cancelled = False
+        threading.Thread(
+            target=lambda: asyncio.run(self._run_loop()), daemon=True
+        ).start()
+
+    def cancel_process(self) -> None:
+        if not self.is_running:
+            return
+        self.is_cancelled = True
+        _caller = get_caller_name()
+        _message = f"{
+            ljust(
+                self.win.current_messages.get(
+                    'msg_info_cancel_accepted',
+                    '⏳ Cancellation request accepted. Stopping...',
+                ),
+                20,
+            )
+        }"
+        if self.win.append_log:
+            self.win.append_log(_message)
+        else:
+            message_info(_caller, _message, omit=True)
+
+    async def _run_loop(self) -> None:
+        try:
+            timeout = ClientTimeout(total=60, sock_connect=10, sock_read=30)
+            async with aiohttp.ClientSession(
+                timeout=timeout, raise_for_status=False
+            ) as session:
+                self.session = session
+                await self.get_rsyncs()
+        finally:
+            self.is_running = False
+            self.win.on_handler_complete()
 
     async def get_rsyncs(self) -> bool:
         _caller = get_caller_name()
         _status = False
-        semaphore = asyncio.Semaphore(self.semaphore.infowebs)
+        semaphore = asyncio.Semaphore(3)
         async with semaphore:
-            for d in self.info_comm.mdia:
+            mdia_data: list[MediaData] = [
+                d for d in self.win.info_comm.mdia.data if d.target_flag == "o"
+            ]
+            total_datas = len(mdia_data)
+            current_data = 0
+            self.win.update_progress(
+                current=current_data, total=total_datas, is_complete=False
+            )
+            for d in mdia_data:
+                if self.is_cancelled:
+                    _message = f"{
+                        ljust(
+                            self.win.current_messages.get(
+                                'msg_info_cancel_accepted',
+                                '⏳ The cancellation request has been accepted.',
+                            ),
+                            20,
+                        )
+                    }"
+                    if self.win.append_log:
+                        self.win.append_log(_message)
+                    else:
+                        message_info(_caller, _message, omit=True)
+                    break
+                if d.target_flag != "o":
+                    continue
+                current_data += 1
+                self.win.update_progress(
+                    current=current_data, total=total_datas, is_complete=False
+                )
                 _disp_name = getattr(d, "entry_disp", d.entry_name)
                 _mdia_type = getattr(d, "mdia_type", d.mdia_type)
                 if not d.iso_path:
                     _message = f"{
                         ljust(
-                            self.current_messages.get(
+                            self.win.current_messages.get(
                                 'msg_info_no_target_file', 'No target file'
                             ),
                             20,
                         )
                     }: {_disp_name} ({_mdia_type})..."
-                    if self.on_progress_callback:
-                        self.on_progress_callback(_message)
+                    if self.win.append_log:
+                        self.win.append_log(_message)
                     else:
                         message_info(_caller, _message, omit=True)
                     continue
                 _message = f"{
                     ljust(
-                        self.current_messages.get(
+                        self.win.current_messages.get(
                             'msg_info_Synchronizing', '➔ Synchronizing'
                         ),
                         20,
                     )
                 }: {_disp_name} ({_mdia_type})..."
-                if self.on_progress_callback:
-                    self.on_progress_callback(_message)
+                if self.win.append_log:
+                    self.win.append_log(_message)
                 else:
                     message_info(_caller, _message, omit=True)
                 # -------------------------------------------------------------
@@ -94,7 +163,9 @@ class AsyncRsync:
                 # --- rsync parameters ----------------------------------------
                 _temp_obj = tempfile.TemporaryDirectory()
                 _src_path = Path(d.iso_path)
-                _dest_path = self.info_comm.get_path("DIRS_IMGS") / d.entry_name
+                _dest_path = (
+                    self.win.info_comm.conf.get_path("DIRS_IMGS") / d.entry_name
+                )
                 _mount_path = Path(_temp_obj.name)
                 _rsync_src = f"{str(_mount_path)}/."
                 _rsync_dest = f"{str(_dest_path)}/"
@@ -147,15 +218,15 @@ class AsyncRsync:
                 except asyncio.CancelledError:
                     _message = f"{
                         ljust(
-                            self.current_messages.get(
+                            self.win.current_messages.get(
                                 'msg_info_cancel_complete',
                                 '🎉 The cancellation process has been completed.',
                             ),
                             20,
                         )
                     }: {_disp_name} ({_mdia_type})..."
-                    if self.on_progress_callback:
-                        self.on_progress_callback(_message)
+                    if self.win.append_log:
+                        self.win.append_log(_message)
                     else:
                         message_info(_caller, _message, omit=True)
                     raise
@@ -167,16 +238,19 @@ class AsyncRsync:
                     _temp_obj.cleanup()
                     _message = f"{
                         ljust(
-                            self.current_messages.get(
+                            self.win.current_messages.get(
                                 'msg_info_complete', '✓ Completed.'
                             ),
                             20,
                         )
                     }: {_disp_name} ({_mdia_type})..."
-                    if self.on_progress_callback:
-                        self.on_progress_callback(_message)
+                    if self.win.append_log:
+                        self.win.append_log(_message)
                     else:
                         message_info(_caller, _message, omit=True)
+            self.win.update_progress(
+                current=current_data, total=total_datas, is_complete=True
+            )
         return _status
 
 

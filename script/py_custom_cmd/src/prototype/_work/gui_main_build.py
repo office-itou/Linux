@@ -2,11 +2,9 @@
 
 # --- Python library ----------------------------------------------------------
 import asyncio
-import threading
 import tkinter as tk
 from collections.abc import Callable
 from tkinter import ttk
-from types import SimpleNamespace
 
 import aiohttp
 from aiohttp import ClientTimeout
@@ -20,6 +18,7 @@ from common.utils import (
 )
 
 # --- import module -----------------------------------------------------------
+#from async_base_handler import BaseAsyncProcessHandler
 from async_download_handler import AsyncDownload
 from async_rsync_handler import AsyncRsync
 from async_web_info_handler import AsyncWebInfo
@@ -32,9 +31,6 @@ from gui_main_tables import MainWindowTables
 # --- class and function ------------------------------------------------------
 class MainWindow(
     InfoCommon,
-    AsyncDownload,
-    AsyncRsync,
-    AsyncWebInfo,
     MainWindowButtons,
     MainWindowEvents,
     MainWindowStatus,
@@ -45,6 +41,7 @@ class MainWindow(
     _ui_path = infosystem.program_path.parent / _ui_file
 
     def __init__(self, root: tk.Tk) -> None:
+        # --- common ----------------------------------------------------------
         self.info_comm: InfoCommon = InfoCommon()
         # --- gui -------------------------------------------------------------
         self.root: tk.Tk = root
@@ -54,11 +51,13 @@ class MainWindow(
         self.current_monitor_boolvar: tk.BooleanVar = tk.BooleanVar(value=False)
         self.current_messages = self.ui_def["messages"].get(infosystem.lang, {})
         self._is_switching_lang: bool = False
+        # --- debug console ---------------------------------------------------
+        self.monitor_window_instance = None
         # --- async -----------------------------------------------------------
-        self.semaphore = SimpleNamespace()
-        self.semaphore.infowebs = 5
-        self.semaphore.download = 3
-        self.semaphore.rsync = 2
+        #self.base_async_handler = BaseAsyncProcessHandler(win=self)
+        self.web_info_handler = AsyncWebInfo(win=self)
+        self.download_handler = AsyncDownload(win=self)
+        self.rsync_handler = AsyncRsync(win=self)
 
     def _get_command_map(self) -> dict[str, Callable]:
         return {
@@ -138,28 +137,44 @@ class MainWindow(
         # --- call the methods that generate the log monitor and the bar. -----
         self._generate_status_monitor()
 
-        threading.Thread(
-            target=self.start_async_loop,
-            daemon=True,
-        ).start()
+    async def task(self, target_coro) -> None:
+        try:
+            timeout = ClientTimeout(total=60, sock_connect=10, sock_read=30)
+            async with aiohttp.ClientSession(
+                timeout=timeout, raise_for_status=False
+            ) as session:
+                self.session = session
+                await target_coro
+        finally:
+            # 処理完了（またはキャンセル）時にフラグやボタン表示を元に戻す共通処理
+            self.base_async_handler._on_complete()
 
-    async def task(self) -> None:
-        self.semaphore.infowebs = asyncio.Semaphore(self.semaphore.infowebs)
-        self.semaphore.download = asyncio.Semaphore(self.semaphore.download)
-        self.semaphore.rsync = asyncio.Semaphore(self.semaphore.rsync)
+    def start_async_loop(self, target_coro):
+        asyncio.run(self.task(target_coro))
 
-        timeout = ClientTimeout(total=60, sock_connect=10, sock_read=30)
-        async with aiohttp.ClientSession(
-            timeout=timeout, raise_for_status=False
-        ) as session:
-            self.session = session
+    def on_handler_complete(self) -> None:
+        if hasattr(self, "refresh_exec_button_text"):
+            self.refresh_exec_button_text()
+        if hasattr(self, "reload_table_data"):
+            self.reload_table_data()
 
-            await asyncio.gather(
-                self.get_infowebs(), self.get_downloads(), self.get_rsyncs()
-            )
+    #def start_web_info_process(self) -> None:
+    #    if self._prepare_start():
+    #        self._process_prefix = "web_info"
+    #        coro = self.get_infowebs()
+    #        self._start_thread(lambda: self.start_async_loop(coro))
 
-    def start_async_loop(self):
-        asyncio.run(self.task())
+    #def start_download_process(self) -> None:
+    #    if self._prepare_start():
+    #        self._process_prefix = "download"
+    #        coro = self.get_downloads()
+    #        self._start_thread(lambda: self.start_async_loop(coro))
+
+    #def start_rsync_process(self) -> None:
+    #    if self._prepare_start():
+    #        self._process_prefix = "rsync"
+    #        coro = self.get_rsyncs()
+    #        self._start_thread(lambda: self.start_async_loop(coro))
 
 
 # --- eof ---------------------------------------------------------------------

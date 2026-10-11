@@ -4,12 +4,11 @@
 import tkinter as tk
 from collections.abc import Callable
 from tkinter import ttk
-from typing import Any
 
 
 # --- my library --------------------------------------------------------------
 # ruff: isort: off
-from common.shared import InfoCommon, InfoWebFile
+from common.shared import InfoCommon
 from common.utils import debug_logger, safe_format
 
 
@@ -20,8 +19,8 @@ class MainWindowTables:
     current_messages: dict[str, str]
 
     info_comm: InfoCommon
-    info_webfile: InfoWebFile
-    datas_map: dict[str, list[Any]]
+    #info_webfile: InfoWebFile
+    #datas_map: dict[str, list[Any]]
 
     append_log: Callable
     refresh_exec_button_text: Callable
@@ -105,15 +104,11 @@ class MainWindowTables:
             _tree.configure(xscrollcommand=_h_scrollbar.set)
             _h_scrollbar.grid(row=2, column=0, sticky="ew")
         # ---------------------------------------------------------------------
-        if not hasattr(self, "datas_map"):
-            self.datas_map = {}
+        #if not hasattr(self, "datas_map"):
+        #    self.datas_map = {}
         # ---------------------------------------------------------------------
-        self.info_webfile = InfoWebFile(self)
-        #self.datas_map["active_table"] = self.info_webfile.data
-        # for _data in self.datas_map["active_table"]:
-        #    _data.target_flag = _data.mdia_data.entry_flag == "o"
-        self.datas_map["active_table"] = self.info_comm.mdia.data
-        for _data in self.datas_map["active_table"]:
+        #self.info_webfile = InfoWebFile(self)
+        for _data in self.info_comm.mdia.data:
             _data.target_flag = "o" if _data.entry_flag == "o" else "x"
         # ---------------------------------------------------------------------
         self.reload_table_data()
@@ -169,10 +164,11 @@ class MainWindowTables:
                 main_center_table_widgets = getattr(
                     self, "main_center_table_widgets", {}
                 )
-                datas_map = getattr(self, "datas_map", {})
+                #datas_map = getattr(self, "datas_map", {})
                 for t_id, t_widget in main_center_table_widgets.items():
                     if t_widget == _tree:
-                        target_data = datas_map.get(t_id, [])
+                        #target_data = datas_map.get(t_id, [])
+                        target_data = self.info_comm.mdia.data.get(t_id, [])
                         if row_idx < len(target_data):
                             target_data[row_idx].target_flag = (
                                 "o" if next_state == "☑" else "x"
@@ -208,8 +204,10 @@ class MainWindowTables:
                 if "target_flag" in _col_info.get("field", "").lower():
                     break
             _visible_row_count = 0
-            _target_list = self.datas_map.get(_table_id, [])
-            for _row_index, _item_obj in enumerate(_target_list):
+            #_target_list = self.datas_map.get(_table_id, [])
+            #_target_list = getattr(self.info_comm.mdia.data, _table_id)
+            #for _row_index, _item_obj in enumerate(_target_list):
+            for _row_index, _item_obj in enumerate(d for d in self.info_comm.mdia.data):
                 _value = []
                 if getattr(_item_obj, "entry_flag", "") == "o":
                     for _col_info in _table_data.get("columns", []):

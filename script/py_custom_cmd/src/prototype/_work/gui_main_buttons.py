@@ -4,6 +4,7 @@
 import tkinter as tk
 from collections.abc import Callable
 from tkinter import ttk
+from typing import Any
 
 
 # --- my library --------------------------------------------------------------
@@ -17,6 +18,8 @@ class MainWindowButtons:
     current_messages: dict[str, str]
     main_bottom_button_widgets: list[ttk.Button]
     ui_def: dict
+    web_info_handler: Any
+    download_handler: Any
 
     def _generate_bottom_buttons(self, cmd_map: dict[str, Callable]) -> None:
         if (
@@ -63,21 +66,28 @@ class MainWindowButtons:
 
     # -------------------------------------------------------------------------
     def refresh_exec_button_text(self) -> None:
-        """Toggle the button display for connection status."""
         if not hasattr(self, "main_bottom_button_widgets"):
             return
 
-        _is_running = getattr(self, "is_running_async", False)
         for _btn in self.main_bottom_button_widgets:
             if not _btn.winfo_exists():
                 continue
-            if _is_running:
-                _cancel_text = self.current_messages.get("btn_cancel", "❌ Cancel")
-                _btn.configure(text=_cancel_text)
-            else:
-                _cmd_name = getattr(_btn, "cmd_name", "")
-                if "event_update" in _cmd_name:
-                    _exec_text = self.current_messages.get("btn_update", "Update")
+            _cmd_name = getattr(_btn, "cmd_name", "")
+
+            if "event_update" in _cmd_name:
+                if self.web_info_handler.is_running:
+                    _btn.configure(
+                        text=self.current_messages.get("btn_cancel", "❌ Cancel")
+                    )
                 else:
-                    _exec_text = self.current_messages.get("btn_exec", "Run")
-                _btn.configure(text=_exec_text)
+                    _btn.configure(
+                        text=self.current_messages.get("btn_update", "Update")
+                    )
+
+            elif "event_download" in _cmd_name:
+                if self.download_handler.is_running:
+                    _btn.configure(
+                        text=self.current_messages.get("btn_cancel", "❌ Cancel")
+                    )
+                else:
+                    _btn.configure(text=self.current_messages.get("btn_exec", "Run"))

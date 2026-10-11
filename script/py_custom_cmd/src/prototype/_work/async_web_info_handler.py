@@ -2,13 +2,15 @@
 
 # --- Python library ----------------------------------------------------------
 import asyncio
-from types import SimpleNamespace
-from typing import Callable
+import threading
 
 import aiohttp
+from aiohttp import ClientTimeout
 
 # --- my library --------------------------------------------------------------
-from common.shared import InfoCommon
+from common.shared import (
+    MediaData,
+)
 from common.utils import (
     FileData,
     WebData,
@@ -23,45 +25,107 @@ from common.utils import (
 # --- import module -----------------------------------------------------------
 # --- class and function ------------------------------------------------------
 class AsyncWebInfo:
-    info_comm: InfoCommon
-    semaphore: SimpleNamespace
-    session: aiohttp.ClientSession
-    search_url: str
-    local_file: str
-    exclude_url: str
-    current_messages: dict
+    def __init__(self, win) -> None:
+        self.win = win
+        self.is_running = False
+        self.is_cancelled = False
+        self.semaphore = asyncio.Semaphore(5)
+        self.session = None
 
-    def __init__(self) -> None:
-        self.on_progress_callback: Callable[[str], None] | None = None
+    def start_process(self) -> None:
+        if self.is_running:
+            return
+        self.is_running = True
+        self.is_cancelled = False
+        threading.Thread(
+            target=lambda: asyncio.run(self._run_loop()), daemon=True
+        ).start()
+
+    def cancel_process(self) -> None:
+        if not self.is_running:
+            return
+        self.is_cancelled = True
+        _caller = get_caller_name()
+        _message = f"{
+            ljust(
+                self.win.current_messages.get(
+                    'msg_info_cancel_accepted',
+                    '⏳ Cancellation request accepted. Stopping...',
+                ),
+                20,
+            )
+        }"
+        if self.win.append_log:
+            self.win.append_log(_message)
+        else:
+            message_info(_caller, _message, omit=True)
+
+    async def _run_loop(self) -> None:
+        try:
+            timeout = ClientTimeout(total=60, sock_connect=10, sock_read=30)
+            async with aiohttp.ClientSession(
+                timeout=timeout, raise_for_status=False
+            ) as session:
+                self.session = session
+                await self.get_infowebs()
+        finally:
+            self.is_running = False
+            self.win.on_handler_complete()
 
     async def get_infowebs(self) -> None:
         _caller = get_caller_name()
-        async with self.semaphore.infowebs:
-            for d in self.info_comm.mdia:
+        semaphore = asyncio.Semaphore(6)
+        async with semaphore:
+            mdia_data: list[MediaData] = [
+                d for d in self.win.info_comm.mdia.data if d.target_flag == "o"
+            ]
+            total_datas = len(mdia_data)
+            current_data = 0
+            self.win.update_progress(
+                current=current_data, total=total_datas, is_complete=False
+            )
+            for d in mdia_data:
+                if self.is_cancelled:
+                    _message = f"{
+                        ljust(
+                            self.win.current_messages.get(
+                                'msg_info_cancel_accepted',
+                                '⏳ The cancellation request has been accepted.',
+                            ),
+                            20,
+                        )
+                    }"
+                    if self.win.append_log:
+                        self.win.append_log(_message)
+                    else:
+                        message_info(_caller, _message, omit=True)
+                    break
+                if d.target_flag != "o":
+                    continue
+                current_data += 1
+                self.win.update_progress(
+                    current=current_data, total=total_datas, is_complete=False
+                )
                 _disp_name = getattr(d, "entry_disp", d.entry_name)
                 _mdia_type = getattr(d, "mdia_type", d.mdia_type)
                 _message = f"{
                     ljust(
-                        self.current_messages.get(
+                        self.win.current_messages.get(
                             'msg_info_communicating', '➔ Communicating'
                         ),
                         20,
                     )
                 }: {_disp_name} ({_mdia_type})..."
-                if self.on_progress_callback:
-                    self.on_progress_callback(_message)
+                if self.win.append_log:
+                    self.win.append_log(_message)
                 else:
                     message_info(_caller, _message, omit=True)
                 # -------------------------------------------------------------
                 if d.web_regexp:
                     _message = f"[Queue] Fetching: {d.web_regexp}"
-                    if self.on_progress_callback:
-                        self.on_progress_callback(_message)
-                    else:
-                        message_info(_caller, _message, omit=True)
+                    message_info(_caller, _message, omit=True)
                     # --- get web datas -----------------------------------
-                    _web_datas: list[WebData] = await asyncio.to_thread(
-                        get_infoweb,
+                    _web_datas: list[WebData] = await get_infoweb(
                         self.session,
                         d.web_regexp,
                         d.iso_path,
@@ -84,14 +148,19 @@ class AsyncWebInfo:
                 # -------------------------------------------------------------
                 _message = f"{
                     ljust(
-                        self.current_messages.get('msg_info_complete', '✓ Completed.'),
+                        self.win.current_messages.get(
+                            'msg_info_complete', '✓ Completed.'
+                        ),
                         20,
                     )
                 }: {_disp_name} ({_mdia_type})..."
-                if self.on_progress_callback:
-                    self.on_progress_callback(_message)
+                if self.win.append_log:
+                    self.win.append_log(_message)
                 else:
                     message_info(_caller, _message, omit=True)
+            self.win.update_progress(
+                current=current_data, total=total_datas, is_complete=True
+            )
 
 
 # --- eof ---------------------------------------------------------------------

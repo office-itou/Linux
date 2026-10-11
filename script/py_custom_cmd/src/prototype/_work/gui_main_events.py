@@ -4,6 +4,7 @@
 import tkinter as tk
 from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 
 # --- my library --------------------------------------------------------------
@@ -25,45 +26,28 @@ from common.utils import (
 
 # ruff: isort: on
 # --- gui window module ------------------------------------------------------
-# ruff: isort: off
-# from gui_async_handler import AsyncProcessHandler
-#from async_base_handler import BaseAsyncProcessHandler
-#from async_download_handler import DownloadAsyncHandler
-#from async_rsync_handler import RsyncAsyncHandler
-#from async_web_info_handler import WebInfoAsyncHandler
-
-
-# ruff: isort: on
 # --- main --------------------------------------------------------------------
 class MainWindowEvents:
     root: tk.Tk
-    current_lang_strvar: tk.StringVar
+    # current_lang_strvar: tk.StringVar
     current_monitor_boolvar: tk.BooleanVar
-    _is_switching_lang: bool
+    # _is_switching_lang: bool
     quit: Callable
     info_comm: InfoCommon
     build: Callable
-    datas_map: dict
+    #datas_map: dict
     reload_table_data: Callable
-    # async_handler: AsyncProcessHandler
-    # async_base_handler: BaseAsyncProcessHandler
-    # async_download_handler: DownloadAsyncHandler
-    # async_rsync_handler: RsyncAsyncHandler
-    # async_web_info_handler: WebInfoAsyncHandler
     append_log: Callable
     current_messages: dict[str, str]
-    ui_def: dict
-    monitor_window_instance: DebugLogWindow = None
+    # ui_def: dict
+    # monitor_window_instance: DebugLogWindow = None
 
-    cancel_async_process: Callable
-    start_web_info_process: Callable
-    start_async_download_process: Callable
-
-    # def __init__(self, root: tk.Tk) -> None:
-    #    self.root: tk.Tk = root
-    #    self.current_lang_strvar: tk.StringVar = tk.StringVar(value=infosystem.lang)
-    #    self.current_monitor_boolvar: tk.BooleanVar = tk.BooleanVar(value=False)
-    #    self._is_switching_lang = False
+    # cancel_async_process: Callable
+    # start_web_info_process: Callable
+    # start_download_process: Callable
+    web_info_handler: Any
+    download_handler: Any
+    refresh_exec_button_text: Any
 
     # --- menu: file ----------------------------------------------------------
     @debug_logger
@@ -142,15 +126,15 @@ class MainWindowEvents:
         """Checkbox "Select All" / "Deselect All" event"""
         if not isinstance(table_id, str):
             table_id = "active_table"
-        if not hasattr(self, "main_center_table_widgets") or not hasattr(
-            self, "datas_map"
-        ):
+        #if not hasattr(self, "main_center_table_widgets") or not hasattr(
+        #    self, "datas_map"
+        #):
             return
-        target_data = self.datas_map.get(table_id, [])
-        if not target_data:
-            return
+        #target_data = self.datas_map.get(table_id, [])
+        #if not target_data:
+        #    return
         target_flag_value = check_char == "☑"
-        for item in target_data:
+        for item in self.info_comm.mdia.data: #target_data:
             if getattr(item, "entry_name", "") != "menu-entry":
                 item.target_flag = "o" if target_flag_value else "x"
         if hasattr(self, "reload_table_data"):
@@ -191,10 +175,11 @@ class MainWindowEvents:
         # _btn_label = self.current_messages.get("btn_update", "Update")
         # _message = self.current_messages.get("msg_info_processing", "Processing...")
         # self.append_log(f"{_btn_label}: {_message}")
-        if getattr(self, "is_running_async", False):
-            self.cancel_async_process()
+        if self.web_info_handler.is_running:
+            self.web_info_handler.cancel_process()
         else:
-            self.start_web_info_process()
+            self.web_info_handler.start_process()
+        self.refresh_exec_button_text()
         # _message = self.current_messages.get("msg_info_complete", "✓ Completed.")
         # self.append_log(f"{_btn_label}: {_message}")
 
@@ -204,10 +189,11 @@ class MainWindowEvents:
         # _btn_label = self.current_messages.get("btn_download", "Download")
         # _message = self.current_messages.get("msg_info_processing", "Processing...")
         # self.append_log(f"{_btn_label}: {_message}")
-        if getattr(self, "is_running_async", False):
-            self.cancel_async_process()
+        if self.download_handler.is_running:
+            self.download_handler.cancel_process()
         else:
-            self.start_async_download_process()
+            self.download_handler.start_process()
+        self.refresh_exec_button_text()
         # _message = self.current_messages.get("msg_info_complete", "✓ Completed.")
         # self.append_log(f"{_btn_label}: {_message}")
 
