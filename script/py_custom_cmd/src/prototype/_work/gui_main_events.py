@@ -35,7 +35,7 @@ class MainWindowEvents:
     quit: Callable
     info_comm: InfoCommon
     build: Callable
-    #datas_map: dict
+    # datas_map: dict
     reload_table_data: Callable
     append_log: Callable
     current_messages: dict[str, str]
@@ -83,15 +83,15 @@ class MainWindowEvents:
     @debug_logger
     def event_switch_monitor(self) -> None:
         """switch monitor event"""
-        _btn_label = self.current_messages.get("btn_debug", "Monitor")
-        _is_on = self.current_monitor_boolvar.get()
+        _btn_label: str = self.current_messages.get("btn_debug", "Monitor")
+        _is_on: bool = self.current_monitor_boolvar.get()
         if _is_on:
             if (
                 self.monitor_window_instance is None
                 or not hasattr(self.monitor_window_instance, "win")
                 or not self.monitor_window_instance.win.winfo_exists()
             ):
-                _message = self.current_messages.get(
+                _message: str = self.current_messages.get(
                     "msg_info_processing", "Processing..."
                 )
                 self.append_log(f"{_btn_label}: {_message}")
@@ -116,7 +116,9 @@ class MainWindowEvents:
                         pass
             self.monitor_window_instance = None
             set_gui_log_window(None)
-            _message = self.current_messages.get("msg_info_complete", "✓ Completed.")
+            _message: str = self.current_messages.get(
+                "msg_info_complete", "✓ Completed."
+            )
             self.append_log(f"{_btn_label}: {_message}")
 
     @debug_logger
@@ -126,15 +128,15 @@ class MainWindowEvents:
         """Checkbox "Select All" / "Deselect All" event"""
         if not isinstance(table_id, str):
             table_id = "active_table"
-        #if not hasattr(self, "main_center_table_widgets") or not hasattr(
-        #    self, "datas_map"
-        #):
+            # if not hasattr(self, "main_center_table_widgets") or not hasattr(
+            #    self, "datas_map"
+            # ):
             return
-        #target_data = self.datas_map.get(table_id, [])
-        #if not target_data:
+        # target_data = self.datas_map.get(table_id, [])
+        # if not target_data:
         #    return
-        target_flag_value = check_char == "☑"
-        for item in self.info_comm.mdia.data: #target_data:
+        target_flag_value: bool = check_char == "☑"
+        for item in self.info_comm.mdia.data:  # target_data:
             if getattr(item, "entry_name", "") != "menu-entry":
                 item.target_flag = "o" if target_flag_value else "x"
         if hasattr(self, "reload_table_data"):
@@ -143,30 +145,36 @@ class MainWindowEvents:
     @debug_logger
     def event_exec(self) -> None:
         """exec event"""
-        _btn_label = self.current_messages.get("btn_exec", "Run")
-        _message = self.current_messages.get("msg_info_processing", "Processing...")
+        _btn_label: str = self.current_messages.get("btn_exec", "Run")
+        _message: str = self.current_messages.get(
+            "msg_info_processing", "Processing..."
+        )
         self.append_log(f"{_btn_label}: {_message}")
-        _message = self.current_messages.get("msg_info_complete", "✓ Completed.")
+        _message: str = self.current_messages.get("msg_info_complete", "✓ Completed.")
         self.append_log(f"{_btn_label}: {_message}")
 
     @debug_logger
     def event_confirm(self) -> None:
         """confirm event"""
-        _btn_label = self.current_messages.get("btn_confirm", "✅ Confirm")
-        _message = self.current_messages.get("msg_info_processing", "Processing...")
+        _btn_label: str = self.current_messages.get("btn_confirm", "✅ Confirm")
+        _message: str = self.current_messages.get(
+            "msg_info_processing", "Processing..."
+        )
         self.append_log(f"{_btn_label}: {_message}")
-        _message = self.current_messages.get("msg_info_complete", "✓ Completed.")
+        _message: str = self.current_messages.get("msg_info_complete", "✓ Completed.")
         self.append_log(f"{_btn_label}: {_message}")
 
     @debug_logger
     def event_debug_mon(self) -> None:
         """debug monitor event"""
-        _btn_label = self.current_messages.get("btn_debug", "Monitor")
-        _message = self.current_messages.get("msg_info_processing", "Processing...")
+        _btn_label: str = self.current_messages.get("btn_debug", "Monitor")
+        _message: str = self.current_messages.get(
+            "msg_info_processing", "Processing..."
+        )
         self.append_log(f"{_btn_label}: {_message}")
         self.current_monitor_boolvar.set(not self.current_monitor_boolvar.get())
         self.event_switch_monitor()
-        _message = self.current_messages.get("msg_info_complete", "✓ Completed.")
+        _message: str = self.current_messages.get("msg_info_complete", "✓ Completed.")
         self.append_log(f"{_btn_label}: {_message}")
 
     @debug_logger
@@ -200,50 +208,58 @@ class MainWindowEvents:
     @debug_logger
     def event_markdown(self) -> None:
         """markdown event"""
-        _btn_label = self.current_messages.get("btn_markdown", "Markdown")
-        _message = self.current_messages.get("msg_info_processing", "Processing...")
+        _btn_label: str = self.current_messages.get("btn_markdown", "Markdown")
+        _message: str = self.current_messages.get(
+            "msg_info_processing", "Processing..."
+        )
         _doc_dir = self.info_comm.conf.get_path("DOCS_TOPS")
         self.append_log(f"{_btn_label}: {_message} -> {_doc_dir}")
         generate_markdown(dest_dir_path=Path(_doc_dir), info_comm=self.info_comm)
         # ---------------------------------------------------------------------
-        dest_path = Path(_doc_dir) / "Readme_tbl_distribution.md"
-        md_title = f"Distribution data({self.info_comm.dist_path.name})"
+        dest_path: Path = Path(_doc_dir) / "Readme_tbl_distribution.md"
+        md_title: str = f"Distribution data({self.info_comm.dist_path.name})"
         list_data = []
         for distribution in ORDERED_DISTRIBUTIONS:
             list_sort = self.info_comm.dist.sort(distribution, reverse=True)
-            dict_list = [distribution]
+            dict_list: list[str] = [distribution]
             dict_list += [
                 d.__dict__ if hasattr(d, "__dict__") else d for d in list_sort
             ]
             list_data.append(dict_list)
         list2markdown(dest_path, md_title, list_data)
-        _message = self.current_messages.get("msg_info_complete", "✓ Completed.")
+        _message: str = self.current_messages.get("msg_info_complete", "✓ Completed.")
         self.append_log(f"{_btn_label}: {_message} -> {_doc_dir}")
 
     @debug_logger
     def event_custom_iso(self) -> None:
         """custom iso event"""
-        _btn_label = self.current_messages.get("btn_custom_iso", "ISO custom")
-        _message = self.current_messages.get("msg_info_processing", "Processing...")
+        _btn_label: str = self.current_messages.get("btn_custom_iso", "ISO custom")
+        _message: str = self.current_messages.get(
+            "msg_info_processing", "Processing..."
+        )
         self.append_log(f"{_btn_label}: {_message}")
-        _message = self.current_messages.get("msg_info_complete", "✓ Completed.")
+        _message: str = self.current_messages.get("msg_info_complete", "✓ Completed.")
         self.append_log(f"{_btn_label}: {_message}")
 
     @debug_logger
     def event_custom_live(self) -> None:
         """custom live event"""
-        _btn_label = self.current_messages.get("btn_custom_live", "Live custom")
-        _message = self.current_messages.get("msg_info_processing", "Processing...")
+        _btn_label: str = self.current_messages.get("btn_custom_live", "Live custom")
+        _message: str = self.current_messages.get(
+            "msg_info_processing", "Processing..."
+        )
         self.append_log(f"{_btn_label}: {_message}")
-        _message = self.current_messages.get("msg_info_complete", "✓ Completed.")
+        _message: str = self.current_messages.get("msg_info_complete", "✓ Completed.")
         self.append_log(f"{_btn_label}: {_message}")
 
     @debug_logger
     def event_ipxe_menu(self) -> None:
         """ipxe menu event"""
-        _btn_label = self.current_messages.get("btn_ipxe_menu", "iPXE menu")
-        _message = self.current_messages.get("msg_info_processing", "Processing...")
+        _btn_label: str = self.current_messages.get("btn_ipxe_menu", "iPXE menu")
+        _message: str = self.current_messages.get(
+            "msg_info_processing", "Processing..."
+        )
         self.append_log(f"{_btn_label}: {_message}")
         generate_ipxe_menu(info_comm=self.info_comm)
-        _message = self.current_messages.get("msg_info_complete", "✓ Completed.")
+        _message: str = self.current_messages.get("msg_info_complete", "✓ Completed.")
         self.append_log(f"{_btn_label}: {_message}")

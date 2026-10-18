@@ -2,6 +2,7 @@
 import re
 from collections import defaultdict
 from pathlib import Path
+from typing import Any
 
 
 # --- my library --------------------------------------------------------------
@@ -22,7 +23,7 @@ from common.utils import (
 
 # ruff: isort: on
 # -----------------------------------------------------------------------------
-LIFE_LABELS = {
+LIFE_LABELS: dict[str, str] = {
     "TBA": "To Be Announced",
     "DEV": "Development",
     "CURRENT": "Current (supported)",
@@ -40,7 +41,7 @@ def _generate_ipxe_menu_file(
     _caller = get_caller_name()
     message_info(_caller, f"Generate ipxe menu ({_dist_name})", omit=True)
     # -------------------------------------------------------------------------
-    _query_version = ""
+    _query_version: str = ""
     match _dist_name:
         case "autoexec":
             pass
@@ -58,7 +59,7 @@ def _generate_ipxe_menu_file(
             | "miraclelinux"
             | "opensuse"
         ):
-            _query_version = rf"{_dist_name}-"
+            _query_version: str = rf"{_dist_name}-"
         case "custom_live":
             pass
         case "live":
@@ -75,8 +76,8 @@ def _generate_ipxe_menu_file(
         _sort_results = sort_distribution_data(_find_results, "", reverse=True)
     # -------------------------------------------------------------------------
     _read_data = file_read(_path_src)
-    _var_pattern = re.compile(r":_([A-Z0-9_]+)_:")
-    _conv_dist = _var_pattern.sub(
+    _var_pattern: re.Pattern[str] = re.compile(r":_([A-Z0-9_]+)_:")
+    _conv_dist: str = _var_pattern.sub(
         lambda m: str(info_comm.conf.find(key=m.group(1)).value), _read_data
     )
     # -------------------------------------------------------------------------
@@ -88,8 +89,10 @@ def _generate_ipxe_menu_file(
     _code_selection_lines = []
     # -------------------------------------------------------------------------
     for _data_dist in _sort_results:
-        _goto_name = re.sub(r"\s+", "_", f"{_data_dist.name}-{_data_dist.version_id}")
-        _item_text = (
+        _goto_name: str = re.sub(
+            r"\s+", "_", f"{_data_dist.name}-{_data_dist.version_id}"
+        )
+        _item_text: str = (
             f"{f'item -- {_goto_name}':<{_item_width}} "
             f"- {_data_dist.name} ${{edition}} {_data_dist.version_id}"
         )
@@ -108,12 +111,14 @@ def _generate_ipxe_menu_file(
         )
     # -------------------------------------------------------------------------
     for _read_line in _conv_dist.splitlines():
-        _stripped = _read_line.strip()
+        _stripped: str = _read_line.strip()
         if _stripped.startswith("# <items>"):
             for _life in LIFE_LABELS:
                 if _life in _items_by_life:
-                    _gap_label = LIFE_LABELS.get(_life, "Unknown")
-                    _gap_text = f"{'item --gap --':<{_item_width}} [ {_gap_label} ]"
+                    _gap_label: str = LIFE_LABELS.get(_life, "Unknown")
+                    _gap_text: str = (
+                        f"{'item --gap --':<{_item_width}} [ {_gap_label} ]"
+                    )
                     _item_data.append(_gap_text)
                     _item_data.extend(_items_by_life[_life])
         elif _stripped.startswith("# <goto selection>"):
@@ -125,7 +130,7 @@ def _generate_ipxe_menu_file(
         else:
             _item_data.append(_read_line)
     # -------------------------------------------------------------------------
-    write_data = "\n".join(_item_data) + "\n"
+    write_data: str = "\n".join(_item_data) + "\n"
     file_write(_path_dest, write_data, text=True, backup=True)
 
 
@@ -143,11 +148,11 @@ def generate_ipxe_menu(info_comm: InfoCommon) -> None:
     )
     _path_ipxe_dir = _path_autoexec_ipxe.parent
     # -------------------------------------------------------------------------
-    _dist_pattern = re.compile(r"^menu_([^.]+)\.ipxe$")
+    _dist_pattern: re.Pattern[str] = re.compile(r"^menu_([^.]+)\.ipxe$")
     for _path_src in _list_tmpl_files:
         _filename = _path_src.name
-        _match = _dist_pattern.match(_filename)
-        _dist_name = _match.group(1) if _match else Path(_filename).stem
-        _menu_dir = "" if _filename == _path_autoexec_ipxe.name else "menu"
+        _match: re.Match[str] | None = _dist_pattern.match(_filename)
+        _dist_name: str | Any = _match.group(1) if _match else Path(_filename).stem
+        _menu_dir: str = "" if _filename == _path_autoexec_ipxe.name else "menu"
         _path_dest = _path_ipxe_dir / _menu_dir / _filename
         _generate_ipxe_menu_file(info_comm, _path_src, _path_dest, _dist_name)

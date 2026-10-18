@@ -18,7 +18,7 @@ def load_ui_definition(filename: str = "ui_definition.json") -> dict:
         # 💡 通常の python3 main.py で実行された場合 (カレントディレクトリ)
         base_path = Path(os.getcwd())
 
-    json_path = base_path / filename
+    json_path: Path = base_path / filename
 
     # デバッグ用に読み込みパスを標準出力
     print(f"🔍 Loading UI definition from: {json_path}")
@@ -43,7 +43,7 @@ def build_menu_bar(
             if item_type == "separator":
                 menu_block.add_separator()
                 continue
-            label = messages.get(item.get("label_key", ""), "")
+            label: str = messages.get(item.get("label_key", ""), "")
             cmd: Any | None = commands.get(item.get("command_name", ""), None)
             if cmd:
                 if item_type == "command":
@@ -62,7 +62,7 @@ def build_menu_bar(
                         menu_block.add_radiobutton(
                             label=label, variable=var, value=val, command=cmd
                         )
-        block_title = messages.get(block.get("title_key", ""), "")
+        block_title: str = messages.get(block.get("title_key", ""), "")
         menubar.add_cascade(label=block_title, menu=menu_block)
     root.config(menu=menubar)
     return menubar
@@ -83,7 +83,7 @@ def build_buttons(
     """
     created_buttons = []
     for btn_info in button_data:
-        label = messages.get(btn_info.get("label_key", ""), "")
+        label: str = messages.get(btn_info.get("label_key", ""), "")
         cmd: Any | None = commands.get(btn_info.get("command_name", ""), None)
         if cmd:
             # ttk.Buttonの作成
@@ -94,7 +94,7 @@ def build_buttons(
             row = grid_info.get("row", 0)
             column = grid_info.get("column", 0)
             if row >=0 and column >= 0:
-                grid_kwargs = {
+                grid_kwargs: dict[str, Any] = {
                     "row": row,
                     "column": column,
                     "rowspan": grid_info.get("row_span", 1),

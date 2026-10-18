@@ -25,9 +25,9 @@ def handle_fatal_error(
         SystemExit: System exit
     """
     # --- Constructing error messages -----------------------------------------
-    _summary = traceback.extract_tb(e.__traceback__)[-1]
+    _summary: traceback.FrameSummary = traceback.extract_tb(e.__traceback__)[-1]
     message_alert(caller, f"Fatal error: {e}", omit)
-    _error_msg = f"Fatal error: {e}\n"
+    _error_msg: str = f"Fatal error: {e}\n"
     if isinstance(e, OSError):
         _error_msg += f"line number: {_summary.lineno}"
     else:

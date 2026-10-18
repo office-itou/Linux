@@ -2,6 +2,7 @@
 
 # --- Python library ----------------------------------------------------------
 from pathlib import Path
+from typing import Any
 
 
 # --- my library --------------------------------------------------------------
@@ -33,10 +34,10 @@ def spc_encode(src_datas: list[dict[str, str]]) -> list[dict[str, str]]:
             if isinstance(_value, (int, float)):
                 _value = str(_value)
             if isinstance(_value, str):
-                _value = _value.replace(" ", "%20")
-                _value = _value.strip("`")
+                _value: str = _value.replace(" ", "%20")
+                _value: str = _value.strip("`")
                 if _value.endswith("/"):
-                    _value = _value + "-"
+                    _value: str = _value + "-"
             _converted_dicts[_key] = _value
         _converted_data.append(_converted_dicts)
     return _converted_data
@@ -55,7 +56,7 @@ def spc_decode(src_datas: list[dict[str, str]]) -> list[dict[str, str]]:
         if hasattr(_src_data, "items"):
             for _key, _value in _src_data.items():
                 if isinstance(_value, str):
-                    _value = _value.replace("%20", " ").strip("-")
+                    _value: str = _value.replace("%20", " ").strip("-")
                 _converted_dicts[_key] = _value
         _converted_data.append(_converted_dicts)
     return _converted_data
@@ -72,14 +73,14 @@ def get_text2list(src_path: Path) -> list[dict[str, str]]:
     _caller = get_caller_name()
     _result: list[dict[str, str]] = []
     try:
-        _src_path = src_path.resolve()
+        _src_path: Path = src_path.resolve()
         with open(_src_path, mode="r", encoding="utf-8", newline=None) as f:
-            _header_line = f.readline()
-            _headers = _header_line.split() 
+            _header_line: str = f.readline()
+            _headers: list[str] = _header_line.split()
             for _line in f:
                 if not _line.strip():
                     continue
-                _row_data = _line.split()
+                _row_data: list[str] = _line.split()
                 _row_dict = {}
                 for i, _header in enumerate(_headers):
                     _row_dict[_header] = _row_data[i] if i < len(_row_data) else ""
@@ -103,12 +104,14 @@ def put_list2text(
     if not src_datas:
         message_warn(_caller, "No data")
         return
-    _header_dict = {k: k for d in src_datas for k, v in d.items()}
-    _data_dicts = [d.__dict__ if hasattr(d, "__dict__") else d for d in src_datas]
-    _text_list = [format_str.format(**_header_dict)] + [
+    _header_dict: dict[str, str] = {k: k for d in src_datas for k, v in d.items()}
+    _data_dicts: list[dict[str, Any] | dict[str, str]] = [
+        d.__dict__ if hasattr(d, "__dict__") else d for d in src_datas
+    ]
+    _text_list: list[str] = [format_str.format(**_header_dict)] + [
         format_str.format(**d) for d in _data_dicts
     ]
-    _write_data = "\n".join(_text_list) + "\n"
+    _write_data: str = "\n".join(_text_list) + "\n"
     file_write(dst_path, _write_data, text=True, backup=True)
 
 

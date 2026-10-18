@@ -47,7 +47,7 @@ def json_save(dest_path: Path, src_data: Any) -> None:
     """
     _caller = get_caller_name()
     try:
-        _write_data = json.dumps(src_data, ensure_ascii=False, indent=4)
+        _write_data: str = json.dumps(src_data, ensure_ascii=False, indent=4)
         file_write(dest_path, _write_data, text=True, backup=True)
     except (OSError, Exception) as e:  # noqa: BLE001
         message_alert(_caller, f"target file: {dest_path}")

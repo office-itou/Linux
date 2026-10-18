@@ -2,6 +2,7 @@
 import re
 import tkinter as tk
 from tkinter import ttk
+from typing import Any
 
 
 # ruff: isort: off
@@ -16,7 +17,7 @@ from common.utils import infosystem
 # -----------------------------------------------------------------------------
 class DebugLogWindow:
     def __init__(self, parent_root: tk.Tk) -> None:
-        self.parent_root = parent_root  # 💡 親の参照を保持
+        self.parent_root: tk.Tk = parent_root  # 💡 親の参照を保持
         self.win = tk.Toplevel(parent_root, name="debug_log_win")
         self.win.title("📂 Debug Log Monitor")
 
@@ -27,22 +28,22 @@ class DebugLogWindow:
 
         # 親の最新の座標・サイズ情報を同期
         parent_root.update_idletasks()
-        parent_x = parent_root.winfo_x()
-        parent_y = parent_root.winfo_y()
+        parent_x: int = parent_root.winfo_x()
+        parent_y: int = parent_root.winfo_y()
 
         # 📌 基準となるタイトルの高さ（約35px）を「ずらし幅」として使用
         title_height = 35
 
         from common.utils import infosystem
 
-        current_step = getattr(infosystem, "win_cascade_step", 0)
+        current_step: Any | int = getattr(infosystem, "win_cascade_step", 0)
 
         # 📌 位置計算
-        target_x = parent_x + ((current_step + 1) * title_height)
-        target_y = parent_y - ((current_step + 3) * title_height)
+        target_x: Any | int = parent_x + ((current_step + 1) * title_height)
+        target_y: Any | int = parent_y - ((current_step + 3) * title_height)
 
         if target_y < 40:
-            target_y = parent_y + (current_step * title_height)
+            target_y: Any | int = parent_y + (current_step * title_height)
 
         self.win.geometry(f"800x600+{target_x}+{target_y}")
 
@@ -79,16 +80,16 @@ class DebugLogWindow:
         scrollbar_x.pack(side="bottom", fill="x")
         self.text_area.pack(side="left", fill="both", expand=True)
 
-        self.ansi_regex = re.compile(r"\x1b\[([0-9;]*)m")
+        self.ansi_regex: re.Pattern[str] = re.compile(r"\x1b\[([0-9;]*)m")
 
     def append_ansi_text(self, text: str) -> None:
         if not infosystem.log_window_active:
             return
         current_tags = set()
-        parts = self.ansi_regex.split(text)
+        parts: list[str | Any] = self.ansi_regex.split(text)
         for i, part in enumerate(parts):
             if i % 2 == 1:
-                codes = part.split(";")
+                codes: list[str] | Any = part.split(";")
                 for code in codes:
                     if code == "0" or code == "":
                         current_tags.clear()  # リセット
@@ -129,7 +130,7 @@ class DebugLogWindow:
         # 2. 💡 【重要】親ウィンドウ(MainWindow)にアタッチされている
         # app インスタンスを探し、ラジオボタンの連動変数を False にリセットします。
         # これによりXで閉じてもメニューが「オフ」になります。
-        main_window = getattr(self.parent_root, "app", None)
+        main_window: Any | None = getattr(self.parent_root, "app", None)
         if main_window and hasattr(main_window, "current_monitor_boolvar"):
             main_window.current_monitor_boolvar.set(False)
 

@@ -1,4 +1,4 @@
-"""Common Function Package: shared [generated: 2026/10/11 00:55:14 JST (+0900)]"""
+"""Common Function Package: shared [generated: 2026/10/17 11:39:05 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -21,7 +21,10 @@ __all__ = [
     "check_root",
     "conv2data",
     "conv2variable",
+    "find_grub_cfg",
+    "find_isolinux_cfg",
     "generate_ipxe_menu",
+    "generate_iso_file",
     "generate_markdown",
     "get_text2list",
     "initarg",
@@ -52,7 +55,10 @@ _MODULE_MAP = {
     "check_root": ".my_func_check_root",
     "conv2data": ".my_common_cfg",
     "conv2variable": ".my_common_cfg",
+    "find_grub_cfg": ".my_find_boot_menu",
+    "find_isolinux_cfg": ".my_find_boot_menu",
     "generate_ipxe_menu": ".my_func_generate_ipxe_menu",
+    "generate_iso_file": ".my_func_generate_iso_file",
     "generate_markdown": ".my_func_generate_markdown",
     "get_text2list": ".my_convert",
     "initarg": ".my_func_init_arg",

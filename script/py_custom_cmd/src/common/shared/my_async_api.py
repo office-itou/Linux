@@ -1,7 +1,7 @@
 # --- Python library ----------------------------------------------------------
 import asyncio
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, CoroutineType, Task
 
 import aiohttp  # sudo apt-get install python3-aiohttp
 from aiohttp import ClientTimeout
@@ -22,7 +22,7 @@ from common.utils import (
 # --- maximum number of simultaneous semaphore accesses -----------------------
 MAX_CONCURRENT_REQUESTS = 5
 # --- list of default name mappings for each distribution ---------------------
-BASE_DIR_MAP = {
+BASE_DIR_MAP: dict[str, str] = {
     "debian": "BASE_DEBI",
     "ubuntu": "BASE_UBUN",
     "fedora": "BASE_FEDO",
@@ -108,7 +108,9 @@ class InfoWebFile:
             if _local_file_path:
                 # print(f"_local_file:{_local_file_path}")
                 try:
-                    _file_exists = await asyncio.to_thread(_local_file_path.exists)
+                    _file_exists: bool = await asyncio.to_thread(
+                        _local_file_path.exists
+                    )
                 except (OSError, Exception) as e:
                     if self.on_progress_callback:
                         _message = ljust(
@@ -245,12 +247,12 @@ class InfoWebFile:
             for _mdia_data in self.win.async_handler.target_items:
                 if not _mdia_data.web_path:
                     continue
-                _coro = self._download_single_media(
+                _coro: CoroutineType[Any, Any, None] = self._download_single_media(
                     semaphore=semaphore,
                     session=session,
                     mdia_data=_mdia_data,
                 )
-                _task = asyncio.ensure_future(_coro)
+                _task: Task[None] = asyncio.ensure_future(_coro)
                 self._active_tasks.append(_task)
             if self._active_tasks:
                 try:

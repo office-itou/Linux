@@ -4,7 +4,7 @@
 import os
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 # --- my library --------------------------------------------------------------
 from common.utils import (
@@ -66,14 +66,16 @@ class InfoSystem:
 
         import __main__
 
-        terminal_size = shutil.get_terminal_size()
+        terminal_size: os.terminal_size = shutil.get_terminal_size()
         # 実行中のプログラム名とユーザー環境情報の取得
-        program_path = (
+        program_path: Path | None = (
             Path(__main__.__file__) if hasattr(__main__, "__file__") else None
         )
-        program_name = program_path.stem if program_path else "interactive"
-        exec_user = os.getenv("SUDO_USER", os.getenv("USER"))
-        home_dir = os.getenv("SUDO_HOME") or os.getenv("HOME") or f"/home/{exec_user}"
+        program_name: str = program_path.stem if program_path else "interactive"
+        exec_user: str | None = os.getenv("SUDO_USER", os.getenv("USER"))
+        home_dir: str = (
+            os.getenv("SUDO_HOME") or os.getenv("HOME") or f"/home/{exec_user}"
+        )
         lang = detect_language() or "en"
         # GUIとCUIによるパラメータの振り分け処理（一本化）
         if is_gui:
@@ -81,8 +83,8 @@ class InfoSystem:
                 from tkinter import messagebox
             except (OSError, Exception) as e:
                 raise SystemExit from e
-            gui_error_callback = messagebox.showerror
-            gui_info_callback = messagebox.showinfo
+            gui_error_callback: Callable[..., str] = messagebox.showerror
+            gui_info_callback: Callable[..., str] = messagebox.showinfo
             log_window_active = True
             columns = 120
             rows = 40
@@ -92,8 +94,8 @@ class InfoSystem:
             gui_error_callback = None
             gui_info_callback = None
             log_window_active = False
-            columns = terminal_size.columns
-            rows = terminal_size.lines
+            columns: int = terminal_size.columns
+            rows: int = terminal_size.lines
             debug = False  # 💡 🌟 ここを追加！
             debugout = False
         return SystemData(

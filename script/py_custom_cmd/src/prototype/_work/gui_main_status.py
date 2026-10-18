@@ -52,7 +52,7 @@ class MainWindowStatus:
         _bar_container = ttk.Frame(_status_frame)
         _bar_container.grid(row=0, column=1, sticky="ns")
         # ---------------------------------------------------------------------
-        _messages = (
+        _messages: str = (
             f"{self.current_messages.get('msg_info_standby', 'Standby')}"
             f"(0/0 {self.current_messages.get('msg_info_target_items', 'items')})"
         )
@@ -66,7 +66,7 @@ class MainWindowStatus:
         )
         self.progress_bar.pack(anchor="w")
         # ---------------------------------------------------------------------
-        _messages = self.current_messages.get(
+        _messages: str = self.current_messages.get(
             "msg_info_startup", "The application has started.\nIt is ready."
         )
         self.append_log(_messages)
@@ -104,9 +104,9 @@ class MainWindowStatus:
             self.root.after(0, self.update_progress, current, total, is_complete)
             return
         # ---------------------------------------------------------------------
-        _message = ""
+        _message: str = ""
         if total > 0:
-            _percent = (current / total) * 100
+            _percent: float = (current / total) * 100
             self.progress_bar["value"] = _percent
             if is_complete or current >= total:
                 _key = "msg_info_complete"
@@ -114,7 +114,7 @@ class MainWindowStatus:
             else:
                 _key = "msg_info_processing"
                 _default = "Processing..."
-            _message = f"{self.current_messages.get(_key, _default)}"
+            _message: str = f"{self.current_messages.get(_key, _default)}"
         else:
             current = 0
             total = 0

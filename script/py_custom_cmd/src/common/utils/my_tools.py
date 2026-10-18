@@ -37,7 +37,7 @@ from common.utils import (
 # ruff: isort: off
 # ruff: isort: on
 # --- definition --------------------------------------------------------------
-_ARGS_LIST = [
+_ARGS_LIST: list[dict[str, str]] = [
     {"arg": "--t2j", "help": "Text -> json convert", "action": "store_true"},
     {"arg": "--j2t", "help": "Text -> json convert", "action": "store_true"},
     {"arg": "--md", "help": "json -> Markdown generate", "default": "", "type": "str"},
@@ -46,7 +46,7 @@ _ARGS_LIST = [
 
 # --- initialize --------------------------------------------------------------
 @debug_logger
-def initialize():
+def initialize() -> None:
     """Initialize"""
 
 

@@ -16,7 +16,7 @@ def detect_language() -> str:
     except Exception:  # noqa: BLE001
         sys_lang = None
     if not sys_lang:
-        sys_lang = os.environ.get("LANG", "")
+        sys_lang: str = os.environ.get("LANG", "")
     if sys_lang:
         return sys_lang.replace("-", "_").split("_")[0].lower()
     return "en"

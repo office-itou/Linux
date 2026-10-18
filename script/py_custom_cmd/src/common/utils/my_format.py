@@ -5,14 +5,14 @@ from typing import Any
 
 # --- my library --------------------------------------------------------------
 # ruff: isort: off
-#from common.utils import (
+# from common.utils import (
 #    debug_logger,
-#)
+# )
 
 
 # ruff: isort: on
 # =============================================================================
-#@debug_logger
+# @debug_logger
 def safe_format(value: Any, fmt_str: str | None) -> str:
     """
     値を安全にフォーマット文字列へ適用するヘルパー関数。
@@ -33,12 +33,12 @@ def safe_format(value: Any, fmt_str: str | None) -> str:
                 try:
                     # ISO 8601 形式の文字列を datetime に変換
                     # （この時点で UTC などの情報を持つ）
-                    dt = datetime.fromisoformat(value)
+                    dt: datetime = datetime.fromisoformat(value)
                     # 💡 実行環境（ローカルPC）のタイムゾーンへ動的に変換
                     # dt.tzinfo が存在する場合のみ変換し、
                     # 存在しない場合はそのまま処理します
                     if dt.tzinfo is not None:
-                        dt = dt.astimezone()
+                        dt: datetime = dt.astimezone()
                     return fmt_str.format(dt)
                 except ValueError:
                     pass
@@ -50,7 +50,7 @@ def safe_format(value: Any, fmt_str: str | None) -> str:
                 "%Y/%m/%d",
             ):
                 try:
-                    dt = datetime.strptime(value, parse_fmt)
+                    dt: datetime = datetime.strptime(value, parse_fmt)
                     return fmt_str.format(dt)
                 except ValueError:
                     continue

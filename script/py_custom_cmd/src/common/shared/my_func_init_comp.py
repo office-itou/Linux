@@ -21,7 +21,7 @@ def proc_init(
 ) -> None:
     # --- initialization --------------------------------------------------
     Argument(description=description, list_args=list_args)
-    _gui = (
+    _gui: bool = (
         bool(os.getenv("DISPLAY"))
         if not getattr(infosystem.args, "force_cui", True)
         else False
@@ -43,7 +43,7 @@ def proc_init(
         _message = "--- command args ---"
         message_info(caller, _message, omit=True)
         for _args in infosystem.args.__dict__:
-            _message = f"{_args:<9}={getattr(infosystem.args, _args, '')}"
+            _message: str = f"{_args:<9}={getattr(infosystem.args, _args, '')}"
             message_info(caller, _message, omit=True)
 
 

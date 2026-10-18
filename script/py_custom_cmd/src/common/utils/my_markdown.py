@@ -18,12 +18,12 @@ def list2markdown(dest_path: Path, md_title: str, src_datas: list) -> None:
         md_title (str): Markdown title
         src_data (list): Source data
     """
-    _spc_str = " " * 2
-    _url_pattern = re.compile(
+    _spc_str: str = " " * 2
+    _url_pattern: re.Pattern[str] = re.compile(
         r"^https?://(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?:/[a-zA-Z0-9._~:/?#\[\]@!\(&\'()*+,;=\%-]*)?"
     )
-    _comment_pattern = re.compile(r"^#.*$")
-    _under_line_pattern = re.compile(r"^.*:_[a-zA-Z0-9_]+_:.*$")
+    _comment_pattern: re.Pattern[str] = re.compile(r"^#.*$")
+    _under_line_pattern: re.Pattern[str] = re.compile(r"^.*:_[a-zA-Z0-9_]+_:.*$")
 
     def _conversion_url(list_data: list) -> list:
         _conv_list_data = []
@@ -61,12 +61,12 @@ def list2markdown(dest_path: Path, md_title: str, src_datas: list) -> None:
             for _row_dict in _converted_data:
                 _val_str = str(_row_dict.get(_name, ""))
                 _w = count_width(_val_str)
-                _max_size = max(_max_size, _w)
+                _max_size: int = max(_max_size, _w)
 
             _col_sizes[_name] = max(_max_size, _cnt_name)
         # --- header and divider line ---------------------------------------------
-        _header = ""
-        _align = ""
+        _header: str = ""
+        _align: str = ""
         for _name in _columns:
             _colsize = _col_sizes[_name]
             _name_str = str(_name)
@@ -80,7 +80,7 @@ def list2markdown(dest_path: Path, md_title: str, src_datas: list) -> None:
         # --- data (iterrows() から通常のループに書き換え) -------------------------
         _md_rows = []
         for _row_dict in _converted_data:
-            _row_text = ""
+            _row_text: str = ""
             for _name in _columns:
                 _colsize = _col_sizes[_name]
                 _val_str = str(_row_dict.get(_name, ""))
@@ -120,13 +120,13 @@ def markdown2list(src_path: Path) -> list:
     _headers = []
     _read_data: str = str(file_read(src_path))
     for _line in _read_data:
-        _line_str = _line.strip()
+        _line_str: str = _line.strip()
         if _line_str.startswith("|") and _line_str.endswith("|"):
-            _cells = [_cell.strip() for _cell in _line_str.split("|")[1:-1]]
+            _cells: list[str] = [_cell.strip() for _cell in _line_str.split("|")[1:-1]]
             if all(re.match(r"^:?-+:?\$", c) for c in _cells):
                 continue
             if not _headers:
-                _headers = _cells
+                _headers: list[str] = _cells
             else:
                 _row_dict = {}
                 for i, _head in enumerate(_headers):

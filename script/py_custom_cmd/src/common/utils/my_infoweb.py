@@ -78,34 +78,36 @@ def _compile_exclude_regex(exclude_url: str) -> re.Pattern | None:
     # -------------------------------------------------------------------------
     _translated_patterns = []
     for s in exclude_url.split(","):
-        s = s.strip()
+        s: str = s.strip()
         if not s:
             continue
         # ---- patterns with wildcards ----------------------------------------
-        _range_match_with_wildcard = re.match(r"^(\d+)-(\d+)\.(.*)$", s)
+        _range_match_with_wildcard: re.Match[str] | None = re.match(
+            r"^(\d+)-(\d+)\.(.*)$", s
+        )
         # ---- pattern with only numeric ranges ---------------------------
-        _range_match_pure_num = re.match(r"^(\d+)-(\d+)$", s)
+        _range_match_pure_num: re.Match[str] | None = re.match(r"^(\d+)-(\d+)$", s)
         # ---------------------------------------------------------------------
         if _range_match_with_wildcard:
             _start = int(_range_match_with_wildcard.group(1))
             _end = int(_range_match_with_wildcard.group(2))
-            _remain = _range_match_with_wildcard.group(3)
+            _remain: str | Any = _range_match_with_wildcard.group(3)
             for _num in range(_start, _end + 1):
-                _regex_str = fnmatch.translate(f"{_num}.{_remain}")
+                _regex_str: str = fnmatch.translate(f"{_num}.{_remain}")
                 _translated_patterns.append(f"(?:{_regex_str})")
             continue
         elif _range_match_pure_num:
             _start = int(_range_match_pure_num.group(1))
             _end = int(_range_match_pure_num.group(2))
             for _num in range(_start, _end + 1):
-                _regex_str = f"^{_num}$"
+                _regex_str: str = f"^{_num}$"
                 _translated_patterns.append(f"(?:{_regex_str})")
             continue
         # ---- hybrid processing ----------------------------------------------
         if any(_char in s for _char in "()|?+"):
-            _regex_str = s
+            _regex_str: str = s
         else:
-            _regex_str = fnmatch.translate(s)
+            _regex_str: str = fnmatch.translate(s)
         # ---------------------------------------------------------------------
         _translated_patterns.append(f"(?:{_regex_str})")
     # -------------------------------------------------------------------------
@@ -121,25 +123,26 @@ async def _expand_regexp_urls(
 ) -> list[str]:
     """Hierarchical expansion of URL regular expressions"""
     _caller = get_caller_name()
-    _regex_pattern = re.compile(r"(\[[^\]]+\]|\([^)]+\))[+*?]?")
-    _current_urls = [search_url]
+    _regex_pattern: re.Pattern[str] = re.compile(r"(\[[^\]]+\]|\([^)]+\))[+*?]?")
+    _current_urls: list[str] = [search_url]
     # -------------------------------------------------------------------------
-    #print(f"{Color.blue}{info_web},{session},{search_url},{exclude_url},{latest}{Color.reset}")
+    # print(f"{Color.blue}{info_web},{session},{search_url},"
+    # f"{exclude_url},{latest}{Color.reset}")
     while True:
         _next_urls = []
         _has_any_regex = False
         # ---------------------------------------------------------------------
         for _url in _current_urls:
-            #print(f"{Color.blue}request_url:{_url}{Color.reset}")
+            # print(f"{Color.blue}request_url:{_url}{Color.reset}")
             # -----------------------------------------------------------------
-            _match_regex = _regex_pattern.search(_url)
+            _match_regex: re.Match[str] | None = _regex_pattern.search(_url)
             if not _match_regex:
                 _next_urls.append(_url)
                 continue
             # -----------------------------------------------------------------
             _has_any_regex = True
-            _match_start = _match_regex.start()
-            _match_end = _match_regex.end()
+            _match_start: int = _match_regex.start()
+            _match_end: int = _match_regex.end()
             # -----------------------------------------------------------------
             _last_slash_idx = _url[:_match_start].rfind("/")
             _match_before = _url[:_last_slash_idx] if _last_slash_idx > 0 else ""
@@ -152,7 +155,7 @@ async def _expand_regexp_urls(
                     "/"
                 )
             else:
-                _match_after = ""
+                _match_after: str = ""
                 _match_inside = _url[_last_slash_idx + 1 :].strip("/")
             # -----------------------------------------------------------------
             _match_before = _match_before.rstrip("/")
@@ -160,7 +163,7 @@ async def _expand_regexp_urls(
             # --- Retrieving HTML text and retrying ---------------------------
             # print(f"{Color.br_cyan}_match_before:{_match_before}{Color.reset}")
             _web_data = WebData()
-            #print(session, _match_before,True if session else False)
+            # print(session, _match_before,True if session else False)
             for r in range(1):
                 _web_data = await info_web.get_text(session, _match_before)
                 if int(_web_data.status, 0) in (200, 206, 404):
@@ -179,7 +182,7 @@ async def _expand_regexp_urls(
             _web_data.search_url = search_url
             _web_data.exclude_url = exclude_url
             # -----------------------------------------------------------------
-            _name_pattern = re.compile(rf"^{_match_inside}$")
+            _name_pattern: re.Pattern[str] = re.compile(rf"^{_match_inside}$")
             _soup = BeautifulSoup(_web_data.text, "html.parser")
             # -----------------------------------------------------------------
             for a in _soup.find_all("a", href=True):
@@ -224,7 +227,7 @@ async def get_infoweb(
     _caller = get_caller_name()
     _info_web = InfoWeb()
     _web_datas: list[WebData] = []
-    _search_pattern = re.compile(
+    _search_pattern: re.Pattern[str] = re.compile(
         r"^https?://.+/(debian|ubuntu)?/dists/([^/]+)?/main/installer-([^/]+)?/current/"
         r"|"
         r"^https?://d-i\.debian.org/daily-images/([^/]+)?/daily/"
@@ -236,13 +239,13 @@ async def get_infoweb(
     # --- creating an exclusion pattern ---------------------------------------
     _exclude_url = _compile_exclude_regex(exclude_url)
     # --- expanding multi-level URLs ------------------------------------------
-    #print(_info_web, session, search_url, _exclude_url)
-    _resolved_urls = await _expand_regexp_urls(
+    # print(_info_web, session, search_url, _exclude_url)
+    _resolved_urls: list[str] = await _expand_regexp_urls(
         _info_web, session, search_url, _exclude_url
     )
     # --- check the header of the confirmed real URL and generate WebData -----
     for _request_url in list(set(_resolved_urls)):
-        #print(f"{Color.magenta}{_request_url}{Color.reset}")
+        # print(f"{Color.magenta}{_request_url}{Color.reset}")
         _web_data = WebData()
         for r in range(1):
             _web_data = await _info_web.get_header(session, _request_url)
@@ -263,30 +266,32 @@ async def get_infoweb(
         _web_data.search_url = search_url
         _web_data.exclude_url = exclude_url
         # ---------------------------------------------------------------------
-        _path = urlparse(str(_web_data.request_url)).path
+        _path: str = urlparse(str(_web_data.request_url)).path
         _dirname, _basename = posixpath.split(_path)
-        _file_name_path = Path(_basename) if _basename else None
-        _local_file_path = Path(local_file) if local_file else None
-        _match = _search_pattern.search(str(_web_data.request_url))
+        _file_name_path: Path | None = Path(_basename) if _basename else None
+        _local_file_path: Path | None = Path(local_file) if local_file else None
+        _match: re.Match[str] | None = _search_pattern.search(
+            str(_web_data.request_url)
+        )
         _generated_filename = str(_file_name_path)
         if _match:
             if _match.group(2):
-                _code = _match.group(2)
-                _arch = _match.group(3)
-                _generated_filename = f"mini-{_code}-{_arch}.iso"
+                _code: str | Any = _match.group(2)
+                _arch: str | Any = _match.group(3)
+                _generated_filename: str = f"mini-{_code}-{_arch}.iso"
             elif _match.group(4):
-                _arch = _match.group(4)
-                _generated_filename = f"mini-testing-daily-{_arch}.iso"
+                _arch: str | Any = _match.group(4)
+                _generated_filename: str = f"mini-testing-daily-{_arch}.iso"
             elif _match.group(5):
-                _edtn = f"{_match.group(5)}-{_match.group(7)}"
-                _arch = _match.group(8)
-                _generated_filename = str(_file_name_path).replace(
+                _edtn: str = f"{_match.group(5)}-{_match.group(7)}"
+                _arch: str | Any = _match.group(8)
+                _generated_filename: str = str(_file_name_path).replace(
                     _arch, f"{_edtn}-{_arch}", 1
                 )
             elif _match.group(9):
-                _edtn = _match.group(9)
-                _arch = _match.group(10)
-                _generated_filename = str(_file_name_path).replace(
+                _edtn: str | Any = _match.group(9)
+                _arch: str | Any = _match.group(10)
+                _generated_filename: str = str(_file_name_path).replace(
                     _arch, f"{_edtn}-{_arch}", 1
                 )
             # print(f"_generated_filename:{_generated_filename}")

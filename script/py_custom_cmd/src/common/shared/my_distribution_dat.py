@@ -5,7 +5,7 @@ import re
 from dataclasses import dataclass, fields
 from operator import attrgetter
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 
 # --- my library --------------------------------------------------------------
@@ -28,7 +28,7 @@ from common.shared import (
 
 # ruff: isort: on
 # =============================================================================
-LIFE_MAP = {
+LIFE_MAP: dict[str, str] = {
     "-": "Current (supported)",
     "elts": "Extended Long-Term Support",
     "lts": "Long-Term Support",
@@ -36,7 +36,7 @@ LIFE_MAP = {
     "esm": "Expanded Security Maintenance",
     "esu": "Extended Security Updates",
 }
-ORDERED_DISTRIBUTIONS = [
+ORDERED_DISTRIBUTIONS: list[str] = [
     "debian",
     "ubuntu",
     "fedora",
@@ -50,7 +50,7 @@ ORDERED_DISTRIBUTIONS = [
     "ati",
     "memtest86plus",
 ]
-ORDERED_KEYS = [
+ORDERED_KEYS: list[str] = [
     "Development",
     "Current (supported)",
     "Long-Term Support",
@@ -90,7 +90,7 @@ class InfoDistribution:
         Args:
             src_path (Path, optional): Source path. Defaults to None.
         """
-        self._valid_fields = {f.name for f in fields(DistributionData)}
+        self._valid_fields: set[str] = {f.name for f in fields(DistributionData)}
         self.load(src_path)
 
     def __getattr__(self, name: str) -> Any:
@@ -144,14 +144,14 @@ class InfoDistribution:
             list[DistributionData]: Search results for the query
         """
         _results: list[DistributionData] = []
-        _compiled_queries = [
+        _compiled_queries: list[tuple[str, re.Pattern[str]]] = [
             (_q_key, re.compile(_q_pattern))
             for _query in queries
             for _q_key, _q_pattern in _query.items()
         ]
         for _class_data in self.data:
             for _q_key, _pattern in _compiled_queries:
-                _target_str = getattr(_class_data, _q_key, None)
+                _target_str: Any | None = getattr(_class_data, _q_key, None)
                 if _target_str and _pattern.search(_target_str):
                     _results.append(_class_data)
                     break
@@ -168,7 +168,7 @@ class InfoDistribution:
         for _class_data in self.data:
             match = True
             for _key, _value in kwargs.items():
-                attr_val = getattr(_class_data, _key, MISSING)
+                attr_val: Any | object = getattr(_class_data, _key, MISSING)
                 if attr_val is MISSING:
                     match = False
                     break
@@ -218,7 +218,9 @@ class InfoDistribution:
             wrap (bool, optional): Toggle text wrapping. Defaults to False.
         """
         for _class_data in self.data:
-            _text = _class_data if wrap else f"{_class_data!s:.{infosystem.columns}s}"
+            _text: DistributionData | str = (
+                _class_data if wrap else f"{_class_data!s:.{infosystem.columns}s}"
+            )
             eprint(f"{Color.yellow}{_text}{Color.reset}")
 
     @debug_logger
@@ -268,7 +270,7 @@ def parse_version_to_tuple(version_str: str) -> tuple[int, ...]:
     数字以外の文字が含まれる、またはパースできない場合は ValueError を発生させる
     """
     # バージョン文字列から数字とドット以外を排除・クリーンアップ
-    cleaned = re.sub(r"[^\d.]", "", version_str).strip(".")
+    cleaned: str = re.sub(r"[^\d.]", "", version_str).strip(".")
     if not cleaned:
         raise ValueError("Invalid version format")
 
@@ -288,34 +290,42 @@ def sort_distribution_data(
     Returns:
         list: Sorted DistributionData list
     """
-    selected_data_pattern = re.compile(rf"^{re.escape(distribution)}(|-).+$")
+    selected_data_pattern: re.Pattern[str] = re.compile(
+        rf"^{re.escape(distribution)}(|-).+$"
+    )
 
     # 💡 data 自体がリスト等のイテラブルであるため、内包表記でマッチする要素を抽出
     selected_data = [item for item in data if selected_data_pattern.match(item.version)]
 
-    base_match_pattern = re.compile(
+    base_match_pattern: re.Pattern[str] = re.compile(
         r"^([a-zA-Z0-9_-]+?)-(?=\d|testing|sid|tumbleweed|x86|x64)"
     )
-    num_match_pattern = re.compile(r"(\d+(?:\.\d+)*\S*)")
+    num_match_pattern: re.Pattern[str] = re.compile(r"(\d+(?:\.\d+)*\S*)")
 
-    def make_universal_sort_key(item):
+    def make_universal_sort_key(
+        item,
+    ) -> (
+        tuple[str | Any, Literal[2], tuple[int, ...]]
+        | tuple[str | Any, Literal[3], str]
+        | tuple[str | Any, Literal[0], tuple[int, int, int]]
+    ):
         v_str = item.version
         if distribution and v_str.startswith(f"{distribution}-"):
             v_str = v_str[len(distribution) + 1 :]
 
-        base_match = base_match_pattern.match(v_str)
+        base_match: re.Match[str] | None = base_match_pattern.match(v_str)
         if base_match:
-            base_name = base_match.group(1)
+            base_name: str | Any = base_match.group(1)
             version_part = v_str[len(base_name) + 1 :]
         else:
-            base_name = ""
+            base_name: str = ""
             version_part = v_str
 
-        version_part = re.sub(
+        version_part: str = re.sub(
             r"(\d+)h(\d+)", r"\1.\2", version_part, flags=re.IGNORECASE
         )
 
-        num_match = num_match_pattern.search(version_part)
+        num_match: re.Match[str] | None = num_match_pattern.search(version_part)
         if num_match:
             try:
                 # ⭕ parse_version の代わりに数値タプル化関数を適用
@@ -343,9 +353,9 @@ def sort_distribution_name(data: list) -> list:
     Returns:
         list: Result
     """
-    max_index = len(ORDERED_DISTRIBUTIONS)
+    max_index: int = len(ORDERED_DISTRIBUTIONS)
 
-    def get_sort_key(key):
+    def get_sort_key(key) -> int:
         for index, pattern in enumerate(ORDERED_DISTRIBUTIONS):
             if re.search(pattern, str(key)):
                 return index

@@ -5,6 +5,8 @@ import inspect
 import sys
 from collections.abc import Callable
 from functools import wraps
+from types import FrameType
+from typing import Any
 
 
 # --- my library --------------------------------------------------------------
@@ -25,24 +27,24 @@ def debug_logger(func: Callable):
         # --- get the caller's frame ------------------------------------------
         _frame = inspect.currentframe()
         if _frame is not None and _frame.f_back is not None:
-            _func_line = _frame.f_back.f_code.co_firstlineno
+            _func_line: int = _frame.f_back.f_code.co_firstlineno
             _func_name = str(_frame.f_back.f_code.co_name)
             _modu_name = str(_frame.f_back.f_globals.get("__name__"))
-            _call_info = f"{_modu_name}({_func_name})[{_func_line:4d}]"
+            _call_info: str = f"{_modu_name}({_func_name})[{_func_line:4d}]"
         else:
             _func_line = 0
             _func_name = "unknown"
             _modu_name = "unknown"
             _call_info = "unknown"
         # --- generation of function information and comments -----------------
-        _args_str = ", ".join(repr(x) for x in args) if args else ""
-        _kwargs_str = (
+        _args_str: str = ", ".join(repr(x) for x in args) if args else ""
+        _kwargs_str: str = (
             ", ".join(f"{k}={v!r}" for k, v in kwargs.items()) if kwargs else ""
         )
         if _args_str and _kwargs_str:
-            _parameter = f"{_args_str}, {_kwargs_str}"
+            _parameter: str = f"{_args_str}, {_kwargs_str}"
         else:
-            _parameter = _args_str or _kwargs_str or ""
+            _parameter: str = _args_str or _kwargs_str or ""
         _comment = generate_comment("", "", _parameter)
         # --- start log -------------------------------------------------------
         debugout(Color.yellow, _call_info, "Start", _comment, omit=True)
@@ -56,18 +58,18 @@ def debug_logger(func: Callable):
 
 
 # -----------------------------------------------------------------------------
-def debug_chk_cui(func: Callable):
+def debug_chk_cui(func: Callable) -> Callable[..., Any]:
     """A decorator that forces termination
     if a CUI-only function is called from a GUI environment."""
 
     def _wrapper(*args, **kwargs):
         # --- Defensive processing when invoked from a GUI environment --------
         if infosystem.is_gui:
-            _frame = inspect.currentframe()
+            _frame: FrameType | None = inspect.currentframe()
             if _frame is not None and _frame.f_back is not None:
                 _func_name = str(_frame.f_back.f_code.co_name)
                 _modu_name = str(_frame.f_back.f_globals.get("__name__"))
-                _call_info = f"{_modu_name}({_func_name})"
+                _call_info: str = f"{_modu_name}({_func_name})"
             else:
                 _func_name = "unknown"
                 _modu_name = "unknown"
@@ -96,7 +98,7 @@ def debug_chk_cui(func: Callable):
 
 
 # -----------------------------------------------------------------------------
-def debugout_scale(size: int):
+def debugout_scale(size: int) -> None:
     """Debug output for scale
     Args:
         size (int): Scale value
@@ -105,17 +107,19 @@ def debugout_scale(size: int):
     # _scale_u = "".join(
     #     str(i // 100)[-1] if i % 10 == 0 else " " for i in range(1, size + 1)
     # )
-    _scale_m = "".join(
+    _scale_m: str = "".join(
         str((i // 10) % 10) if i % 10 == 0 else " " for i in range(1, size + 1)
     )
-    _scale_l = "".join(str(i % 10) for i in range(1, size + 1))
+    _scale_l: str = "".join(str(i % 10) for i in range(1, size + 1))
     # eprint(scale_u)
     eprint(_scale_m)
     eprint(_scale_l)
 
 
 # -----------------------------------------------------------------------------
-def debugout(color: str, func_name: str, mode: str, message: str, omit: bool = False):
+def debugout(
+    color: str, func_name: str, mode: str, message: str, omit: bool = False
+) -> None:
     """Debug output
     Args:
         color (str): Message color

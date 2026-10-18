@@ -77,7 +77,7 @@ class InfoMedia:
             src_path (Path, optional): Source path. Defaults to None.
             info_conf (Any, optional): common.cfg interface class. Defaults to None.
         """
-        self._valid_fields = {f.name for f in fields(MediaData)}
+        self._valid_fields: set[str] = {f.name for f in fields(MediaData)}
         self.info_conf = info_conf
         self.load(src_path)
 
@@ -134,14 +134,14 @@ class InfoMedia:
             list[DistributionData]: Search results for the query
         """
         _results: list[MediaData] = []
-        _compiled_queries = [
+        _compiled_queries: list[tuple[str, re.Pattern[str]]] = [
             (_q_key, re.compile(_q_pattern))
             for _query in queries
             for _q_key, _q_pattern in _query.items()
         ]
         for _class_data in self.data:
             for _q_key, _pattern in _compiled_queries:
-                _target_str = getattr(_class_data, _q_key, None)
+                _target_str: Any | None = getattr(_class_data, _q_key, None)
                 if _target_str and _pattern.search(_target_str):
                     _results.append(_class_data)
                     break
@@ -158,7 +158,7 @@ class InfoMedia:
         for _class_data in self.data:
             match = True
             for _key, _value in kwargs.items():
-                attr_val = getattr(_class_data, _key, MISSING)
+                attr_val: Any | object = getattr(_class_data, _key, MISSING)
                 if attr_val is MISSING:
                     match = False
                     break
@@ -208,7 +208,9 @@ class InfoMedia:
             wrap (bool, optional): Toggle text wrapping. Defaults to False.
         """
         for _class_data in self.data:
-            _text = _class_data if wrap else f"{_class_data!s:.{infosystem.columns}s}"
+            _text: MediaData | str = (
+                _class_data if wrap else f"{_class_data!s:.{infosystem.columns}s}"
+            )
             eprint(f"{Color.yellow}{_text}{Color.reset}")
 
     @debug_logger

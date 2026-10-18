@@ -39,7 +39,7 @@ class InfoConfiguration:
     @debug_logger
     def __init__(self) -> None:
         """Method for initializing the ConfigurationData class."""
-        self._valid_fields = {f.name for f in fields(ConfigurationData)}
+        self._valid_fields: set[str] = {f.name for f in fields(ConfigurationData)}
         self.load()
 
     @debug_logger
@@ -74,14 +74,14 @@ class InfoConfiguration:
             list[ConfigurationData]: Search results for the query
         """
         _results: list[ConfigurationData] = []
-        _compiled_queries = [
+        _compiled_queries: list[tuple[str, re.Pattern[str]]] = [
             (_q_key, re.compile(_q_pattern))
             for _query in queries
             for _q_key, _q_pattern in _query.items()
         ]
         for _class_data in self.data:
             for _q_key, _pattern in _compiled_queries:
-                _target_str = getattr(_class_data, _q_key, None)
+                _target_str: Any | None = getattr(_class_data, _q_key, None)
                 if _target_str and _pattern.search(_target_str):
                     _results.append(_class_data)
                     break
@@ -98,7 +98,7 @@ class InfoConfiguration:
         for _class_data in self.data:
             match = True
             for _key, _value in kwargs.items():
-                attr_val = getattr(_class_data, _key, MISSING)
+                attr_val: Any | object = getattr(_class_data, _key, MISSING)
                 if attr_val is MISSING:
                     match = False
                     break
@@ -148,7 +148,9 @@ class InfoConfiguration:
             wrap (bool, optional): Toggle text wrapping. Defaults to False.
         """
         for _class_data in self.data:
-            _text = _class_data if wrap else f"{_class_data!s:.{infosystem.columns}s}"
+            _text: ConfigurationData | str = (
+                _class_data if wrap else f"{_class_data!s:.{infosystem.columns}s}"
+            )
             eprint(f"{Color.yellow}{_text}{Color.reset}")
 
     @debug_logger
@@ -181,10 +183,10 @@ class InfoConfiguration:
         Returns:
             Path: Path
         """
-        _path_str = self.find(key=key).value
+        _path_str: str = self.find(key=key).value
         if not _path_str:
             raise ValueError(f"No such key '{key}'")
-        _path_str = os.path.expanduser(os.path.expandvars(_path_str))
+        _path_str: str = os.path.expanduser(os.path.expandvars(_path_str))
         return Path(_path_str).resolve()
 
 
@@ -202,33 +204,35 @@ def load() -> list[ConfigurationData]:
     file_conf = "common.cfg"
     path_conf = None
     for dirs in (".", dirs_data):
-        path = Path(dirs) / file_conf
+        path: Path = Path(dirs) / file_conf
         if path.exists():
-            path_conf = path
+            path_conf: Path = path
             break
     if not path_conf:
         message_alert(caller, f"file not found: {file_conf}")
         raise SystemExit(1)
     # --- get setting items ---------------------------------------------------
-    line_pattern = re.compile(r'^(\w+)="([^"]*)"\s*(?:(#\s*.*))?$')
-    var_pattern = re.compile(r":_([A-Z0-9_]+)_:")
+    line_pattern: re.Pattern[str] = re.compile(r'^(\w+)="([^"]*)"\s*(?:(#\s*.*))?$')
+    var_pattern: re.Pattern[str] = re.compile(r":_([A-Z0-9_]+)_:")
     dict_conf: dict[str, str] = {}
     list_conf: list[ConfigurationData] = []
     data_dist: str = str(file_read(path_conf))
     for line in data_dist.splitlines():
-        line_raw = line.strip()
+        line_raw: str = line.strip()
         if not line_raw or not line_raw[0].isupper():
             continue
         if match := line_pattern.match(line_raw):
-            key = match.group(1)
-            value = match.group(2)
-            comment = match.group(3) or ""
+            key: str | Any = match.group(1)
+            value: str | Any = match.group(2)
+            comment: str | Any = match.group(3) or ""
             for _ in range(10):
                 if var_match := var_pattern.search(value):
-                    match_text = var_match.group(0)
-                    match_key = var_match.group(1)
+                    match_text: str = var_match.group(0)
+                    match_key: str | Any = var_match.group(1)
                     if match_key in dict_conf:
-                        value = value.replace(match_text, dict_conf[match_key])
+                        value: str | Any = value.replace(
+                            match_text, dict_conf[match_key]
+                        )
                     else:
                         break
                 else:
@@ -251,21 +255,21 @@ def conv2data(
         list: list_conv
     """
     # --- convert -------------------------------------------------------------
-    pattern = re.compile(r":_([A-Z0-9_]+)_:")
-    dict_conf = {item["key"]: item["value"] for item in list_conf}
+    pattern: re.Pattern[str] = re.compile(r":_([A-Z0-9_]+)_:")
+    dict_conf: dict[str, str] = {item["key"]: item["value"] for item in list_conf}
     list_conv = []
     for item in list_orig:
         dict_orig = {}
         for key, value in item.items():
             if isinstance(value, str):
                 for _ in range(10):
-                    match = pattern.search(value)
+                    match: re.Match[str] | None = pattern.search(value)
                     if not match:
                         break
-                    match_text = match.group(0)
-                    match_key = match.group(1)
+                    match_text: str = match.group(0)
+                    match_key: str | Any = match.group(1)
                     if match_key in dict_conf:
-                        value = value.replace(match_text, dict_conf[match_key])
+                        value: str = value.replace(match_text, dict_conf[match_key])
                     else:
                         break
             dict_orig[key] = value
@@ -300,7 +304,7 @@ def conv2variable(
             if isinstance(value, str):
                 for path in sorted_paths:
                     if path in value:
-                        value = value.replace(path, reverse_conf[path])
+                        value: str = value.replace(path, reverse_conf[path])
             dict_orig[key] = value
         list_conv.append(dict_orig)
     # --- return --------------------------------------------------------------

@@ -4,6 +4,7 @@
 import tkinter as tk
 from collections.abc import Callable
 from tkinter import ttk
+from typing import Any
 
 
 # --- my library --------------------------------------------------------------
@@ -19,16 +20,17 @@ class MainWindowTables:
     current_messages: dict[str, str]
 
     info_comm: InfoCommon
-    #info_webfile: InfoWebFile
-    #datas_map: dict[str, list[Any]]
+    # info_webfile: InfoWebFile
+    # datas_map: dict[str, list[Any]]
 
     append_log: Callable
     refresh_exec_button_text: Callable
-    #reload_table_data: Callable
+    # reload_table_data: Callable
     update_progress: Callable
 
-    _main_frame:ttk.Frame
+    _main_frame: ttk.Frame
     ui_def: dict
+
     def _generate_center_tables(self) -> None:
         if not hasattr(self, "main_center_table_widgets"):
             self.main_center_table_widgets = {}
@@ -68,9 +70,9 @@ class MainWindowTables:
             _even_bg = _table_data.get("even_bg", "#ffffff")
             _odd_bg = _table_data.get("odd_bg", "#ffffff")
             _updated_bg = _table_data.get("updated_bg", "#e0f2fe")
-            _even_tag = f"{_table_id}_even"
-            _odd_tag = f"{_table_id}_odd"
-            _updated_tag = f"{_table_id}_updated"
+            _even_tag: str = f"{_table_id}_even"
+            _odd_tag: str = f"{_table_id}_odd"
+            _updated_tag: str = f"{_table_id}_updated"
             _tree.tag_configure(_even_tag, background=_even_bg)
             _tree.tag_configure(_odd_tag, background=_odd_bg)
             _tree.tag_configure(_updated_tag, background=_updated_bg)
@@ -104,10 +106,10 @@ class MainWindowTables:
             _tree.configure(xscrollcommand=_h_scrollbar.set)
             _h_scrollbar.grid(row=2, column=0, sticky="ew")
         # ---------------------------------------------------------------------
-        #if not hasattr(self, "datas_map"):
+        # if not hasattr(self, "datas_map"):
         #    self.datas_map = {}
         # ---------------------------------------------------------------------
-        #self.info_webfile = InfoWebFile(self)
+        # self.info_webfile = InfoWebFile(self)
         for _data in self.info_comm.mdia.data:
             _data.target_flag = "o" if _data.entry_flag == "o" else "x"
         # ---------------------------------------------------------------------
@@ -136,38 +138,38 @@ class MainWindowTables:
         )
 
     def _on_tree_click(self, event: tk.Event) -> None:
-        _tree = event.widget
+        _tree: tk.Misc = event.widget
         if not isinstance(_tree, ttk.Treeview):
             return
         # ---------------------------------------------------------------------
-        region = _tree.identify_region(event.x, event.y)
+        region: str = _tree.identify_region(event.x, event.y)
         if region != "cell":
             return
         # ---------------------------------------------------------------------
-        column = _tree.identify_column(event.x)
-        item_id = _tree.identify_row(event.y)
+        column: str = _tree.identify_column(event.x)
+        item_id: str = _tree.identify_row(event.y)
         if not item_id:
             return
         # ---------------------------------------------------------------------
         cols = _tree["columns"]
-        col_idx = int(column.replace("#", "")) - 1
+        col_idx: int = int(column.replace("#", "")) - 1
         col_name = cols[col_idx]
         # ---------------------------------------------------------------------
         if "target_flag" in col_name.lower():
-            current_values = list(_tree.item(item_id, "values"))
-            next_state = "☑" if current_values[col_idx] == "☐" else "☐"
+            current_values: list[str] = list(_tree.item(item_id, "values"))
+            next_state: str = "☑" if current_values[col_idx] == "☐" else "☐"
             current_values[col_idx] = next_state
             _tree.item(item_id, values=current_values)
             # -----------------------------------------------------------------
             try:
                 row_idx = int(item_id)
-                main_center_table_widgets = getattr(
+                main_center_table_widgets: Any | dict[Any, Any] = getattr(
                     self, "main_center_table_widgets", {}
                 )
-                #datas_map = getattr(self, "datas_map", {})
+                # datas_map = getattr(self, "datas_map", {})
                 for t_id, t_widget in main_center_table_widgets.items():
                     if t_widget == _tree:
-                        #target_data = datas_map.get(t_id, [])
+                        # target_data = datas_map.get(t_id, [])
                         target_data = self.info_comm.mdia.data.get(t_id, [])
                         if row_idx < len(target_data):
                             target_data[row_idx].target_flag = (
@@ -197,37 +199,39 @@ class MainWindowTables:
                 _col["field"]: _col.get("format")
                 for _col in _table_data.get("columns", [])
             }
-            _even_tag = f"{_table_id}_even"
-            _odd_tag = f"{_table_id}_odd"
+            _even_tag: str = f"{_table_id}_even"
+            _odd_tag: str = f"{_table_id}_odd"
             # -----------------------------------------------------------------
             for _c_idx, _col_info in enumerate(_table_data.get("columns", [])):
                 if "target_flag" in _col_info.get("field", "").lower():
                     break
             _visible_row_count = 0
-            #_target_list = self.datas_map.get(_table_id, [])
-            #_target_list = getattr(self.info_comm.mdia.data, _table_id)
-            #for _row_index, _item_obj in enumerate(_target_list):
+            # _target_list = self.datas_map.get(_table_id, [])
+            # _target_list = getattr(self.info_comm.mdia.data, _table_id)
+            # for _row_index, _item_obj in enumerate(_target_list):
             for _row_index, _item_obj in enumerate(d for d in self.info_comm.mdia.data):
                 _value = []
                 if getattr(_item_obj, "entry_flag", "") == "o":
                     for _col_info in _table_data.get("columns", []):
                         _field = _col_info["field"]
-                        _raw_value = getattr(_item_obj, _field, "")
+                        _raw_value: Any | str = getattr(_item_obj, _field, "")
                         # -----------------------------------------------------
                         if _field == "target_flag":
-                            _raw_value = (
+                            _raw_value: str = (
                                 "☑"
                                 if getattr(_item_obj, "target_flag", "x") == "o"
                                 else "☐"
                             )
                         else:
-                            _raw_value = _raw_value if _raw_value else "-"
+                            _raw_value: Any | str = _raw_value if _raw_value else "-"
                         # -----------------------------------------------------
                         _val_str = safe_format(_raw_value, _formats.get(_field))
                         _value.append(_val_str)
                 # -------------------------------------------------------------
                 if _value:
-                    _row_tag = _even_tag if _visible_row_count % 2 == 0 else _odd_tag
+                    _row_tag: str = (
+                        _even_tag if _visible_row_count % 2 == 0 else _odd_tag
+                    )
                     _tree.insert(
                         "", "end", iid=str(_row_index), values=_value, tags=(_row_tag,)
                     )

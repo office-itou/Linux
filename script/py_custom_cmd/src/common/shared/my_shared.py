@@ -17,13 +17,13 @@ from common.utils import debug_logger
 class Text_fmat:
     """Text data output format"""
 
-    dist = (
+    dist: str = (
         r"{version:<23} {name:<23} {version_id:<23} {code_name:<39} "
         r"{life:<15} {release:<15} {support:<15} {long_term:<15} "
         r"{rhel:<15} {kerne:<27} {note:<27} {wallpaper:<87} "
         r"{create_flag:<11} {sort_flag:<11} "
     )
-    mdia = (
+    mdia: str = (
         r"{mdia_type:<11} "
         r"{entry_flag:<11} {entry_name:<39} {entry_disp:<39} "
         r"{version:<23} {latest:<23} {release:<15} {support:<15} "
@@ -63,9 +63,15 @@ class InfoCommon:
         self.conf_path = Path(self.conf.get_path(key="PATH_CONF"))
         self.dist_path = Path(self.conf.get_path(key="PATH_DIST"))
         self.mdia_path = Path(self.conf.get_path(key="PATH_MDIA"))
-        self.conf_json = self.conf_path.with_suffix(self.conf_path.suffix + ".json")
-        self.dist_json = self.dist_path.with_suffix(self.dist_path.suffix + ".json")
-        self.mdia_json = self.mdia_path.with_suffix(self.mdia_path.suffix + ".json")
+        self.conf_json: Path = self.conf_path.with_suffix(
+            self.conf_path.suffix + ".json"
+        )
+        self.dist_json: Path = self.dist_path.with_suffix(
+            self.dist_path.suffix + ".json"
+        )
+        self.mdia_json: Path = self.mdia_path.with_suffix(
+            self.mdia_path.suffix + ".json"
+        )
         self.dist = InfoDistribution(self.dist_json)
         self.mdia = InfoMedia(self.mdia_json, self.conf)
         self.text_fmat = Text_fmat()

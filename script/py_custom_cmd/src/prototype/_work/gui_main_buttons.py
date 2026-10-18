@@ -72,7 +72,7 @@ class MainWindowButtons:
         for _btn in self.main_bottom_button_widgets:
             if not _btn.winfo_exists():
                 continue
-            _cmd_name = getattr(_btn, "cmd_name", "")
+            _cmd_name: Any | str = getattr(_btn, "cmd_name", "")
 
             if "event_update" in _cmd_name:
                 if self.web_info_handler.is_running:

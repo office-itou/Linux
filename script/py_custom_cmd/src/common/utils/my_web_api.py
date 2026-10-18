@@ -10,6 +10,18 @@ from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 
+
+# ruff: isort: off
+from rich.progress import (
+    BarColumn,
+    DownloadColumn,
+    Progress,
+    TextColumn,
+    TimeRemainingColumn,
+    TransferSpeedColumn,
+)
+# ruff: isort: on
+
 import aiofiles  # type: ignore # sudo apt-get install python3-aiofiles
 import aiohttp  # sudo apt-get install python3-aiohttp
 
@@ -21,14 +33,6 @@ from common.utils import (
     message_alert,
     message_info,
     message_warn,
-)
-from rich.progress import (
-    BarColumn,
-    DownloadColumn,
-    Progress,
-    TextColumn,
-    TimeRemainingColumn,
-    TransferSpeedColumn,
 )
 
 
@@ -57,7 +61,7 @@ def generate_wget_filename(base_name: Path) -> Path:
         return base_name_path
     _counter = 1
     while True:
-        _new_path = base_name_path.with_name(base_name_path.name + str(_counter))
+        _new_path: Path = base_name_path.with_name(base_name_path.name + str(_counter))
         if not _new_path.exists():
             return _new_path
         _counter += 1
@@ -80,19 +84,19 @@ async def get_response(
         dict: Result
     """
     _caller = get_caller_name()
-    _check_date = datetime.now(timezone.utc).isoformat(timespec="microseconds")
+    _check_date: str = datetime.now(timezone.utc).isoformat(timespec="microseconds")
     _chunk_size = 10 * 1024
     _max_retries = 3
     if local_file:
-        _local_file_path = Path(local_file).resolve()
-        _final_file_path = (
+        _local_file_path: Path = Path(local_file).resolve()
+        _final_file_path: Path = (
             _local_file_path if overwrite else generate_wget_filename(_local_file_path)
         )
-        _tmp_file_path = f"{_final_file_path}.tmp" if _final_file_path else ""
+        _tmp_file_path: str = f"{_final_file_path}.tmp" if _final_file_path else ""
     else:
         _local_file_path = Path()
-        _final_file_path = ""
-        _tmp_file_path = ""
+        _final_file_path: str = ""
+        _tmp_file_path: str = ""
     _web_data = WebData(
         request_url=request_url,
         local_file=str(_final_file_path),
@@ -106,7 +110,7 @@ async def get_response(
             _headers = {}
             if _tmp_file_path:
                 if Path(_tmp_file_path).exists():
-                    _downloaded_bytes = os.path.getsize(_tmp_file_path)
+                    _downloaded_bytes: int = os.path.getsize(_tmp_file_path)
                 # -------------------------------------------------------------
                 if _downloaded_bytes > 0:
                     _headers["Range"] = f"bytes={_downloaded_bytes}-"
@@ -126,12 +130,12 @@ async def get_response(
                 # -------------------------------------------------------------
                 _web_data.response_url = str(_response.url)
                 _last_mod = _response.headers.get("Last-Modified", "")
-                _last_mod_isoformat = (
+                _last_mod_isoformat: str = (
                     parsedate_to_datetime(_last_mod).isoformat() if _last_mod else ""
                 )
                 _web_data.time_stamp = _last_mod_isoformat
                 _content_length = _response.headers.get("Content-Length", 0)
-                _total_size = (
+                _total_size: int | None = (
                     int(_content_length) + _downloaded_bytes
                     if _content_length
                     else None
@@ -178,10 +182,10 @@ async def get_response(
                     if Path(_tmp_file_path).exists():
                         shutil.move(_tmp_file_path, _final_file_path)
                         if _last_mod:
-                            _mtime = datetime.fromisoformat(
+                            _mtime: float = datetime.fromisoformat(
                                 _web_data.time_stamp
                             ).timestamp()
-                            _atime = datetime.now(tz=timezone.utc).timestamp()
+                            _atime: float = datetime.now(tz=timezone.utc).timestamp()
                             os.utime(_final_file_path, (_atime, _mtime))
                 # -------------------------------------------------------------
                 _web_data.status = str(_response.status)

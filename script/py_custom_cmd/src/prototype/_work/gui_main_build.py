@@ -5,6 +5,7 @@ import asyncio
 import tkinter as tk
 from collections.abc import Callable
 from tkinter import ttk
+from typing import Any
 
 import aiohttp
 from aiohttp import ClientTimeout
@@ -36,8 +37,8 @@ class MainWindow(
     MainWindowStatus,
     MainWindowTables,
 ):
-    _geometry = "1024x768"
-    _ui_file = "ui_definition.json"
+    _geometry: str = "1024x768"
+    _ui_file: str = "ui_definition.json"
     _ui_path = infosystem.program_path.parent / _ui_file
 
     def __init__(self, root: tk.Tk) -> None:
@@ -108,12 +109,12 @@ class MainWindow(
                 except Exception:  # noqa: BLE001, S110
                     pass
         # --- language settings and message updates ---------------------------
-        _lang = self.current_lang_strvar.get()
+        _lang: str = self.current_lang_strvar.get()
         self.current_messages = self.ui_def["messages"].get(_lang, {})
         # --- screen title setting --------------------------------------------
         self.root.title(self.current_messages.get("title", "Window"))
-        _cmd_map = self._get_command_map()
-        _var_map = self._get_variable_map()
+        _cmd_map: dict[str, Callable[..., Any]] = self._get_command_map()
+        _var_map: dict[str, tk.Variable] = self._get_variable_map()
         # --- generate menu bar -----------------------------------------------
         build_menu_bar(
             root=self.root,
@@ -143,13 +144,13 @@ class MainWindow(
             async with aiohttp.ClientSession(
                 timeout=timeout, raise_for_status=False
             ) as session:
-                self.session = session
+                self.session: aiohttp.ClientSession = session
                 await target_coro
         finally:
             # 処理完了（またはキャンセル）時にフラグやボタン表示を元に戻す共通処理
             self.base_async_handler._on_complete()
 
-    def start_async_loop(self, target_coro):
+    def start_async_loop(self, target_coro) -> None:
         asyncio.run(self.task(target_coro))
 
     def on_handler_complete(self) -> None:
