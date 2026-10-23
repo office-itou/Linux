@@ -16,6 +16,7 @@ from common.shared import (
 )
 from common.utils import (
     async_subprocess,
+    chmod,
     debug_logger,
     extract_efi_partition,
     extract_mbr_partition,
@@ -66,7 +67,7 @@ class MkisoData:
     grub_path: Path | None = None  # grub.cfg fiel path
     ilnx_path: Path | None = None  # isolinux.cfg file path
     auto_path: Path | None = None  # autoinstall configuration file
-    thme_path: Path | None = None  # autoinstall configuration file
+    thme_path: Path | None = None  # autoinstall theme file
     gaut_path: Path | None = None  # grub autoinstall menu file
     gthm_path: Path | None = None  # "    theme file
     iaut_path: Path | None = None  # isolinux autoinstall menu file
@@ -80,6 +81,14 @@ class MkisoData:
     etri_path: Path | None = None  # eltorito boot file path
     isos_ptyp: str | None = None  # iso image partition type
     dest_labl: str | None = None  # volume label
+    # --- configuration files and the shell -----------------------------------
+    dirs_conf: Path | None = None  # configuration file
+    dirs_shel: Path | None = None  # shell script file
+    conf_path: Path | None = None  # automatic installation pre-configuration file
+    erly_path: Path | None = None  # shell commands to run early
+    late_path: Path | None = None  # "              to run late
+    part_path: Path | None = None  # "              to run after partition
+    runs_path: Path | None = None  # "              to run preseed/run
 
 
 @debug_logger
@@ -96,7 +105,6 @@ def init_mkiso(
     ):
         return _mkiso
     # --- data class ----------------------------------------------------------
-    _boot_option = GenerateBootOption()
     _mkiso.mdia_data = mdia_data
     # --- input/output interface ----------------------------------------------
     _mkiso.tget_path = info_comm.conf.get_path(key="DIRS_IMGS") / mdia_data.entry_name
@@ -113,7 +121,7 @@ def init_mkiso(
     _mkiso.mntp_dwkd = _mkiso.mntp_dovl / "work"
     _mkiso.mntp_dmrg = _mkiso.mntp_dovl / "merged"
     # --- boot menu -----------------------------------------------------------
-    _boot_option = GenerateBootOption()
+    _boot_option = GenerateBootOption(info_comm)
     _mkiso.boot_optn = _boot_option.generate_boot_option(mdia_data=_mkiso.mdia_data)
     _mkiso.auto_path = info_comm.conf.get_path(key="AUTO_INST")
     _mkiso.thme_path = info_comm.conf.get_path(key="AUTO_THME")
@@ -121,6 +129,14 @@ def init_mkiso(
     _mkiso.gthm_path = info_comm.conf.get_path(key="PATH_GTHM")
     _mkiso.iaut_path = info_comm.conf.get_path(key="PATH_IAUT")
     _mkiso.ithm_path = info_comm.conf.get_path(key="PATH_ITHM")
+    # --- configuration files and the shell -----------------------------------
+    _mkiso.dirs_conf = info_comm.conf.get_path(key="DIRS_CONF")
+    _mkiso.dirs_shel = info_comm.conf.get_path(key="DIRS_SHEL")
+    _mkiso.conf_path = Path(mdia_data.cfg_path)
+    _mkiso.erly_path = info_comm.conf.get_path(key="PATH_ERLY")
+    _mkiso.late_path = info_comm.conf.get_path(key="PATH_LATE")
+    _mkiso.part_path = info_comm.conf.get_path(key="PATH_PART")
+    _mkiso.runs_path = info_comm.conf.get_path(key="PATH_RUNS")
     # --- return --------------------------------------------------------------
     return _mkiso
 
@@ -184,7 +200,7 @@ async def async_mount(mkiso: MkisoData) -> bool:
     assert mkiso.mntp_dupr is not None
     assert mkiso.mntp_dwkd is not None
     assert mkiso.mntp_dmrg is not None
-    #_status: bool = await _mount_bind(olddir=mkiso.tget_path, newdir=mkiso.mntp_dlow)
+    # _status: bool = await _mount_bind(olddir=mkiso.tget_path, newdir=mkiso.mntp_dlow)
     _status: bool = await _mount_iso(file=mkiso.srce_path, mntdir=mkiso.mntp_dlow)
     if _status:
         _status: bool = await _mount_overlay(
@@ -228,7 +244,8 @@ async def async_umount(mkiso: MkisoData) -> bool:
 
 @debug_logger
 async def async_boot_menu(info_comm: InfoCommon, mkiso: MkisoData) -> bool:
-    # --- boot menu: grub -----------------------------------------------------
+    _caller = get_caller_name()
+
     @debug_logger
     async def _boot_menu(
         var_pattern: re.Pattern[str],
@@ -236,63 +253,227 @@ async def async_boot_menu(info_comm: InfoCommon, mkiso: MkisoData) -> bool:
         tmpl_path: Path,
         outp_path: Path,
     ) -> bool:
-        def _find(class_data, **kwargs) -> ConfigurationData:
+        def _find(class_data, **kwargs) -> str | None:
             MISSING = object()
             try:
                 return next(
-                    _class_data.value
-                    for _class_data in class_data
-                    if all(
-                        getattr(_class_data, _key, MISSING) == _value
-                        for _key, _value in kwargs.items()
-                    )
+                    (
+                        _class_data.value
+                        for _class_data in class_data
+                        if all(
+                            getattr(_class_data, _key, MISSING) == _value
+                            for _key, _value in kwargs.items()
+                        )
+                    ),
+                    None,
                 )
-            except (OSError, Exception) as e:  # noqa: BLE001
-                print(e)
+            except (OSError, Exception):  # noqa: BLE001
+                return None
 
         _read_data = file_read(tmpl_path)
-        _conv_data: str = var_pattern.sub(
-            lambda m: str(_find(class_data=find_list, key=m.group(1))),
-            _read_data,
-        )
-        file_write(outp_path, _conv_data)
+        while True:
+            _prev_data = _read_data
+            _read_data = var_pattern.sub(
+                lambda m: (
+                    ""
+                    if (val := _find(class_data=find_list, key=m.group(1))) is None
+                    else str(val)
+                ),
+                _read_data,
+            )
+            if _read_data == _prev_data:
+                break
+        file_write(outp_path, _read_data)
         return True
 
     # --- boot menu -----------------------------------------------------------
     _var_pattern: re.Pattern[str] = re.compile(r":_([A-Z0-9_]+)_:")
-    assert mkiso.grub_path is not None
-    assert mkiso.ilnx_path is not None
-    assert mkiso.auto_path is not None
-    assert mkiso.thme_path is not None
-    assert mkiso.gaut_path is not None
-    assert mkiso.gthm_path is not None
-    assert mkiso.iaut_path is not None
-    assert mkiso.ithm_path is not None
-    _status_gaut = await _boot_menu(
-        var_pattern=_var_pattern,
-        find_list=info_comm.conf.data + mkiso.boot_optn,
-        tmpl_path=mkiso.gaut_path,
-        outp_path=mkiso.grub_path.with_name(mkiso.auto_path.name),
-    )
-    _status_gthm = await _boot_menu(
-        var_pattern=_var_pattern,
-        find_list=info_comm.conf.data + mkiso.boot_optn,
-        tmpl_path=mkiso.gthm_path,
-        outp_path=mkiso.grub_path.with_name(mkiso.thme_path.name),
-    )
-    _status_iaut = await _boot_menu(
-        var_pattern=_var_pattern,
-        find_list=info_comm.conf.data + mkiso.boot_optn,
-        tmpl_path=mkiso.iaut_path,
-        outp_path=mkiso.ilnx_path.with_name(mkiso.auto_path.name),
-    )
-    _status_ithm = await _boot_menu(
-        var_pattern=_var_pattern,
-        find_list=info_comm.conf.data + mkiso.boot_optn,
-        tmpl_path=mkiso.ithm_path,
-        outp_path=mkiso.ilnx_path.with_name(mkiso.thme_path.name),
-    )
+    _conf_data = info_comm.conf.data + mkiso.boot_optn
+    _status_gaut = False
+    _status_gthm = False
+    _status_iaut = False
+    _status_ithm = False
+    # assert mkiso.grub_path is not None
+    # assert mkiso.ilnx_path is not None
+    # assert mkiso.auto_path is not None
+    # assert mkiso.thme_path is not None
+    # assert mkiso.gaut_path is not None
+    # assert mkiso.gthm_path is not None
+    # assert mkiso.iaut_path is not None
+    # assert mkiso.ithm_path is not None
+    # --- splash.png ----------------------------------------------------------
+    _dmrg_path = Path(mkiso.mntp_dmrg if mkiso.mntp_dmrg is not None else "")
+    _mntp_dmrg = str(mkiso.mntp_dmrg if mkiso.mntp_dmrg is not None else "")
+    _tget_dirs = [_dmrg_path / "boot", _dmrg_path / "isolinux", _dmrg_path]
+    _menu_spls = info_comm.conf.get_path(key="MENU_SPLS").name
+    combined_search = itertools.chain(*(d.glob("*") for d in _tget_dirs))
+    _find = False
+    for _path in combined_search:
+        if not _path.is_file():
+            continue
+        match _path.name:
+            case s if s == _menu_spls:
+                message_info(_caller, f"png find:{_path}", omit=True)
+                for d in _conf_data:
+                    if d.key == "DTPIMG":
+                        d.value = str(Path("/") / _path.relative_to(_mntp_dmrg))
+                        message_info(_caller, f"png name:{d.value}", omit=True)
+                        _find = True
+                        break
+            case _:
+                pass
+        if _find:
+            break
+    if not _find:
+        _tget_files = [mkiso.ilnx_path, mkiso.grub_path]
+        _find = False
+        for _tget_file in _tget_files:
+            if not (_tget_file and _tget_file.is_file()):
+                continue
+            for d in _conf_data:
+                if (
+                    d.key == "DTPIMG"
+                    and mkiso.gaut_path
+                    and mkiso.gaut_path.with_name(_menu_spls).is_file()
+                ):
+                    _src_path = mkiso.gaut_path.with_name(_menu_spls)
+                    _dst_path = _tget_file.with_name(_menu_spls)
+                    message_info(_caller, f"png copy:{_src_path}", omit=True)
+                    shutil.copy2(_src_path, _dst_path)
+                    d.value = str(Path("/") / _dst_path.relative_to(_mntp_dmrg))
+                    message_info(_caller, f"png name:{d.value}", omit=True)
+                    _fnid = True
+                    break
+            if _find:
+                break
+    # --- grub ----------------------------------------------------------------
+    if mkiso.grub_path and mkiso.auto_path and mkiso.thme_path:
+        _acfg_path = mkiso.grub_path.with_name(mkiso.auto_path.name)
+        _tcfg_path = mkiso.grub_path.with_name(mkiso.thme_path.name)
+        _auto_conf = Path("/") / (
+            _acfg_path
+            if not _acfg_path.is_relative_to(_mntp_dmrg)
+            else _acfg_path.relative_to(_mntp_dmrg)
+        )
+        _thme_conf = Path("/") / (
+            _tcfg_path
+            if not _tcfg_path.is_relative_to(_mntp_dmrg)
+            else _tcfg_path.relative_to(_mntp_dmrg)
+        )
+        for d in _conf_data:
+            if d.key == "AUTO_THME":
+                d.value = _thme_conf
+        _status_gaut = await _boot_menu(
+            var_pattern=_var_pattern,
+            find_list=_conf_data,
+            tmpl_path=mkiso.gaut_path,
+            outp_path=_acfg_path,
+        )
+        _status_gthm = await _boot_menu(
+            var_pattern=_var_pattern,
+            find_list=_conf_data,
+            tmpl_path=mkiso.gthm_path,
+            outp_path=_tcfg_path,
+        )
+        _insert_text = f"source {_auto_conf}\n"
+        _content = file_read(mkiso.grub_path)
+        _content = re.sub(
+            r"^([Mm]enuentry|MENUENTRY)",
+            f"{_insert_text}\\1",
+            _content,
+            count=1,
+            flags=re.MULTILINE,
+        )
+        file_write(mkiso.grub_path, _content)
+    # --- isolinux ------------------------------------------------------------
+    if mkiso.ilnx_path and mkiso.auto_path and mkiso.thme_path:
+        _acfg_path = mkiso.ilnx_path.with_name(mkiso.auto_path.name)
+        _tcfg_path = mkiso.ilnx_path.with_name(mkiso.thme_path.name)
+        _auto_conf = Path("/") / (
+            _acfg_path
+            if not _acfg_path.is_relative_to(_mntp_dmrg)
+            else _acfg_path.relative_to(_mntp_dmrg)
+        )
+        _thme_conf = Path("/") / (
+            _tcfg_path
+            if not _tcfg_path.is_relative_to(_mntp_dmrg)
+            else _tcfg_path.relative_to(_mntp_dmrg)
+        )
+        for d in _conf_data:
+            if d.key == "AUTO_THME":
+                d.value = _thme_conf
+        _status_iaut = await _boot_menu(
+            var_pattern=_var_pattern,
+            find_list=_conf_data,
+            tmpl_path=mkiso.iaut_path,
+            outp_path=_acfg_path,
+        )
+        _status_ithm = await _boot_menu(
+            var_pattern=_var_pattern,
+            find_list=_conf_data,
+            tmpl_path=mkiso.ithm_path,
+            outp_path=_tcfg_path,
+        )
+        _insert_text = f"include {_auto_conf}\ninclude {_thme_conf}\n"
+        _content = file_read(mkiso.ilnx_path)
+        if re.search(r"(?i)^([Ii]nclude|INCLUDE)\s+menu\.cfg", _content, re.MULTILINE):
+            _pattern = re.compile(
+                r"(?i)^([Ii]nclude|INCLUDE)\s+menu\.cfg.*$", re.MULTILINE
+            )
+            _content = _pattern.sub(f"{_insert_text}\\g<0>", _content)
+        else:
+            _pattern = re.compile(r"(?i)^.*([Ll]abel|LABEL).*$", re.MULTILINE)
+            _content = _pattern.sub(f"{_insert_text}\n\\g<0>", _content, count=1)
+        file_write(mkiso.ilnx_path, _content)
+
     return bool(_status_gaut and _status_gthm and _status_iaut and _status_ithm)
+
+
+@debug_logger
+async def async_file_copy(mkiso: MkisoData) -> bool:
+    _caller = get_caller_name()
+    _status: bool = False
+    # --- shell ---------------------------------------------------------------
+    assert mkiso.mntp_dmrg is not None
+    assert mkiso.conf_path is not None
+    assert mkiso.erly_path is not None
+    assert mkiso.late_path is not None
+    assert mkiso.part_path is not None
+    assert mkiso.runs_path is not None
+    _conf_dirs = Path(mkiso.conf_path.parent)
+    _conf_list = [Path(p) for p in _conf_dirs.rglob("*") if p.is_file()]
+    _tget_list = [
+        *_conf_list,
+        mkiso.erly_path,
+        mkiso.late_path,
+        mkiso.part_path,
+        mkiso.runs_path,
+    ]
+    loop = asyncio.get_running_loop()
+    for _tget_file in _tget_list:
+        if not (_tget_file and _tget_file.exists):
+            continue
+        # --- directory -------------------------------------------------------
+        _tget_dirs = _tget_file.parent
+        if _tget_dirs.is_relative_to(str(mkiso.dirs_conf)):
+            _tget_dirs = _tget_dirs.relative_to(str(mkiso.dirs_conf))
+        elif _tget_dirs.is_relative_to(str(mkiso.dirs_shel)):
+            _tget_dirs = _tget_dirs.relative_to(str(mkiso.dirs_shel))
+        _dest_dirs = mkiso.mntp_dmrg / _tget_dirs
+        _dest_path = _dest_dirs / _tget_file.name
+        if not _dest_dirs.exists():
+            _dest_dirs.mkdir(parents=True, exist_ok=True)
+            if str(_dest_dirs.parent) != str(mkiso.mntp_dmrg):
+                chmod(path=_dest_dirs.parent, mode="a+rx,a-w")
+            if str(_dest_dirs) != str(mkiso.mntp_dmrg):
+                chmod(path=_dest_dirs, mode="a+rx,a-w")
+        # --- file ------------------------------------------------------------
+        await loop.run_in_executor(None, shutil.copy2, _tget_file, _dest_path)
+        if _dest_path.suffix.lstrip(".") in ["sh", "bash"]:
+            chmod(path=_dest_path, mode="a+rx,a-w")
+        else:
+            chmod(path=_dest_path, mode="a+r,a-wx")
+    return True
 
 
 @debug_logger
@@ -308,11 +489,13 @@ async def async_xorrisofs(mkiso: MkisoData) -> bool:
         *nice_args,
         "xorrisofs",
         "-rock",
+        "-rational-rock",
         "-joliet",
     ]
     # --- volid ---------------------------------------------------------------
     if mkiso.dest_labl:
         _xorriso_args += ["-volid", mkiso.dest_labl]
+        # _xorriso_args += ["-volid", mkiso.dest_labl.replace(" ", r"%20")]
     # --- iso-level -----------------------------------------------------------
     _xorriso_args += ["-iso-level", "3"]
     # -------------------------------------------------------------------------
@@ -330,7 +513,8 @@ async def async_xorrisofs(mkiso: MkisoData) -> bool:
             "--grub2-mbr",
             str(mkiso.mbrf_path),
             "-partition_offset",
-            "16-appended_part_as_gpt",
+            "16",
+            "-appended_part_as_gpt",
             "-append_partition",
             "2",
             "C12A7328-F81F-11D2-BA4B-00A0C93EC93B",
@@ -390,12 +574,13 @@ async def async_xorrisofs(mkiso: MkisoData) -> bool:
             "-no-emul-boot",
         ]
     # --- output ----------------------------------------------------------
-    _xorriso_args += ["-output", mkiso.temp_path, mkiso.mntp_dmrg]
+    _xorriso_args += ["-output", str(mkiso.temp_path), str(mkiso.mntp_dmrg)]
     # ---------------------------------------------------------------------
     try:
         message_start(_caller, omit=True)
         message_info(_caller, f"target: {str(mkiso.mntp_dmrg)}", omit=True)
         message_info(_caller, f"tmpout: {str(mkiso.temp_path)}", omit=True)
+        # print(*_xorriso_args)
         _status = await async_subprocess(*_xorriso_args, **kwargs)
         if _status and mkiso.temp_path.exists():
             loop = asyncio.get_running_loop()
@@ -434,25 +619,25 @@ async def process_xorrisofs(
             # --- setfacl -----------------------------------------------------
             if True:
                 _command: list[str] = [
-                *sudo_args,
+                    *sudo_args,
                     "setfacl",
                     "-R",
                     "-m",
                     f"u:{infosystem.exec_user}:rwX",
                     str(_mkiso.temp_dire),
                 ]
-                print(_command)
+                # print(_command)
                 _status: bool = await async_subprocess(*_command, **kwargs)
                 _command: list[str] = [
                     *sudo_args,
                     "setfacl",
                     "-R",
-                "-d",
+                    "-d",
                     "-m",
                     f"u:{infosystem.exec_user}:rwX",
                     str(_mkiso.temp_dire),
                 ]
-                print(_command)
+                # print(_command)
                 _status: bool = await async_subprocess(*_command, **kwargs)
             # --- mount -------------------------------------------------------
             _mounted = await async_mount(mkiso=_mkiso)
@@ -479,6 +664,7 @@ async def process_xorrisofs(
                 _mkiso.mntp_dmrg / "EFI/BOOT",
                 _mkiso.mntp_dmrg / "EFI",
                 _mkiso.mntp_dmrg / "boot/x86_64/loader",
+                _mkiso.mntp_dmrg / "boot/grub/i386-pc",
                 _mkiso.mntp_dmrg / "boot/grub/i386-efi",
                 _mkiso.mntp_dmrg / "boot/grub/x86_64-efi",
                 _mkiso.mntp_dmrg / "boot/grub",
@@ -516,6 +702,8 @@ async def process_xorrisofs(
                 )
             # --- boot menu ---------------------------------------------------
             _statsu = await async_boot_menu(info_comm=info_comm, mkiso=_mkiso)
+            # --- file copy ---------------------------------------------------
+            _statsu = await async_file_copy(mkiso=_mkiso)
             # --- xorrisofs ---------------------------------------------------
             _status = await async_xorrisofs(mkiso=_mkiso)
         finally:

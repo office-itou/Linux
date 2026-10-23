@@ -12,6 +12,7 @@ import aiohttp
 
 # --- my library --------------------------------------------------------------
 from common.shared import (
+    InfoConfiguration,
     MediaData,
 )
 from common.utils import (
@@ -70,12 +71,12 @@ class GenerateIsoFile:
     }
 
     # --- init ----------------------------------------------------------------
-    def __init__(self, win) -> None:
-        self.win: Any = win
+    def __init__(self) -> None:
         self.is_running = False
         self.is_cancelled = False
         self.semaphore = asyncio.Semaphore(5)
         self.session = aiohttp.ClientSession()
+        self.conf = InfoConfiguration()
         self.boot_option: GenerateBootOption = GenerateBootOption()
 
     # --- mount ---------------------------------------------------------------
@@ -127,9 +128,10 @@ class GenerateIsoFile:
     async def boot_menu(self) -> bool:
         _caller = get_caller_name()
         _status: bool = False
-        self._boot_options: list[dict[str, str]] = (
+        self.conf.data += (
             self.boot_option.generate_boot_option(mdia_data=self.mdia_data)
         )
+        print(self.conf.data)
         _status_grub = False
         if self._grub_path:
             _status_grub = await self.boot_menu_grub()
@@ -144,30 +146,30 @@ class GenerateIsoFile:
     async def boot_menu_grub(self) -> bool:
         _caller = get_caller_name()
         _status: bool = False
-        _auto_path: Path = self._grub_path.parent / self.win.info_comm.conf.get_path(
+        _auto_path: Path = self._grub_path.parent / self.conf.get_path(
             key="AUTO_INST"
         )
-        _thme_path: Path = self._grub_path.parent / self.win.info_comm.conf.get_path(
+        _thme_path: Path = self._grub_path.parent / self.conf.get_path(
             key="AUTO_THME"
         )
-        _gaut_path: Path = self.win.info_comm.conf.get_path(key="PATH_GAUT")
-        _gthm_path: Path = self.win.info_comm.conf.get_path(key="PATH_GTHM")
-        # ---------------------------------------------------------------------
+        _gaut_path: Path = self.conf.get_path(key="PATH_GAUT")
+        _gthm_path: Path = self.conf.get_path(key="PATH_GTHM")
+        # --- autoinst.cfg ----------------------------------------------------
         _status_auto: bool = False
         _read_data = file_read(_gaut_path)
         _var_pattern: re.Pattern[str] = re.compile(r":_([A-Z0-9_]+)_:")
         _conv_dist: str = _var_pattern.sub(
-            lambda m: str(self.win.info_comm.conf.find(key=m.group(1)).value),
+            lambda m: str(self.conf.find(key=m.group(1)).value),
             _read_data,
         )
         file_write(_auto_path, _conv_dist)
         _status_auto: bool = True
-        # ---------------------------------------------------------------------
+        # --- autotheme.cfg  --------------------------------------------------
         _status_thme: bool = False
         _read_data = file_read(_gthm_path)
         _var_pattern: re.Pattern[str] = re.compile(r":_([A-Z0-9_]+)_:")
         _conv_dist: str = _var_pattern.sub(
-            lambda m: str(self.win.info_comm.conf.find(key=m.group(1)).value),
+            lambda m: str(self.conf.find(key=m.group(1)).value),
             _read_data,
         )
         file_write(_thme_path, _conv_dist)
@@ -181,30 +183,30 @@ class GenerateIsoFile:
     async def boot_menu_isolinux(self) -> bool:
         _caller = get_caller_name()
         _status: bool = False
-        _auto_path: Path = self._ilnx_path.parent / self.win.info_comm.conf.get_path(
+        _auto_path: Path = self._ilnx_path.parent / self.conf.get_path(
             key="AUTO_INST"
         )
-        _thme_path: Path = self._ilnx_path.parent / self.win.info_comm.conf.get_path(
+        _thme_path: Path = self._ilnx_path.parent / self.conf.get_path(
             key="AUTO_THME"
         )
-        _iaut_path: Path = self.win.info_comm.conf.get_path(key="PATH_IAUT")
-        _ithm_path: Path = self.win.info_comm.conf.get_path(key="PATH_ITHM")
-        # ---------------------------------------------------------------------
+        _iaut_path: Path = self.conf.get_path(key="PATH_IAUT")
+        _ithm_path: Path = self.conf.get_path(key="PATH_ITHM")
+        # --- autoinst.cfg ----------------------------------------------------
         _status_auto: bool = False
         _read_data = file_read(_iaut_path)
         _var_pattern: re.Pattern[str] = re.compile(r":_([A-Z0-9_]+)_:")
         _conv_dist: str = _var_pattern.sub(
-            lambda m: str(self.win.info_comm.conf.find(key=m.group(1)).value),
+            lambda m: str(self.conf.find(key=m.group(1)).value),
             _read_data,
         )
         file_write(_auto_path, _conv_dist)
         _status_auto: bool = True
-        # ---------------------------------------------------------------------
+        # --- autotheme.cfg  --------------------------------------------------
         _status_thme: bool = False
         _read_data = file_read(_ithm_path)
         _var_pattern: re.Pattern[str] = re.compile(r":_([A-Z0-9_]+)_:")
         _conv_dist: str = _var_pattern.sub(
-            lambda m: str(self.win.info_comm.conf.find(key=m.group(1)).value),
+            lambda m: str(self.conf.find(key=m.group(1)).value),
             _read_data,
         )
         file_write(_thme_path, _conv_dist)
@@ -396,7 +398,7 @@ class GenerateIsoFile:
         self._mntp_dmrg: Path = self._mntp_dovl / "merged"
         self._tget_path: Path = self._mntp_dmrg
         self._imgs_path: Path = (
-            self.win.info_comm.conf.get_path("DIRS_IMGS") / mdia_data.entry_name
+            self.conf.get_path("DIRS_IMGS") / mdia_data.entry_name
         )
         self._srcs_file: str = str(self._srcs_path)
         self._dest_file: str = str(self._dest_path)

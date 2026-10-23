@@ -1,4 +1,4 @@
-"""Common Function Package: tools [generated: 2026/10/16 02:22:35 JST (+0900)]"""
+"""Common Function Package: tools [generated: 2026/10/22 08:59:23 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402

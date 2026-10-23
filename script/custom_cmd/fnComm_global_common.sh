@@ -53,7 +53,7 @@
 	declare       _NICS_NAME="ens160"						# network device name   (ex. ens160)
 	declare       _NICS_MADR=""								#                mac    (ex. 00:00:00:00:00:00)
 	declare       _IPV4_ADDR="192.168.1.1"					# IPv4 address          (ex. 192.168.1.1)   (empty to dhcp)
-	declare       _IPV4_CIDR="24"							# IPv4 cidr             (ex. 24)            (empty to ipv4 subnetmask, if both to 24)
+	declare       _IPV4_PRFX="24"							# IPv4 cidr             (ex. 24)            (empty to ipv4 subnetmask, if both to 24)
 	declare       _IPV4_MASK="255.255.255.0"				# IPv4 subnetmask       (ex. 255.255.255.0) (empty to ipv4 cidr)
 	declare       _IPV4_GWAY="192.168.1.254"				# IPv4 gateway          (ex. 192.168.1.254)
 	declare       _IPV4_NSVR="192.168.1.254"				# IPv4 nameserver       (ex. 192.168.1.254)

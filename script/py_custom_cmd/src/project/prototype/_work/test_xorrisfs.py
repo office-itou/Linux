@@ -32,6 +32,7 @@ _ARGS_LIST: list[dict[str, str]] = [
 def initialize() -> None:
     """Initialize"""
 
+
 def pre_authenticate_sudo() -> bool:
     """親スクリプト（非root）の起動時に、事前に一度だけパスワードを入力させておく"""
     print(
@@ -44,6 +45,7 @@ def pre_authenticate_sudo() -> bool:
         print("エラー: sudo認証に失敗しました。", file=sys.stderr)
         return False
 
+
 @debug_logger
 async def main():
     if not pre_authenticate_sudo():
@@ -52,12 +54,15 @@ async def main():
     semaphore = asyncio.Semaphore(3)
     info_comm = InfoCommon()
     for mdia_data in info_comm.mdia.data:
-        if mdia_data.entry_name != "debian-mini-13":
-            continue
+        match mdia_data.entry_name:
+            case "debian-mini-13" | "ubuntu-live-26.04":
+                pass
+            case _:
+                continue
         _status = await process_xorrisofs(
             semaphore=semaphore, info_comm=info_comm, mdia_data=mdia_data
         )
-        break
+
 
 if __name__ == "__main__":
     #    try:

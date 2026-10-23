@@ -74,7 +74,7 @@ def scan_required_resources(script_path: Path) -> list:
     base_dir = script_path.parent
     # 💡 ターゲットスクリプトの親フォルダにあるデータファイルのリストを取得
     available_resources = []
-    for ext in ["*.json", "*.txt", "*.png"]:
+    for ext in ["*.json", "*.txt", "*.png", "*.cfg"]:
         available_resources.extend([p.name for p in base_dir.glob(ext)])
 
     # 再帰的にソースを読み込んでリソースの言及を調べる内部関数

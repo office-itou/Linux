@@ -213,7 +213,7 @@ function fnMk_isofile() {
 							esac
 							case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 								ubuntu*) __CIDR="";;
-								*      ) __CIDR="/${_IPV4_CIDR:-}";;
+								*      ) __CIDR="/${_IPV4_PRFX:-}";;
 							esac
 							fnMk_isofile_conf "${__DMRG}" "${__MDIA[$((_OSET_MDIA+24))]}"	# cfg_path
 							# --- rebuilding initrd ---------------------------

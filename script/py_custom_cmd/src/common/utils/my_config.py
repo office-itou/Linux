@@ -4,7 +4,7 @@
 import os
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 # --- my library --------------------------------------------------------------
 from common.utils import (
@@ -36,9 +36,9 @@ class SystemData:
     is_gui: bool = False
     # --- Slot for registering a function to display a dialog on the GUI side -
     #     (arguments: title, message)
-    gui_info_callback: Any = None
-    gui_error_callback: Any = None
-    log_window_active: bool = False
+    gui_info_callback: Any | None = None
+    gui_error_callback: Any | None = None
+    log_window_active: bool | None = False
     # --- Coordinate management for cascade layout ----------------------------
     #     (initial position: X=50, Y=50)
     next_win_x: int = 50
@@ -83,8 +83,8 @@ class InfoSystem:
                 from tkinter import messagebox
             except (OSError, Exception) as e:
                 raise SystemExit from e
-            gui_error_callback: Callable[..., str] = messagebox.showerror
-            gui_info_callback: Callable[..., str] = messagebox.showinfo
+            gui_error_callback = messagebox.showerror
+            gui_info_callback = messagebox.showinfo
             log_window_active = True
             columns = 120
             rows = 40

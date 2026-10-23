@@ -22,7 +22,7 @@ function fnMk_isofile_grub() {
 	declare -r    __PATH_FIRD="${5:?}"
 	declare -r    __NICS_NAME="${6:?}"
 	declare -r    __NWRK_HOST="${7:?}"
-	declare -r    __IPV4_CIDR="${8:-}"
+	declare -r    __IPV4_PRFX="${8:-}"
 	declare -r -a __OPTN_BOOT=("${@:9}")
 	declare       __PATH=""				# full path
 	declare       __DIRS=""				# directory
@@ -47,7 +47,7 @@ function fnMk_isofile_grub() {
 		fi
 		# --- create files ----------------------------------------------------
 		fnMk_isofile_grub_theme "${__FILE_NAME:-}" "${__TIME_STMP:-}" > "${__TGET_DIRS}/${__PTHM}"
-		fnMk_isofile_grub_autoinst "${__FILE_NAME:-}" "${__TIME_STMP:-}" "${__PTHM#"${__TGET_DIRS}"}" "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__GUIS:-}" "${__NICS_NAME:-}" "${__NWRK_HOST:-}" "${__IPV4_CIDR:-}" "${__OPTN_BOOT[@]:-}" > "${__TGET_DIRS}/${__PAUT}"
+		fnMk_isofile_grub_autoinst "${__FILE_NAME:-}" "${__TIME_STMP:-}" "${__PTHM#"${__TGET_DIRS}"}" "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__GUIS:-}" "${__NICS_NAME:-}" "${__NWRK_HOST:-}" "${__IPV4_PRFX:-}" "${__OPTN_BOOT[@]:-}" > "${__TGET_DIRS}/${__PAUT}"
 		# --- insert autoinst.cfg ---------------------------------------------
 		sed -i "${__CONF}"                            \
 		    -e '0,/^menuentry/ {'                     \

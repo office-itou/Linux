@@ -17,13 +17,20 @@ from common.utils import (
 
 # ruff: isort: on
 def proc_init(
-    description: str, list_args: list[dict[str]] = [], caller: str = get_caller_name()
+    description: str,
+    list_args: list[dict[str, str]] = [],
+    caller: str = get_caller_name(),
+    is_gui: bool = True,
 ) -> None:
     # --- initialization --------------------------------------------------
     Argument(description=description, list_args=list_args)
     _gui: bool = (
-        bool(os.getenv("DISPLAY"))
-        if not getattr(infosystem.args, "force_cui", True)
+        (
+            bool(os.getenv("DISPLAY"))
+            if not getattr(infosystem.args, "force_cui", True)
+            else False
+        )
+        if is_gui
         else False
     )
     infosystem.initialize(is_gui=_gui)

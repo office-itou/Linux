@@ -23,11 +23,13 @@ def generate_boot_option_agama(
 ) -> list[ConfigurationData]:
     _boot_options: list[ConfigurationData] = []
     # --- 0: server -------------------------------------------------------
-    _boot_options.append(ConfigurationData(key="SRVR_TGET", value=parameter.srvr_http))
+    #_boot_options.append(
+    #    ConfigurationData(key="SRVR_TGET", value=parameter.srvr_http),
+    #)
     # --- 1: autoinst -----------------------------------------------------
     _work: str = ""
     if mdia_data.cfg_path:
-        _path_conf: str = re.sub(r"^.*\(/[^/]+/[^/]+\)$", mdia_data.cfg_path, r"\1")
+        _path_conf: str = re.sub(r"^.*(/[^/]+/[^/]+)$", r"\1", mdia_data.cfg_path)
         _work += "live.password=install inst.auto="
         if parameter.pxeboot:
             _work += rf"${{srvrhttp}}/{_path_conf.replace('_dvd', '_web')}"
@@ -55,7 +57,7 @@ def generate_boot_option_agama(
     _work: str = ""
     if not mdia_data.cfg_path:
         if parameter.pxeboot:
-            _path_isos: str = re.sub(r"^.*\(/[^/]+/[^/]+\)$", mdia_data.iso_path, r"\1")
+            _path_isos: str = re.sub(r"^.*(/[^/]+/[^/]+)$", r"\1", mdia_data.iso_path)
             _work += rf"root=live:${{srvrhttp}}/{_path_isos}"
     if mdia_data.options:
         _work += mdia_data.options.replace(r"%20", " ")

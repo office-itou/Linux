@@ -194,8 +194,8 @@ def extract_efi_partition(src_path: Path, dest_path: Path) -> int:
         pt_data: bytes = f_inp.read(64)
         # ---------------------------------------------------------------------
         is_gpt = False
-        efi_start_lba = None
-        efi_sectors = None
+        efi_start_lba: int | None = None
+        efi_sectors: int | None = None
         # ---------------------------------------------------------------------
         for i in range(4):
             part: bytes = pt_data[i * 16 : (i + 1) * 16]
@@ -204,8 +204,8 @@ def extract_efi_partition(src_path: Path, dest_path: Path) -> int:
             if sys_id == 0xEE:  # GPT-protective MBR.
                 is_gpt = True
             elif sys_id == 0xEF:  # EFI layout in MBR format.
-                efi_start_lba: int = struct.unpack("<I", part[8:12])[0]
-                efi_sectors: int = struct.unpack("<I", part[12:16])[0]
+                efi_start_lba = struct.unpack("<I", part[8:12])[0]
+                efi_sectors = struct.unpack("<I", part[12:16])[0]
         # ---------------------------------------------------------------------
         if is_gpt:
             f_inp.seek(SECTOR_SIZE + 72)
@@ -225,8 +225,8 @@ def extract_efi_partition(src_path: Path, dest_path: Path) -> int:
                     start_lba: int = struct.unpack("<Q", entry[32:40])[0]
                     end_lba: int = struct.unpack("<Q", entry[40:48])[0]
                     # ---------------------------------------------------------
-                    efi_start_lba: int = start_lba
-                    efi_sectors: int = (end_lba - start_lba) + 1
+                    efi_start_lba = start_lba
+                    efi_sectors = (end_lba - start_lba) + 1
                     break
         # ---------------------------------------------------------------------
         if efi_start_lba is not None and efi_sectors is not None:

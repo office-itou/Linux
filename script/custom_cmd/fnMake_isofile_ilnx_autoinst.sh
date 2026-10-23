@@ -26,7 +26,7 @@ function fnMk_isofile_ilnx_autoinst() {
 	declare -r    __PATH_GUIS="${3:-}"
 	declare -r    __NICS_NAME="${4:?}"
 	declare -r    __NWRK_HOST="${5:?}"
-	declare -r    __IPV4_CIDR="${6:-}"
+	declare -r    __IPV4_PRFX="${6:-}"
 	declare -r -a __OPTN_BOOT=("${@:7}")
 	declare -a    __BOPT=()				# boot options
 	declare       __DIRS=""
@@ -35,7 +35,7 @@ function fnMk_isofile_ilnx_autoinst() {
 	__BOPT=("${__BOPT[@]//\$\{srvraddr\}/}")
 	__BOPT=("${__BOPT[@]//\$\{hostname\}/${__NWRK_HOST:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ethrname\}/${__NICS_NAME:-}}")
-	__BOPT=("${__BOPT[@]//\$\{ipv4addr\}/${_IPV4_ADDR:-}${__IPV4_CIDR:-}}")
+	__BOPT=("${__BOPT[@]//\$\{ipv4addr\}/${_IPV4_ADDR:-}${__IPV4_PRFX:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ipv4mask\}/${_IPV4_MASK:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ipv4gway\}/${_IPV4_GWAY:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ipv4nsvr\}/${_IPV4_NSVR:-}}")

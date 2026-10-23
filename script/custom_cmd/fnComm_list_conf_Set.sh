@@ -72,7 +72,7 @@ set -o pipefail		# debug: End with in pipe error
 #   g-var : _NICS_NAME : read
 #   g-var : _NICS_MADR : read
 #   g-var : _IPV4_ADDR : read
-#   g-var : _IPV4_CIDR : read
+#   g-var : _IPV4_PRFX : read
 #   g-var : _IPV4_MASK : read
 #   g-var : _IPV4_GWAY : read
 #   g-var : _IPV4_NSVR : read
@@ -198,7 +198,7 @@ function fnList_conf_Set() {
 		$(printf "%-39s %s" "NICS_NAME=\"${_NICS_NAME:-"ens160"}\""         "# network device name   (ex. ens160)"                                                 )
 		$(printf "%-39s %s" "NICS_MADR=\"${_NICS_MADR:-""}\""               "#                mac    (ex. 00:00:00:00:00:00)"                                      )
 		$(printf "%-39s %s" "IPV4_ADDR=\"${_IPV4_ADDR:-"192.168.1.1"}\""    "# IPv4 address          (ex. 192.168.1.1)   (empty to dhcp)"                          )
-		$(printf "%-39s %s" "IPV4_CIDR=\"${_IPV4_CIDR:-"24"}\""             "# IPv4 cidr             (ex. 24)            (empty to ipv4 subnetmask, if both to 24)")
+		$(printf "%-39s %s" "IPV4_PRFX=\"${_IPV4_PRFX:-"24"}\""             "# IPv4 cidr             (ex. 24)            (empty to ipv4 subnetmask, if both to 24)")
 		$(printf "%-39s %s" "IPV4_MASK=\"${_IPV4_MASK:-"255.255.255.0"}\""  "# IPv4 subnetmask       (ex. 255.255.255.0) (empty to ipv4 cidr)"                     )
 		$(printf "%-39s %s" "IPV4_GWAY=\"${_IPV4_GWAY:-"192.168.1.254"}\""  "# IPv4 gateway          (ex. 192.168.1.254)"                                          )
 		$(printf "%-39s %s" "IPV4_NSVR=\"${_IPV4_NSVR:-"192.168.1.254"}\""  "# IPv4 nameserver       (ex. 192.168.1.254)"                                          )

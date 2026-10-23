@@ -31,7 +31,7 @@ function fnMk_pxeboot_ipxe_linux_cnetinst() {
 	esac
 	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 		ubuntu*) __CIDR="";;
-		*      ) __CIDR="/${_IPV4_CIDR:-}";;
+		*      ) __CIDR="/${_IPV4_PRFX:-}";;
 	esac
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		:${__MDIA[$((_OSET_MDIA+2))]}

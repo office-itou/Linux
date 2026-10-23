@@ -32,7 +32,7 @@ function fnMk_pxeboot_slnx_linux() {
 	esac
 	case "${__MDIA[$((_OSET_MDIA+3))]:-}" in
 		ubuntu*) __CIDR="";;
-		*      ) __CIDR="/${_IPV4_CIDR:-}";;
+		*      ) __CIDR="/${_IPV4_PRFX:-}";;
 	esac
 	__BOPT=("${__BOPT[@]//\$\{srvraddr\}/${_SRVR_PROT:?}:\/\/${_SRVR_ADDR:?}}")
 	__BOPT=("${__BOPT[@]//\$\{hostname\}/${__HOST:-}}")

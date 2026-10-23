@@ -259,7 +259,7 @@
 	declare       _NICS_NAME="ens160"						# network device name   (ex. ens160)
 	declare       _NICS_MADR=""								#                mac    (ex. 00:00:00:00:00:00)
 	declare       _IPV4_ADDR="192.168.1.1"					# IPv4 address          (ex. 192.168.1.1)   (empty to dhcp)
-	declare       _IPV4_CIDR="24"							# IPv4 cidr             (ex. 24)            (empty to ipv4 subnetmask, if both to 24)
+	declare       _IPV4_PRFX="24"							# IPv4 cidr             (ex. 24)            (empty to ipv4 subnetmask, if both to 24)
 	declare       _IPV4_MASK="255.255.255.0"				# IPv4 subnetmask       (ex. 255.255.255.0) (empty to ipv4 cidr)
 	declare       _IPV4_GWAY="192.168.1.254"				# IPv4 gateway          (ex. 192.168.1.254)
 	declare       _IPV4_NSVR="192.168.1.254"				# IPv4 nameserver       (ex. 192.168.1.254)
@@ -2912,7 +2912,7 @@ function fnMk_pxeboot_ipxe_linux_default() {
 	esac
 	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 		ubuntu*) __CIDR="";;
-		*      ) __CIDR="/${_IPV4_CIDR:-}";;
+		*      ) __CIDR="/${_IPV4_PRFX:-}";;
 	esac
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		:${__MDIA[$((_OSET_MDIA+2))]}
@@ -2979,7 +2979,7 @@ function fnMk_pxeboot_ipxe_linux_live() {
 	esac
 	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 		ubuntu*) __CIDR="";;
-		*      ) __CIDR="/${_IPV4_CIDR:-}";;
+		*      ) __CIDR="/${_IPV4_PRFX:-}";;
 	esac
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		:live-${__MDIA[$((_OSET_MDIA+2))]}
@@ -3046,7 +3046,7 @@ function fnMk_pxeboot_ipxe_linux_clive() {
 	esac
 	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 		ubuntu*) __CIDR="";;
-		*      ) __CIDR="/${_IPV4_CIDR:-}";;
+		*      ) __CIDR="/${_IPV4_PRFX:-}";;
 	esac
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		:${__MDIA[$((_OSET_MDIA+2))]}
@@ -3113,7 +3113,7 @@ function fnMk_pxeboot_ipxe_linux_cnetinst() {
 	esac
 	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 		ubuntu*) __CIDR="";;
-		*      ) __CIDR="/${_IPV4_CIDR:-}";;
+		*      ) __CIDR="/${_IPV4_PRFX:-}";;
 	esac
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
 		:${__MDIA[$((_OSET_MDIA+2))]}
@@ -3448,7 +3448,7 @@ function fnMk_pxeboot_grub_linux() {
 	esac
 	case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 		ubuntu*) __CIDR="";;
-		*      ) __CIDR="/${_IPV4_CIDR:-}";;
+		*      ) __CIDR="/${_IPV4_PRFX:-}";;
 	esac
 	__ENTR="$(printf "%-54.54s %19.19s" "- ${__MDIA[$((_OSET_MDIA+3))]//%20/ }  ${_TEXT_SPCE// /.}" "${__MDIA[$((_OSET_MDIA+15))]//%20/ }")"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' || true
@@ -3682,7 +3682,7 @@ function fnMk_pxeboot_slnx_linux() {
 	esac
 	case "${__MDIA[$((_OSET_MDIA+3))]:-}" in
 		ubuntu*) __CIDR="";;
-		*      ) __CIDR="/${_IPV4_CIDR:-}";;
+		*      ) __CIDR="/${_IPV4_PRFX:-}";;
 	esac
 	__BOPT=("${__BOPT[@]//\$\{srvraddr\}/${_SRVR_PROT:?}:\/\/${_SRVR_ADDR:?}}")
 	__BOPT=("${__BOPT[@]//\$\{hostname\}/${__HOST:-}}")
@@ -3982,7 +3982,7 @@ function fnMk_isofile_grub_autoinst() {
 	declare -r    __PATH_GUIS="${6:-}"
 	declare -r    __NICS_NAME="${7:?}"
 	declare -r    __NWRK_HOST="${8:?}"
-	declare -r    __IPV4_CIDR="${9:-}"
+	declare -r    __IPV4_PRFX="${9:-}"
 	declare -r -a __OPTN_BOOT=("${@:10}")
 	declare       __DIRS=""
 	declare       __TITL=""
@@ -4044,7 +4044,7 @@ _EOT_
 		  set background_color="black"
 		  set hostname="${__NWRK_HOST}"
 		  set ethrname="${__NICS_NAME}"
-		  set ipv4addr="${_IPV4_ADDR:-}${__IPV4_CIDR:-}"
+		  set ipv4addr="${_IPV4_ADDR:-}${__IPV4_PRFX:-}"
 		  set ipv4mask="${_IPV4_MASK:-}"
 		  set ipv4gway="${_IPV4_GWAY:-}"
 		  set ipv4nsvr="${_IPV4_NSVR:-}"
@@ -4070,7 +4070,7 @@ _EOT_
 			  set background_color="black"
 			  set hostname="${__NWRK_HOST}"
 			  set ethrname="${__NICS_NAME}"
-			  set ipv4addr="${_IPV4_ADDR:-}${__IPV4_CIDR:-}"
+			  set ipv4addr="${_IPV4_ADDR:-}${__IPV4_PRFX:-}"
 			  set ipv4mask="${_IPV4_MASK:-}"
 			  set ipv4gway="${_IPV4_GWAY:-}"
 			  set ipv4nsvr="${_IPV4_NSVR:-}"
@@ -4207,7 +4207,7 @@ function fnMk_isofile_grub() {
 	declare -r    __PATH_FIRD="${5:?}"
 	declare -r    __NICS_NAME="${6:?}"
 	declare -r    __NWRK_HOST="${7:?}"
-	declare -r    __IPV4_CIDR="${8:-}"
+	declare -r    __IPV4_PRFX="${8:-}"
 	declare -r -a __OPTN_BOOT=("${@:9}")
 	declare       __PATH=""				# full path
 	declare       __DIRS=""				# directory
@@ -4232,7 +4232,7 @@ function fnMk_isofile_grub() {
 		fi
 		# --- create files ----------------------------------------------------
 		fnMk_isofile_grub_theme "${__FILE_NAME:-}" "${__TIME_STMP:-}" > "${__TGET_DIRS}/${__PTHM}"
-		fnMk_isofile_grub_autoinst "${__FILE_NAME:-}" "${__TIME_STMP:-}" "${__PTHM#"${__TGET_DIRS}"}" "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__GUIS:-}" "${__NICS_NAME:-}" "${__NWRK_HOST:-}" "${__IPV4_CIDR:-}" "${__OPTN_BOOT[@]:-}" > "${__TGET_DIRS}/${__PAUT}"
+		fnMk_isofile_grub_autoinst "${__FILE_NAME:-}" "${__TIME_STMP:-}" "${__PTHM#"${__TGET_DIRS}"}" "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__GUIS:-}" "${__NICS_NAME:-}" "${__NWRK_HOST:-}" "${__IPV4_PRFX:-}" "${__OPTN_BOOT[@]:-}" > "${__TGET_DIRS}/${__PAUT}"
 		# --- insert autoinst.cfg ---------------------------------------------
 		sed -i "${__CONF}"                            \
 		    -e '0,/^menuentry/ {'                     \
@@ -4299,7 +4299,7 @@ function fnMk_isofile_ilnx_autoinst() {
 	declare -r    __PATH_GUIS="${3:-}"
 	declare -r    __NICS_NAME="${4:?}"
 	declare -r    __NWRK_HOST="${5:?}"
-	declare -r    __IPV4_CIDR="${6:-}"
+	declare -r    __IPV4_PRFX="${6:-}"
 	declare -r -a __OPTN_BOOT=("${@:7}")
 	declare -a    __BOPT=()				# boot options
 	declare       __DIRS=""
@@ -4308,7 +4308,7 @@ function fnMk_isofile_ilnx_autoinst() {
 	__BOPT=("${__BOPT[@]//\$\{srvraddr\}/}")
 	__BOPT=("${__BOPT[@]//\$\{hostname\}/${__NWRK_HOST:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ethrname\}/${__NICS_NAME:-}}")
-	__BOPT=("${__BOPT[@]//\$\{ipv4addr\}/${_IPV4_ADDR:-}${__IPV4_CIDR:-}}")
+	__BOPT=("${__BOPT[@]//\$\{ipv4addr\}/${_IPV4_ADDR:-}${__IPV4_PRFX:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ipv4mask\}/${_IPV4_MASK:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ipv4gway\}/${_IPV4_GWAY:-}}")
 	__BOPT=("${__BOPT[@]//\$\{ipv4nsvr\}/${_IPV4_NSVR:-}}")
@@ -4435,7 +4435,7 @@ function fnMk_isofile_ilnx() {
 	declare -r    __PATH_FIRD="${5:?}"
 	declare -r    __NICS_NAME="${6:?}"
 	declare -r    __NWRK_HOST="${7:?}"
-	declare -r    __IPV4_CIDR="${8:-}"
+	declare -r    __IPV4_PRFX="${8:-}"
 	declare -r -a __OPTN_BOOT=("${@:9}")
 	__ILNX="$(find "${__TGET_DIRS}" -name isolinux.cfg)"
 	[[ -z "${__ILNX:-}" ]] && return
@@ -4450,7 +4450,7 @@ function fnMk_isofile_ilnx() {
 	fi
 	# --- create files --------------------------------------------------------
 	fnMk_isofile_ilnx_theme "${__FILE_NAME:-}" "${__TIME_STMP:-}" > "${__TGET_DIRS}/${__PTHM}"
-	fnMk_isofile_ilnx_autoinst "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__GUIS:-}" "${__NICS_NAME:-}" "${__NWRK_HOST:-}" "${__IPV4_CIDR:-}" "${__OPTN_BOOT[@]:-}" > "${__TGET_DIRS}/${__PAUT}"
+	fnMk_isofile_ilnx_autoinst "${__PATH_FKNL:-}" "${__PATH_FIRD:-}" "${__GUIS:-}" "${__NICS_NAME:-}" "${__NWRK_HOST:-}" "${__IPV4_PRFX:-}" "${__OPTN_BOOT[@]:-}" > "${__TGET_DIRS}/${__PAUT}"
 	# --- insert autoinst.cfg -------------------------------------------------
 	if grep -qEi '^include[ \t]+menu.cfg[ \t]*.*$' "${__ILNX}"; then
 		sed -i "${__ILNX}"                                                                   \
@@ -4893,7 +4893,7 @@ function fnMk_isofile() {
 							esac
 							case "${__MDIA[$((_OSET_MDIA+2))]:-}" in
 								ubuntu*) __CIDR="";;
-								*      ) __CIDR="/${_IPV4_CIDR:-}";;
+								*      ) __CIDR="/${_IPV4_PRFX:-}";;
 							esac
 							fnMk_isofile_conf "${__DMRG}" "${__MDIA[$((_OSET_MDIA+24))]}"	# cfg_path
 							# --- rebuilding initrd ---------------------------

@@ -1,4 +1,4 @@
-"""Common Function Package: utils [generated: 2026/10/17 11:39:05 JST (+0900)]"""
+"""Common Function Package: utils [generated: 2026/10/23 22:20:20 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -23,6 +23,8 @@ __all__ = [
     "async_subprocess",
     "build_buttons",
     "build_menu_bar",
+    "chmod",
+    "cmdline",
     "count_full_width",
     "count_half_width",
     "count_width",
@@ -70,6 +72,7 @@ __all__ = [
     "message_start",
     "message_warn",
     "omit_middle",
+    "parse_ugo_to_stat",
     "print_peak_memory",
     "remove_gui_log_window",
     "run_subprocess",
@@ -96,6 +99,8 @@ _MODULE_MAP = {
     "async_subprocess": ".my_process",
     "build_buttons": ".my_gui_build_helper",
     "build_menu_bar": ".my_gui_build_helper",
+    "chmod": ".my_path",
+    "cmdline": ".my_cmdline",
     "count_full_width": ".my_string",
     "count_half_width": ".my_string",
     "count_width": ".my_string",
@@ -143,6 +148,7 @@ _MODULE_MAP = {
     "message_start": ".my_message",
     "message_warn": ".my_message",
     "omit_middle": ".my_string",
+    "parse_ugo_to_stat": ".my_path",
     "print_peak_memory": ".my_mem_usage",
     "remove_gui_log_window": ".my_string",
     "run_subprocess": ".my_process",

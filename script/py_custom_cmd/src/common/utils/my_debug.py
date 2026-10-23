@@ -30,7 +30,7 @@ def debug_logger(func: Callable):
             _func_line: int = _frame.f_back.f_code.co_firstlineno
             _func_name = str(_frame.f_back.f_code.co_name)
             _modu_name = str(_frame.f_back.f_globals.get("__name__"))
-            _call_info: str = f"{_modu_name}({_func_name})[{_func_line:4d}]"
+            _call_info: str = f"{_modu_name}({_func_name})[{_func_line:04d}]"
         else:
             _func_line = 0
             _func_name = "unknown"

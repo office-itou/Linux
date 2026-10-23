@@ -1,0 +1,65 @@
+{
+    "editor.minimap.enabled": false,
+    "editor.renderControlCharacters": true,
+    "editor.renderWhitespace": "all",
+    "[python]": {
+        // "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit",
+            "source.organizeImports.ruff": "explicit",
+            "source.fixAll": "explicit",
+            "source.fixAll.ruff": "explicit"
+        },
+        "editor.formatOnSave": false,
+        "editor.tabSize": 4,
+        "files.eol": "\n",
+        "files.insertFinalNewline": true,
+        "editor.quickSuggestions": {
+            "other": true,
+            "comments": false,
+            "strings": true
+        }
+    },
+    "security.promptForLocalFileProtocolHandling": false,
+    "chat.disableAIFeatures": true,
+    "chat.extensionUnification.enabled": false,
+    "dictation.experimental.llmCleanup": false,
+    "chat.agentMerge.addressReviews": false,
+    "chat.implicitContext.includeActiveEditor": false,
+    "ruff.configuration": {
+        "lint": {
+            "unfixable": [
+                "F401"
+            ]
+        }
+    },
+    "files.eol": "\n",
+    // 'Cascadia Code','BIZ UDゴシック',
+    "editor.fontFamily": "'BIZ UDゴシック', 'Cascadia Code', Consolas, 'Courier New', monospace",
+    // "editor.fontFamily": "Consolas, 'Courier New', monospace",
+    "editor.fontSize": 12,
+    "python.analysis.typeCheckingMode": "standard",
+    "python.analysis.exclude": [
+        "${workspaceFolder:Linux}/laboratory",
+        "${workspaceFolder:Linux}/script/_common_bash",
+        "${workspaceFolder:Linux}/script/_common_sh",
+        "${workspaceFolder:Linux}/script/autoinst_cmd",
+        "${workspaceFolder:Linux}/script/custom_cmd",
+        "${workspaceFolder:Linux}/script/prototype",
+        "${workspaceFolder:Linux}/script/py_custom_cmd",
+        "${workspaceFolder:Linux}/source"
+    ],
+    "python.analysis.enableTroubleshootMissingImports": true,
+    "python.analysis.includeAliasesFromUserFiles": true,
+    "python.analysis.typeEvaluation.deprecateTypingAliases": true,
+    "python.analysis.extraPathsForPythonProjects": {},
+    "python.analysis.extraPaths": [
+        "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/shared",
+        "/srv/user/private/src/git/linux/script/py_custom_cmd/src/common/utils",
+        "/srv/user/private/src/git/linux/script/py_custom_cmd/src/tools",
+        "/srv/user/private/src/git/linux/script/py_custom_cmd/src/test",
+        "/srv/user/private/src/git/linux/script/py_custom_cmd/src/prototype",
+        "/srv/user/private/src/git/linux/script/py_custom_cmd/src/prototype/_work"
+    ]
+}

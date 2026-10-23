@@ -202,11 +202,11 @@ def load() -> list[ConfigurationData]:
     # --- file search ---------------------------------------------------------
     dirs_data = "/srv/user/share/conf/_data"
     file_conf = "common.cfg"
-    path_conf = None
+    path_conf:Path | None = None
     for dirs in (".", dirs_data):
         path: Path = Path(dirs) / file_conf
         if path.exists():
-            path_conf: Path = path
+            path_conf = path
             break
     if not path_conf:
         message_alert(caller, f"file not found: {file_conf}")
