@@ -1,4 +1,4 @@
-"""Common Function Package: utils [generated: 2026/10/23 22:20:20 JST (+0900)]"""
+"""Common Function Package: utils [generated: 2026/10/26 21:56:00 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -20,6 +20,7 @@ __all__ = [
     "SystemData",
     "TimeElapsed",
     "WebData",
+    "addpath",
     "async_subprocess",
     "build_buttons",
     "build_menu_bar",
@@ -55,6 +56,9 @@ __all__ = [
     "get_volume_label",
     "get_volume_uuid",
     "handle_fatal_error",
+    "is_chroot",
+    "is_container",
+    "is_vm_type",
     "json_load",
     "json_save",
     "list2markdown",
@@ -96,6 +100,7 @@ _MODULE_MAP = {
     "SystemData": ".my_config",
     "TimeElapsed": ".my_time",
     "WebData": ".my_web_api",
+    "addpath": ".my_path",
     "async_subprocess": ".my_process",
     "build_buttons": ".my_gui_build_helper",
     "build_menu_bar": ".my_gui_build_helper",
@@ -131,6 +136,9 @@ _MODULE_MAP = {
     "get_volume_label": ".my_infofile",
     "get_volume_uuid": ".my_infofile",
     "handle_fatal_error": ".my_error",
+    "is_chroot": ".my_hypervisor",
+    "is_container": ".my_hypervisor",
+    "is_vm_type": ".my_hypervisor",
     "json_load": ".my_json",
     "json_save": ".my_json",
     "list2markdown": ".my_markdown",

@@ -14,13 +14,13 @@ from common.utils import (
     debug_logger,
     file_read,
     get_caller_name,
-    infosystem,
     message_info,
 )
 
+
 # ruff: isort: on
 # --- import module -----------------------------------------------------------
-from autoinst_syspara import InfoSystem
+#from autoinst_syspara import InfoSystem
 
 
 # =============================================================================
@@ -35,27 +35,26 @@ class ConfigurationData:
 
 class InfoConfiguration:
     @debug_logger
-    def __init__(self, conf_path: Path, info_syst: InfoSystem) -> None:
+    def __init__(self, conf_path: Path) -> None:
         self._valid_fields: set[str] = {f.name for f in fields(ConfigurationData)}
         self.data: ConfigurationData = ConfigurationData()
         self.load(conf_path=conf_path)
-        self.debug(info_syst)
 
     @debug_logger
-    def debug(self, info_syst: InfoSystem) -> None:
-        if info_syst.data.dout_flag or getattr(infosystem, "debugout", False):
+    def debug(self, debugout:bool=False) -> None:
+        if debugout:
             _caller = get_caller_name()
-            message_info(_caller, "*** start: ConfigurationData ***", omit=True)
+            message_info(_caller, f"{'*** start':<10}:ConfigurationData ***", omit=True)
             for _clas_data in self.data:
                 message_info(
                     _caller, f"{_clas_data.key}={_clas_data.value or ''}", omit=True
                 )
-            message_info(_caller, "*** end  : ConfigurationData ***", omit=True)
+            message_info(_caller, f"{'*** end':<10}:ConfigurationData ***", omit=True)
 
     @debug_logger
     def load(self, conf_path: Path) -> None:
         _caller = get_caller_name()
-        message_info(_caller, f"loading :{conf_path}", omit=True)
+        message_info(_caller, f"{'loading':<10}:{conf_path}", omit=True)
         # --- get setting items ---------------------------------------------------
         _line_pattern: re.Pattern[str] = re.compile(
             r'^(\w+)="([^"]*)"\s*(?:(#\s*.*))?$'
@@ -89,52 +88,13 @@ class InfoConfiguration:
                     ConfigurationData(key=_key, value=_value, comment=_comment)
                 )
         self.data: list[ConfigurationData] = _list_conf
-        message_info(_caller, f"complete:{conf_path}", omit=True)
-
-    @debug_logger
-    def findregexp(self, queries: list[dict[str, str]]) -> list[ConfigurationData]:
-        _results: list[ConfigurationData] = []
-        _compiled_queries: list[tuple[str, re.Pattern[str]]] = [
-            (_q_key, re.compile(_q_pattern))
-            for _query in queries
-            for _q_key, _q_pattern in _query.items()
-        ]
-        for _class_data in self.data:
-            for _q_key, _pattern in _compiled_queries:
-                _target_str: Any | None = getattr(_class_data, _q_key, None)
-                if _target_str and _pattern.search(_target_str):
-                    _results.append(_class_data)
-                    break
-        return _results
-
-    @debug_logger
-    def finds(self, **kwargs) -> list[ConfigurationData]:
-        MISSING = object()
-        result = []
-        for _class_data in self.data:
-            match = True
-            for _key, _value in kwargs.items():
-                attr_val: Any | object = getattr(_class_data, _key, MISSING)
-                if attr_val is MISSING:
-                    match = False
-                    break
-                if isinstance(_value, str) and isinstance(attr_val, str):
-                    if not re.search(_value, attr_val):
-                        match = False
-                        break
-                else:
-                    if attr_val != _value:
-                        match = False
-                        break
-            if match:
-                result.append(_class_data)
-        return result
+        message_info(_caller, f"{'complete':<10}:{conf_path}", omit=True)
 
     @debug_logger
     def find(self, **kwargs) -> ConfigurationData:
         MISSING = object()
         return next(
-            _class_data
+            _class_data.value
             for _class_data in self.data
             if all(
                 getattr(_class_data, _key, MISSING) == _value
@@ -143,8 +103,8 @@ class InfoConfiguration:
         )
 
     @debug_logger
-    def get_path(self, key: str) -> Path:
-        _path_str: str = self.find(key=key).value
+    def path(self, key: str) -> Path:
+        _path_str: str = self.find(key=key)
         if not _path_str:
             raise ValueError(f"No such key '{key}'")
         _path_str: str = os.path.expanduser(os.path.expandvars(_path_str))

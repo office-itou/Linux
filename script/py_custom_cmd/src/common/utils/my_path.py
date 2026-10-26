@@ -3,7 +3,12 @@ import stat
 from pathlib import Path
 
 # --- my library --------------------------------------------------------------
-from common.utils import debug_logger, run_subprocess
+from common.utils import (
+    debug_logger,
+    get_caller_name,
+    handle_fatal_error,
+    run_subprocess,
+)
 
 
 # =============================================================================
@@ -26,51 +31,76 @@ from common.utils import debug_logger, run_subprocess
 
 @debug_logger
 def parse_ugo_to_stat(ugo_str: str, current_mode: int = 0o000) -> int:
-    _perm_map = {
-        "u": {"r": stat.S_IRUSR, "w": stat.S_IWUSR, "x": stat.S_IXUSR},
-        "g": {"r": stat.S_IRGRP, "w": stat.S_IWGRP, "x": stat.S_IXGRP},
-        "o": {"r": stat.S_IROTH, "w": stat.S_IWOTH, "x": stat.S_IXOTH},
-    }
-    _result_mode = current_mode
-    for _clause in ugo_str.split(","):
-        _clause = _clause.strip()
-        if not _clause:
-            continue
-        _operator = None
-        for _op in ("=", "+", "-"):
-            if _op in _clause:
-                _operator = _op
-                break
-        if not _operator:
-            raise ValueError(f"Invalid format: {_clause}")
-        _who, _perms = _clause.split(_operator)
-        _targets = list(_who) if _who else ["u", "g", "o"]
-        if "a" in _targets:
-            _targets = ["u", "g", "o"]
-        _mask = 0
-        for t in _targets:
-            if t not in _perm_map:
+    _caller = get_caller_name()
+    try:
+        _perm_map = {
+            "u": {"r": stat.S_IRUSR, "w": stat.S_IWUSR, "x": stat.S_IXUSR},
+            "g": {"r": stat.S_IRGRP, "w": stat.S_IWGRP, "x": stat.S_IXGRP},
+            "o": {"r": stat.S_IROTH, "w": stat.S_IWOTH, "x": stat.S_IXOTH},
+        }
+        _result_mode = current_mode
+        for _clause in ugo_str.split(","):
+            _clause = _clause.strip()
+            if not _clause:
                 continue
-            for p in _perms:
-                if p in _perm_map[t]:
-                    _mask |= _perm_map[t][p]
-        if _operator == "=":
-            _clear_mask = 0
+            _operator = None
+            for _op in ("=", "+", "-"):
+                if _op in _clause:
+                    _operator = _op
+                    break
+            if not _operator:
+                raise ValueError(f"Invalid format: {_clause}")
+            _who, _perms = _clause.split(_operator)
+            _targets = list(_who) if _who else ["u", "g", "o"]
+            if "a" in _targets:
+                _targets = ["u", "g", "o"]
+            _mask = 0
             for t in _targets:
-                _clear_mask |= _perm_map[t]["r"] | _perm_map[t]["w"] | _perm_map[t]["x"]
-            _result_mode = (_result_mode & ~_clear_mask) | _mask
-        elif _operator == "+":
-            _result_mode |= _mask
-        elif _operator == "-":
-            _result_mode &= ~(_mask & 0o7777)
-    return _result_mode
+                if t not in _perm_map:
+                    continue
+                for p in _perms:
+                    if p in _perm_map[t]:
+                        _mask |= _perm_map[t][p]
+            if _operator == "=":
+                _clear_mask = 0
+                for t in _targets:
+                    _clear_mask |= (
+                        _perm_map[t]["r"] | _perm_map[t]["w"] | _perm_map[t]["x"]
+                    )
+                _result_mode = (_result_mode & ~_clear_mask) | _mask
+            elif _operator == "+":
+                _result_mode |= _mask
+            elif _operator == "-":
+                _result_mode &= ~(_mask & 0o7777)
+        return _result_mode
+    except (OSError, Exception) as e:  # noqa: BLE001
+        handle_fatal_error(_caller, e)
 
 
 @debug_logger
 def chmod(path: Path, mode: str, follow_symlinks: bool = True) -> None:
+    _caller = get_caller_name()
+    try:
+        _path = Path(path)
+        run_subprocess(["setfacl", "-b", str(_path)], check=True, capture_output=True)
+        _current_mode: int = _path.stat().st_mode
+        _mode: int = parse_ugo_to_stat(ugo_str=mode, current_mode=_current_mode)
+        _path.chmod(mode=_mode, follow_symlinks=follow_symlinks)
+    except (OSError, Exception) as e:  # noqa: BLE001
+        handle_fatal_error(_caller, e)
 
-    run_subprocess(["setfacl", "-b", str(path)], check=True, capture_output=True)
-    _current_mode: int = path.stat().st_mode
-    _mode: int = parse_ugo_to_stat(ugo_str=mode, current_mode=_current_mode)
-    print(f"{str(path)}:{mode}:{oct(_mode)}")
-    path.chmod(mode=_mode, follow_symlinks=follow_symlinks)
+
+@debug_logger
+def addpath(base: Path, path: Path) -> Path | None:
+    _caller = get_caller_name()
+    try:
+        if base and path:
+            return Path(base) / str(path).lstrip("/")
+        if not base and path:
+            return Path(path)
+        if base and not path:
+            return Path(base)
+        return None
+    except (OSError, Exception) as e:  # noqa: BLE001
+        handle_fatal_error(_caller, e)
+    return None

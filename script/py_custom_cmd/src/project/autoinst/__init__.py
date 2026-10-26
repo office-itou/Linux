@@ -1,4 +1,4 @@
-"""Common Function Package: autoinst [generated: 2026/10/23 22:20:20 JST (+0900)]"""
+"""Common Function Package: autoinst [generated: 2026/10/26 21:56:00 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -6,21 +6,27 @@ import importlib  # noqa: E402
 
 # --- my library --------------------------------------------------------------
 __all__ = [
-    "CmdLine",
-    "CmdlineData",
     "ConfigurationData",
     "InfoConfiguration",
     "InfoSystem",
     "SystemData",
+    "conv_ipv4_reverse",
+    "conv_ipv6_full",
+    "conv_ipv6_omit",
+    "conv_ipv6_reverse",
+    "network_param",
 ]
 
 _MODULE_MAP = {
-    "CmdLine": ".autoinst_cmdline",
-    "CmdlineData": ".autoinst_cmdline",
-    "ConfigurationData": ".autoinst_common_cfg",
-    "InfoConfiguration": ".autoinst_common_cfg",
-    "InfoSystem": ".autoinst_syspara",
-    "SystemData": ".autoinst_syspara",
+    "ConfigurationData": ".autoinst_fn_common_cfg",
+    "InfoConfiguration": ".autoinst_fn_common_cfg",
+    "InfoSystem": ".autoinst_fn_syspara",
+    "SystemData": ".autoinst_fn_syspara",
+    "conv_ipv4_reverse": ".autoinst_fn_network",
+    "conv_ipv6_full": ".autoinst_fn_network",
+    "conv_ipv6_omit": ".autoinst_fn_network",
+    "conv_ipv6_reverse": ".autoinst_fn_network",
+    "network_param": ".autoinst_fn_network",
 }
 
 

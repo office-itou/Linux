@@ -9,15 +9,14 @@ from common.shared import (
 from common.utils import (
     debug_logger,
     get_caller_name,
+    handle_fatal_error,
     infosystem,
 )
 
 # ruff: isort: on
 # --- import module -----------------------------------------------------------
-from autoinst_syspara import InfoSystem
-
-from autoinst_common_cfg import InfoConfiguration
-from autoinst_initialize import initialize
+from autoinst_fn_initialize import initialize
+from autoinst_fn_network import network_param
 
 
 # --- class and function ------------------------------------------------------
@@ -27,20 +26,29 @@ from autoinst_initialize import initialize
 def main() -> None:
     """Main"""
     _caller = get_caller_name()
-    _info_conf: InfoConfiguration
-    _info_syst: InfoSystem
-    _info_syst, _info_conf = initialize()
+    _info_syst = initialize()
+    _info_syst = network_param(info_syst=_info_syst)
+    _info_syst.debug(debugout=bool(_info_syst.data.dout_flag or infosystem.debugout))
+    _info_syst.print_info(
+        debugout=not bool(_info_syst.data.dout_flag or infosystem.debugout)
+    )
 
 
 if __name__ == "__main__":
     # --- initialization ------------------------------------------------------
     _caller = get_caller_name()
-    proc_init(
-        description="autoinst late command", list_args=[], caller=_caller, is_gui=False
-    )
-    # --- processing block ----------------------------------------------------
-    if infosystem.args:
-        main()
-    # --- complete ------------------------------------------------------------
-    proc_comp(caller=_caller)
+    try:
+        proc_init(
+            description="autoinst late command",
+            list_args=[],
+            caller=_caller,
+            is_gui=False,
+        )
+        # --- processing block ------------------------------------------------
+        if infosystem.args:
+            main()
+        # --- complete --------------------------------------------------------
+        proc_comp(caller=_caller)
+    except (OSError, Exception) as e:  # noqa: BLE001
+        handle_fatal_error(_caller, e)
 # --- eof ---------------------------------------------------------------------
