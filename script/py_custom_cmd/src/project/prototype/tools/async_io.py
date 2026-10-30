@@ -59,7 +59,7 @@ async def _process_single_media(
     if not tget_mdia.web_regexp:
         return
     async with semaphore:
-        message_info(caller, f"[Queue] Fetching: {tget_mdia.web_regexp}", omit=True)
+        message_info(caller, f"[Queue] Fetching:{tget_mdia.web_regexp}", omit=True)
         from my_infofile import InfoFile
         from my_infoweb import InfoWeb
 

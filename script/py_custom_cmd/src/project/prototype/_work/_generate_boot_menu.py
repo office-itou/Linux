@@ -20,8 +20,8 @@ from common.shared import (
 # from common.shared.my_distribution_dat import ORDERED_DISTRIBUTIONS
 from common.utils import (
     debug_logger,
-    file_read,
-    file_write,
+    fread,
+    fwrite,
     find_grub_cfg,
     find_isolinux_cfg,
 )
@@ -424,21 +424,21 @@ class GenerateBootMenu:
             self.info_comm.conf.data
         ) + copy.deepcopy(option)
         # --- grub theme.cfg --------------------------------------------------
-        _read_data = file_read(_theme_cfg_template_path)
+        _read_data = fread(_theme_cfg_template_path)
         _var_pattern: re.Pattern[str] = re.compile(r":_([A-Z0-9_]+)_:")
         _conv_dist: str = _var_pattern.sub(
             lambda m: str(self.info_comm.conf.find(key=m.group(1)).value), _read_data
         )
         write_data: str = "\n".join(_conv_dist) + "\n"
-        file_write(_theme_cfg_path, write_data, text=True, backup=True)
+        fwrite(_theme_cfg_path, write_data, text=True, backup=True)
         # --- grub autoinst.cfg -----------------------------------------------
-        _read_data = file_read(_autoinst_cfg_template_path)
+        _read_data = fread(_autoinst_cfg_template_path)
         _var_pattern: re.Pattern[str] = re.compile(r":_([A-Z0-9_]+)_:")
         _conv_dist: str = _var_pattern.sub(
             lambda m: str(self.info_comm.conf.find(key=m.group(1)).value), _read_data
         )
         write_data: str = "\n".join(_conv_dist) + "\n"
-        file_write(_autoinst_cfg_path, write_data, text=True, backup=True)
+        fwrite(_autoinst_cfg_path, write_data, text=True, backup=True)
 
     def generate_boot_menu_ilnx(
         self, conf_path: Path, option: list[dict[str, str]]

@@ -14,7 +14,7 @@ from common.utils import (
     Color,
     infosystem,
     debug_logger,
-    file_read,
+    fread,
     list2markdown,
     get_caller_name,
     message_alert,
@@ -209,14 +209,14 @@ def load() -> list[ConfigurationData]:
             path_conf = path
             break
     if not path_conf:
-        message_alert(caller, f"file not found: {file_conf}")
+        message_alert(caller, f"file not found:{file_conf}")
         raise SystemExit(1)
     # --- get setting items ---------------------------------------------------
     line_pattern: re.Pattern[str] = re.compile(r'^(\w+)="([^"]*)"\s*(?:(#\s*.*))?$')
     var_pattern: re.Pattern[str] = re.compile(r":_([A-Z0-9_]+)_:")
     dict_conf: dict[str, str] = {}
     list_conf: list[ConfigurationData] = []
-    data_dist: str = str(file_read(path_conf))
+    data_dist: str = str(fread(path_conf))
     for line in data_dist.splitlines():
         line_raw: str = line.strip()
         if not line_raw or not line_raw[0].isupper():

@@ -20,8 +20,8 @@ from common.utils import (
     debug_logger,
     extract_efi_partition,
     extract_mbr_partition,
-    file_read,
-    file_write,
+    fread,
+    fwrite,
     get_caller_name,
     get_partition_type,
     get_volume_label,
@@ -156,23 +156,23 @@ class GenerateIsoFile:
         _gthm_path: Path = self.conf.get_path(key="PATH_GTHM")
         # --- autoinst.cfg ----------------------------------------------------
         _status_auto: bool = False
-        _read_data = file_read(_gaut_path)
+        _read_data = fread(_gaut_path)
         _var_pattern: re.Pattern[str] = re.compile(r":_([A-Z0-9_]+)_:")
         _conv_dist: str = _var_pattern.sub(
             lambda m: str(self.conf.find(key=m.group(1)).value),
             _read_data,
         )
-        file_write(_auto_path, _conv_dist)
+        fwrite(_auto_path, _conv_dist)
         _status_auto: bool = True
         # --- autotheme.cfg  --------------------------------------------------
         _status_thme: bool = False
-        _read_data = file_read(_gthm_path)
+        _read_data = fread(_gthm_path)
         _var_pattern: re.Pattern[str] = re.compile(r":_([A-Z0-9_]+)_:")
         _conv_dist: str = _var_pattern.sub(
             lambda m: str(self.conf.find(key=m.group(1)).value),
             _read_data,
         )
-        file_write(_thme_path, _conv_dist)
+        fwrite(_thme_path, _conv_dist)
         _status_thme: bool = True
         # ---------------------------------------------------------------------
         _status = _status_auto and _status_thme
@@ -193,23 +193,23 @@ class GenerateIsoFile:
         _ithm_path: Path = self.conf.get_path(key="PATH_ITHM")
         # --- autoinst.cfg ----------------------------------------------------
         _status_auto: bool = False
-        _read_data = file_read(_iaut_path)
+        _read_data = fread(_iaut_path)
         _var_pattern: re.Pattern[str] = re.compile(r":_([A-Z0-9_]+)_:")
         _conv_dist: str = _var_pattern.sub(
             lambda m: str(self.conf.find(key=m.group(1)).value),
             _read_data,
         )
-        file_write(_auto_path, _conv_dist)
+        fwrite(_auto_path, _conv_dist)
         _status_auto: bool = True
         # --- autotheme.cfg  --------------------------------------------------
         _status_thme: bool = False
-        _read_data = file_read(_ithm_path)
+        _read_data = fread(_ithm_path)
         _var_pattern: re.Pattern[str] = re.compile(r":_([A-Z0-9_]+)_:")
         _conv_dist: str = _var_pattern.sub(
             lambda m: str(self.conf.find(key=m.group(1)).value),
             _read_data,
         )
-        file_write(_thme_path, _conv_dist)
+        fwrite(_thme_path, _conv_dist)
         _status_thme: bool = True
         # ---------------------------------------------------------------------
         _status = _status_auto and _status_thme
@@ -294,19 +294,19 @@ class GenerateIsoFile:
         # ---------------------------------------------------------------------
         try:
             message_start(_caller, omit=True)
-            message_info(_caller, f"target: {self._tget_file}", omit=True)
-            message_info(_caller, f"tmpout: {self._temp_file}", omit=True)
+            message_info(_caller, f"target:{self._tget_file}", omit=True)
+            message_info(_caller, f"tmpout:{self._temp_file}", omit=True)
             _xorriso_proc: Process = await asyncio.create_subprocess_exec(
                 *_xorriso_args, **self._kwargs
             )
             _stdout, _stderr = await _xorriso_proc.communicate()
             _status = _xorriso_proc.returncode == 0
-            message_info(_caller, f"output: {self._dest_path}", omit=True)
+            message_info(_caller, f"output:{self._dest_path}", omit=True)
             if not _status:
                 if _stdout:
-                    message_info(_caller, f"stdout: {_stdout.decode()}")
+                    message_info(_caller, f"stdout:{_stdout.decode()}")
                 if _stderr:
-                    message_info(_caller, f"stderr: {_stderr.decode()}")
+                    message_info(_caller, f"stderr:{_stderr.decode()}")
             if _status and self._temp_path.exists():
                 loop = asyncio.get_running_loop()
                 await loop.run_in_executor(

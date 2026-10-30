@@ -130,7 +130,7 @@ class AsyncRsync:
         else:
             message_info(_caller, _message, omit=True)
         # -------------------------------------------------------------
-        message_info(_caller, f"[Queue] Fetching: {mdia_data.iso_path}", omit=True)
+        message_info(_caller, f"[Queue] Fetching:{mdia_data.iso_path}", omit=True)
         # --- rsync parameters ----------------------------------------
         _temp_obj: tempfile.TemporaryDirectory[str] = tempfile.TemporaryDirectory()
         _src_path = Path(mdia_data.iso_path)

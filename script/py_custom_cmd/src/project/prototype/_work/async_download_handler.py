@@ -150,7 +150,7 @@ class AsyncDownload:
         else:
             message_info(_caller, _message, omit=True)
         # -------------------------------------------------------------
-        message_info(_caller, f"[Queue] Fetching: {mdia_data.web_path}", omit=True)
+        message_info(_caller, f"[Queue] Fetching:{mdia_data.web_path}", omit=True)
         # --- get web datas -------------------------------------------
         w = await get_contents(
             self.session,

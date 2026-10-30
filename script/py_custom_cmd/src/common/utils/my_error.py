@@ -26,7 +26,7 @@ def handle_fatal_error(
     """
     # --- Constructing error messages -----------------------------------------
     _summary: traceback.FrameSummary = traceback.extract_tb(e.__traceback__)[-1]
-    message_alert(caller, f"Fatal error: {e}", omit)
+    message_alert(caller, f"Fatal error:{e}", omit)
     _error_msg: str = f"Fatal error: {e}\n"
     if isinstance(e, OSError):
         _error_msg += f"line number: {_summary.lineno}"
@@ -40,12 +40,12 @@ def handle_fatal_error(
         sys.exit(1)  # Safely terminate the GUI thread
     else:
         # --- Conventional CUI processing -------------------------------------
-        message_alert(caller, f"Fatal error: {e}", omit)
+        message_alert(caller, f"Fatal error:{e}", omit)
         if isinstance(e, OSError):
-            message_alert(caller, f"line number: {_summary.lineno}", omit)
+            message_alert(caller, f"line number:{_summary.lineno}", omit)
         else:
-            message_alert(caller, f"file name  : {_summary.filename}", omit)
-            message_alert(caller, f"line number: {_summary.lineno}", omit)
+            message_alert(caller, f"file name  :{_summary.filename}", omit)
+            message_alert(caller, f"line number:{_summary.lineno}", omit)
     if raise_exit:
         raise SystemExit from e
     else:

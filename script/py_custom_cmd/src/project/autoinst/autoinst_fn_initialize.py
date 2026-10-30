@@ -14,8 +14,9 @@ from common.utils import (
 
 # ruff: isort: on
 # --- import module -----------------------------------------------------------
-from autoinst_fn_common_cfg import InfoConfiguration
 from autoinst_fn_syspara import InfoSystem
+
+from autoinst_fn_common_cfg import InfoConfiguration
 
 
 # --- class and function ------------------------------------------------------

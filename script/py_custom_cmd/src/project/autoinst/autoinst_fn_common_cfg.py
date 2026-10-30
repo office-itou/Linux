@@ -12,7 +12,7 @@ from typing import Any
 # ruff: isort: off
 from common.utils import (
     debug_logger,
-    file_read,
+    fread,
     get_caller_name,
     message_info,
 )
@@ -62,7 +62,7 @@ class InfoConfiguration:
         _vars_pattern: re.Pattern[str] = re.compile(r":_([A-Z0-9_]+)_:")
         _dict_conf: dict[str, str] = {}
         _list_conf: list[ConfigurationData] = []
-        _data_dist: str = str(file_read(conf_path))
+        _data_dist: str = fread(conf_path)
         for _line in _data_dist.splitlines():
             _line_raw: str = _line.strip()
             if not _line_raw or not _line_raw[0].isupper():

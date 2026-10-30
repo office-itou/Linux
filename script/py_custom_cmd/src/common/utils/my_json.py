@@ -11,8 +11,8 @@ from typing import Any
 from common.utils import (
     debug_logger,
     handle_fatal_error,
-    file_read,
-    file_write,
+    fread,
+    fwrite,
     get_caller_name,
     message_alert,
 )
@@ -30,10 +30,10 @@ def json_load(src_path: Path) -> Any:
     """
     _caller = get_caller_name()
     try:
-        _read_data: str = str(file_read(src_path))
+        _read_data: str = str(fread(src_path))
         return json.loads(_read_data)
     except (OSError, Exception) as e:  # noqa: BLE001
-        message_alert(_caller, f"target file: {src_path}")
+        message_alert(_caller, f"target file:{src_path}")
         handle_fatal_error(_caller, e)
 
 
@@ -48,9 +48,9 @@ def json_save(dest_path: Path, src_data: Any) -> None:
     _caller = get_caller_name()
     try:
         _write_data: str = json.dumps(src_data, ensure_ascii=False, indent=4)
-        file_write(dest_path, _write_data, text=True, backup=True)
+        fwrite(dest_path, _write_data, text=True, backup=True)
     except (OSError, Exception) as e:  # noqa: BLE001
-        message_alert(_caller, f"target file: {dest_path}")
+        message_alert(_caller, f"target file:{dest_path}")
         handle_fatal_error(_caller, e)
 
 

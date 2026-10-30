@@ -9,7 +9,7 @@ from typing import Any
 # ruff: isort: off
 from common.utils import (
     debug_logger,
-    file_write,
+    fwrite,
     handle_fatal_error,
     get_caller_name,
     message_warn,
@@ -112,7 +112,7 @@ def put_list2text(
         format_str.format(**d) for d in _data_dicts
     ]
     _write_data: str = "\n".join(_text_list) + "\n"
-    file_write(dst_path, _write_data, text=True, backup=True)
+    fwrite(dst_path, _write_data, text=True, backup=True)
 
 
 # --- eof ---------------------------------------------------------------------

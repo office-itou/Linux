@@ -4,6 +4,7 @@
 import asyncio
 import subprocess
 from asyncio.subprocess import Process
+from subprocess import CompletedProcess
 
 # --- my library --------------------------------------------------------------
 from common.utils import (
@@ -17,39 +18,41 @@ from common.utils import (
 
 # =============================================================================
 @debug_logger
-def run_subprocess(*args, **kwargs) -> str:
+def run_subprocess(*args, **kwargs) -> CompletedProcess:
     """Subprocess wrapper
-    Raises:
-        SystemExit: subprocess.CalledProcessError
-        SystemExit: FileNotFoundError
+
     Returns:
-        str: stdout
+        CompletedProcess: _description_
     """
     _caller = get_caller_name()
-    kwargs["check"] = True
-    kwargs["capture_output"] = True
-    kwargs["text"] = True
     try:
-        _res = subprocess.run(*args, **kwargs)  # noqa: PLW1510
+        if not isinstance(kwargs.get("env"), dict):
+            kwargs["env"] = {"LANG": "C"}
+        kwargs.setdefault("capture_output", True)
+        kwargs.setdefault("text", True)
+        kwargs.setdefault("check", True)
+        _result: CompletedProcess = subprocess.run(*args, **kwargs)
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e)
-    else:
-        return str(_res.stdout.strip())
-    return ""
+    return _result
+
+def run_subprocess_stdout(*args, **kwargs) -> str:
+    _result:CompletedProcess = run_subprocess(*args, **kwargs)
+    return str(_result.stdout.splitlines())
 
 
 @debug_logger
 async def async_subprocess(*args, **kwargs) -> bool:
     _caller = get_caller_name()
-    _status:bool = False
+    _status: bool = False
 
     # --- message out ---------------------------------------------------------
     def _message_out(caller, status, stdout, stderr) -> None:
         if not status:
             if stdout:
-                message_alert(caller, f"stdout: {stdout.decode()}", omit=True)
+                message_alert(caller, f"stdout:{stdout.decode()}", omit=True)
             if stderr:
-                message_alert(caller, f"stderr: {stderr.decode()}", omit=True)
+                message_alert(caller, f"stderr:{stderr.decode()}", omit=True)
 
     try:
         _proc: Process = await asyncio.create_subprocess_exec(*args, **kwargs)
@@ -75,6 +78,8 @@ async def async_subprocess(*args, **kwargs) -> bool:
             _message_out(caller=_caller, status=_status, stdout=_stdout, stderr=_stderr)
     except Exception as e:
         handle_fatal_error(_caller, e, raise_exit=False)
-        _status:bool = False
+        _status: bool = False
     return _status
+
+
 # --- eof ---------------------------------------------------------------------

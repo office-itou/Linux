@@ -14,7 +14,7 @@ from common.utils import (
     debug_logger,
     get_caller_name,
     handle_fatal_error,
-    run_subprocess,
+    run_subprocess_stdout,
 )
 
 
@@ -81,10 +81,10 @@ def get_volume_uuid(device: str) -> str | None:
     try:
         if shutil.which("blkid"):
             parameter: list[str] = ["blkid", "-s", "UUID", "-o", "value", device]
-            return run_subprocess(parameter)
+            return run_subprocess_stdout(parameter)
         if shutil.which("file"):
             parameter: list[str] = ["file", "-b", device]
-            result = run_subprocess(parameter)
+            result = run_subprocess_stdout(parameter)
             match: re.Match[str] | None = re.search(
                 r"UUID[=\s]'?([A-Za-z0-9:-]+)'?", result
             )
@@ -92,7 +92,7 @@ def get_volume_uuid(device: str) -> str | None:
                 return match.group(1).strip()
         if shutil.which("isoinfo"):
             parameter: list[str] = ["isoinfo", "-d", "-i", device]
-            result = run_subprocess(parameter)
+            result = run_subprocess_stdout(parameter)
             for line in result.splitlines():
                 if "Volume creation time:" in line:
                     dt_part = line.split(":", 1)[1].strip()
@@ -112,16 +112,16 @@ def get_volume_label(device: str) -> str | None:
     try:
         if shutil.which("blkid"):
             parameter: list[str] = ["blkid", "-s", "LABEL", "-o", "value", device]
-            return run_subprocess(parameter)
+            return run_subprocess_stdout(parameter)
         if shutil.which("file"):
             parameter: list[str] = ["file", "-b", device]
-            result = run_subprocess(parameter)
+            result = run_subprocess_stdout(parameter)
             match: re.Match[str] | None = re.search(r"'(.*?)'", result)
             if match:
                 return match.group(1).strip()
         if shutil.which("isoinfo"):
             parameter: list[str] = ["isoinfo", "-d", "-i", device]
-            result = run_subprocess(parameter)
+            result = run_subprocess_stdout(parameter)
             for line in result.stdout.splitlines():
                 if "Volume id:" in line:
                     return line.split(":", 1)[1].strip()

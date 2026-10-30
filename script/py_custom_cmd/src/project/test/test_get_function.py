@@ -20,7 +20,7 @@ from my_colors import Color
 from my_config import infosystem
 from my_debug import debug_logger
 from my_error import handle_fatal_error
-from my_file_api import file_read, file_write
+from my_file_api import fread, fwrite
 from my_message import (
     get_caller_name,
     message_elapsed,
@@ -306,7 +306,7 @@ def build_perfect_tree_with_docs(target_files: str = ""):
 
     markdown_text = ""
     for path_file in target_files:
-        source_code = file_read(path_file)
+        source_code = fread(path_file)
 
         # ターミナル用に出力して画面表示
         raw_nodes = build_perfect_tree_with_docs_phase1(
@@ -344,7 +344,7 @@ def build_perfect_tree_with_docs(target_files: str = ""):
         and markdown_text
     ):
         file_mkdn = Path(infosystem.args.markdown)
-        file_write(file_mkdn, markdown_text)
+        fwrite(file_mkdn, markdown_text)
         print(f"Markdownファイルを保存しました: {file_mkdn}")
 
     print(f"{Color.green}{'*' * 80}{Color.reset}")

@@ -7,7 +7,7 @@ from common.utils import (
     debug_logger,
     get_caller_name,
     handle_fatal_error,
-    run_subprocess,
+    run_subprocess_stdout,
 )
 
 
@@ -82,7 +82,9 @@ def chmod(path: Path, mode: str, follow_symlinks: bool = True) -> None:
     _caller = get_caller_name()
     try:
         _path = Path(path)
-        run_subprocess(["setfacl", "-b", str(_path)], check=True, capture_output=True)
+        run_subprocess_stdout(
+            ["setfacl", "-b", str(_path)], check=True, capture_output=True
+        )
         _current_mode: int = _path.stat().st_mode
         _mode: int = parse_ugo_to_stat(ugo_str=mode, current_mode=_current_mode)
         _path.chmod(mode=_mode, follow_symlinks=follow_symlinks)
@@ -100,6 +102,22 @@ def addpath(base: Path, path: Path) -> Path | None:
             return Path(path)
         if base and not path:
             return Path(base)
+        return None
+    except (OSError, Exception) as e:  # noqa: BLE001
+        handle_fatal_error(_caller, e)
+    return None
+
+
+@debug_logger
+def delpath(base: Path, path: Path) -> Path | None:
+    _caller = get_caller_name()
+    try:
+        if base and path:
+            return Path(path.relative_to(str(base))).resolve()
+        if not base and path:
+            return Path(path).resolve()
+        if base and not path:
+            return None
         return None
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e)

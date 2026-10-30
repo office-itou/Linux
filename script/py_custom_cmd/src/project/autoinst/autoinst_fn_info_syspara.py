@@ -1,17 +1,18 @@
 # --- python library ----------------------------------------------------------
 import os
 import re
-import subprocess
 from dataclasses import dataclass, field, fields
 from datetime import datetime
 from pathlib import Path
+
+from autoinst_fn_network import conv_ipv4_reverse
 
 # --- my library --------------------------------------------------------------
 from common.utils import (
     addpath,
     cmdline,
     debug_logger,
-    file_read,
+    fread,
     get_caller_name,
     infosystem,
     is_chroot,
@@ -22,7 +23,6 @@ from common.utils import (
 
 # --- import module -----------------------------------------------------------
 from autoinst_fn_common_cfg import InfoConfiguration
-from autoinst_fn_network import conv_ipv4_reverse
 
 
 # --- class and function ------------------------------------------------------
@@ -193,7 +193,8 @@ class SystemData:
     xnfs_path: Path | None = None  # exports (network file system)
     xsmb_path: Path | None = None  # exports (samba)
     # --- working directory parameter -----------------------------------------
-    nlin_dirs: Path = field(
+    time_stmp: str | None = None  # time stamp
+    vadm_dirs: Path = field(
         default_factory=lambda: Path("/var/admin")
     )  # top of admin working directory
     vadm_path: Path | None = None  # top of admin working directory
@@ -209,21 +210,13 @@ class SystemData:
 class InfoSystem:
     @debug_logger
     def __init__(self, info_conf: InfoConfiguration) -> None:
-        def _run_cmd(cmd: list[str]) -> str:
-            try:
-                return subprocess.check_output(
-                    cmd, text=True, stderr=subprocess.DEVNULL
-                )
-            except (subprocess.CalledProcessError, FileNotFoundError):
-                return ""
-
         _caller = get_caller_name()
         message_info(_caller, f"{'initialize':<10}:system data", omit=True)
         # ---------------------------------------------------------------------
         self._valid_fields: set[str] = {f.name for f in fields(SystemData)}
         self.data: SystemData = SystemData()
-        self.info_conf = info_conf
-        _inp = self.info_conf
+        self.conf = info_conf
+        _inp = self.conf
         _out = self.data
         # --- target directory ------------------------------------------------
         # /target      : debian
@@ -245,7 +238,7 @@ class InfoSystem:
             _tget_path: Path = addpath(base=_out.tget_path, path=Path(_path))
             if _tget_path.exists():
                 message_info(_caller, f"{'loading':<10}:{_tget_path}", omit=True)
-                _read_text: str = file_read(src_path=_tget_path, text=True)
+                _read_text: str = fread(src_path=_tget_path, text=True)
                 _os_info = {}
                 _kv_rule = re.compile(r"^\s*([A-Z_]+)\s*=\s*(.*)\s*$")
                 for _line in _read_text.splitlines():
@@ -255,6 +248,7 @@ class InfoSystem:
                         _val = _match.group(2).strip("\"'").strip()
                         _os_info[_key] = _val.lower()
                 _out.dist_name = _os_info.get("ID") or _os_info.get("DISTRIB_ID", "")
+                _out.dist_name = re.sub(r"-.+", "", _out.dist_name)
                 _out.dist_vers = _os_info.get("VERSION_ID") or _os_info.get(
                     "DISTRIB_RELEASE", ""
                 )
@@ -315,18 +309,26 @@ class InfoSystem:
         _out.xsmb_path = _inp.path(key="DIRS_XSMB")  # exports (samba)
         # --- working directory parameter -------------------------------------
         _timestamp: str = datetime.now().astimezone().strftime("%Y%m%d%H%M%S_%f")
-        _out.vadm_path = Path("/var/admin")  # top of admin working directory
+        _out.time_stmp = _timestamp  # time stamp
+        _out.vadm_path = _out.conf.path("DIRS_VADM")  # top of admin working directory
         _out.acmd_path = (
             _out.vadm_path / _out.prog_name
         )  # auto-command working directory
         _out.inst_path = _out.acmd_path  # auto-install working directory
-        _out.back_path = _out.inst_path.with_name(
-            f"{_out.inst_path.name}.{_timestamp}"
+        _out.back_path = _out.inst_path.with_suffix(
+            f"{_out.inst_path.suffix}.{_timestamp}"
         )  # top of backup directory
         _out.orig_path = _out.back_path / "orig"  # original file directory
         _out.init_path = _out.back_path / "init"  # initial file directory
         _out.samp_path = _out.back_path / "samp"  # sample file directory
         _out.logs_path = _out.back_path / "logs"  # log file directory
+        # --- samba ---------------------------------------------------------------
+        for _dir in _out.nlin_dirs:
+            _tget_path: Path = addpath(base=_out.tget_path, path=Path(_dir))
+            if _tget_path.exists():
+                _out.nlin_path = _tget_path
+                break
+        # --- complete system data --------------------------------------------
         message_info(_caller, f"{'complete':<10}:system data", omit=True)
         # --- command line ----------------------------------------------------
         message_info(_caller, f"{'loading':<10}:command line", omit=True)

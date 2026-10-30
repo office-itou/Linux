@@ -20,8 +20,8 @@ from common.utils import (
     debug_logger,
     extract_efi_partition,
     extract_mbr_partition,
-    file_read,
-    file_write,
+    fread,
+    fwrite,
     get_caller_name,
     get_partition_type,
     get_volume_label,
@@ -270,7 +270,7 @@ async def async_boot_menu(info_comm: InfoCommon, mkiso: MkisoData) -> bool:
             except (OSError, Exception):  # noqa: BLE001
                 return None
 
-        _read_data = file_read(tmpl_path)
+        _read_data = fread(tmpl_path)
         while True:
             _prev_data = _read_data
             _read_data = var_pattern.sub(
@@ -283,7 +283,7 @@ async def async_boot_menu(info_comm: InfoCommon, mkiso: MkisoData) -> bool:
             )
             if _read_data == _prev_data:
                 break
-        file_write(outp_path, _read_data)
+        fwrite(outp_path, _read_data)
         return True
 
     # --- boot menu -----------------------------------------------------------
@@ -376,7 +376,7 @@ async def async_boot_menu(info_comm: InfoCommon, mkiso: MkisoData) -> bool:
             outp_path=_tcfg_path,
         )
         _insert_text = f"source {_auto_conf}\n"
-        _content = file_read(mkiso.grub_path)
+        _content = fread(mkiso.grub_path)
         _content = re.sub(
             r"^([Mm]enuentry|MENUENTRY)",
             f"{_insert_text}\\1",
@@ -384,7 +384,7 @@ async def async_boot_menu(info_comm: InfoCommon, mkiso: MkisoData) -> bool:
             count=1,
             flags=re.MULTILINE,
         )
-        file_write(mkiso.grub_path, _content)
+        fwrite(mkiso.grub_path, _content)
     # --- isolinux ------------------------------------------------------------
     if mkiso.ilnx_path and mkiso.auto_path and mkiso.thme_path:
         _acfg_path = mkiso.ilnx_path.with_name(mkiso.auto_path.name)
@@ -415,7 +415,7 @@ async def async_boot_menu(info_comm: InfoCommon, mkiso: MkisoData) -> bool:
             outp_path=_tcfg_path,
         )
         _insert_text = f"include {_auto_conf}\ninclude {_thme_conf}\n"
-        _content = file_read(mkiso.ilnx_path)
+        _content = fread(mkiso.ilnx_path)
         if re.search(r"(?i)^([Ii]nclude|INCLUDE)\s+menu\.cfg", _content, re.MULTILINE):
             _pattern = re.compile(
                 r"(?i)^([Ii]nclude|INCLUDE)\s+menu\.cfg.*$", re.MULTILINE
@@ -424,13 +424,13 @@ async def async_boot_menu(info_comm: InfoCommon, mkiso: MkisoData) -> bool:
         else:
             _pattern = re.compile(r"(?i)^.*([Ll]abel|LABEL).*$", re.MULTILINE)
             _content = _pattern.sub(f"{_insert_text}\n\\g<0>", _content, count=1)
-        file_write(mkiso.ilnx_path, _content)
+        fwrite(mkiso.ilnx_path, _content)
 
     return bool(_status_gaut and _status_gthm and _status_iaut and _status_ithm)
 
 
 @debug_logger
-async def async_file_copy(mkiso: MkisoData) -> bool:
+async def async_fcopy(mkiso: MkisoData) -> bool:
     _caller = get_caller_name()
     _status: bool = False
     # --- shell ---------------------------------------------------------------
@@ -578,8 +578,8 @@ async def async_xorrisofs(mkiso: MkisoData) -> bool:
     # ---------------------------------------------------------------------
     try:
         message_start(_caller, omit=True)
-        message_info(_caller, f"target: {str(mkiso.mntp_dmrg)}", omit=True)
-        message_info(_caller, f"tmpout: {str(mkiso.temp_path)}", omit=True)
+        message_info(_caller, f"target:{str(mkiso.mntp_dmrg)}", omit=True)
+        message_info(_caller, f"tmpout:{str(mkiso.temp_path)}", omit=True)
         # print(*_xorriso_args)
         _status = await async_subprocess(*_xorriso_args, **kwargs)
         if _status and mkiso.temp_path.exists():
@@ -703,7 +703,7 @@ async def process_xorrisofs(
             # --- boot menu ---------------------------------------------------
             _statsu = await async_boot_menu(info_comm=info_comm, mkiso=_mkiso)
             # --- file copy ---------------------------------------------------
-            _statsu = await async_file_copy(mkiso=_mkiso)
+            _statsu = await async_fcopy(mkiso=_mkiso)
             # --- xorrisofs ---------------------------------------------------
             _status = await async_xorrisofs(mkiso=_mkiso)
         finally:

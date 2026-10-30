@@ -6,7 +6,7 @@ from pathlib import Path
 
 # ⭕ pandas のインポートを完全に削除
 # --- my library --------------------------------------------------------------
-from common.utils import count_width, debug_logger, file_read, file_write
+from common.utils import count_width, debug_logger, fread, fwrite
 
 
 # -----------------------------------------------------------------------------
@@ -105,7 +105,7 @@ def list2markdown(dest_path: Path, md_title: str, src_datas: list) -> None:
         _header, _align, _md_rows = _generate(src_datas)
         _md_text += f"\n{_spc_str}{_header}\n{_spc_str}{_align}\n"
         _md_text += "\n".join(_md_rows) + "\n"
-    file_write(dest_path, _md_text, text=True, backup=True)
+    fwrite(dest_path, _md_text, text=True, backup=True)
 
 
 # -----------------------------------------------------------------------------
@@ -118,7 +118,7 @@ def markdown2list(src_path: Path) -> list:
     """
     _table_rows = []
     _headers = []
-    _read_data: str = str(file_read(src_path))
+    _read_data: str = str(fread(src_path))
     for _line in _read_data:
         _line_str: str = _line.strip()
         if _line_str.startswith("|") and _line_str.endswith("|"):

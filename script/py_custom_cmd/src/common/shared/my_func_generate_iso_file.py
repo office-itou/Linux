@@ -158,19 +158,19 @@ async def generate_iso_file(
         # )
 
         message_start(_caller, omit=True)
-        message_info(_caller, f"target: {_tget_file}", omit=True)
-        message_info(_caller, f"tmpout: {_temp_file}", omit=True)
+        message_info(_caller, f"target:{_tget_file}", omit=True)
+        message_info(_caller, f"tmpout:{_temp_file}", omit=True)
         _xorriso_proc: Process = await asyncio.create_subprocess_exec(
             *_xorriso_args, **_kwargs
         )
         _stdout, _stderr = await _xorriso_proc.communicate()
         _status = _xorriso_proc.returncode == 0
-        message_info(_caller, f"output: {dest_path}", omit=True)
+        message_info(_caller, f"output:{dest_path}", omit=True)
         if not _status:
             if _stdout:
-                message_info(_caller, f"stdout: {_stdout.decode()}")
+                message_info(_caller, f"stdout:{_stdout.decode()}")
             if _stderr:
-                message_info(_caller, f"stderr: {_stderr.decode()}")
+                message_info(_caller, f"stderr:{_stderr.decode()}")
         if _status and _temp_path.exists():
             loop = asyncio.get_running_loop()
             await loop.run_in_executor(None, shutil.copy2, _temp_path, dest_path)

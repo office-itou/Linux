@@ -14,8 +14,8 @@ from common.shared import (
 )
 from common.utils import (
     debug_logger,
-    file_read,
-    file_write,
+    fread,
+    fwrite,
     get_caller_name,
     message_info,
 )
@@ -75,7 +75,7 @@ def _generate_ipxe_menu_file(
         )
         _sort_results = sort_distribution_data(_find_results, "", reverse=True)
     # -------------------------------------------------------------------------
-    _read_data = file_read(_path_src)
+    _read_data = fread(_path_src)
     _var_pattern: re.Pattern[str] = re.compile(r":_([A-Z0-9_]+)_:")
     _conv_dist: str = _var_pattern.sub(
         lambda m: str(info_comm.conf.find(key=m.group(1)).value), _read_data
@@ -131,7 +131,7 @@ def _generate_ipxe_menu_file(
             _item_data.append(_read_line)
     # -------------------------------------------------------------------------
     write_data: str = "\n".join(_item_data) + "\n"
-    file_write(_path_dest, write_data, text=True, backup=True)
+    fwrite(_path_dest, write_data, text=True, backup=True)
 
 
 @debug_logger

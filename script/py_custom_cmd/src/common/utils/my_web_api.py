@@ -115,7 +115,7 @@ async def get_response(
                 if _downloaded_bytes > 0:
                     _headers["Range"] = f"bytes={_downloaded_bytes}-"
                     message_warn(
-                        _caller, f"Retry({_attempt}): resume({_downloaded_bytes})"
+                        _caller, f"Retry({_attempt}):resume({_downloaded_bytes})"
                     )
             # -----------------------------------------------------------------
             async with request_func(
@@ -125,7 +125,7 @@ async def get_response(
                 _web_data.reason = _response.reason
                 _web_data.check_date = datetime.now(timezone.utc).isoformat()
                 if int(_web_data.status, 0) not in (200, 206):
-                    message_alert(_caller, f"server returned error: {_response.status}")
+                    message_alert(_caller, f"server returned error:{_response.status}")
                     break
                 # -------------------------------------------------------------
                 _web_data.response_url = str(_response.url)
@@ -148,7 +148,7 @@ async def get_response(
                     _web_data.text = ""
                 # -------------------------------------------------------------
                 if _tmp_file_path:
-                    message_info(_caller, f"download: {_final_file_path}")
+                    message_info(_caller, f"download:{_final_file_path}")
                     _local_file_path.parent.mkdir(parents=True, exist_ok=True)
                     if show_progress:
                         with Progress(
@@ -193,7 +193,7 @@ async def get_response(
                 _web_data.check_date = datetime.now(timezone.utc).isoformat()
             return _web_data
         except (aiohttp.ClientError, asyncio.TimeoutError) as e:
-            message_alert(_caller, f"HTTP/Connection error: {e}")
+            message_alert(_caller, f"HTTP/Connection error:{e}")
             if _attempt < _max_retries:
                 await asyncio.sleep(3)
         except (OSError, Exception) as e:  # noqa: BLE001

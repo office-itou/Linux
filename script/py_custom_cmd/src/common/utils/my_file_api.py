@@ -23,7 +23,7 @@ from common.utils import (
 # ruff: isort: on
 # =============================================================================
 @debug_logger
-def file_read(src_path: Path, text: bool = True) -> str | bytes | None:
+def fread(src_path: Path, text: bool = True) -> str | bytes | None:
     """File read (line break codes in text files are standardized to "\n")
     Args:
         src_path (Path): Source path
@@ -47,7 +47,7 @@ def file_read(src_path: Path, text: bool = True) -> str | bytes | None:
 
 
 @debug_logger
-def file_write(
+def fwrite(
     dest_path: Path,
     data: str | bytes | None = None,
     text: bool = True,
@@ -73,7 +73,7 @@ def file_write(
             data = "" if text else b""
         _dest_path.parent.mkdir(parents=True, exist_ok=True)
         if backup:
-            file_backup(_dest_path)
+            fbackup(_dest_path)
         with open(
             _dest_path, mode=_mode, encoding=_encoding, newline=_newline
         ) as f_out:
@@ -86,13 +86,13 @@ def file_write(
                     "File Error", f"Failed to write file:\n{_dest_path}"
                 )
             else:
-                message_alert(_caller, f"failed: {_dest_path}")
+                message_alert(_caller, f"failed:{_dest_path}")
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e)
 
 
 @debug_logger
-def file_copy(src_path: Path, dest_path: Path, backup: bool = False) -> None:
+def fcopy(src_path: Path, dest_path: Path, backup: bool = False) -> None:
     """File copy
     Args:
         src_path (Path): Source path
@@ -105,14 +105,14 @@ def file_copy(src_path: Path, dest_path: Path, backup: bool = False) -> None:
         _dest_path: Path = dest_path.resolve()
         _dest_path.parent.mkdir(parents=True, exist_ok=True)
         if bool:
-            file_backup(_dest_path)
+            fbackup(_dest_path)
             shutil.copy2(_src_path, _dest_path)
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e)
 
 
 @debug_logger
-def file_backup(src_path: Path) -> None:
+def fbackup(src_path: Path) -> None:
     """File backup
     Args:
         src_path (Path): Source path
