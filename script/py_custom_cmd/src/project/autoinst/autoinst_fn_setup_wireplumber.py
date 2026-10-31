@@ -5,7 +5,6 @@ from pathlib import Path
 from common.utils import (
     addpath,
     debug_logger,
-    file_backup,
     find_serivce,
     fread,
     fwrite,
@@ -13,8 +12,10 @@ from common.utils import (
     restart_user_service,
 )
 
-
 # --- import module -----------------------------------------------------------
+from autoinst_fn_file_backup import file_backup
+
+
 # --- class and function ------------------------------------------------------
 @debug_logger
 def setup_wireplumber(info_syst):
@@ -24,7 +25,7 @@ def setup_wireplumber(info_syst):
     # --- check service -------------------------------------------------------
     _srvc_name: str = "wireplumber.service"
     _srvc_path: Path = find_serivce(tget_path=_tget_path, srvc_name=_srvc_name)
-    if not _srvc_path.exists():
+    if not _srvc_path or not _srvc_path.exists():
         return
     # --- memo ----------------------------------------------------------------
     # https://gitlab.freedesktop.org/pipewire/pipewire/-/wikis/Troubleshooting

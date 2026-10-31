@@ -4,6 +4,7 @@ import os
 import re
 import subprocess
 from pathlib import Path
+from subprocess import CompletedProcess
 from urllib.parse import urlparse
 
 
@@ -15,7 +16,9 @@ from common.utils import (
     fcopy,
     fread,
     get_caller_name,
+    message_alert,
     message_info,
+    message_warn,
 )
 
 
@@ -25,31 +28,55 @@ from common.utils import (
 @debug_logger
 def get_conf_file(info_syst) -> None:
     _caller = get_caller_name()
+    message_info(_caller, "copying/downloading work files")
     _tget_list: list[Path] = [
-        info_syst.info_conf.get_path("PATH_ERLY"),
-        info_syst.info_conf.get_path("PATH_LATE"),
-        info_syst.info_conf.get_path("PATH_PART"),
-        info_syst.info_conf.get_path("PATH_RUNS"),
+        info_syst.conf.path(key="PATH_ERLY"),
+        info_syst.conf.path(key="PATH_LATE"),
+        info_syst.conf.path(key="PATH_PART"),
+        info_syst.conf.path(key="PATH_RUNS"),
         info_syst.data.seed_path,
     ]
-    _dest_path = info_syst.data.tget_path / info_syst.info_conf.get_path("DIRS_INST")
-    for _tget_line in _tget_list:
-        _tget_urls = (
-            (
-                _tget_line.split("=")[2]
-                if "nocloud" in _tget_line
-                else _tget_line.split("=")[1]
-            )
-            if "=" in _tget_line
-            else _tget_line
-        )
+    message_info(_caller, f"{'seed':<10}:{info_syst.data.seed_urls}", omit=True)
+    _tget_urls = str(info_syst.data.seed_urls)
+    if _tget_urls:
+        _tget_pars = urlparse(_tget_urls)
+        match _tget_pars.scheme:
+            case "http" | "https":
+                _addr: str = f"{_tget_pars.scheme}://{_tget_pars.netloc}"
+                _tops: Path = info_syst.conf.path(key="DIRS_SHAR")
+                _list: list[str] = []
+                for _line in _tget_list:
+                    _pars = urlparse(str(_line))
+                    if not _pars.scheme and Path(_pars.path).is_relative_to(_tops):
+                        _list.append(f"{_addr}/{Path(_pars.path).relative_to(_tops)}")
+                if _list:
+                    _tget_list = _list
+    for _tget_path in _tget_list:
+        if not _tget_path:
+            continue
+        _tget_urls = str(_tget_path)
         _tget_pars = urlparse(_tget_urls)
         _srcs_path: Path = Path(_tget_pars.path)
         _dest_path: Path = info_syst.data.acmd_path / Path(_tget_pars.path).name
         match _tget_pars.scheme:
             case "http" | "https":
-                message_info(_caller, f"{'download':<10}:{_tget_urls}", omit=True)
-                download(tget_urls=_tget_urls, dest_path=_dest_path)
+                if _dest_path.exists():
+                    message_warn(_caller, f"{'skip':<10}:{_tget_urls}", omit=True)
+                else:
+                    message_info(_caller, f"{'download':<10}:{_tget_urls}", omit=True)
+                    _result: CompletedProcess = download(
+                        tget_urls=_tget_urls, dest_path=_dest_path
+                    )
+                    if _result.returncode == 0:
+                        for _text in str(_result.stdout).splitlines():
+                            message_info(
+                                _caller, f"{'download':<10}:{_text}", omit=True
+                            )
+                    else:
+                        for _text in str(_result.stderr).splitlines():
+                            message_alert(
+                                _caller, f"{'download':<10}:{_text}", omit=True
+                            )
             case "ftp":
                 message_info(_caller, f"{'download':<10}:{_tget_urls}", omit=True)
                 # _tget_urls = "ftp://://example.com"
@@ -110,9 +137,7 @@ def get_conf_file(info_syst) -> None:
                         )
                         _srcs_path = _mntp_path / _tget_path
                         message_info(_caller, f"{'copy':<10}:{_srcs_path}", omit=True)
-                        fcopy(
-                            src_path=_srcs_path, dest_path=_dest_path, backup=False
-                        )
+                        fcopy(src_path=_srcs_path, dest_path=_dest_path, backup=False)
                         _comd_list = ["umount", str(_mntp_path)]
                         subprocess.check_output(
                             _comd_list, text=True, stderr=subprocess.DEVNULL
@@ -129,16 +154,12 @@ def get_conf_file(info_syst) -> None:
                         )
                         _srcs_path = Path("/mnt/install/repo") / _tget_path
                         message_info(_caller, f"{'copy':<10}:{_srcs_path}", omit=True)
-                        fcopy(
-                            src_path=_srcs_path, dest_path=_dest_path, backup=False
-                        )
+                        fcopy(src_path=_srcs_path, dest_path=_dest_path, backup=False)
                     case "hmc":
                         message_info(_caller, f"{'copy':<10}:{_srcs_path}", omit=True)
                     case _:
                         message_info(_caller, f"{'copy':<10}:{_srcs_path}", omit=True)
-                        fcopy(
-                            src_path=_srcs_path, dest_path=_dest_path, backup=False
-                        )
+                        fcopy(src_path=_srcs_path, dest_path=_dest_path, backup=False)
         if _dest_path.exists():
             if "/script/" in str(_tget_urls):
                 os.chmod(_dest_path, 0o755)

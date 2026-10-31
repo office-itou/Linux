@@ -96,13 +96,17 @@ def setup_netplan(info_syst) -> None:
         os.chmod(path=_conf_path, mode=0o600)
         file_backup(info_syst=info_syst, orig_path=_conf_path, mode="init")
     # --- netplan -------------------------------------------------------------
-    _result = run_subprocess(["netplan", "status"])
+    _comd_list: list[str] = ["netplan", "status"]
+    _result = run_subprocess(_comd_list)
     if _result.returncode == 0:
-        _result = run_subprocess(["netplan", "apply"])
+        _comd_list: list[str] = ["netplan", "apply"]
+        _result = run_subprocess(_comd_list)
         if _result.returncode == 0:
-            message_info(_caller, f"{'success':<10}:netplan apply", omit=True)
+            message_info(_caller, f"{'success':<10}:{' '.join(_comd_list)}", omit=True)
         else:
-            message_alert(_caller, f"{'failed':<10}:netplan apply", omit=True)
+            message_alert(_caller, f"{'failed':<10}:{' '.join(_comd_list)}", omit=True)
+    else:
+        message_alert(_caller, f"{'failed':<10}:{' '.join(_comd_list)}", omit=True)
 
 
 # --- eof ---------------------------------------------------------------------

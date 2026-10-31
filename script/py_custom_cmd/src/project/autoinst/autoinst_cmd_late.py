@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 # --- python library ----------------------------------------------------------
+from pathlib import Path
+
+
 # --- my library --------------------------------------------------------------
 # ruff: isort: off
 from common.shared import (
@@ -15,14 +18,12 @@ from common.utils import (
 
 # ruff: isort: on
 # --- import module -----------------------------------------------------------
-from autoinst_fn_mkdir_share import mkdir_share
 from autoinst_fn_network import network_param
 from autoinst_fn_setup_apache import setup_apache
 from autoinst_fn_setup_apparmor import setup_apparmor
 from autoinst_fn_setup_blacklist import setup_blacklist
 from autoinst_fn_setup_chronyd import setup_chronyd
 from autoinst_fn_setup_clamav import setup_clamav
-from autoinst_fn_setup_connman import setup_connman
 from autoinst_fn_setup_dconf import setup_dconf
 from autoinst_fn_setup_desktop import setup_desktop
 from autoinst_fn_setup_dnsmasq import setup_dnsmasq
@@ -35,8 +36,6 @@ from autoinst_fn_setup_ipfilter import setup_ipfilter
 from autoinst_fn_setup_locale import setup_locale
 from autoinst_fn_setup_module_ipxe import setup_module_ipxe
 from autoinst_fn_setup_nbd import setup_nbd
-from autoinst_fn_setup_netman import setup_netman
-from autoinst_fn_setup_netplan import setup_netplan
 from autoinst_fn_setup_nfs import setup_nfs
 from autoinst_fn_setup_resolv import setup_resolv
 from autoinst_fn_setup_samba import setup_samba
@@ -52,8 +51,12 @@ from autoinst_fn_setup_timesyncd import setup_timesyncd
 from autoinst_fn_setup_vmware import setup_vmware
 
 from autoinst_fn_initialize import initialize
+from autoinst_fn_mkdir_share import mkdir_share
 from autoinst_fn_package_install import package_install
 from autoinst_fn_package_update import package_update
+from autoinst_fn_setup_connman import setup_connman
+from autoinst_fn_setup_netman import setup_netman
+from autoinst_fn_setup_netplan import setup_netplan
 from autoinst_fn_setup_wireplumber import setup_wireplumber
 
 
@@ -110,6 +113,12 @@ def main() -> None:
     setup_service(_info_syst)  # service
     # --- booting setup -------------------------------------------------------
     setup_grub_menu(_info_syst)  # grub menu settings
+    # --- success -------------------------------------------------------------
+    _stat_name: str = f"{_info_syst.data.prog_name}.success"
+    _stat_path: Path = _info_syst.data.acmd_path / _stat_name
+    if _stat_path.exists() and _stat_path.is_dir():
+        _stat_path.rmdir()
+    _stat_path.mkdir(parents=True, exist_ok=True)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 # --- python library ----------------------------------------------------------
+from pathlib import Path
+
+
 # --- my library --------------------------------------------------------------
 # ruff: isort: off
 from common.shared import (
@@ -15,11 +18,10 @@ from common.utils import (
 
 # ruff: isort: on
 # --- import module -----------------------------------------------------------
-from autoinst_fn_network import network_param
-from autoinst_fn_wireplumber import setup_wireplumber
-
 from autoinst_fn_get_conf_file import get_conf_file
+from autoinst_fn_info_network import network_param
 from autoinst_fn_initialize import initialize
+from autoinst_fn_setup_wireplumber import setup_wireplumber
 
 
 # --- class and function ------------------------------------------------------
@@ -37,6 +39,12 @@ def main() -> None:
     )
     setup_wireplumber(info_syst=_info_syst)
     get_conf_file(info_syst=_info_syst)
+    # --- success -------------------------------------------------------------
+    _stat_name: str = f"{_info_syst.data.prog_name}.success"
+    _stat_path: Path = _info_syst.data.acmd_path / _stat_name
+    if _stat_path.exists() and _stat_path.is_dir():
+        _stat_path.rmdir()
+    _stat_path.mkdir(parents=True, exist_ok=True)
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@
 import ipaddress
 import re
 import subprocess
+from ipaddress import IPv4Interface, IPv6Interface
 from pathlib import Path
 from typing import Any
 
@@ -22,7 +23,7 @@ from common.utils import (
 
 # ruff: isort: on
 # --- import module -----------------------------------------------------------
-#from autoinst_fn_syspara import InfoSystem
+# from autoinst_fn_syspara import InfoSystem
 
 
 # --- class and function ------------------------------------------------------
@@ -189,10 +190,8 @@ def network_param(info_syst):
                     _out.nics_auto = str("dynamic" in _ipv4_match.group(0))
                     _out.nics_ipv4 = _ipv4_match.group(1)
                     _out.nics_prfx = _ipv4_match.group(2)
-                    _mask_valu = (0xFFFFFFFF << (32 - int(_out.nics_prfx))) & 0xFFFFFFFF
-                    _out.nics_mask = ".".join(
-                        str((_mask_valu >> i) & 0xFF) for i in (24, 16, 8, 0)
-                    )
+                    _interface = IPv4Interface(f"0.0.0.0/{_out.ipv4_prfx}")
+                    _out.nics_mask = str(_interface.netmask)
                     _out.nics_cidr = f"{_out.nics_ipv4}/{_out.nics_prfx}"
                     _out.nics_uadr = ".".join(_out.nics_ipv4.split(".")[:3])
                     _out.nics_ladr = ".".join(_out.nics_ipv4.split(".")[3:])
@@ -221,7 +220,8 @@ def network_param(info_syst):
                     _out.ipv6_auto = str("dynamic" in _ipv6_match_1st.group(0))
                     _out.ipv6_addr = _ipv6_match_1st.group(1)
                     _out.ipv6_prfx = _ipv6_match_1st.group(2)
-                    _out.ipv6_mask = ""
+                    _interface = IPv6Interface(f"{_out.ipv6_addr}/{_out.ipv6_prfx}")
+                    _out.ipv6_mask = _interface.network.netmask
                     _out.ipv6_cidr = f"{_out.ipv6_addr}/{_out.ipv6_prfx}"
                     _out.ipv6_fadr = conv_ipv6_full(_out.ipv6_addr)
                     _out.ipv6_uadr = _out.ipv6_fadr[:19]
@@ -250,7 +250,8 @@ def network_param(info_syst):
                     _out.link_auto = str("dynamic" in _link_match_1st.group(0))
                     _out.link_addr = _link_match_1st.group(1)
                     _out.link_prfx = _link_match_1st.group(2)
-                    _out.link_mask = ""
+                    _interface = IPv6Interface(f"{_out.link_addr}/{_out.link_prfx}")
+                    _out.link_mask = _interface.network.netmask
                     _out.link_cidr = f"{_out.link_addr}/{_out.link_prfx}"
                     _out.link_fadr = conv_ipv6_full(_out.link_addr)
                     _out.link_uadr = _out.link_fadr[:19]

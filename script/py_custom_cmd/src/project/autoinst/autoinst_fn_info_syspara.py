@@ -3,9 +3,8 @@ import os
 import re
 from dataclasses import dataclass, field, fields
 from datetime import datetime
+from ipaddress import IPv4Interface
 from pathlib import Path
-
-from autoinst_fn_network import conv_ipv4_reverse
 
 # --- my library --------------------------------------------------------------
 from common.utils import (
@@ -23,11 +22,15 @@ from common.utils import (
 
 # --- import module -----------------------------------------------------------
 from autoinst_fn_common_cfg import InfoConfiguration
+from autoinst_fn_info_network import conv_ipv4_reverse
 
 
 # --- class and function ------------------------------------------------------
 @dataclass
 class SystemData:
+    prog_path: Path = field(
+        default_factory=lambda: infosystem.program_path
+    )  # program name
     prog_name: str = field(
         default_factory=lambda: infosystem.program_name
     )  # program name
@@ -52,7 +55,9 @@ class SystemData:
         default_factory=lambda: [Path("/target"), Path("/mnt/sysimage"), Path("/mnt")]
     )
     tget_path: Path | None = None  # target dir     (ex. /target)
-    isos_path: Path | None = None  # iso file name
+    tget_urls: str | None = None  # target dir     (ex. /target)
+    isou_path: Path | None = None  # iso file name
+    isou_urls: str | None = None  # iso file name
     # --- samba ---------------------------------------------------------------
     nlin_dirs: list[Path] = field(
         default_factory=lambda: [Path("/usr/sbin/nologin"), Path("/sbin/nologin")]
@@ -99,6 +104,7 @@ class SystemData:
     )  # firewalld port
     # --- preseed -------------------------------------------------------------
     seed_path: Path | None = None  # preseed file name
+    seed_urls: str | None = None  # preseed file name
     # --- network: nic (retrieved value) --------------------------------------
     nics_name: str | None = None  # nic if name     (ex. ens160)
     nics_madr: str | None = None  # "   if mac      (ex. 00:00:00:00:00:00)
@@ -310,10 +316,9 @@ class InfoSystem:
         # --- working directory parameter -------------------------------------
         _timestamp: str = datetime.now().astimezone().strftime("%Y%m%d%H%M%S_%f")
         _out.time_stmp = _timestamp  # time stamp
-        _out.vadm_path = _out.conf.path("DIRS_VADM")  # top of admin working directory
-        _out.acmd_path = (
-            _out.vadm_path / _out.prog_name
-        )  # auto-command working directory
+        _out.vadm_path = _inp.path(key="DIRS_VADM")  # top of admin working directory
+        _out.acmd_path = _out.vadm_path / "autoinst"  # auto-command working directory
+        # _out.acmd_path = _out.vadm_path / _out.prog_name
         _out.inst_path = _out.acmd_path  # auto-install working directory
         _out.back_path = _out.inst_path.with_suffix(
             f"{_out.inst_path.suffix}.{_timestamp}"
@@ -353,25 +358,25 @@ class InfoSystem:
                     _out.parm_slnx = _val_str
                 # --- directory / file ----------------------------------------
                 case "target":
-                    _out.tget_path = Path(_val_str) if _val_str else None
+                    _out.tget_urls = _val_str
                 case "iso-url":
-                    _out.isos_path = Path(_val_str) if _val_str else None
+                    _out.isou_urls = _val_str
                 # --- preseed -------------------------------------------------
                 # preseed.cfg
                 case "preseed/url" | "url" | "preseed/file" | "file":
-                    _out.seed_path = Path(_val_str) if _val_str else None
+                    _out.seed_urls = _val_str
                 # nocloud
                 case "ds":
-                    _out.seed_path = Path(_val_str) / "user-data" if _val_str else None
+                    _out.seed_urls = f"{_val_str}/user-data"
                 # kickstart
                 case "inst.ks":
-                    _out.seed_path = Path(_val_str) if _val_str else None
+                    _out.seed_urls = _val_str
                 # autoyast
                 case "autoyast":
-                    _out.seed_path = Path(_val_str) if _val_str else None
+                    _out.seed_urls = _val_str
                 # agama
                 case "inst.auto":
-                    _out.seed_path = Path(_val_str) if _val_str else None
+                    _out.seed_urls = _val_str
                 # --- network parameter -----------------------------------------------
                 # hostname
                 case "netcfg/get_hostname" | "hostname":
@@ -443,6 +448,33 @@ class InfoSystem:
                             _out.ipv4_gway = _list[2] if _list[2] else None
                             _out.ipv4_nsvr = _list[3] if _list[3] else None
                             _out.nwrk_wgrp = _list[4] if _list[4] else None
+        _out.tget_path = (
+            None
+            if not _out.tget_urls or "://" in _out.tget_urls
+            else Path(_out.tget_urls)
+        )
+        _out.isou_path = (
+            None
+            if not _out.isou_urls or "://" in _out.isou_urls
+            else Path(_out.isou_urls)
+        )
+        _out.seed_path = (
+            None
+            if not _out.seed_urls or "://" in _out.seed_urls
+            else Path(_out.seed_urls)
+        )
+        if "/" in _out.ipv4_addr:
+            _out.ipv4_cidr = _out.ipv4_addr
+            _out.ipv4_addr = _out.ipv4_cidr.split("/")[0]
+            _out.ipv4_prfx = _out.ipv4_cidr.split("/")[1]
+        if not _out.ipv4_prfx and _out.ipv4_mask:
+            _interface = IPv4Interface(f"0.0.0.0/{_out.ipv4_mask}")
+            _out.ipv4_prfx = str(_interface.network.prefixlen)
+        if _out.ipv4_prfx and not _out.ipv4_mask:
+            _interface = IPv4Interface(f"0.0.0.0/{_out.ipv4_prfx}")
+            _out.nics_mask = str(_interface.netmask)
+        if not _out.ipv4_cidr:
+            _out.ipv4_cidr = f"{_out.ipv4_addr}/{_out.ipv4_prfx}"
         if _out.ipv4_addr:
             _out.ipv4_uadr = ".".join(_out.ipv4_addr.split(".")[:3])
             _out.ipv4_ladr = ".".join(_out.ipv4_addr.split(".")[3:])
@@ -479,9 +511,9 @@ class InfoSystem:
                         | "tget_cntr"
                         | "parm_root"
                         | "parm_secu"
-                        | "tget_path"
-                        | "isos_path"
-                        | "seed_path"
+                        | "tget_urls"
+                        | "isou_urls"
+                        | "seed_urls"
                         | "nwrk_fqdn"
                         | "nwrk_host"
                         | "nwrk_wgrp"

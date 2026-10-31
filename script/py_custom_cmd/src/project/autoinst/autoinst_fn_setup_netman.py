@@ -12,6 +12,7 @@ from common.utils import (
     find_serivce,
     fwrite,
     get_caller_name,
+    is_service_active,
     message_alert,
     message_info,
     restart_user_service,
@@ -29,7 +30,7 @@ def setup_netman(info_syst) -> None:
     # --- check service -------------------------------------------------------
     _srvc_name: str = "NetworkManager.service"
     _srvc_path: Path = find_serivce(tget_path=_tget_path, srvc_name=_srvc_name)
-    if not _srvc_path.exists():
+    if not _srvc_path or not _srvc_path.exists():
         return
     _result = run_subprocess(["nmcli", "--version"])
     _comd_vers = str(_result.stdout.splitlines()) if _result.returncode == 0 else ""
@@ -70,7 +71,7 @@ def setup_netman(info_syst) -> None:
                 "ipv6.addr-gen-mode",
                 "default",
             ]
-            _result = run_subprocess(["nmcli", "--version"])
+            _result = run_subprocess(_comd_list)
             if _result.returncode == 0:
                 fwrite(
                     dest_path=_conf_path,
@@ -126,8 +127,7 @@ def setup_netman(info_syst) -> None:
         # --- uuid ------------------------------------------------------------
         _conf_uuid: str = ""
         if not _data.tget_chrt:
-            _result = run_subprocess(["systemctl", "--quiet", "is-active", _srvc_name])
-            if _result.returncode == 0:
+            if is_service_active(_srvc_name):
                 _result = run_subprocess(
                     [
                         "nmcli",
@@ -196,17 +196,20 @@ def setup_netman(info_syst) -> None:
     if not info_syst.data.tget_chrt:
         _svex_name: str = "systemd-networkd.service"
         _result = run_subprocess(["systemctl", "--quiet", "is-enabled", _svex_name])
-        if _result.returncode != 0:
+        if _result.returncode == 0:
             message_info(_caller, f"{'mask':<10}:{_svex_name}", omit=True)
             _result = run_subprocess(["systemctl", "--quiet", "mask", _svex_name])
             _result = run_subprocess(
                 ["systemctl", "--quiet", "mask", f"{Path(_svex_name).stem}.socket"]
             )
         if restart_user_service(srvc_name=_srvc_name):
-            _result = run_subprocess(["nmcli", "connection", "reload"])
-        if _result.returncode != 0:
-            message_info(_caller, f"{'success':<10}:nmcli connection reload", omit=True)
-        else:
-            message_alert(
-                _caller, f"{'success':<10}:failed connection reload", omit=True
-            )
+            _comd_list: list[str] = ["nmcli", "connection", "reload"]
+            _result = run_subprocess(_comd_list)
+            if _result.returncode == 0:
+                message_info(
+                    _caller, f"{'success':<10}:{' '.join(_comd_list)}", omit=True
+                )
+            else:
+                message_alert(
+                    _caller, f"{'failed':<10}:{' '.join(_comd_list)}", omit=True
+                )

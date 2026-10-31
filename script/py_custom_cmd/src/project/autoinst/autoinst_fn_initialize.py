@@ -14,9 +14,8 @@ from common.utils import (
 
 # ruff: isort: on
 # --- import module -----------------------------------------------------------
-from autoinst_fn_syspara import InfoSystem
-
 from autoinst_fn_common_cfg import InfoConfiguration
+from autoinst_fn_info_syspara import InfoSystem
 
 
 # --- class and function ------------------------------------------------------
@@ -37,9 +36,9 @@ def initialize() -> InfoSystem:
     _info_conf: InfoConfiguration = InfoConfiguration(conf_path=_conf_path)
     # --- command line --------------------------------------------------------
     _info_syst: InfoSystem = InfoSystem(info_conf=_info_conf)
-    #_info_syst.print_info(debugout=True)
+    # _info_syst.print_info(debugout=True)
     # --- debug ---------------------------------------------------------------
-    #_info_syst.debug(debugout=bool(_info_syst.data.dout_flag or infosystem.debugout))
-    #_info_conf.debug(debugout=bool(_info_syst.data.dbgs_flag or infosystem.debug))
+    # _info_syst.debug(debugout=bool(_info_syst.data.dout_flag or infosystem.debugout))
+    # _info_conf.debug(debugout=bool(_info_syst.data.dbgs_flag or infosystem.debug))
     # --- return --------------------------------------------------------------
     return _info_syst
