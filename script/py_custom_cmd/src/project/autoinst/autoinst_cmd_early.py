@@ -2,9 +2,10 @@
 # --- python library ----------------------------------------------------------
 from pathlib import Path
 
+# --- import module -----------------------------------------------------------
+from autoinst_fn_initialize import initialize
 
 # --- my library --------------------------------------------------------------
-# ruff: isort: off
 from common.shared import (
     proc_comp,
     proc_init,
@@ -16,13 +17,6 @@ from common.utils import (
     infosystem,
 )
 
-# ruff: isort: on
-# --- import module -----------------------------------------------------------
-from autoinst_fn_get_conf_file import get_conf_file
-from autoinst_fn_info_network import network_param
-from autoinst_fn_initialize import initialize
-from autoinst_fn_setup_wireplumber import setup_wireplumber
-
 
 # --- class and function ------------------------------------------------------
 # --- initialize --------------------------------------------------------------
@@ -32,13 +26,13 @@ def main() -> None:
     """Main"""
     _caller = get_caller_name()
     _info_syst = initialize()
-    _info_syst = network_param(info_syst=_info_syst)
+    # _info_syst = network_param(info_syst=_info_syst)
     _info_syst.debug(debugout=bool(_info_syst.data.dout_flag or infosystem.debugout))
     _info_syst.print_info(
         debugout=not bool(_info_syst.data.dout_flag or infosystem.debugout)
     )
-    setup_wireplumber(info_syst=_info_syst)
-    get_conf_file(info_syst=_info_syst)
+    # setup_wireplumber(info_syst=_info_syst)
+    # get_conf_file(info_syst=_info_syst)
     # --- success -------------------------------------------------------------
     _stat_name: str = f"{_info_syst.data.prog_name}.success"
     _stat_path: Path = _info_syst.data.acmd_path / _stat_name

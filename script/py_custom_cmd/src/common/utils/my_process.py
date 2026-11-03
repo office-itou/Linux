@@ -25,6 +25,7 @@ def run_subprocess(*args, **kwargs) -> CompletedProcess:
         CompletedProcess: _description_
     """
     _caller = get_caller_name()
+    _result = None
     try:
         if not isinstance(kwargs.get("env"), dict):
             kwargs["env"] = {"LANG": "C"}
@@ -36,9 +37,12 @@ def run_subprocess(*args, **kwargs) -> CompletedProcess:
         handle_fatal_error(_caller, e)
     return _result
 
-def run_subprocess_stdout(*args, **kwargs) -> str:
-    _result:CompletedProcess = run_subprocess(*args, **kwargs)
-    return str(_result.stdout.splitlines())
+
+def run_subprocess_stdout(*args, **kwargs) -> str | None:
+    _result: CompletedProcess = run_subprocess(*args, **kwargs)
+    return (
+        str("\n".join(_result.stdout.splitlines())) if _result.returncode == 0 else None
+    )
 
 
 @debug_logger

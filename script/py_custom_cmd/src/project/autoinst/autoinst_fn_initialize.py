@@ -2,9 +2,7 @@
 import shutil
 from pathlib import Path
 
-
 # --- my library --------------------------------------------------------------
-# ruff: isort: off
 from common.utils import (
     debug_logger,
     get_caller_name,
@@ -12,11 +10,11 @@ from common.utils import (
     message_info,
 )
 
-# ruff: isort: on
 # --- import module -----------------------------------------------------------
+# ruff: isort: off
 from autoinst_fn_common_cfg import InfoConfiguration
-from autoinst_fn_info_syspara import InfoSystem
-
+from autoinst_fn_sysinfo import InfoSystem
+# ruff: isort: on
 
 # --- class and function ------------------------------------------------------
 # --- initialize --------------------------------------------------------------

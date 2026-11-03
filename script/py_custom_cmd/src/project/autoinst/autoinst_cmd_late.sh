@@ -1,3 +1,1973 @@
+#!/bin/sh
+###############################################################################
+#
+#	autoinstall (late) shell script
+#	  developed for debian
+#
+#	developer   : J.Itou
+#	release     : 2025/11/01
+#
+#	history     :
+#	   data    version    developer    point
+#	---------- -------- -------------- ----------------------------------------
+#	2025/11/01 000.0000 J.Itou         first release
+#
+#	shell check : shellcheck -o all "filename"
+#	            : shellcheck -o all -e SC2154 *.sh
+#
+###############################################################################
+# *** global section **********************************************************
+	export LANG=C
+#	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
+	trap 'exit 1' 1 2 3 15
+	__time_start=$(date +%s)
+#	set -n								# Check for syntax errors
+#	set -x								# Show command and argument expansion
+#	set -o ignoreeof					# Do not exit with Ctrl+D
+	set +m								# Disable job control
+	set -e								# End with status other than 0
+	set -u								# End with undefined variable reference
+#	set -o pipefail						# End with in pipe error
+	# --- debug parameter -----------------------------------------------------
+	_DBGS_FLAG=""						# debug flag (empty: normal, else: debug)
+	_DBGS_PARM="true"					# debug flag (empty: normal, else: debug out parameter)
+	if [ -n "${debug:-}" ] || [ -n "${debugout:-}" ]; then
+		_DBGS_FLAG="true"
+		[ -n "${debug:-}" ] && set -x
+		export -p
+	fi
+	# --- working directory ---------------------------------------------------
+	readonly _PROG_PATH="$0"
+	readonly _PROG_PARM="${*:-}"
+	readonly _PROG_DIRS="${_PROG_PATH%/*}"
+	readonly _PROG_NAME="${_PROG_PATH##*/}"
+#	readonly _PROG_PROC="${_PROG_NAME}.$$"
+	# --- command line parameter ----------------------------------------------
+										# command line parameter
+	_COMD_LINE="$(cat /proc/cmdline || true)"
+	readonly _COMD_LINE
+	_NICS_STAT=""						# nic if status (empty: stop, else: active)
+	_NICS_NAME=""						# nic if name   (ex. ens160)
+	_NICS_MADR=""						# nic if mac    (ex. 00:00:00:00:00:00)
+	_NICS_AUTO=""						# ipv4 dhcp     (ex. empty or dhcp)
+	_NICS_IPV4=""						# ipv4 address  (ex. 192.168.1.1)
+	_NICS_MASK=""						# ipv4 netmask  (ex. 255.255.255.0)
+	_NICS_BIT4=""						# ipv4 cidr     (ex. 24)
+	_NICS_DNS4=""						# ipv4 dns      (ex. 192.168.1.254)
+	_NICS_GATE=""						# ipv4 gateway  (ex. 192.168.1.254)
+	_NICS_FQDN=""						# hostname fqdn (ex. sv-server.workgroup)
+	_NICS_HOST=""						# hostname      (ex. sv-server)
+	_NICS_WGRP=""						# domain        (ex. workgroup)
+	_NMAN_FLAG=""						# nm_config, ifupdown, loopback
+	_DIRS_TGET=""						# target directory
+	_FILE_ISOS=""						# iso file name
+	_FILE_SEED=""						# preseed file name
+	# --- target --------------------------------------------------------------
+	_TGET_VIRT=""						# virtualization (ex. vmware)
+	_TGET_CHRT=""						# is chgroot     (empty: none, else: chroot)
+	_TGET_CNTR=""						# is container   (empty: none, else: container)
+	# --- set system parameter ------------------------------------------------
+	_DIST_NAME=""						# distribution name (ex. debian)
+	_DIST_VERS=""						# release version   (ex. 13)
+	_DIST_CODE=""						# code name         (ex. trixie)
+	_ROWS_SIZE="25"						# screen size: rows
+	_COLS_SIZE="80"						# screen size: columns
+	_TEXT_GAP1=""						# gap1
+	_TEXT_GAP2=""						# gap2
+	_COMD_BBOX=""						# busybox (empty: inactive, else: active )
+	_OPTN_COPY="--preserve=timestamps"	# copy option
+	# --- network parameter ---------------------------------------------------
+	readonly _NTPS_ADDR="ntp.nict.jp"	# ntp server address
+	readonly _NTPS_IPV4="61.205.120.130" # ntp server ipv4 address
+	readonly _NTPS_FBAK="ntp1.jst.mfeed.ad.jp ntp2.jst.mfeed.ad.jp ntp3.jst.mfeed.ad.jp"
+	readonly _IPV6_LHST="::1"			# ipv6 local host address
+	readonly _IPV4_LHST="127.0.0.1"		# ipv4 local host address
+	readonly _IPV4_DUMY="127.0.1.1"		# ipv4 dummy address
+	_IPV4_UADR=""						# IPv4 address up   (ex. 192.168.1)
+	_IPV4_LADR=""						# IPv4 address low  (ex. 1)
+	_IPV6_ADDR=""						# IPv6 address      (ex. ::1)
+	_IPV6_CIDR=""						# IPv6 cidr         (ex. 64)
+	_IPV6_FADR=""						# IPv6 full address (ex. 0000:0000:0000:0000:0000:0000:0000:0001)
+	_IPV6_UADR=""						# IPv6 address up   (ex. 0000:0000:0000:0000)
+	_IPV6_LADR=""						# IPv6 address low  (ex. 0000:0000:0000:0001)
+	_IPV6_RADR=""						# IPv6 reverse addr (ex. ...)
+	_LINK_ADDR=""						# LINK address      (ex. fe80::1)
+	_LINK_CIDR=""						# LINK cidr         (ex. 64)
+	_LINK_FADR=""						# LINK full address (ex. fe80:0000:0000:0000:0000:0000:0000:0001)
+	_LINK_UADR=""						# LINK address up   (ex. fe80:0000:0000:0000)
+	_LINK_LADR=""						# LINK address low  (ex. 0000:0000:0000:0001)
+	_LINK_RADR=""						# LINK reverse addr (ex. ...)
+	# --- firewalld -----------------------------------------------------------
+	readonly _FWAL_ZONE="home_use"		# firewalld default zone
+										# firewalld service name
+	readonly _FWAL_NAME="dhcp dhcpv6 dhcpv6-client dns http https mdns nbd nfs proxy-dhcp samba samba-client ssh tftp"
+										# firewalld port
+	readonly _FWAL_PORT="0-65535/tcp 0-65535/udp"
+	# --- samba parameter -----------------------------------------------------
+	readonly _SAMB_USER="sambauser"		# force user
+	readonly _SAMB_GRUP="sambashare"	# force group
+	readonly _SAMB_GADM="sambaadmin"	# admin group
+										# nsswitch.conf
+	readonly _SAMB_NSSW="wins mdns_minimal mdns4_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns mdns6 mdns4"
+	_SHEL_NLIN=""						# login shell (disallow system login to samba user)
+	# --- shared directory parameter ------------------------------------------
+	_DIRS_TOPS=""						# top of shared directory
+	_DIRS_EXPO=""						# exports
+	_DIRS_HGFS=""						# vmware shared
+	_DIRS_HTML=""						# html contents#
+	_DIRS_SAMB=""						# samba shared
+	_DIRS_TFTP=""						# tftp contents
+	_DIRS_USER=""						# user file
+	# --- shared of user file -------------------------------------------------
+	_DIRS_PVAT=""						# private contents directory
+	_DIRS_SHAR=""						# shared contents directory
+	_DIRS_CONF=""						# configuration file
+	_DIRS_DATA=""						# data file
+	_DIRS_KEYS=""						# keyring file
+	_DIRS_MKOS=""						# mkosi configuration files
+	_DIRS_TMPL=""						# templates for various configuration files
+	_DIRS_SHEL=""						# shell script file
+	_DIRS_IMGS=""						# iso file extraction destination
+	_DIRS_ISOS=""						# iso file
+	_DIRS_LOAD=""						# load module
+	_DIRS_RMAK=""						# remake file
+	_DIRS_CACH=""						# cache file
+	_DIRS_CTNR=""						# container file
+	_DIRS_CHRT=""						# container file (chroot)
+	_DIRS_EXPO=""						# exports
+	_DIRS_XNBD=""						# exports (network block device)
+	_DIRS_XNFS=""						# exports (network file system)
+	_DIRS_XSMB=""						# exports (samba)
+	# --- working directory parameter -----------------------------------------
+	readonly _DIRS_VADM="/var/admin"	# top of admin working directory
+	_DIRS_ACMD=""						# auto-command working directory
+	_DIRS_INST=""						# auto-install working directory
+	_DIRS_BACK=""						# top of backup directory
+	_DIRS_ORIG=""						# original file directory
+	_DIRS_INIT=""						# initial file directory
+	_DIRS_SAMP=""						# sample file directory
+	_DIRS_LOGS=""						# log file directory
+	# --- auto install --------------------------------------------------------
+	readonly _FILE_ERLY="autoinst_cmd_early.sh"	# shell commands to run early
+	readonly _FILE_LATE="autoinst_cmd_late.sh"	# "              to run late
+	readonly _FILE_PART="autoinst_cmd_part.sh"	# "              to run after partition
+	readonly _FILE_RUNS="autoinst_cmd_run.sh"	# "              to run preseed/run
+	# --- common data file (prefer non-empty current file) --------------------
+#	readonly _FILE_CONF="common.cfg"			# common configuration file
+#	readonly _FILE_DIST="distribution.dat"		# distribution data file
+#	readonly _FILE_MDIA="media.dat"				# media data file
+#	readonly _FILE_DSTP="debstrap.dat"			# debstrap data file
+	# --- pre-configuration file templates ------------------------------------
+#	readonly _FILE_KICK="kickstart_rhel.cfg"	# for rhel
+#	readonly _FILE_CLUD="user-data_ubuntu"		# for ubuntu cloud-init
+#	readonly _FILE_SEDD="preseed_debian.cfg"	# for debian
+#	readonly _FILE_SEDU="preseed_ubuntu.cfg"	# for ubuntu
+#	readonly _FILE_YAST="yast_opensuse.xml"		# for opensuse
+#	readonly _FILE_AGMA="agama_opensuse.json"	# for opensuse
+
+# *** function section (common functions) *************************************
+# -----------------------------------------------------------------------------
+# descript: message output
+#   input :     $1     : title (program name, etc)
+#   input :     $2     : section (start, complete, remove, umount, failed, ...)
+#   input :     $3     : message
+#   output:   stdout   : message
+#   return:            : unused
+fnMsgout() {
+	case "${2:-}" in
+		start    | complete)
+			case "${3:-}" in
+				*/*/*) printf "\033[m${1:-}\033[m: \033[45m--- %-8.8s: %s ---\033[m\n" "${2:-}" "${3:-}";; # date
+				*    ) printf "\033[m${1:-}\033[m: \033[92m--- %-8.8s: %s ---\033[m\n" "${2:-}" "${3:-}";; # info
+			esac
+			;;
+		skip               ) printf "\033[m${1:-}\033[m: \033[92m--- %-8.8s: %s ---\033[m\n"    "${2:-}" "${3:-}";; # info
+		remove   | umount  ) printf "\033[m${1:-}\033[m:     \033[93m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # warn
+		archive            ) printf "\033[m${1:-}\033[m:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${2:-}" "${3:-}";; # warn
+		success            ) printf "\033[m${1:-}\033[m:     \033[92m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # info
+		failed             ) printf "\033[m${1:-}\033[m:     \033[41m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # alert
+		active             ) printf "\033[m${1:-}\033[m:     \033[92m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # info
+		inactive           ) printf "\033[m${1:-}\033[m:     \033[93m%-8.8s: %s\033[m\n"        "${2:-}" "${3:-}";; # warn
+		caution            ) printf "\033[m${1:-}\033[m:     \033[93m\033[7m%-8.8s: %s\033[m\n" "${2:-}" "${3:-}";; # warn
+		-*                 ) printf "\033[m${1:-}\033[m:     \033[36m%-8.8s: %s\033[m\n"        "${2#-}" "${3:-}";; # gap
+		info               ) printf "\033[m${1:-}\033[m: \033[92m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # info
+		warn               ) printf "\033[m${1:-}\033[m: \033[93m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # warn
+		alert              ) printf "\033[m${1:-}\033[m: \033[91m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # alert
+		*                  ) printf "\033[m${1:-}\033[m: \033[37m%12.12s: %s\033[m\n"           "${2:-}" "${3:-}";; # normal
+	esac
+}
+
+# -----------------------------------------------------------------------------
+# descript: string output
+#   input :     $1     : count
+#   input :     $2     : character
+#   output:   stdout   : output
+#   return:            : unused
+fnString() {
+	printf "%${1:-80}s" "" | tr ' ' "${2:- }"
+}
+
+# -----------------------------------------------------------------------------
+# descript: string output with message
+#   input :     $1     : gaps
+#   input :     $2     : message
+#   output:   stdout   : output
+#   return:            : unused
+fnStrmsg() {
+	___TEXT="${1:-}"
+	___TXT1="$(echo "${___TEXT:-}" | cut -c -3)"
+	___TXT2="$(echo "${___TEXT:-}" | cut -c "$((${#___TXT1}+2+${#2}+1+${#_PROG_NAME}+16))"-)"
+	printf "%s %s %s" "${___TXT1}" "${2:-}" "${___TXT2}"
+	unset ___TEXT
+	unset ___TXT1
+	unset ___TXT2
+}
+
+# -----------------------------------------------------------------------------
+# descript: IPv6 full address
+#   input :     $1     : value
+#   input :     $2     : format (not empty: zero padding)
+#   output:   stdout   : output
+#   return:            : unused
+# https://www.gnu.org/software/gawk/manual/html_node/Strtonum-Function.html
+fnIPv6FullAddr() {
+	___ADDR="${1:?}"
+	___FMAT="${2:+"%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x"}"
+	echo "${___ADDR}" |
+		awk -F '/' '{
+			str=$1
+			gsub("[^:]","",str)
+			sep=""
+			for (i=1;i<=7-length(str)+2;i++) {
+				sep=sep":"
+			}
+			str=$1
+			gsub("::",sep,str)
+			split(str,arr,":")
+			for (i=0;i<length(arr);i++) {
+				str="0x"arr[i]
+				str=substr(str,3)
+				n=length(str)
+				ret=0
+				for (j=1;j<=n;j++){
+					c=substr(str,j,1)
+					c=tolower(c)
+					k=index("123456789abcdef",c)
+					ret=ret*16+k
+				}
+				num[i]=ret
+			}
+			printf "'"${___FMAT:-"%x:%x:%x:%x:%x:%x:%x:%x"}"'",
+				num[1],num[2],num[3],num[4],num[5],num[6],num[7],num[8]
+		}'
+	unset ___ADDR ___FMAT
+}
+
+# -----------------------------------------------------------------------------
+# descript: IPv6 reverse address
+#   input :     $1     : value
+#   output:   stdout   : output
+#   return:            : unused
+fnIPv6RevAddr() {
+	echo "${1:?}" |
+	    awk 'gsub(":","") {
+	        for(i=length();i>1;i--)
+	            printf("%c.", substr($0,i,1))
+	        printf("%c" , substr($0,1,1))
+		}'
+}
+
+# -----------------------------------------------------------------------------
+# descript: IPv4 netmask conversion
+#   input :     $1     : value (nn or nnn.nnn.nnn.nnn)
+#   output:   stdout   : output
+#   return:            : unused
+# --- private ip address ------------------------------------------------------
+# class | ipv4 address range            | subnet mask range
+#   a   | 10.0.0.0    - 10.255.255.255  | 255.0.0.0     - 255.255.255.255 (up to 16,777,214 devices can be connected)
+#   b   | 172.16.0.0  - 172.31.255.255  | 255.255.0.0   - 255.255.255.255 (up to     65,534 devices can be connected)
+#   c   | 192.168.0.0 - 192.168.255.255 | 255.255.255.0 - 255.255.255.255 (up to        254 devices can be connected)
+fnIPv4Netmask_gawk() {
+	echo "${1:?}" |
+		gawk -F '.' '{
+			if (NF==1) {
+				n=lshift(0xFFFFFFFF,32-$1)
+				printf "%d.%d.%d.%d",
+					and(rshift(n,24),0xFF),
+					and(rshift(n,16),0xFF),
+					and(rshift(n,8),0xFF),
+					and(n,0xFF)
+			} else {
+				n=xor(0xFFFFFFFF,lshift($1,24)+lshift($2,16)+lshift($3,8)+$4)
+				c=0
+				while (n>0) {
+					if (n%2==1) {
+						c++
+					}
+					n=int(n/2)
+				}
+				printf "%d",(32-c)
+			}
+		}'
+}
+
+# -----------------------------------------------------------------------------
+# descript: IPv4 netmask conversion
+#   input :     $1     : value (nn or nnn.nnn.nnn.nnn)
+#   output:   stdout   : output
+#   return:            : unused
+# --- private ip address ------------------------------------------------------
+# class | ipv4 address range            | subnet mask range
+#   a   | 10.0.0.0    - 10.255.255.255  | 255.0.0.0     - 255.255.255.255 (up to 16,777,214 devices can be connected)
+#   b   | 172.16.0.0  - 172.31.255.255  | 255.255.0.0   - 255.255.255.255 (up to     65,534 devices can be connected)
+#   c   | 192.168.0.0 - 192.168.255.255 | 255.255.255.0 - 255.255.255.255 (up to        254 devices can be connected)
+fnIPv4Netmask_mawk() {
+	echo "${1:?}" |
+		mawk -F '.' '
+			# --- and ---------------------------------------------------------
+			function fnAnd(x1,x2, res,bit) {
+				res=0
+				bit=1
+				while (x1>0 && x2>0) {
+					if (((x1%2)==1) && ((x2%2)==1))
+						res+=bit
+					x1=int(x1/2)
+					x2=int(x2/2)
+					bit*=2
+				}
+				return res
+			}
+			# --- or ----------------------------------------------------------
+			function fnOr(x1,x2, res,bit) {
+				res=0
+				bit=1
+				while (x1>0 || x2>0) {
+					if (((x1%2)==1) || ((x2%2)==1))
+						res+=bit
+					x1=int(x1/2)
+					x2=int(x2/2)
+					bit*=2
+				}
+				return res
+			}
+			# --- xor ---------------------------------------------------------
+			function fnXor(x1,x2, res,bit) {
+				res=0
+				bit=1
+				while (x1>0 || x2>0) {
+					if ((((x1%2)==1) && ((x2%2)==0)) || (((x1%2)==0) && ((x2%2)==1)))
+						res+=bit
+					x1=int(x1/2)
+					x2=int(x2/2)
+					bit*=2
+				}
+				return res
+			}
+			# --- lshift ------------------------------------------------------
+#			function fnLshift(x,n) {
+#				return int(x*(2^n))
+#			}
+			# --- rshift ------------------------------------------------------
+#			function fnRshift(x,n) {
+#				return int(x/(2^n))
+#			}
+			# --- cidr -> netmask ---------------------------------------------
+			function fnCidr2netmask(x, n){
+				n=fnXor((2^32-1),(int(2^(32-x))-1))
+				printf "%d.%d.%d.%d",
+					fnAnd(int(n/(2^24)),255),
+					fnAnd(int(n/(2^16)),255),
+					fnAnd(int(n/(2^ 8)),255),
+					fnAnd(    n        ,255)
+			}
+			# --- netmask -> cidr ---------------------------------------------
+			function fnNetmask2cidr(x1,x2,x3,x4, n,c){
+				n=fnXor((2^32-1),(int(x1*(2^24))+int(x2*(2^16))+int(x3*(2^8))+x4))
+				c=0
+				while (n>0) {
+					if (n%2==1)
+						c++
+					n=int(n/2)
+				}
+				printf "%d",(32-c)
+			}
+			# -----------------------------------------------------------------
+			{
+				if (NF==1)
+					fnCidr2netmask($1)
+				else
+					fnNetmask2cidr($1,$2,$3,$4)
+			}
+		'
+}
+
+# -----------------------------------------------------------------------------
+# descript: IPv4 netmask conversion
+#   input :     $1     : value (nn or nnn.nnn.nnn.nnn)
+#   output:   stdout   : output
+#   return:            : unused
+# --- private ip address ------------------------------------------------------
+# class | ipv4 address range            | subnet mask range
+#   a   | 10.0.0.0    - 10.255.255.255  | 255.0.0.0     - 255.255.255.255 (up to 16,777,214 devices can be connected)
+#   b   | 172.16.0.0  - 172.31.255.255  | 255.255.0.0   - 255.255.255.255 (up to     65,534 devices can be connected)
+#   c   | 192.168.0.0 - 192.168.255.255 | 255.255.255.0 - 255.255.255.255 (up to        254 devices can be connected)
+fnIPv4Netmask() {
+	if command -v gawk > /dev/null 2>&1; then
+		fnIPv4Netmask_gawk "${@:-}"
+	elif command -v mawk > /dev/null 2>&1; then
+		fnIPv4Netmask_mawk "${@:-}"
+	fi
+}
+
+# -----------------------------------------------------------------------------
+# descript: message output (debug out)
+#   input :     $1     : title
+#   input :     $@     : list
+#   output:   stdout   : message
+#   return:            : unused
+fnDbgout() {
+	___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${1:-}")"
+	___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${1:-}")"
+	shift
+	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___STRT}"
+	while [ $# -gt 0 ]
+	do
+		if [ "${1%%,*}" != "debug" ] || [ -n "${_DBGS_FLAG:-}" ]; then
+			fnMsgout "${_PROG_NAME:-}" "${1%%,*}" "${1#*,}"
+		fi
+		shift
+	done
+	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
+	unset ___STRT ___ENDS
+}
+
+# -----------------------------------------------------------------------------
+# descript: dump output (debug out)
+#   input :     $1     : path
+#   output:   stdout   : message
+#   return:            : unused
+fnDbgdump() {
+	[ -z "${_DBGS_FLAG:-}" ] && return
+	if [ ! -e "${1:?}" ]; then
+		fnMsgout "${_PROG_NAME:-}" "failed" "not exist: [${1:-}]"
+		return
+	fi
+	___STRT="$(fnStrmsg "${_TEXT_GAP1:-}" "start: ${1:-}")"
+	___ENDS="$(fnStrmsg "${_TEXT_GAP1:-}" "end  : ${1:-}")"
+	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___STRT}"
+	cat "${1:-}"
+	fnMsgout "${_PROG_NAME:-}" "-debugout" "${___ENDS}"
+	unset ___STRT
+	unset ___ENDS
+}
+
+# -----------------------------------------------------------------------------
+# descript: parameter debug output
+#   input :            : unused
+#   output:   stdout   : debug out
+#   return:            : unused
+fnDbgparam() {
+	[ -z "${_DBGS_PARM:-}" ] && return
+
+	__FUNC_NAME="fnDbgparam"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	# --- system parameter ----------------------------------------------------
+	fnDbgout "system parameter" \
+		"info,_TGET_VIRT=[${_TGET_VIRT:-}]" \
+		"info,_TGET_CHRT=[${_TGET_CHRT:-}]" \
+		"info,_DIRS_TGET=[${_DIRS_TGET:-}]" \
+		"info,_DIST_NAME=[${_DIST_NAME:-}]" \
+		"info,_DIST_VERS=[${_DIST_VERS:-}]" \
+		"info,_DIST_CODE=[${_DIST_CODE:-}]"
+
+	# --- network parameter ---------------------------------------------------
+	fnDbgout "network info" \
+		"info,_NMAN_NAME=[${_NMAN_NAME:-}]" \
+		"info,_NICS_NAME=[${_NICS_NAME:-}]" \
+		"debug,_NICS_MADR=[${_NICS_MADR:-}]" \
+		"info,_NICS_AUTO=[${_NICS_AUTO:-}]" \
+		"info,_NICS_IPV4=[${_NICS_IPV4:-}]" \
+		"info,_NICS_MASK=[${_NICS_MASK:-}]" \
+		"info,_NICS_BIT4=[${_NICS_BIT4:-}]" \
+		"info,_NICS_DNS4=[${_NICS_DNS4:-}]" \
+		"info,_NICS_GATE=[${_NICS_GATE:-}]" \
+		"info,_NICS_FQDN=[${_NICS_FQDN:-}]" \
+		"debug,_NICS_HOST=[${_NICS_HOST:-}]" \
+		"debug,_NICS_WGRP=[${_NICS_WGRP:-}]" \
+		"debug,_NMAN_FLAG=[${_NMAN_FLAG:-}]" \
+		"info,_NTPS_ADDR=[${_NTPS_ADDR:-}]" \
+		"debug,_NTPS_IPV4=[${_NTPS_IPV4:-}]" \
+		"debug,_NTPS_FBAK=[${_NTPS_FBAK:-}]" \
+		"debug,_IPV6_LHST=[${_IPV6_LHST:-}]" \
+		"debug,_IPV4_LHST=[${_IPV4_LHST:-}]" \
+		"debug,_IPV4_DUMY=[${_IPV4_DUMY:-}]" \
+		"debug,_IPV4_UADR=[${_IPV4_UADR:-}]" \
+		"debug,_IPV4_LADR=[${_IPV4_LADR:-}]" \
+		"debug,_IPV6_ADDR=[${_IPV6_ADDR:-}]" \
+		"debug,_IPV6_CIDR=[${_IPV6_CIDR:-}]" \
+		"debug,_IPV6_FADR=[${_IPV6_FADR:-}]" \
+		"debug,_IPV6_UADR=[${_IPV6_UADR:-}]" \
+		"debug,_IPV6_LADR=[${_IPV6_LADR:-}]" \
+		"debug,_IPV6_RADR=[${_IPV6_RADR:-}]" \
+		"debug,_LINK_ADDR=[${_LINK_ADDR:-}]" \
+		"debug,_LINK_CIDR=[${_LINK_CIDR:-}]" \
+		"debug,_LINK_FADR=[${_LINK_FADR:-}]" \
+		"debug,_LINK_UADR=[${_LINK_UADR:-}]" \
+		"debug,_LINK_LADR=[${_LINK_LADR:-}]" \
+		"debug,_LINK_RADR=[${_LINK_RADR:-}]"
+
+	# --- firewalld parameter -------------------------------------------------
+	fnDbgout "firewalld info" \
+		"info,_FWAL_ZONE=[${_FWAL_ZONE:-}]" \
+		"debug,_FWAL_NAME=[${_FWAL_NAME:-}]" \
+		"debug,_FWAL_PORT=[${_FWAL_PORT:-}]"
+
+	# --- shared directory parameter ------------------------------------------
+	fnDbgout "shared directory" \
+		"info,_DIRS_TOPS=[${_DIRS_TOPS:-}]" \
+		"debug,_DIRS_EXPO=[${_DIRS_EXPO:-}]" \
+		"debug,_DIRS_HGFS=[${_DIRS_HGFS:-}]" \
+		"debug,_DIRS_HTML=[${_DIRS_HTML:-}]" \
+		"debug,_DIRS_SAMB=[${_DIRS_SAMB:-}]" \
+		"debug,_DIRS_TFTP=[${_DIRS_TFTP:-}]" \
+		"debug,_DIRS_USER=[${_DIRS_USER:-}]" \
+		"debug,_DIRS_PVAT=[${_DIRS_PVAT:-}]" \
+		"debug,_DIRS_SHAR=[${_DIRS_SHAR:-}]" \
+		"debug,_DIRS_CONF=[${_DIRS_CONF:-}]" \
+		"debug,_DIRS_DATA=[${_DIRS_DATA:-}]" \
+		"debug,_DIRS_KEYS=[${_DIRS_KEYS:-}]" \
+		"debug,_DIRS_MKOS=[${_DIRS_MKOS:-}]" \
+		"debug,_DIRS_TMPL=[${_DIRS_TMPL:-}]" \
+		"debug,_DIRS_SHEL=[${_DIRS_SHEL:-}]" \
+		"debug,_DIRS_IMGS=[${_DIRS_IMGS:-}]" \
+		"debug,_DIRS_ISOS=[${_DIRS_ISOS:-}]" \
+		"debug,_DIRS_LOAD=[${_DIRS_LOAD:-}]" \
+		"debug,_DIRS_RMAK=[${_DIRS_RMAK:-}]" \
+		"debug,_DIRS_CACH=[${_DIRS_CACH:-}]" \
+		"debug,_DIRS_CTNR=[${_DIRS_CTNR:-}]" \
+		"debug,_DIRS_CHRT=[${_DIRS_CHRT:-}]"
+
+	# --- working directory parameter -----------------------------------------
+	fnDbgout "working directory" \
+		"debug,_DIRS_VADM=[${_DIRS_VADM:-}]" \
+		"debug,_DIRS_INST=[${_DIRS_INST:-}]" \
+		"debug,_DIRS_BACK=[${_DIRS_BACK:-}]" \
+		"debug,_DIRS_ORIG=[${_DIRS_ORIG:-}]" \
+		"debug,_DIRS_INIT=[${_DIRS_INIT:-}]" \
+		"debug,_DIRS_SAMP=[${_DIRS_SAMP:-}]" \
+		"debug,_DIRS_LOGS=[${_DIRS_LOGS:-}]" \
+
+	# --- samba ---------------------------------------------------------------
+	fnDbgout "samba info" \
+		"debug,_SAMB_USER=[${_SAMB_USER:-}]" \
+		"debug,_SAMB_GRUP=[${_SAMB_GRUP:-}]" \
+		"debug,_SAMB_GADM=[${_SAMB_GADM:-}]" \
+		"debug,_SAMB_NSSW=[${_SAMB_NSSW:-}]" \
+		"debug,_SHEL_NLIN=[${_SHEL_NLIN:-}]"
+
+	# --- auto install --------------------------------------------------------
+	fnDbgout "shell info" \
+		"debug,_FILE_ERLY=[${_FILE_ERLY:-}]" \
+		"debug,_FILE_LATE=[${_FILE_LATE:-}]" \
+		"debug,_FILE_PART=[${_FILE_PART:-}]" \
+		"debug,_FILE_RUNS=[${_FILE_RUNS:-}]"
+
+	# --- common data file (prefer non-empty current file) --------------------
+	fnDbgout "common data file info" \
+		"debug,_FILE_CONF=[${_FILE_CONF:-}]" \
+		"debug,_FILE_DIST=[${_FILE_DIST:-}]" \
+		"debug,_FILE_MDIA=[${_FILE_MDIA:-}]" \
+		"debug,_FILE_DSTP=[${_FILE_DSTP:-}]"
+
+	# --- pre-configuration file templates ------------------------------------
+	fnDbgout "pre-configuration file info" \
+		"debug,_FILE_KICK=[${_FILE_KICK:-}]" \
+		"debug,_FILE_CLUD=[${_FILE_CLUD:-}]" \
+		"debug,_FILE_SEDD=[${_FILE_SEDD:-}]" \
+		"debug,_FILE_SEDU=[${_FILE_SEDU:-}]" \
+		"debug,_FILE_YAST=[${_FILE_YAST:-}]" \
+		"debug,_FILE_AGMA=[${_FILE_AGMA:-}]"
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: find command
+#   input :     $1     : command name
+#   output:   stdout   : output
+#   return:            : unused
+# --- file backup -------------------------------------------------------------
+fnFind_command() {
+	find "${_DIRS_TGET:-}"/bin/ "${_DIRS_TGET:-}"/sbin/ "${_DIRS_TGET:-}"/usr/bin/ "${_DIRS_TGET:-}"/usr/sbin/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \) 2> /dev/null || true
+}
+
+# -----------------------------------------------------------------------------
+# descript: find service
+#   input :     $1     : service name
+#   output:   stdout   : output
+#   return:            : unused
+# --- file backup -------------------------------------------------------------
+fnFind_serivce() {
+	find "${_DIRS_TGET:-}"/lib/systemd/ "${_DIRS_TGET:-}"/usr/lib/systemd/ \( -name "${1:?}" ${2:+-o -name "$2"} ${3:+-o -name "$3"} \) 2> /dev/null || true
+}
+
+# -----------------------------------------------------------------------------
+# descript: get system parameter (includes dash support)
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnSystem_param() {
+	___PATH=""
+	if [ -e "${_DIRS_TGET:-}"/etc/os-release ]; then
+		___PATH="${_DIRS_TGET:-}/etc/os-release"
+	elif [ -e "${_DIRS_TGET:-}"/etc/lsb-release ]; then
+		___PATH="${_DIRS_TGET:-}/etc/lsb-release"
+	fi
+	if [ -n "${___PATH}" ]; then
+		_DIST_NAME="$(awk -F= '/^(ID|DISTRIB_ID)=/ {gsub(/"/,"",$2); print tolower($2); exit}' "${___PATH}")"
+		_DIST_VERS="$(awk -F= '/^(VERSION_ID|DISTRIB_RELEASE)=/ {gsub(/"/,"",$2); print tolower($2); exit}' "${___PATH}")"
+		_DIST_CODE="$(awk -F= '/^(VERSION_CODENAME|DISTRIB_CODENAME)=/ {gsub(/"/,"",$2); print tolower($2); exit}' "${___PATH}")"
+	fi
+	readonly _DIST_NAME
+	readonly _DIST_CODE
+	readonly _DIST_VERS
+	unset ___PATH
+}
+
+# -----------------------------------------------------------------------------
+# descript: get network parameter
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnNetwork_param() {
+	___FUNC_NAME="fnNetwork_param"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${___FUNC_NAME}]"
+	_NICS_STAT=""
+	_NICS_NAME="${_NICS_NAME:-"ens160"}"
+	___DIRS="${_DIRS_TGET:-}/sys/devices"
+	if [ ! -e "${___DIRS}"/. ]; then
+		fnMsgout "caution" "not exist: [${___DIRS}]"
+	else
+		  if [ -z "${_NICS_NAME:-}" ]; then
+			_NICS_NAME="$(ip -4 -oneline address show | awk '$2!="lo" {print $2; exit;}')"
+		elif [ -z "${_NICS_NAME#*"*"}" ]; then
+			_NICS_NAME="$(find "${___DIRS}" -path '*/net/*' ! -path '*/virtual/*' -prune -name "${_NICS_NAME:?}" | sort -V | head -n 1)"
+		fi
+		__WORK="$(ip -4 -oneline address show dev "${_NICS_NAME}" 2> /dev/null || true)"
+		[ -z "${__WORK:-}" ] && _NICS_NAME="$(ip -4 -oneline address show | awk '$2!="lo" {print $2; exit;}')"
+		_NICS_NAME="${_NICS_NAME:-"ens160"}"
+		if ! ip -0 -oneline address show dev "${_NICS_NAME}" > /dev/null 2>&1; then
+			fnMsgout "failed" "not exist: [${_NICS_NAME}]"
+		else
+			_NICS_STAT="true"
+			_NICS_MADR="${_NICS_MADR:-"$(ip -0 -oneline address show dev "${_NICS_NAME}" 2> /dev/null | awk '$2!="lo" {print $15;}' || true)"}"
+			_NICS_IPV4="${_NICS_IPV4:-"$(ip -4 -oneline address show dev "${_NICS_NAME}" 2> /dev/null | awk '$2!="lo" {print $4;}' || true)"}"
+			if ip -4 -oneline address show dev "${_NICS_NAME}" 2> /dev/null | grep -qE '[ \t]dynamic[ \t]'; then
+				_NICS_AUTO="dhcp"
+			fi
+			if [ -z "${_NICS_DNS4:-}" ] || [ -z "${_NICS_WGRP:-}" ]; then
+				__PATH="$(fnFind_command 'resolvectl' | sort -V | head -n 1)"
+				if [ -n "${__PATH:-}" ]; then
+					if resolvectl status > /dev/null 2>&1; then
+						_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/^Global:/             s/^.*:[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
+						_NICS_DNS4="${_NICS_DNS4:-"$(resolvectl dns    2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*:[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
+						_NICS_WGRP="${_NICS_WGRP:-"$(resolvectl domain 2> /dev/null | sed -ne '/^Global:/             s/^.*:[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
+						_NICS_WGRP="${_NICS_WGRP:-"$(resolvectl domain 2> /dev/null | sed -ne '/('"${_NICS_NAME}"'):/ s/^.*:[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
+						_NICS_WGRP="${_NICS_WGRP%.}"
+					fi
+				fi
+				___PATH="${_DIRS_TGET:-}/etc/resolv.conf"
+				if [ -e "${___PATH}" ]; then
+					_NICS_DNS4="${_NICS_DNS4:-"$(sed -ne '/^nameserver/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' "${___PATH}")"}"
+					_NICS_WGRP="${_NICS_WGRP:-"$(sed -ne '/^search/     s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p'                      "${___PATH}")"}"
+					_NICS_WGRP="${_NICS_WGRP%.}"
+				fi
+			fi
+			_IPV6_ADDR="$(ip -6 -oneline address show primary dev "${_NICS_NAME}" 2> /dev/null | awk '$2!="lo" && $6=="global" {print $4;}')"
+			_LINK_ADDR="$(ip -6 -oneline address show primary dev "${_NICS_NAME}" 2> /dev/null | awk '$2!="lo" && $6=="link"   {print $4;}')"
+		fi
+	fi
+	fnDbgout "${___FUNC_NAME:-}" \
+		"info,_NICS_NAME=[${_NICS_NAME:-}]" \
+		"info,_NICS_MADR=[${_NICS_MADR:-}]" \
+		"info,_NICS_AUTO=[${_NICS_AUTO:-}]" \
+		"info,_NICS_IPV4=[${_NICS_IPV4:-}]" \
+		"info,_NICS_DNS4=[${_NICS_DNS4:-}]" \
+		"info,_NICS_WGRP=[${_NICS_WGRP:-}]" \
+		"info,_IPV6_ADDR=[${_IPV6_ADDR:-}]" \
+		"info,_LINK_ADDR=[${_LINK_ADDR:-}]"
+	# --- ipv4 ----------------------------------------------------------------
+	if [ -z "${_NICS_IPV4:-}" ]; then
+		_NICS_AUTO="dhcp"
+	else
+		___WORK="$(echo "${_NICS_IPV4:-}" | sed 's/[^0-9./]\+//g')"
+		_NICS_IPV4="$(echo "${___WORK}/" | cut -d '/' -f 1)"
+		_NICS_BIT4="$(echo "${___WORK}/" | cut -d '/' -f 2)"
+		if [ -z "${_NICS_BIT4}" ]; then
+			_NICS_BIT4="$(fnIPv4Netmask "${_NICS_MASK:-"255.255.255.0"}")"
+		else
+			_NICS_MASK="$(fnIPv4Netmask "${_NICS_BIT4:-"24"}")"
+		fi
+		[ -n "${_NICS_STAT:-}" ] && _NICS_GATE="${_NICS_GATE:-"$(ip -4 -oneline route list match default | awk '{print $3;}' | uniq)"}"
+	fi
+	if [ "${_NICS_IPV4##*.}" = "0" ] || [ "${_NICS_IPV4##*.}" = "255" ]; then
+		_NICS_AUTO="dhcp"
+	fi
+	# --- ipv6 ----------------------------------------------------------------
+	_IPV6_ADDR="${_IPV6_ADDR:-"2000::0/3"}"
+	_LINK_ADDR="${_LINK_ADDR:-"fe80::0/10"}"
+	_IPV4_UADR="${_NICS_IPV4%.*}"
+	_IPV4_LADR="${_NICS_IPV4#"${_IPV4_UADR:-"*"}."}"
+	_IPV6_CIDR="${_IPV6_ADDR##*/}"
+	_IPV6_ADDR="${_IPV6_ADDR%/"${_IPV6_CIDR:-"*"}"}"
+	_IPV6_FADR="$(fnIPv6FullAddr "${_IPV6_ADDR:-}" "true")"
+	_IPV6_UADR="$(echo "${_IPV6_FADR:-}" | cut -d ':' -f 1-4 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
+	_IPV6_LADR="$(echo "${_IPV6_FADR:-}" | cut -d ':' -f 5-8 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
+	_IPV6_RADR="$(fnIPv6RevAddr "${_IPV6_FADR:-}")"
+	_LINK_CIDR="${_LINK_ADDR##*/}"
+	_LINK_ADDR="${_LINK_ADDR%/"${_LINK_CIDR:-"*"}"}"
+	_LINK_FADR="$(fnIPv6FullAddr "${_LINK_ADDR:-}" "true")"
+	_LINK_UADR="$(echo "${_LINK_FADR:-}" | cut -d ':' -f 1-4 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
+	_LINK_LADR="$(echo "${_LINK_FADR:-}" | cut -d ':' -f 5-8 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
+	_LINK_RADR="$(fnIPv6RevAddr "${_LINK_FADR:-}")"
+	# --- fqdn ----------------------------------------------------------------
+	if [ -e "${_DIRS_TGET:-}/etc/hostname" ]; then
+		_NICS_FQDN="${_NICS_FQDN:-"$(cat "${_DIRS_TGET:-}/etc/hostname" || true)"}"
+	fi
+	if command -v hostnamectl > /dev/null 2>&1 && [ -n "${_NICS_STAT:-}" ]; then
+		_NICS_FQDN="${_NICS_FQDN:-"$(hostnamectl hostname || true)"}"
+	fi
+	if [ "${_NICS_FQDN:-}" = "localhost" ]; then
+		_NICS_HOST="$(echo "${_NICS_FQDN}." | cut -d '.' -f 1)"
+		_NICS_WGRP="$(echo "${_NICS_FQDN}." | cut -d '.' -f 2)"
+	fi
+	_NICS_FQDN="${_NICS_FQDN:-"${_DIST_NAME:+"sv-${_DIST_NAME}.workgroup"}"}"
+	_NICS_FQDN="${_NICS_FQDN:-"localhost.local"}"
+	_NICS_HOST="${_NICS_HOST:-"$(echo "${_NICS_FQDN}." | cut -d '.' -f 1)"}"
+	_NICS_WGRP="${_NICS_WGRP:-"$(echo "${_NICS_FQDN}." | cut -d '.' -f 2)"}"
+	_NICS_HOST="$(echo "${_NICS_HOST}" | tr '[:upper:]' '[:lower:]')"
+	_NICS_WGRP="$(echo "${_NICS_WGRP}" | tr '[:upper:]' '[:lower:]')"
+	if [ "${_NICS_FQDN}" = "${_NICS_HOST}" ] && [ -n "${_NICS_HOST}" ] && [ -n "${_NICS_WGRP}" ]; then
+		_NICS_FQDN="${_NICS_HOST}.${_NICS_WGRP}"
+	fi
+	readonly _NICS_NAME
+	readonly _NICS_MADR
+	readonly _NICS_IPV4
+	readonly _NICS_MASK
+	readonly _NICS_BIT4
+	readonly _NICS_DNS4
+	readonly _NICS_GATE
+	readonly _NICS_FQDN
+	readonly _NICS_HOST
+	readonly _NICS_WGRP
+	readonly _NMAN_FLAG
+	readonly _NTPS_ADDR
+	readonly _NTPS_IPV4
+	readonly _IPV6_LHST
+	readonly _IPV4_LHST
+	readonly _IPV4_DUMY
+	readonly _IPV4_UADR
+	readonly _IPV4_LADR
+	readonly _IPV6_ADDR
+	readonly _IPV6_CIDR
+	readonly _IPV6_FADR
+	readonly _IPV6_UADR
+	readonly _IPV6_LADR
+	readonly _IPV6_RADR
+	readonly _LINK_ADDR
+	readonly _LINK_CIDR
+	readonly _LINK_FADR
+	readonly _LINK_UADR
+	readonly _LINK_LADR
+	readonly _LINK_RADR
+	unset ___DIRS ___PATH ___WORK
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${___FUNC_NAME}]"
+	unset ___FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: file backup
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+# --- file backup -------------------------------------------------------------
+fnFile_backup() {
+	___PATH="${1:?}"
+	___MODE="${2:-}"
+	# --- check ---------------------------------------------------------------
+	if [ ! -e "${___PATH}" ]; then
+		fnMsgout "${_PROG_NAME:-}" "caution" "not exist: [${___PATH}]"
+		mkdir -p "${___PATH%/*}"
+		___REAL="$(realpath --canonicalize-missing "${___PATH}")"
+		if [ ! -e "${___REAL}" ]; then
+			mkdir -p "${___REAL%/*}"
+		fi
+		: > "${___PATH}"
+	fi
+	# --- backup --------------------------------------------------------------
+	case "${___MODE:-}" in
+		samp) ___DIRS="${_DIRS_SAMP:-}";;
+		init) ___DIRS="${_DIRS_INIT:-}";;
+		*   ) ___DIRS="${_DIRS_ORIG:-}";;
+	esac
+	___DIRS="${_DIRS_TGET:-}${___DIRS}"
+	___BACK="${___PATH#"${_DIRS_TGET:-}/"}"
+	___BACK="${___DIRS}/${___BACK#/}"
+	mkdir -p "${___BACK%/*}"
+	chmod 600 "${___DIRS%/*}"
+	if [ -e "${___BACK}" ] || [ -h "${___BACK}" ]; then
+		___MOVE="${___BACK}.$(date ${__time_start:+"-d @${__time_start}"} +"%Y%m%d%H%M%S")"
+		mv --verbose "${___BACK}" "${___MOVE}"
+	fi
+	fnMsgout "${_PROG_NAME:-}" "backup" "[${___PATH}]${_DBGS_FLAG:+" -> [${___BACK}]"}"
+	cp --archive "${___PATH}" "${___BACK}"
+	unset ___PATH ___MODE ___REAL ___DIRS ___BACK ___MOVE
+}
+
+# *** function section (subroutine functions) *********************************
+# -----------------------------------------------------------------------------
+# descript: initialize
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnInitialize() {
+	__FUNC_NAME="fnInitialize"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	# --- set system parameter ------------------------------------------------
+	if [ -n "${TERM:-}" ] \
+	&& command -v tput > /dev/null 2>&1; then
+		_ROWS_SIZE=$(tput lines || true)
+		_COLS_SIZE=$(tput cols  || true)
+	fi
+	[ "${_ROWS_SIZE:-"0"}" -lt 25 ] && _ROWS_SIZE=25
+	[ "${_COLS_SIZE:-"0"}" -lt 80 ] && _COLS_SIZE=80
+	readonly _ROWS_SIZE
+	readonly _COLS_SIZE
+
+	_TEXT_GAP1="$(fnString "${_COLS_SIZE}" '-')"
+	_TEXT_GAP2="$(fnString "${_COLS_SIZE}" '=')"
+	readonly _TEXT_GAP1
+	readonly _TEXT_GAP2
+
+	if realpath "$(command -v cp 2> /dev/null || true)" | grep -q 'busybox'; then
+		fnMsgout "${_PROG_NAME:-}" "info" "busybox"
+		_COMD_BBOX="true"
+		_OPTN_COPY="-p"
+	fi
+
+	# --- target virtualization -----------------------------------------------
+	_TGET_VIRT=""						# virtualization (ex. vmware)
+	_TGET_CHRT=""						# is chgroot     (empty: none, else: chroot)
+	_TGET_CNTR=""						# is container   (empty: none, else: container)
+	if command -v systemd-detect-virt > /dev/null 2>&1; then
+		_TGET_VIRT="$(systemd-detect-virt --vm || true)"
+		systemd-detect-virt --quiet --container && _TGET_CNTR="true"
+		systemd-detect-virt --quiet --chroot    && _TGET_CHRT="true"
+	fi
+	if mountpoint -q /usr/bin/ischroot; then
+		_TGET_CHRT="true"
+	elif command -v ischroot > /dev/null 2>&1; then
+		ischroot --default-true && _TGET_CHRT="true"
+	fi
+	readonly _TGET_VIRT
+	readonly _TGET_CHRT
+	readonly _TGET_CNTR
+	fnDbgout "system parameter" \
+		"info,_TGET_VIRT=[${_TGET_VIRT:-}]" \
+		"info,_TGET_CHRT=[${_TGET_CHRT:-}]" \
+		"info,_TGET_CNTR=[${_TGET_CNTR:-}]"
+
+	_DIRS_TGET=""
+	for __DIRS in \
+		/target \
+		/mnt/sysimage \
+		/mnt
+	do
+		[ ! -e "${__DIRS}"/root/. ] && continue
+		_DIRS_TGET="${__DIRS}"
+		break
+	done
+	readonly _DIRS_TGET
+	fnDbgout "target dir" "info,_DIRS_TGET=[${_DIRS_TGET:-}]"
+
+	# --- system parameter ----------------------------------------------------
+	fnSystem_param
+	# --- network parameter ---------------------------------------------------
+	fnNetwork_param
+	# --- firewalld parameter -------------------------------------------------
+	# --- shared directory parameter ------------------------------------------
+	readonly _DIRS_TOPS="${_DIRS_TGET:-}/srv"			# top of shared directory
+	readonly _DIRS_EXPO="${_DIRS_TOPS}/exports"			# exports
+	readonly _DIRS_HGFS="${_DIRS_TOPS}/hgfs"			# vmware shared
+	readonly _DIRS_HTML="${_DIRS_TOPS}/http/html"		# html contents#
+	readonly _DIRS_SAMB="${_DIRS_TOPS}/samba"			# samba shared
+	readonly _DIRS_TFTP="${_DIRS_TOPS}/tftp"			# tftp contents
+	readonly _DIRS_USER="${_DIRS_TOPS}/user"			# user file
+	readonly _DIRS_PVAT="${_DIRS_USER}/private"			# private contents directory
+	readonly _DIRS_SHAR="${_DIRS_USER}/share"			# shared contents directory
+	readonly _DIRS_CONF="${_DIRS_SHAR}/conf"			# configuration file
+	readonly _DIRS_DATA="${_DIRS_CONF}/_data"			# data file
+	readonly _DIRS_KEYS="${_DIRS_CONF}/_keyring"		# keyring file
+	readonly _DIRS_MKOS="${_DIRS_CONF}/_mkosi"			# mkosi configuration files
+	readonly _DIRS_TMPL="${_DIRS_CONF}/_template"		# templates for various configuration files
+	readonly _DIRS_SHEL="${_DIRS_CONF}/script"			# shell script file
+	readonly _DIRS_IMGS="${_DIRS_SHAR}/imgs"			# iso file extraction destination
+	readonly _DIRS_ISOS="${_DIRS_SHAR}/isos"			# iso file
+	readonly _DIRS_LOAD="${_DIRS_SHAR}/load"			# load module
+	readonly _DIRS_RMAK="${_DIRS_SHAR}/rmak"			# remake file
+	readonly _DIRS_CACH="${_DIRS_SHAR}/cache"			# cache file
+	readonly _DIRS_CTNR="${_DIRS_SHAR}/containers"		# container file
+	readonly _DIRS_CHRT="${_DIRS_SHAR}/chroot"			# container file (chroot)
+	readonly _DIRS_XNBD="${_DIRS_EXPO}/nbd"				# exports (network block device)
+	readonly _DIRS_XNFS="${_DIRS_EXPO}/nfs"				# exports (network file system)
+	readonly _DIRS_XSMB="${_DIRS_EXPO}/smb"				# exports (samba)
+	# --- working directory parameter -----------------------------------------
+												# top of working directory
+	_DIRS_ACMD="${_DIRS_VADM:?}/${_PROG_NAME%%_*}"
+	_DIRS_INST="${_DIRS_ACMD:?}.$(date ${__time_start:+-d "@${__time_start}"} +"%Y%m%d%H%M%S")"
+	readonly _DIRS_ACMD							# auto-command working directory
+	readonly _DIRS_INST							# auto-install working directory
+	readonly _DIRS_BACK="${_DIRS_INST}"			# top of backup directory
+	readonly _DIRS_ORIG="${_DIRS_BACK}/orig"	# original file directory
+	readonly _DIRS_INIT="${_DIRS_BACK}/init"	# initial file directory
+	readonly _DIRS_SAMP="${_DIRS_BACK}/samp"	# sample file directory
+	readonly _DIRS_LOGS="${_DIRS_BACK}/logs"	# log file directory
+	mkdir -p "${_DIRS_TGET:-}${_DIRS_INST%.*}/"
+	chmod 600 "${_DIRS_TGET:-}${_DIRS_VADM:?}"
+	find "${_DIRS_TGET:-}${_DIRS_VADM:?}" -name "${_PROG_NAME%%_*}.[0-9]*" -type d | sort -rV | tail -n +3 | \
+	while read -r __TGET
+	do
+		__PATH="${__TGET}.tgz"
+		fnMsgout "${_PROG_NAME:-}" "archive" "[${__TGET}] -> [${__PATH}]"
+		if tar -C "${__TGET}" -cf "${__PATH}" .; then
+			chmod 600 "${__PATH}"
+			fnMsgout "${_PROG_NAME:-}" "remove"  "${__TGET}"
+			rm -rf "${__TGET:?}"
+		fi
+	done
+	mkdir -p "${_DIRS_TGET:-}${_DIRS_INST:?}"
+	chmod 600 "${_DIRS_TGET:-}${_DIRS_INST:?}"
+	# --- samba ---------------------------------------------------------------
+	_SHEL_NLIN="$(fnFind_command 'nologin' | sort -rV | head -n 1)"
+	_SHEL_NLIN="${_SHEL_NLIN#*"${_DIRS_TGET:-}"}"
+	_SHEL_NLIN="${_SHEL_NLIN:-"$(if [ -e /usr/sbin/nologin ]; then echo "/usr/sbin/nologin"; fi)"}"
+	_SHEL_NLIN="${_SHEL_NLIN:-"$(if [ -e /sbin/nologin     ]; then echo "/sbin/nologin"; fi)"}"
+	readonly _SHEL_NLIN
+	# --- auto install --------------------------------------------------------
+	# --- debug backup---------------------------------------------------------
+	fnFile_backup "/proc/cmdline"
+	fnFile_backup "/proc/mounts"
+	fnFile_backup "/proc/self/mounts"
+	unset __COLS __WORK __DIRS __PATH __TGET
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: package updates
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnPackage_update() {
+	__FUNC_NAME="fnPackage_update"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	# --- check network -------------------------------------------------------
+	if [ -z "${_NICS_STAT:-}" ]; then
+		fnMsgout "${_PROG_NAME:-}" "caution" "network is down"
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
+		return
+	fi
+	# --- check command -------------------------------------------------------
+	  if command -v apt-get > /dev/null 2>&1; then
+		__PATH="${_DIRS_TGET:-}/etc/apt/sources.list"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		sed -i "${__PATH}"                         \
+			-e '/^[ \t]*deb[ \t]\+cdrom:/ s/^/#/g'
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+		  if ! apt-get --quiet              update      ; then fnMsgout "${_PROG_NAME:-}" "failed"   "apt-get update";       \
+		elif ! apt-get --quiet --assume-yes upgrade     ; then fnMsgout "${_PROG_NAME:-}" "failed"   "apt-get upgrade";      \
+		elif ! apt-get --quiet --assume-yes dist-upgrade; then fnMsgout "${_PROG_NAME:-}" "failed"   "apt-get dist-upgrade"; \
+		elif ! apt-get --quiet --assume-yes autoremove  ; then fnMsgout "${_PROG_NAME:-}" "failed"   "apt-get autoremove";   \
+		elif ! apt-get --quiet --assume-yes autoclean   ; then fnMsgout "${_PROG_NAME:-}" "failed"   "apt-get autoclean";    \
+		elif ! apt-get --quiet --assume-yes clean       ; then fnMsgout "${_PROG_NAME:-}" "failed"   "apt-get clean";        \
+		else                                                   fnMsgout "${_PROG_NAME:-}" "complete" "apt-get";              fi
+		if command -v apt > /dev/null 2>&1; then
+			if apt --assume-yes modernize-sources; then
+				fnMsgout "${_PROG_NAME:-}" "complete" "apt modernize-sources"
+			else
+				fnMsgout "${_PROG_NAME:-}" "failed" "apt modernize-sources"
+			fi
+		fi
+	elif command -v dnf     > /dev/null 2>&1; then
+		if ! dnf --quiet --assumeyes update; then fnMsgout "${_PROG_NAME:-}" "failed" "dnf update"; fi
+	elif command -v yum     > /dev/null 2>&1; then
+		if ! yum --quiet --assumeyes update; then fnMsgout "${_PROG_NAME:-}" "failed" "yum update"; fi
+	elif command -v zypper  > /dev/null 2>&1; then
+		_WORK_TEXT="$(LANG=C zypper repos | awk -F '|' '$1==1&&$2~/http/ {gsub(/^[ \t]+/,"",$2); gsub(/[ \t]+$/,"",$2); print $2;}' || true)"
+		if [ -n "${_WORK_TEXT:-}" ]; then
+			if ! zypper modifyrepo --disable "${_WORK_TEXT}"; then fnMsgout "${_PROG_NAME:-}" "failed" "zypper repository disable"; fi
+		fi
+		  if ! zypper --quiet --non-interactive refresh; then fnMsgout "${_PROG_NAME:-}" "failed"   "zypper refresh"; \
+		elif ! zypper --quiet --non-interactive update ; then fnMsgout "${_PROG_NAME:-}" "failed"   "zypper update";  \
+		else                                                  fnMsgout "${_PROG_NAME:-}" "complete" "zypper";         fi
+	else
+		fnMsgout "${_PROG_NAME:-}" "failed" "package update failure (command not found)"
+		return
+	fi
+	unset __PATH
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: package install
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnPackage_install() {
+	__FUNC_NAME="fnPackage_install"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	__PATH="${_DIRS_ACMD:?}/${_FILE_SEED##*/}"
+	if [ ! -e "${__PATH}" ]; then
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
+		return
+	fi
+	# --- get package list ----------------------------------------------------
+	__LIST=""
+	case "${__PATH##*/}" in
+		yast*.xml|auto*.xml)	;;	#  autoyast
+		agama*.json|auto*.json)	;;	#  agama
+		kickstart*.cfg|ks*.cfg) ;;	#  kickstart
+		user-data*)					# (nocloud)
+			__LIST="$( \
+				sed -ne '/^[^#]\+packages:/,/^[^#]\+[[:graph:]]\+:/ {' \
+				    -e  '/^[^#]\+[ \t]*-[ \t]/                      {' \
+				    -e  's/^[ \t]*-[ \t]*//g                         ' \
+				    -e  's/[ \t]*#.*$//g                             ' \
+				    -e  'p                                         }}' \
+				    "${__PATH}"                                      | \
+				sed -e ':l; N; s/[\r\n]\+/ /; b l                    ' \
+			)"
+			;;
+		preseed*.cfg|ps*.cfg)		# (preseed)
+			__LIST="$( \
+				sed -ne '\%^[^#]\+d-i[ \t]\+pkgsel/include%,\%[^\\]$% {' \
+				    -e  '\%pkgsel/include%!                           {' \
+				    -e  's/[\\]\+$//g                                  ' \
+				    -e  's/^[ \t]\+//g                                 ' \
+				    -e  's/[ \t]\+$//g                                 ' \
+				    -e  's/[ \t]\+/ /g                                 ' \
+				    -e 'p                                            }}' \
+				    "${__PATH}"                                        | \
+				sed -e ':l; N; s/[\r\n]\+/ /; b l                      ' \
+			)"
+			;;
+		*)	;;
+	esac
+	if [ -z "${__LIST:-}" ]; then
+		fnMsgout "${_PROG_NAME:-}" "skip" "no package list"
+	else
+		if command -v apt-get > /dev/null 2>&1; then
+			# --- sources.list ------------------------------------------------
+#			__PATH="${_DIRS_TGET:-}/etc/apt/sources.list"
+#			fnFile_backup "${__PATH}"			# backup original file
+#			mkdir -p "${__PATH%/*}"
+#			cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+#			sed -i "${__PATH}"                         \
+#			    -e '/^[ \t]*deb[ \t]\+cdrom:/ s/^/#/g'
+#			fnDbgdump "${__PATH}"				# debugout
+#			fnFile_backup "${__PATH}" "init"	# backup initial file
+			# --- get missing packages ----------------------------------------
+			set -f
+			set -- ${__LIST:+${__LIST}}
+			set +f
+			__FIND="$( \
+				LANG=C dpkg-query --no-pager --show --showformat='${Status}\t${Architecture}\t${binary:Package}\n' "$@" 2>&1 || true \
+			)"
+			__INST="$( \
+				printf "%s\n" "${__FIND:-}" | \
+					awk '/^install[ \t]+ok[ \t]+installed[ \t]+/ {gsub(/^.+[ \t]/,""); print}'
+			)"
+			__FIND="$( \
+				printf "%s\n" "${__FIND:-}" | \
+					awk '!/^install[ \t]+ok[ \t]+installed[ \t]+/ {gsub(/^.+[ \t]/,""); print}'
+			)"
+			# --- install missing packages ------------------------------------
+			set -f
+			set -- ${__INST:+${__INST}}
+			set +f
+			fnMsgout "${_PROG_NAME:-}" "info" "installed packages list"
+			fnMsgout "${_PROG_NAME:-}" "info" "${*:-}"
+			set -f
+			set -- ${__FIND:+${__FIND}}
+			set +f
+			fnMsgout "${_PROG_NAME:-}" "info" "missing packages list"
+			fnMsgout "${_PROG_NAME:-}" "info" "${*:-}"
+			if [ -z "${*:-}" ]; then
+				fnMsgout "${_PROG_NAME:-}" "skip" "no missing packages"
+			else
+				fnMsgout "${_PROG_NAME:-}" "info" "missing packages install"
+				# --- check network -------------------------------------------
+				if [ -z "${_NICS_STAT:-}" ]; then
+					fnMsgout "${_PROG_NAME:-}" "caution" "network is down"
+					fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
+				else
+					if ! apt-get --quiet              update      ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get update";       return; fi
+#					if ! apt-get --quiet --assume-yes upgrade     ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get upgrade";      return; fi
+#					if ! apt-get --quiet --assume-yes dist-upgrade; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get dist-upgrade"; return; fi
+					if ! apt-get --quiet --assume-yes install "$@"; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get install $*";   return; fi
+					if ! apt-get --quiet --assume-yes autoremove  ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get autoremove";   return; fi
+					if ! apt-get --quiet --assume-yes autoclean   ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get autoclean";    return; fi
+					if ! apt-get --quiet --assume-yes clean       ; then fnMsgout "${_PROG_NAME:-}" "failed" "apt-get clean";        return; fi
+				fi
+			fi
+		fi
+	fi
+	unset __PATH __LIST __FIND __INST
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]"
+	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: creating a shared directory
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnMkdir_share(){
+	__FUNC_NAME="fnMkdir_share"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	# --- create system user id -----------------------------------------------
+	if ! id "${_SAMB_USER}" > /dev/null 2>&1; then
+		if ! grep -qE '^'"${_SAMB_GADM}"':' /etc/group; then groupadd --system "${_SAMB_GADM}"; fi
+		if ! grep -qE '^'"${_SAMB_GRUP}"':' /etc/group; then groupadd --system "${_SAMB_GRUP}"; fi
+		useradd --system --shell "${_SHEL_NLIN}" --groups "${_SAMB_GRUP}" "${_SAMB_USER}"
+	fi
+	# --- create directory ----------------------------------------------------
+	[ -n "${_DIRS_TOPS:-}" ] && mkdir -p "${_DIRS_TOPS:?}"
+	[ -n "${_DIRS_HGFS:-}" ] && mkdir -p "${_DIRS_HGFS:?}"
+	[ -n "${_DIRS_HTML:-}" ] && mkdir -p "${_DIRS_HTML:?}"
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/adm/commands
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/adm/profiles
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/_license
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/contents/disc
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/contents/dlna/movies
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/contents/dlna/others
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/contents/dlna/photos
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/contents/dlna/sounds
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/hardware
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/software
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/linux
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/windows
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/linux/almalinux
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/linux/centos
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/linux/debian
+#	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/linux/emmabuntus
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/linux/fedora
+#	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/linux/knoppix
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/linux/memtest86plus
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/linux/miraclelinux
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/linux/opensuse
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/linux/rockylinux
+#	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/linux/ubcd
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/linux/ubuntu
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/windows/aomei
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/windows/ati
+#	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/windows/free-dos
+#	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/windows/office-365
+#	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/windows/windows-7
+#	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/windows/windows-8.1
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/windows/windows-10
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/windows/windows-11
+#	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/windows/windows-adk
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/isos/windows/winpe
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/image/rmak
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/pub/resource/source/git
+	[ -n "${_DIRS_SAMB:-}" ] && mkdir -p "${_DIRS_SAMB:?}"/usr
+	[ -n "${_DIRS_TFTP:-}" ] && mkdir -p "${_DIRS_TFTP:?}"/boot/grub/fonts
+	[ -n "${_DIRS_TFTP:-}" ] && mkdir -p "${_DIRS_TFTP:?}"/boot/grub/locale
+	[ -n "${_DIRS_TFTP:-}" ] && mkdir -p "${_DIRS_TFTP:?}"/boot/grub/i386-pc
+	[ -n "${_DIRS_TFTP:-}" ] && mkdir -p "${_DIRS_TFTP:?}"/boot/grub/i386-efi
+	[ -n "${_DIRS_TFTP:-}" ] && mkdir -p "${_DIRS_TFTP:?}"/boot/grub/x86_64-efi
+	[ -n "${_DIRS_TFTP:-}" ] && mkdir -p "${_DIRS_TFTP:?}"/exports
+	[ -n "${_DIRS_TFTP:-}" ] && mkdir -p "${_DIRS_TFTP:?}"/ipxe/menu
+	[ -n "${_DIRS_TFTP:-}" ] && mkdir -p "${_DIRS_TFTP:?}"/menu-bios/pxelinux.cfg
+	[ -n "${_DIRS_TFTP:-}" ] && mkdir -p "${_DIRS_TFTP:?}"/menu-efi64/pxelinux.cfg
+	[ -n "${_DIRS_USER:-}" ] && mkdir -p "${_DIRS_USER:?}"/private
+	[ -n "${_DIRS_SHAR:-}" ] && mkdir -p "${_DIRS_SHAR:?}"
+#	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_data
+#	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_keyring
+#	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.build.d
+#	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.clean.d
+#	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.conf.d
+#	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.extra
+#	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.finalize.d
+#	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.postinst.d
+#	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.postoutput.d
+#	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.prepare.d
+#	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.repart
+#	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_mkosi/mkosi.sync.d
+#	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_mkosi/script
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_repository/opensuse
+#	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/_template
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/agama
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/autoyast
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/kickstart
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/nocloud/ubuntu_desktop
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/nocloud/ubuntu_server
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/preseed
+#	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/script
+	[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_CONF:?}"/windows
+	[ -n "${_DIRS_DATA:-}" ] && mkdir -p "${_DIRS_DATA:?}"
+	[ -n "${_DIRS_KEYS:-}" ] && mkdir -p "${_DIRS_KEYS:?}"
+	[ -n "${_DIRS_MKOS:-}" ] && mkdir -p "${_DIRS_MKOS:?}"/_template
+	[ -n "${_DIRS_MKOS:-}" ] && mkdir -p "${_DIRS_MKOS:?}"/mkosi.build.d
+	[ -n "${_DIRS_MKOS:-}" ] && mkdir -p "${_DIRS_MKOS:?}"/mkosi.clean.d
+	[ -n "${_DIRS_MKOS:-}" ] && mkdir -p "${_DIRS_MKOS:?}"/mkosi.conf.d
+	[ -n "${_DIRS_MKOS:-}" ] && mkdir -p "${_DIRS_MKOS:?}"/mkosi.extra
+	[ -n "${_DIRS_MKOS:-}" ] && mkdir -p "${_DIRS_MKOS:?}"/mkosi.finalize.d
+	[ -n "${_DIRS_MKOS:-}" ] && mkdir -p "${_DIRS_MKOS:?}"/mkosi.postinst.d
+	[ -n "${_DIRS_MKOS:-}" ] && mkdir -p "${_DIRS_MKOS:?}"/mkosi.postoutput.d
+	[ -n "${_DIRS_MKOS:-}" ] && mkdir -p "${_DIRS_MKOS:?}"/mkosi.prepare.d
+	[ -n "${_DIRS_MKOS:-}" ] && mkdir -p "${_DIRS_MKOS:?}"/mkosi.repart
+	[ -n "${_DIRS_MKOS:-}" ] && mkdir -p "${_DIRS_MKOS:?}"/mkosi.sync.d
+	[ -n "${_DIRS_MKOS:-}" ] && mkdir -p "${_DIRS_MKOS:?}"/repository
+	[ -n "${_DIRS_MKOS:-}" ] && mkdir -p "${_DIRS_MKOS:?}/${_DIRS_SHEL##*/}"
+	[ -n "${_DIRS_TMPL:-}" ] && mkdir -p "${_DIRS_TMPL:?}"
+	[ -n "${_DIRS_SHEL:-}" ] && mkdir -p "${_DIRS_SHEL:?}"
+	[ -n "${_DIRS_IMGS:-}" ] && mkdir -p "${_DIRS_IMGS:?}"
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/linux
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/linux/debian
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/linux/ubuntu
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/linux/fedora
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/linux/centos
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/linux/almalinux
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/linux/rockylinux
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/linux/miraclelinux
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/linux/opensuse
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/linux/memtest86plus
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/windows
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/windows/windows-10
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/windows/windows-11
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/windows/winpe
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/windows/ati
+	[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_ISOS:?}"/windows/aomei
+	[ -n "${_DIRS_LOAD:-}" ] && mkdir -p "${_DIRS_LOAD:?}"
+	[ -n "${_DIRS_RMAK:-}" ] && mkdir -p "${_DIRS_RMAK:?}"
+	[ -n "${_DIRS_CACH:-}" ] && mkdir -p "${_DIRS_CACH:?}"
+	[ -n "${_DIRS_CTNR:-}" ] && mkdir -p "${_DIRS_CTNR:?}"
+	[ -n "${_DIRS_CHRT:-}" ] && mkdir -p "${_DIRS_CHRT:?}"
+	[ -n "${_DIRS_EXPO:-}" ] && mkdir -p "${_DIRS_EXPO:?}"
+	[ -n "${_DIRS_XNBD:-}" ] && mkdir -p "${_DIRS_XNBD:?}"
+	[ -n "${_DIRS_XNFS:-}" ] && mkdir -p "${_DIRS_XNFS:?}"
+	[ -n "${_DIRS_XSMB:-}" ] && mkdir -p "${_DIRS_XSMB:?}"
+	[ -n "${_DIRS_PVAT:-}" ] && mkdir -p "${_DIRS_PVAT:?}"/bin
+	[ -n "${_DIRS_PVAT:-}" ] && mkdir -p "${_DIRS_PVAT:?}"/src/git
+	[ -n "${_DIRS_PVAT:-}" ] && mkdir -p "${_DIRS_PVAT:?}"/wrk
+
+	# --- exports -------------------------------------------------------------
+	if [ -n "${_DIRS_XNFS:-}" ]; then
+		[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_XNFS}/${_DIRS_CONF##*/}"
+		[ -n "${_DIRS_IMGS:-}" ] && mkdir -p "${_DIRS_XNFS}/${_DIRS_IMGS##*/}"
+	fi
+	if [ -n "${_DIRS_XSMB:-}" ]; then
+		[ -n "${_DIRS_CONF:-}" ] && mkdir -p "${_DIRS_XSMB}/${_DIRS_CONF##*/}"
+		[ -n "${_DIRS_IMGS:-}" ] && mkdir -p "${_DIRS_XSMB}/${_DIRS_IMGS##*/}"
+		[ -n "${_DIRS_ISOS:-}" ] && mkdir -p "${_DIRS_XSMB}/${_DIRS_ISOS##*/}"
+		[ -n "${_DIRS_LOAD:-}" ] && mkdir -p "${_DIRS_XSMB}/${_DIRS_LOAD##*/}"
+		[ -n "${_DIRS_RMAK:-}" ] && mkdir -p "${_DIRS_XSMB}/${_DIRS_RMAK##*/}"
+	fi
+	# --- change file mode ----------------------------------------------------
+	if [ -n "${_DIRS_SAMB:-}" ] && [ -e "${_DIRS_SAMB:?}/." ]; then
+		chown -Rf "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_SAMB}/"
+		chmod -Rf 2770 "${_DIRS_SAMB}/"
+	fi
+	if [ -n "${_DIRS_CONF:-}" ] && [ -e "${_DIRS_CONF:?}/." ]; then
+		chown -Rf "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_CONF}/"
+		chmod -Rf 2775 "${_DIRS_CONF}/"
+	fi
+	if [ -n "${_DIRS_ISOS:-}" ] && [ -e "${_DIRS_ISOS:?}/." ]; then
+		chown -Rf "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_ISOS}/"
+		chmod -Rf 2775 "${_DIRS_ISOS}/"
+	fi
+	if [ -n "${_DIRS_RMAK:-}" ] && [ -e "${_DIRS_RMAK:?}/." ]; then
+		chown -Rf "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_RMAK}/"
+		chmod -Rf 2775 "${_DIRS_RMAK}/"
+	fi
+	# --- fstab ---------------------------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/fstab"
+	if ! grep -q '/srv/' "${__PATH:?}"; then
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "# <file system>" "<mount point>"                     "<type>" "<options>" "<dump>" "<pass>")
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_SHEL:?}" "${_DIRS_MKOS:?}/${_DIRS_SHEL##*/}" "none"   "bind,ro"   "0"      "0"     )
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_CONF:?}" "${_DIRS_XNFS:?}/${_DIRS_CONF##*/}" "none"   "bind,ro"   "0"      "0"     )
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_IMGS:?}" "${_DIRS_XNFS:?}/${_DIRS_IMGS##*/}" "none"   "bind,ro"   "0"      "0"     )
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_CONF:?}" "${_DIRS_XSMB:?}/${_DIRS_CONF##*/}" "none"   "bind,ro"   "0"      "0"     )
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_IMGS:?}" "${_DIRS_XSMB:?}/${_DIRS_IMGS##*/}" "none"   "bind,ro"   "0"      "0"     )
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_ISOS:?}" "${_DIRS_XSMB:?}/${_DIRS_ISOS##*/}" "none"   "bind,ro"   "0"      "0"     )
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_LOAD:?}" "${_DIRS_XSMB:?}/${_DIRS_LOAD##*/}" "none"   "bind,ro"   "0"      "0"     )
+			$(printf "%-27s %-35s %-7s %-27s %-7s %s" "${_DIRS_RMAK:?}" "${_DIRS_XSMB:?}/${_DIRS_RMAK##*/}" "none"   "bind,ro"   "0"      "0"     )
+_EOT_
+	fi
+	# --- check mount ---------------------------------------------------------
+	if [ -z "${_TGET_CHRT:-}" ]; then
+		systemctl --quiet daemon-reload || true
+		for __MNTP in \
+			"${_DIRS_MKOS:?}/${_DIRS_SHEL##*/}" \
+			"${_DIRS_XNFS:?}/${_DIRS_CONF##*/}" \
+			"${_DIRS_XNFS:?}/${_DIRS_IMGS##*/}" \
+			"${_DIRS_XSMB:?}/${_DIRS_CONF##*/}" \
+			"${_DIRS_XSMB:?}/${_DIRS_IMGS##*/}" \
+			"${_DIRS_XSMB:?}/${_DIRS_ISOS##*/}" \
+			"${_DIRS_XSMB:?}/${_DIRS_LOAD##*/}" \
+			"${_DIRS_XSMB:?}/${_DIRS_RMAK##*/}" 
+		do
+			if mount "${__MNTP:?}"; then
+				fnMsgout "${_PROG_NAME:-}" "success" "mounted: ${__MNTP}"
+			else
+				fnMsgout "${_PROG_NAME:-}" "failed" "not mounted: ${__MNTP}"
+			fi
+		done
+	fi
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
+	# --- create symbolic link ------------------------------------------------
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_CONF##*/}"               ] && ln -sf "${_DIRS_CONF#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_IMGS##*/}"               ] && ln -sf "${_DIRS_IMGS#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_ISOS##*/}"               ] && ln -sf "${_DIRS_ISOS#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_LOAD##*/}"               ] && ln -sf "${_DIRS_LOAD#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_RMAK##*/}"               ] && ln -sf "${_DIRS_RMAK#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_HTML:?}/${_DIRS_TFTP##*/}"               ] && ln -sf "${_DIRS_TFTP#"${_DIRS_TGET:-}"}" "${_DIRS_HTML:?}/"
+	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_CONF##*/}"               ] && ln -sf "${_DIRS_CONF#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/exports/"
+	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_IMGS##*/}"               ] && ln -sf "${_DIRS_IMGS#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/exports/"
+	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_ISOS##*/}"               ] && ln -sf "${_DIRS_ISOS#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/exports/"
+	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_LOAD##*/}"               ] && ln -sf "${_DIRS_LOAD#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/exports/"
+	[ ! -h "${_DIRS_TFTP:?}/${_DIRS_RMAK##*/}"               ] && ln -sf "${_DIRS_RMAK#"${_DIRS_TGET:-}"}" "${_DIRS_TFTP:?}/exports/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_CONF##*/}"     ] && ln -sf "../exports/${_DIRS_CONF##*/}"    "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_IMGS##*/}"     ] && ln -sf "../exports/${_DIRS_IMGS##*/}"    "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_ISOS##*/}"     ] && ln -sf "../exports/${_DIRS_ISOS##*/}"    "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_LOAD##*/}"     ] && ln -sf "../exports/${_DIRS_LOAD##*/}"    "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/${_DIRS_RMAK##*/}"     ] && ln -sf "../exports/${_DIRS_RMAK##*/}"    "${_DIRS_TFTP:?}/menu-bios/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"  ] && ln -sf "../syslinux.cfg"                 "${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"
+	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_CONF##*/}"    ] && ln -sf "../exports/${_DIRS_CONF##*/}"    "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_IMGS##*/}"    ] && ln -sf "../exports/${_DIRS_IMGS##*/}"    "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_ISOS##*/}"    ] && ln -sf "../exports/${_DIRS_ISOS##*/}"    "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_LOAD##*/}"    ] && ln -sf "../exports/${_DIRS_LOAD##*/}"    "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/${_DIRS_RMAK##*/}"    ] && ln -sf "../exports/${_DIRS_RMAK##*/}"    "${_DIRS_TFTP:?}/menu-efi64/"
+	[ ! -h "${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default" ] && ln -sf "../syslinux.cfg"                 "${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default"
+
+	# --- create index.html ---------------------------------------------------
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_DIRS_HTML}/index.html"
+		"Hello, world!" from ${_NICS_HOST}
+_EOT_
+
+	# --- create autoexec.ipxe ------------------------------------------------
+	touch "${_DIRS_TFTP:?}/menu-bios/syslinux.cfg"
+	touch "${_DIRS_TFTP:?}/menu-efi64/syslinux.cfg"
+	fnFile_backup "${_DIRS_TFTP:-}/menu-bios/syslinux.cfg"  "init"
+	fnFile_backup "${_DIRS_TFTP:-}/menu-efi64/syslinux.cfg" "init"
+
+	# --- create autoexec.ipxe ------------------------------------------------
+#	[ ! -e "${_DIRS_TFTP:?}/ipxe/autoexec.ipxe" ] && ln -sr "${_DIRS_TFTP:?}/autoexec.ipxe" "${_DIRS_TFTP:?}/ipxe/autoexec.ipxe"
+#	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_DIRS_TFTP:?}/autoexec.ipxe"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_DIRS_TFTP:?}/ipxe/autoexec.ipxe"
+		#!ipxe
+
+		# --- Define colour pair ------------------------------------------------------
+		# Reset the default colour pair
+		cpair 0 ||
+		# Redefine the editable text pair as black on white
+		cpair --foreground 7 --background 0 4 ||
+
+		# --- Check x86 CPU feature ---------------------------------------------------
+		# Check if CPU supports 64-bit operation ("long mode")
+		cpuid --ext 29 && set arch x86_64 || set arch i386
+
+		# --- Automatically configure interfaces --------------------------------------
+		# Automatically configure the first available interface using DHCP
+		ifconf --configurator dhcp ||
+		# Automatically configure the first available interface using IPv6
+		ifconf --configurator ipv6 ||
+
+		# --- Set the IP address of the PXE boot server -------------------------------
+		isset \${66} && set srvraddr \${66} || set srvraddr ${_NICS_IPV4:?}
+
+		# --- Set the parameters. -----------------------------------------------------
+		set srvrhttp http://\${srvraddr}
+		set ipxebase \${srvrhttp}/tftp/ipxe/
+		set optn-timeout 1000
+		set menu-timeout 0
+		set esc:hex 1b
+
+		# --- Preventing multiple instances -------------------------------------------
+		isset \${menu-default} || set menu-default exit
+
+		# --- chain -------------------------------------------------------------------
+		chain \${ipxebase}/menu/menu.ipxe
+_EOT_
+	fnFile_backup "${_DIRS_TFTP:-}/ipxe/autoexec.ipxe" "init"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_DIRS_TFTP:?}/ipxe/menu/menu.ipxe"
+		#!ipxe
+
+		# --- Menu block --------------------------------------------------------------
+		:menu
+		menu Select the OS type you want to boot
+		item --gap --                                   [ System command ]
+		item -- shell                                   - iPXE shell
+		item -- shutdown                                - System shutdown
+		item -- restart                                 - System reboot
+		choose --timeout \${menu-timeout} --default \${menu-default} selected && goto \${selected}
+		goto menu
+
+		# --- Interactive form block --------------------------------------------------
+		:shell
+		echo "Booting iPXE shell ..."
+		shell
+		goto menu
+
+		:shutdown
+		echo "System shutting down ..."
+		poweroff
+		exit
+
+		:restart
+		echo "System rebooting ..."
+		reboot
+		exit
+
+		:exit
+		exit
+
+		:error
+		prompt Press any key to continue
+		exit
+_EOT_
+	fnFile_backup "${_DIRS_TFTP:-}/ipxe/menu/menu.ipxe" "init"
+
+	# --- debug output --------------------------------------------------------
+	if [ -n "${_DBGS_FLAG:-}" ]; then
+		command -v tree > /dev/null 2>&1 && tree --charset C -n --filesfirst "${_DIRS_TOPS}"
+	fi
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: connman
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnSetup_connman() {
+	__FUNC_NAME="fnSetup_connman"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	# --- check service -------------------------------------------------------
+	__SRVC="$(fnFind_serivce 'connman.service' | sort -V | head -n 1)"
+	if [ -z "${__SRVC:-}" ]; then
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
+		return
+	fi
+	# --- main.conf -----------------------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/connman/main.conf"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+
+		# Generated by user script
+		AllowHostnameUpdates = false
+		AllowDomainnameUpdates = false
+		PreferredTechnologies = ethernet,wifi
+		SingleConnectedTechnology = true
+_EOT_
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
+	# --- disable_dns_proxy.conf ----------------------------------------------
+	__WORK="$(command -v connmand 2> /dev/null)"
+	__PATH="${_DIRS_TGET:-}/etc/systemd/system/connman.service.d/disable_dns_proxy.conf"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
+		[Service]
+		ExecStart=
+		ExecStart=${__WORK} -n --nodnsproxy
+_EOT_
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
+	# --- settings ------------------------------------------------------------
+	__MADR="$(echo "${_NICS_MADR}" | sed -e 's/://g')"
+	__PATH="${_DIRS_TGET:-}/var/lib/connman/ethernet_${__MADR}_cable/settings"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
+			[ethernet_${__MADR}_cable]
+			Name=Wired
+			AutoConnect=true
+			Modified=
+_EOT_
+	if [ -n "${_NICS_AUTO##-}" ]; then
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+			IPv4.method=dhcp
+			IPv4.DHCP.LastAddress=
+			IPv6.method=auto
+			IPv6.privacy=prefered
+_EOT_
+	else
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+			IPv4.method=manual
+			IPv4.netmask_prefixlen=${_NICS_BIT4}
+			IPv4.local_address=${_NICS_IPV4}
+			IPv4.gateway=${_NICS_GATE}
+			IPv6.method=auto
+			IPv6.privacy=prefered
+			Nameservers=${_NICS_DNS4};
+			Domains=${_NICS_WGRP};
+			IPv6.DHCP.DUID=
+_EOT_
+	fi
+	chmod 600 "${__PATH}"
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
+	# --- service restart -----------------------------------------------------
+	if [ -z "${_TGET_CHRT:-}" ]; then
+		__SRVC="${__SRVC##*/}"
+		if systemctl --quiet is-active "${__SRVC}"; then
+			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
+			systemctl --quiet daemon-reload
+			if systemctl --quiet restart "${__SRVC}"; then
+				fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
+			else
+				fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
+			fi
+		fi
+	fi
+	unset __SRVC __PATH __WORK
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: netplan
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnSetup_netplan() {
+	__FUNC_NAME="fnSetup_netplan"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	# --- check command -------------------------------------------------------
+	if ! command -v netplan > /dev/null 2>&1; then
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
+		return
+	fi
+	# --- configures ----------------------------------------------------------
+	if command -v nmcli > /dev/null 2>&1; then
+		find "${__DIRS}/etc/netplan/" -name '*.yaml' -type f | while read -r __PATH
+		do
+			fnFile_backup "${__PATH}"
+			fnMsgout "${_PROG_NAME:-}" "remove" "${__PATH}"
+			rm -f "${__PATH}"
+		done
+		# --- 99-network-config-all.yaml --------------------------------------
+		__PATH="${_DIRS_TGET:-}/etc/netplan/99-network-manager-all.yaml"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+			network:
+			  version: 2
+			  renderer: NetworkManager
+_EOT_
+		chmod 600 "${__PATH}"
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+		# --- 99-disable-network-config.cfg -----------------------------------
+		__PATH="${_DIRS_TGET:-}/etc/cloud/cloud.cfg.d/99-disable-network-config.cfg"
+		if [ -e "${__PATH%/*}/." ]; then
+			fnFile_backup "${__PATH}"			# backup original file
+			mkdir -p "${__PATH%/*}"
+			cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
+				network: {config: disabled}
+_EOT_
+			fnDbgdump "${__PATH}"				# debugout
+			fnFile_backup "${__PATH}" "init"	# backup initial file
+		fi
+	else
+		__PATH="${_DIRS_TGET:-}/etc/netplan/99-network-config-${_NICS_NAME}.yaml"
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
+			network:
+				version: 2
+				renderer: networkd
+				ethernets:
+				${_NICS_NAME}:
+_EOT_
+		if [ -n "${_NICS_AUTO##-}" ]; then
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+				dhcp4: true
+				dhcp6: true
+				ipv6-privacy: true
+_EOT_
+		else
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+				addresses:
+				- ${_NICS_IPV4}/${_NICS_BIT4}
+				routes:
+				- to: default
+				via: ${_NICS_GATE}
+				nameservers:
+				search:
+				- ${_NICS_WGRP}
+				addresses:
+				- ${_NICS_DNS4}
+				dhcp4: false
+				dhcp6: true
+				ipv6-privacy: true
+_EOT_
+		fi
+		chmod 600 "${__PATH}"
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+	fi
+	# --- netplan -------------------------------------------------------------
+	if netplan status 2> /dev/null; then
+		if netplan apply; then
+			fnMsgout "${_PROG_NAME:-}" "success" "netplan apply"
+		else
+			fnMsgout "${_PROG_NAME:-}" "failed" "netplan apply"
+		fi
+	fi
+	unset __PATH
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: network manager
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnSetup_netman() {
+	__FUNC_NAME="fnSetup_netman"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	# --- check service -------------------------------------------------------
+	__SRVC="$(fnFind_serivce 'NetworkManager.service' | sort -V | head -n 1)"
+	if [ -z "${__SRVC:-}" ]; then
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
+		return
+	fi
+	__VERS="$(nmcli --version 2>&1)"
+	fnMsgout "${_PROG_NAME:-}" "info" "__VERS:[${__VERS:-}]"
+	# --- configures ----------------------------------------------------------
+	if [ -z "${_NICS_NAME##-}" ]; then
+		for __CONF in zz-all-en zz-all-eth
+		do
+			__PATH="${_DIRS_TGET:-}/etc/NetworkManager/system-connections/${__CONF}.nmconnection"
+			fnFile_backup "${__PATH}"			# backup original file
+			mkdir -p "${__PATH%/*}"
+			cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+			nmcli --offline connection add \
+				type ethernet \
+				match.interface-name "${__CONF##*-}*" \
+				connection.id "${__CONF}" \
+				connection.autoconnect true \
+				connection.autoconnect-priority 999 \
+				${_FWAL_ZONE:+connection.zone "${_FWAL_ZONE}"} \
+				ethernet.wake-on-lan 0 \
+				ipv4.method auto \
+				ipv6.method auto \
+				ipv6.addr-gen-mode default \
+			> "${__PATH}"
+			chown root:root "${__PATH}"
+			chmod 600 "${__PATH}"
+			fnDbgdump "${__PATH}"				# debugout
+			fnFile_backup "${__PATH}" "init"	# backup initial file
+		done
+	else
+		case "${_DIST_NAME:-}" in
+			debian | \
+			ubuntu ) __PATH="${_DIRS_TGET:-}/etc/NetworkManager/system-connections/Wired connection 1";;
+			*      ) __PATH="${_DIRS_TGET:-}/etc/NetworkManager/system-connections/${_NICS_NAME}.nmconnection";;
+		esac
+		__SRVC="NetworkManager.service"
+		__NAME=""
+		__UUID=""
+		if [ -z "${_TGET_CHRT:-}" ]; then
+			if systemctl --quiet is-active "${__SRVC}"; then
+				__WORK="$(nmcli --terse --fields DEVICE,UUID,NAME connection show | awk -F ':' '$1=="'"${_NICS_NAME}"'"')"
+				if [ -n "${__WORK:-}" ]; then
+					__NAME="${__WORK##*:}"
+					__UUID="${__WORK%:*}"
+					__UUID="${__UUID#*:}"
+					__PATH="$(
+						find \
+							"${_DIRS_TGET:-}"/run/NetworkManager/system-connections/ \
+							"${_DIRS_TGET:-}"/etc/NetworkManager/system-connections/ \
+							-type f ! -name 'lo*' | \
+						while IFS= read -r __WORK
+						do
+							if ! nmcli --terse connection show filename "${__WORK}" 2> /dev/null | grep -q "connection.uuid:${__UUID}"; then
+								continue
+							fi
+							echo "${__WORK}"
+							break
+						done
+					)"
+				fi
+			fi
+		fi
+		fnFile_backup "${__PATH}"			# backup original file
+		mkdir -p "${__PATH%/*}"
+#		cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+		__CNID="${__PATH##*/}"
+		__CNID="${__CNID%.*}"
+		fnMsgout "${_PROG_NAME:-}" "info" "__NAME:[${__NAME:-}]"
+		fnMsgout "${_PROG_NAME:-}" "info" "__UUID:[${__UUID:-}]"
+		fnMsgout "${_PROG_NAME:-}" "info" "__PATH:[${__PATH:-}]"
+		fnMsgout "${_PROG_NAME:-}" "info" "__CNID:[${__CNID:-}]"
+		set -f
+		set -- \
+			type ethernet \
+			${__CNID:+connection.id "${__CNID}"} \
+			${_NICS_NAME:+connection.interface-name "${_NICS_NAME}"} \
+			connection.autoconnect true \
+			${_FWAL_ZONE:+connection.zone "${_FWAL_ZONE}"} \
+			ethernet.wake-on-lan 0 \
+			${_NICS_MADR:+ethernet.mac-address "${_NICS_MADR}"}
+		if [ -n "${_NICS_AUTO##-}" ]; then
+			set -- "$@" \
+				ipv4.method auto \
+				ipv6.method auto \
+				ipv6.addr-gen-mode default
+		else
+			set -- "$@" \
+				ipv4.method manual \
+				${_NICS_IPV4:+ipv4.address "${_NICS_IPV4}/${_NICS_BIT4}"} \
+				${_NICS_GATE:+ipv4.gateway "${_NICS_GATE}"} \
+				${_NICS_DNS4:+ipv4.dns "${_NICS_DNS4}"} \
+				ipv6.method auto \
+				ipv6.addr-gen-mode default
+		fi
+		set +f
+		if [ -z "${__UUID:-}" ]; then
+			if ! nmcli --offline connection add "$@" 1> "${__PATH}"; then
+				fnMsgout "${_PROG_NAME:-}" "failed" "nmcli --offline connection add $* > ${__PATH}"
+			fi
+			chown root:root "${__PATH}"
+			chmod 600 "${__PATH}"
+		else
+			if ! nmcli connection modify uuid "${__UUID}" "$@"; then
+				fnMsgout "${_PROG_NAME:-}" "failed" "nmcli connection modify uuid ${__UUID} $*"
+			fi
+		fi
+		fnDbgdump "${__PATH}"				# debugout
+		fnFile_backup "${__PATH}" "init"	# backup initial file
+	fi
+	# --- dns.conf ------------------------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/NetworkManager/conf.d/dns.conf"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	if command -v resolvectl > /dev/null 2>&1; then
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
+			[main]
+			dns=systemd-resolved
+_EOT_
+	elif command -v dnsmasq > /dev/null 2>&1; then
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
+			[main]
+			dns=dnsmasq
+_EOT_
+	fi
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
+	# --- mdns.conf -----------------------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/NetworkManager/conf.d/mdns.conf"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	if command -v resolvectl > /dev/null 2>&1; then
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
+			[connection]
+			connection.mdns=2
+_EOT_
+	fi
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
+	# --- service restart -----------------------------------------------------
+	__SRVC="${__SRVC##*/}"
+	if systemctl --quiet is-enabled "${__SRVC}"; then
+		__SVEX="systemd-networkd.service"
+		if systemctl --quiet is-enabled "${__SVEX}"; then
+			fnMsgout "${_PROG_NAME:-}" "mask" "${__SVEX}"
+			systemctl --quiet mask "${__SVEX}"
+			systemctl --quiet mask "${__SVEX%.*}.socket"
+		fi
+	fi
+	if [ -z "${_TGET_CHRT:-}" ]; then
+		if systemctl --quiet is-active "${__SRVC}"; then
+			fnMsgout "${_PROG_NAME:-}" "restart" "${__SRVC}"
+			systemctl --quiet daemon-reload
+			if systemctl --quiet restart "${__SRVC}"; then
+				fnMsgout "${_PROG_NAME:-}" "success" "${__SRVC}"
+			else
+				fnMsgout "${_PROG_NAME:-}" "failed" "${__SRVC}"
+			fi
+			if nmcli connection reload; then
+				fnMsgout "${_PROG_NAME:-}" "success" "nmcli connection reload"
+			else
+				fnMsgout "${_PROG_NAME:-}" "failed" "nmcli connection reload"
+			fi
+		fi
+	fi
+	unset __WORK __SRVC __CONF __PATH __NAME __UUID __CNID
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: hostname
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnSetup_hostname() {
+	__FUNC_NAME="fnSetup_hostname"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	# --- check fqdn ----------------------------------------------------------
+	if [ -z "${_NICS_FQDN:-}" ]; then
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
+		return
+	fi
+	# --- hostname ------------------------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/hostname"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	echo "${_NICS_FQDN:-}" > "${__PATH}"
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
+	unset __PATH
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: hosts
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnSetup_hosts() {
+	__FUNC_NAME="fnSetup_hosts"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	# --- check fqdn ----------------------------------------------------------
+	if [ -z "${_NICS_FQDN:-}" ]; then
+		fnMsgout "${_PROG_NAME:-}" "skip" "[${__FUNC_NAME}]"
+		return
+	fi
+	# --- hosts ---------------------------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/hosts"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	if [ "${_NICS_IPV4##*.}" -eq 0 ]; then
+		__WORK="#${_IPV4_DUMY:-"127.0.1.1"}"
+	else
+		__WORK="${_NICS_IPV4}"
+	fi
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}"
+		$(printf "%-16s %s" "${_IPV4_LHST:-"127.0.0.1"}" "localhost")
+		$(printf "%-16s %s %s" "${__WORK}" "${_NICS_FQDN}" "${_NICS_HOST}")
+
+		# The following lines are desirable for IPv6 capable hosts
+		$(printf "%-16s %s %s %s" "${_IPV6_LHST:-"::1"}" "localhost" "ip6-localhost" "ip6-loopback")
+		$(printf "%-16s %s" "fe00::0" "ip6-localnet")
+		$(printf "%-16s %s" "ff00::0" "ip6-mcastprefix")
+		$(printf "%-16s %s" "ff02::1" "ip6-allnodes")
+		$(printf "%-16s %s" "ff02::2" "ip6-allrouters")
+_EOT_
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
+	unset __PATH __WORK
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
+}
+
+# -----------------------------------------------------------------------------
+# descript: tcp wrapper
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+fnSetup_tcp_wrapper() {
+	__FUNC_NAME="fnSetup_tcp_wrapper"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${__FUNC_NAME}]"
+
+	# --- hosts.allow ---------------------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/hosts.allow"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+		ALL: [fe80::]/10
+		ALL: ${_NICS_IPV4%.*}.0/24
+_EOT_
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
+
+	# --- hosts.deny ----------------------------------------------------------
+	__PATH="${_DIRS_TGET:-}/etc/hosts.deny"
+	fnFile_backup "${__PATH}"			# backup original file
+	mkdir -p "${__PATH%/*}"
+	cp --preserve=timestamps "${_DIRS_ORIG}/${__PATH#*"${_DIRS_TGET:-}/"}" "${__PATH}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}"
+		ALL: ALL
+_EOT_
+	fnDbgdump "${__PATH}"				# debugout
+	fnFile_backup "${__PATH}" "init"	# backup initial file
+	unset __PATH
+
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
+	unset __FUNC_NAME
+}
+
 # -----------------------------------------------------------------------------
 # descript: firewalld
 #   input :            : unused
@@ -2474,4 +4444,206 @@ fnSetup_grub_menu() {
 	# --- complete ------------------------------------------------------------
 	fnMsgout "${_PROG_NAME:-}" "complete" "[${__FUNC_NAME}]" 
 	unset __FUNC_NAME
+	# --- memo ----------------------------------------------------------------
+	# https://documentation.suse.com/ja-jp/sles/12-SP5/html/SLES-all/cha-grub2.html
+	# GRUB_BACKGROUND
+	# GRUB_BADRAM
+	# GRUB_BUTTON_CMOS_ADDRESS
+	# GRUB_BUTTON_CMOS_CLEAN
+	# GRUB_CMDLINE_GNUMACH
+	# GRUB_CMDLINE_LINUX
+	# GRUB_CMDLINE_LINUX_DEFAULT
+	# GRUB_CMDLINE_LINUX_RECOVERY
+	# GRUB_CMDLINE_LINUX_XEN_REPLACE
+	# GRUB_CMDLINE_LINUX_XEN_REPLACE_DEFAULT
+	# GRUB_CMDLINE_NETBSD
+	# GRUB_CMDLINE_NETBSD_DEFAULT
+	# GRUB_CMDLINE_XEN
+	# GRUB_CMDLINE_XEN_DEFAULT
+	# GRUB_DEFAULT_BUTTON
+	# GRUB_DEFAULT_DTB - grub2
+	# GRUB_DISABLE_LINUX_PARTUUID
+	# GRUB_DISABLE_LINUX_UUID
+	# GRUB_DISABLE_OS_PROBER - grub2
+	# GRUB_DISABLE_RECOVERY
+	# GRUB_DISABLE_SUBMENU
+	# GRUB_DISABLE_UUID
+	# GRUB_DISTRIBUTOR
+	# GRUB_EARLY_INITRD_LINUX_CUSTOM
+	# GRUB_EARLY_INITRD_LINUX_STOCK
+	# GRUB_ENABLE_BLSCFG - grub2
+	# GRUB_ENABLE_CRYPTODISK
+	# GRUB_GFXMODE
+	# GRUB_GFXPAYLOAD_LINUX
+	# GRUB_HIDDEN_TIMEOUT
+	# GRUB_HIDDEN_TIMEOUT_BUTTON
+	# GRUB_HIDDEN_TIMEOUT_QUIET
+	# GRUB_INIT_TUNE
+	# GRUB_OS_PROBER_SKIP_LIST
+	# GRUB_RECORDFAIL_TIMEOUT - grub
+	# GRUB_RECOVERY_TITLE - grub
+	# GRUB_SAVEDEFAULT
+	# GRUB_SERIAL_COMMAND
+	# GRUB_TERMINAL_INPUT
+	# GRUB_TERMINAL_OUTPUT
+	# GRUB_THEME
+	# GRUB_TIMEOUT
+	# GRUB_TIMEOUT_BUTTON
+	# GRUB_TIMEOUT_STYLE
+	# GRUB_TIMEOUT_STYLE_BUTTON
+	# GRUB_TOP_LEVEL
+	# GRUB_TOP_LEVEL_OS_PROBER
+	# GRUB_TOP_LEVEL_XEN
+	# GRUB_VIDEO_BACKEND
 }
+
+# *** main section ************************************************************
+# -----------------------------------------------------------------------------
+# descript: main routine
+#   input :            : unused
+#   output:   stdout   : message
+#   return:            : unused
+#   g-var : _DIRS_BACK : read
+fnMain() {
+	_FUNC_NAME="fnMain"
+	fnMsgout "${_PROG_NAME:-}" "start" "[${_FUNC_NAME}]"
+	# --- initial setup -------------------------------------------------------
+	fnInitialize						# initialize
+	fnDbgparam							# parameter debug output
+	fnPackage_update					# package updates
+	fnPackage_install					# package install
+	fnMkdir_share						# creating a shared directory
+	# --- network manager -----------------------------------------------------
+	fnSetup_connman						# connman
+	fnSetup_netplan						# netplan
+	fnSetup_netman						# network manager
+	# --- application setup ---------------------------------------------------
+	fnSetup_hostname					# hostname
+	fnSetup_hosts						# hosts
+	fnSetup_tcp_wrapper					# tcp wrapper
+	fnSetup_firewalld					# firewalld
+	fnSetup_dnsmasq						# dnsmasq
+	fnSetup_resolv						# resolv.conf
+#	fnSetup_clamav						# clamav
+	fnSetup_apache						# apache
+	fnSetup_samba						# samba
+	fnSetup_timesyncd					# timesyncd
+	fnSetup_chronyd						# chronyd
+	fnSetup_ssh							# openssh-server
+	fnSetup_nfs							# nfs
+	fnSetup_nbd							# nbd
+	fnSetup_vmware						# vmware shared directory
+	fnSetup_wireplumber					# wireplumber
+	fnSetup_input_method				# input method
+	fnSetup_locale						# locale
+	fnSetup_desktop						# desktop
+	fnSetup_skel_user					# skeleton for user environment
+	fnSetup_skel_im						# input method skeleton
+	fnSetup_skel_copy					# copy skeleton to user
+	fnSetup_dconf						# dconf
+	fnSetup_sudo						# sudoers
+	fnSetup_blacklist					# blacklist
+	fnSetup_module_ipxe					# ipxe module
+	fnSetup_apparmor					# apparmor
+	fnSetup_selinux						# selinux
+	fnSetup_ipfilter					# ipfilter
+	fnSetup_service						# service
+	# --- booting setup -------------------------------------------------------
+	fnSetup_grub_menu					# grub menu settings
+	# --- debug output --------------------------------------------------------
+	if [ -n "${_DBGS_FLAG:-}" ]; then
+		command -v tree > /dev/null 2>&1 && tree --charset C -n --filesfirst "${_DIRS_BACK:-}"
+	fi
+	# --- complete ------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "complete" "[${_FUNC_NAME}]"
+	unset _FUNC_NAME
+}
+	# --- start ---------------------------------------------------------------
+	fnMsgout "${_PROG_NAME:-}" "start" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)"
+	# --- boot parameter selection --------------------------------------------
+	for __LINE in ${_COMD_LINE:-} ${_PROG_PARM:-}
+	do
+		case "${__LINE}" in
+			debug    | dbg                ) _DBGS_FLAG="true"; set -x;;
+			debugout | dbgout             ) _DBGS_FLAG="true";;
+			target=*                      ) _DIRS_TGET="${__LINE#*target=}";;
+			iso-url=*.iso  | url=*.iso    ) _FILE_ISOS="${__LINE#*url=}";;
+			preseed/url=*  | url=*        ) _FILE_SEED="${__LINE#*url=}";;
+			preseed/file=* | file=*       ) _FILE_SEED="${__LINE#*file=}";;
+			ds=nocloud*                   ) _FILE_SEED="${__LINE#*ds=nocloud*=}";_FILE_SEED="${_FILE_SEED%%/}/user-data";;
+			inst.ks=*                     ) _FILE_SEED="${__LINE#*inst.ks=}";;
+			autoyast=*                    ) _FILE_SEED="${__LINE#*autoyast=}";;
+			inst.auto=*                   ) _FILE_SEED="${__LINE#*inst.auto=}";;
+			netcfg/target_network_config=*) _NMAN_FLAG="${__LINE#*target_network_config=}";;
+			netcfg/choose_interface=*     ) _NICS_NAME="${__LINE#*choose_interface=}";;
+			netcfg/disable_dhcp=*         ) _IPV4_DHCP="$([ "${__LINE#*disable_dhcp=}" = "true" ] && echo "false" || echo "true")";;
+			netcfg/disable_autoconfig=*   ) _IPV4_DHCP="$([ "${__LINE#*disable_autoconfig=}" = "true" ] && echo "false" || echo "true")";;
+			netcfg/get_ipaddress=*        ) _NICS_IPV4="${__LINE#*get_ipaddress=}";;
+			netcfg/get_netmask=*          ) _NICS_MASK="${__LINE#*get_netmask=}";;
+			netcfg/get_gateway=*          ) _NICS_GATE="${__LINE#*get_gateway=}";;
+			netcfg/get_nameservers=*      ) _NICS_DNS4="${__LINE#*get_nameservers=}";;
+			netcfg/get_hostname=*         ) _NICS_FQDN="${__LINE#*get_hostname=}";;
+			netcfg/get_domain=*           ) _NICS_WGRP="${__LINE#*get_domain=}";;
+			interface=*                   ) _NICS_NAME="${__LINE#*interface=}";;
+			hostname=*                    ) _NICS_FQDN="${__LINE#*hostname=}";;
+			domain=*                      ) _NICS_WGRP="${__LINE#*domain=}";;
+			nameserver=*                  ) _NICS_DNS4="${__LINE#*nameserver=}";;
+			ip=dhcp | ip4=dhcp | ipv4=dhcp) _IPV4_DHCP="true";;
+			ip=* | ip4=* | ipv4=*         ) _IPV4_DHCP="false"
+			                                _NICS_IPV4="$(echo "${__LINE#*ip*=}:" | cut -d ':' -f 1)"
+			                                _NICS_GATE="$(echo "${__LINE#*ip*=}:" | cut -d ':' -f 3)"
+			                                _NICS_MASK="$(echo "${__LINE#*ip*=}:" | cut -d ':' -f 4)"
+			                                _NICS_FQDN="$(echo "${__LINE#*ip*=}:" | cut -d ':' -f 5)"
+			                                _NICS_NAME="$(echo "${__LINE#*ip*=}:" | cut -d ':' -f 6)"
+			                                _NICS_DNS4="$(echo "${__LINE#*ip*=}:" | cut -d ':' -f 8)"
+			                                ;;
+			ifcfg=*                       ) _NICS_NAME="$(echo "${__LINE#*ifcfg*=}" | cut -d '=' -f 1)"
+			                                _NICS_IPV4="$(echo "${__LINE#*=*=}" | cut -d ',' -f 1)"
+			                                case "${_NICS_IPV4:-}" in
+			                                     dhcp6)
+			                                        _IPV4_DHCP=""
+			                                        _NICS_IPV4=""
+			                                        _NICS_GATE=""
+			                                        _NICS_DNS4=""
+			                                        _NICS_WGRP=""
+			                                        ;;
+			                                     dhcp|dhcp4)
+			                                        _IPV4_DHCP="true"
+			                                        _NICS_IPV4=""
+			                                        _NICS_GATE=""
+			                                        _NICS_DNS4=""
+			                                        _NICS_WGRP=""
+			                                        ;;
+			                                     *)
+			                                        _IPV4_DHCP="false"
+			                                        _NICS_IPV4="$(echo "${__LINE#*=*=}," | cut -d ',' -f 1)"
+			                                        _NICS_GATE="$(echo "${__LINE#*=*=}," | cut -d ',' -f 2)"
+			                                        _NICS_DNS4="$(echo "${__LINE#*=*=}," | cut -d ',' -f 3)"
+			                                        _NICS_WGRP="$(echo "${__LINE#*=*=}," | cut -d ',' -f 4)"
+			                                        ;;
+			                                esac
+			                                ;;
+			*) ;;
+		esac
+	done
+
+	# --- debug output redirection --------------------------------------------
+	if set -o | grep "^xtrace\s*on$"; then
+		exec 2>&1
+	fi
+	# --- debug output --------------------------------------------------------
+	if [ -n "${_DBGS_FLAG:-}" ]; then
+		fnDbgout "command line" \
+			"debug,_COMD_LINE=[${_COMD_LINE:-}]"
+	fi
+	# --- main processing -----------------------------------------------------
+	fnMain
+	# --- complete ------------------------------------------------------------
+	__time_end=$(date +%s)
+	__time_elapsed=$((__time_end - __time_start))
+	fnMsgout "${_PROG_NAME:-}" "complete" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)"
+	fnMsgout "${_PROG_NAME:-}" "elapsed" "$(printf "%dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60)) || true)"
+	unset __time_start __time_end __time_elapsed
+	mkdir -p "${_PROG_PATH:?}.success"
+	exit 0
+# ### eof #####################################################################

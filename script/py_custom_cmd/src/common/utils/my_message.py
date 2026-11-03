@@ -25,7 +25,8 @@ def message_out(
     """
     _program_name = infosystem.program_name
     _columns = infosystem.columns
-    _colsize = (_columns - (colsize_mode + 2)) // 2 if _columns < 100 else 50
+    _colsize = (_columns - (colsize_mode + 2)) // 2 #if _columns < 100 else 50
+    _colsize = _colsize if _colsize <= 80 else 80
     _prog_text = omit_middle(f"{_program_name}({func_name})", _colsize)
     _mesg_text = message.rstrip("\n")
     _mesg_text = (

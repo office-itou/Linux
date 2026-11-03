@@ -7,9 +7,7 @@ from dataclasses import dataclass, fields
 from pathlib import Path
 from typing import Any
 
-
 # --- my library --------------------------------------------------------------
-# ruff: isort: off
 from common.utils import (
     debug_logger,
     fread,
@@ -18,11 +16,7 @@ from common.utils import (
 )
 
 
-# ruff: isort: on
 # --- import module -----------------------------------------------------------
-#from autoinst_syspara import InfoSystem
-
-
 # =============================================================================
 @dataclass
 class ConfigurationData:
@@ -41,7 +35,7 @@ class InfoConfiguration:
         self.load(conf_path=conf_path)
 
     @debug_logger
-    def debug(self, debugout:bool=False) -> None:
+    def debug(self, debugout: bool = False) -> None:
         if debugout:
             _caller = get_caller_name()
             message_info(_caller, f"{'*** start':<10}:ConfigurationData ***", omit=True)
