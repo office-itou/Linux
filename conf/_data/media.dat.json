@@ -1825,7 +1825,7 @@
     },
     {
         "mdia_type": "dvd",
-        "entry_flag": "o",
+        "entry_flag": "-",
         "entry_name": "miraclelinux-9",
         "entry_disp": "Miracle%20Linux%209",
         "version": "miraclelinux-9",
@@ -3969,7 +3969,7 @@
     },
     {
         "mdia_type": "live",
-        "entry_flag": "o",
+        "entry_flag": "x",
         "entry_name": "ubuntu-desktop-26.10",
         "entry_disp": "Ubuntu%2026.10%20Desktop",
         "version": "ubuntu-26.10",
@@ -4001,7 +4001,7 @@
     },
     {
         "mdia_type": "live",
-        "entry_flag": "x",
+        "entry_flag": "o",
         "entry_name": "ubuntu-desktop-26.10",
         "entry_disp": "Ubuntu%2026.10%20Desktop",
         "version": "ubuntu-26.10",

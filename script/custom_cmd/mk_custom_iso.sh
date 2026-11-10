@@ -181,7 +181,7 @@
 	declare       _DIRS_XNBD=""			# exports (network block device)
 	declare       _DIRS_XNFS=""			# exports (network file system)
 	# --- working directory parameter -----------------------------------------
-	declare -r    _DIRS_VADM="/var/admin"	# top of admin working directory
+	declare       _DIRS_VADM="/var/admin"	# top of admin working directory
 	declare       _DIRS_INST=""			# auto-install working directory
 	declare       _DIRS_BACK=""			# top of backup directory
 	declare       _DIRS_ORIG=""			# original file directory
@@ -821,8 +821,8 @@ function fnDownload() {
 #	if [[ -z "${__REAL%"${_DIRS_SAMB:-}"*}" ]]; then
 		__DIRS="$(fnDirname "${__TGET_PATH}")"
 		__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
-		chown "${__OWNR:-"${_SAMB_USER}"}" "${__TGET_PATH}"
-		chmod g+rw,o+r "${__TGET_PATH}"
+#		chown "${__OWNR:-"${_SAMB_USER}"}" "${__TGET_PATH}"
+#		chmod g+rw,o+r "${__TGET_PATH}"
 #	fi
 	rm -rf "${__TEMP:?}"
 	printf "\033[m\033[92mcomplete: %s\033[m\n" "${__TGET_PATH##*/}"
@@ -4660,8 +4660,8 @@ function fnMk_xorrisofs() {
 				__REAL="$(realpath "${__FILE_ISOS}")"
 				__DIRS="$(fnDirname "${__FILE_ISOS}")"
 				__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
-				chown "${__OWNR:-"${_SAMB_USER}"}" "${__FILE_ISOS}"
-				chmod ugo+r-x,ug+w "${__FILE_ISOS}"
+				#chown "${__OWNR:-"${_SAMB_USER}"}" "${__FILE_ISOS}"
+				#chmod ugo+r-x,ug+w "${__FILE_ISOS}"
 				ls -lh "${__FILE_ISOS}"
 				printf "\033[m\033[42m%20.20s: %s\033[m\n" "complete" "${__FILE_ISOS}" 1>&2
 			fi
