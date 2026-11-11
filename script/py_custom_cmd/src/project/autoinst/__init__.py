@@ -1,4 +1,4 @@
-"""Common Function Package: autoinst [generated: 2026/11/03 22:43:51 JST (+0900)]"""
+"""Common Function Package: autoinst [generated: 2026/11/12 01:01:26 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -12,7 +12,11 @@ __all__ = [
     "SystemData",
     "aaaa",
     "ffff",
+    "file_backup",
+    "file_origin",
     "func",
+    "get_conf_file",
+    "setup_wireplumber",
 ]
 
 _MODULE_MAP = {
@@ -22,7 +26,11 @@ _MODULE_MAP = {
     "SystemData": ".autoinst_def_sysinfo",
     "aaaa": ".test_networ",
     "ffff": ".test_networ",
+    "file_backup": ".autoinst_fn_file_backup",
+    "file_origin": ".autoinst_fn_file_backup",
     "func": ".test_networ",
+    "get_conf_file": ".autoinst_fn_get_conf_file",
+    "setup_wireplumber": ".autoinst_fn_setup_wireplumber",
 }
 
 

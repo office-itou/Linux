@@ -15,6 +15,9 @@ from common.utils import (
 )
 
 # --- import module -----------------------------------------------------------
+from autoinst_fn_get_conf_file import get_conf_file
+from autoinst_fn_setup_wireplumber import setup_wireplumber
+
 from autoinst_fn_initialize import initialize
 
 
@@ -31,8 +34,8 @@ def main() -> None:
     _info_syst.print_info(
         debugout=not bool(_info_syst.data.dout_flag or infosystem.debugout)
     )
-    # setup_wireplumber(info_syst=_info_syst)
-    # get_conf_file(info_syst=_info_syst)
+    setup_wireplumber(info_syst=_info_syst)
+    get_conf_file(info_syst=_info_syst)
     # --- success -------------------------------------------------------------
     _stat_name: str = f"{_info_syst.data.prog_name}.success"
     _stat_path: Path = _info_syst.data.acmd_path / _stat_name
