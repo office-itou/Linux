@@ -2,9 +2,6 @@
 # --- python library ----------------------------------------------------------
 from pathlib import Path
 
-# --- import module -----------------------------------------------------------
-from autoinst_fn_initialize import initialize
-
 # --- my library --------------------------------------------------------------
 from common.shared import (
     proc_comp,
@@ -16,6 +13,9 @@ from common.utils import (
     handle_fatal_error,
     infosystem,
 )
+
+# --- import module -----------------------------------------------------------
+from autoinst_fn_initialize import initialize
 
 
 # --- class and function ------------------------------------------------------

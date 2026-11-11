@@ -1,6 +1,7 @@
 # --- python library ----------------------------------------------------------
 import ipaddress
 import re
+import shutil
 from dataclasses import dataclass, fields
 from ipaddress import IPv4Interface, IPv6Interface
 from pathlib import Path
@@ -81,8 +82,17 @@ class InfoNetworkIF:
                 )
         # --- hostname --------------------------------------------------------
         message_info(_caller, f"{'info':<10}:hostname", omit=True)
-        _comd_list: list[str] = ["hostnamectl", "hostname"]
-        _result = run_subprocess_stdout(_comd_list)
+        _result: str = ""
+        if shutil.which("hostnamectl"):
+            _comd_list: list[str] = ["hostnamectl", "hostname"]
+            _result = run_subprocess_stdout(_comd_list)
+        elif shutil.which("hostname"):
+            _comd_list: list[str] = ["hostname", "-f"]
+            _result = run_subprocess_stdout(_comd_list)
+        else:
+            _conf_path: Path = Path("/etc/hostname")
+            if _conf_path.exists():
+                _result = _conf_path.read_text()
         if not _result:
             message_warn(_caller, f"{'failed':<10}:{' '.join(_comd_list)}", omit=True)
         else:
@@ -92,7 +102,7 @@ class InfoNetworkIF:
             self.data.fqdn = f"{self.data.host}.{self.data.wgrp}"
         # --- gateway ---------------------------------------------------------
         message_info(_caller, f"{'info':<10}:gateway", omit=True)
-        _comd_list: list[str] = ["ip", "route", "show", "dev", self.data.name]
+        _comd_list: list[str] = ["/sbin/ip", "route", "show", "dev", self.data.name]
         _result = run_subprocess_stdout(_comd_list)
         if not _result:
             message_warn(_caller, f"{'failed':<10}:{' '.join(_comd_list)}", omit=True)
@@ -101,12 +111,15 @@ class InfoNetworkIF:
             self.data.gway = _match.group(1) if _match else ""
         # --- nameserver ------------------------------------------------------
         message_info(_caller, f"{'info':<10}:nameserver", omit=True)
-        _comd_list: list[str] = ["resolvectl", "status", self.data.name]
-        _result = run_subprocess_stdout(_comd_list)
-        if not _result:
+        _comd_list: list[str] = []
+        _result: str = ""
+        if shutil.which("resolvectl"):
+            _comd_list: list[str] = ["resolvectl", "status", self.data.name]
+            _result = run_subprocess_stdout(_comd_list)
+        elif shutil.which("systemd-resolve"):
             _comd_list: list[str] = ["systemd-resolve", "--status", self.data.name]
             _result = run_subprocess_stdout(_comd_list)
-        if not _result:
+        if _comd_list and not _result:
             message_warn(_caller, f"{'failed':<10}:{' '.join(_comd_list)}", omit=True)
         else:
             _match = re.search(r"DNS\s+Servers:\s+([0-9a-fA-F:\s.]+)\n", _result)
@@ -115,7 +128,7 @@ class InfoNetworkIF:
                 self.data.nsvr = _find if _find else ""
         # --- get ip address --------------------------------------------------
         message_info(_caller, f"{'info':<10}:get ip address", omit=True)
-        _comd_list: list[str] = ["ip", "address", "show", "dev", self.data.name]
+        _comd_list: list[str] = ["/sbin/ip", "address", "show", "dev", self.data.name]
         _result = run_subprocess_stdout(_comd_list)
         if not _result:
             message_warn(_caller, f"{'failed':<10}:{' '.join(_comd_list)}", omit=True)

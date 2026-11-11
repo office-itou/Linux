@@ -5,9 +5,6 @@ from dataclasses import fields
 from datetime import datetime
 from pathlib import Path
 
-# --- import module -----------------------------------------------------------
-from autoinst_def_sysinfo import SystemData
-
 # --- my library --------------------------------------------------------------
 from common.shared import (
     InfoConfiguration,
@@ -31,6 +28,9 @@ from common.utils import (
     is_vm_type,
     message_info,
 )
+
+# --- import module -----------------------------------------------------------
+from autoinst_def_sysinfo import SystemData
 
 
 # --- class and function ------------------------------------------------------
@@ -401,6 +401,10 @@ class InfoSystem:
             self.data.nwrk_host = self.data.nwrk_host.replace(
                 ":_DISTRO_:", self.data.dist_name
             )
+        if "." in self.data.nwrk_host:
+            _host_list: list[str] = self.data.nwrk_host.strip("\n").split(".")
+            self.data.nwrk_host = _host_list[0]
+            self.data.nwrk_wgrp = ".".join(_host_list[1:])
         self.data.nwrk_fqdn = f"{self.data.nwrk_host}.{self.data.nwrk_wgrp}"
 
     @debug_logger
@@ -485,5 +489,5 @@ class InfoSystem:
                         | "ipv4_gway"
                         | "ipv4_nsvr"
                     ):
-                        message_info(_caller, f"{_key}={_value or ''}", omit=True)
+                        message_info(_caller, f"{_key}={str(_value) or ''}", omit=True)
             message_info(_caller, f"{'*** end':<10}:Command line ***", omit=True)

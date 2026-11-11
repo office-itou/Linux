@@ -10,6 +10,7 @@ from common.utils import (
     message_info,
 )
 
+
 # --- import module -----------------------------------------------------------
 # ruff: isort: off
 from autoinst_fn_common_cfg import InfoConfiguration
