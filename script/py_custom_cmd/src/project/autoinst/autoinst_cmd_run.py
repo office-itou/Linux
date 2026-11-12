@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # --- python library ----------------------------------------------------------
+import shutil
 from pathlib import Path
 
 # --- my library --------------------------------------------------------------
@@ -12,6 +13,7 @@ from common.utils import (
     get_caller_name,
     handle_fatal_error,
     infosystem,
+    run_subprocess,
 )
 
 # --- import module -----------------------------------------------------------
@@ -31,8 +33,9 @@ def main() -> None:
     _info_syst.print_info(
         debugout=not bool(_info_syst.data.dout_flag or infosystem.debugout)
     )
-    # setup_wireplumber(info_syst=_info_syst)
-    # get_conf_file(info_syst=_info_syst)
+    if shutil.which("kill-all-dhcp"):
+        run_subprocess(["/bin/kill-all-dhcp"])
+        run_subprocess(["/bin/netcfg"])
     # --- success -------------------------------------------------------------
     _stat_name: str = f"{_info_syst.data.prog_name}.success"
     _stat_path: Path = _info_syst.data.acmd_path / _stat_name

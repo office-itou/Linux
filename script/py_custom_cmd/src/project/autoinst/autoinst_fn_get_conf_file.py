@@ -1,7 +1,6 @@
 # --- python library ----------------------------------------------------------
 import os
 import re
-import subprocess
 from pathlib import Path
 from subprocess import CompletedProcess
 from urllib.parse import urlparse
@@ -16,6 +15,7 @@ from common.utils import (
     message_alert,
     message_info,
     message_warn,
+    run_subprocess,
 )
 
 
@@ -77,15 +77,14 @@ def get_conf_file(info_syst) -> None:
                 # _tget_urls = "ftp://://example.com"
                 # _user_name = ""
                 # _pass_word = ""
-                # _ftp_cmd: list[str] = [
+                # _comd_list: list[str] = [
                 #    "wget",
                 #    f"--ftp-user={_user_name}",
                 #    f"--ftp-password={_pass_word}",
                 #    _tget_urls,
                 # ]
                 # dest_path.parent.mkdir(parents=True, exist_ok=True)
-                # subprocess.check_output(_comd_list, text=True,
-                #   stderr=subprocess.DEVNULL)
+                # run_subprocess(_comd_list)
             case s if "cdrom" == s or "hd:sr" in _tget_pars.path:
                 _tget_path = (
                     Path(_tget_pars.path)
@@ -134,9 +133,8 @@ def get_conf_file(info_syst) -> None:
                     if _seed_path and _yast_path and _devs_path.exists():
                         _mntp_path: Path = Path("/media")
                         _mntp_path.parent.mkdir(parents=True, exist_ok=True)
-                        _comd_list = ["mount", "-r", str(_devs_path), str(_mntp_path)]
-                        subprocess.check_output(
-                            _comd_list, text=True, stderr=subprocess.DEVNULL
+                        run_subprocess(
+                            ["mount", "-r", str(_devs_path), str(_mntp_path)]
                         )
                         _srcs_path = _mntp_path / _tget_path
                         if _srcs_path.exists():
@@ -150,10 +148,7 @@ def get_conf_file(info_syst) -> None:
                             message_warn(
                                 _caller, f"{'not exist':<10}:{_srcs_path}", omit=True
                             )
-                        _comd_list = ["umount", str(_mntp_path)]
-                        subprocess.check_output(
-                            _comd_list, text=True, stderr=subprocess.DEVNULL
-                        )
+                        run_subprocess(["umount", str(_mntp_path)])
             case "nfs":
                 message_info(_caller, f"{'copy':<10}:{_srcs_path}", omit=True)
             case _:

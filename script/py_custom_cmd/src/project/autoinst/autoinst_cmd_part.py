@@ -9,6 +9,7 @@ from common.shared import (
 )
 from common.utils import (
     debug_logger,
+    fcopy,
     get_caller_name,
     handle_fatal_error,
     infosystem,
@@ -31,8 +32,10 @@ def main() -> None:
     _info_syst.print_info(
         debugout=not bool(_info_syst.data.dout_flag or infosystem.debugout)
     )
-    # setup_wireplumber(info_syst=_info_syst)
-    # get_conf_file(info_syst=_info_syst)
+    _stub_path: Path = Path("/run/systemd/resolve/stub-resolv.conf")
+    _conf_path: Path = Path("/etc/resolv.conf")
+    if not _stub_path.exists() and _conf_path.exists() and not _conf_path.is_symlink():
+        fcopy(src_path=_conf_path, dest_path=_stub_path, backup=False)
     # --- success -------------------------------------------------------------
     _stat_name: str = f"{_info_syst.data.prog_name}.success"
     _stat_path: Path = _info_syst.data.acmd_path / _stat_name
