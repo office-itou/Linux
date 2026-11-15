@@ -181,7 +181,8 @@
 	declare       _DIRS_XNBD=""			# exports (network block device)
 	declare       _DIRS_XNFS=""			# exports (network file system)
 	# --- working directory parameter -----------------------------------------
-	declare       _DIRS_VADM="/var/admin"	# top of admin working directory
+#	declare -r    _DIRS_VADM="/var/admin"	# top of admin working directory
+	declare       _DIRS_VADM=""			# top of admin working directory
 	declare       _DIRS_INST=""			# auto-install working directory
 	declare       _DIRS_BACK=""			# top of backup directory
 	declare       _DIRS_ORIG=""			# original file directory
@@ -821,8 +822,8 @@ function fnDownload() {
 #	if [[ -z "${__REAL%"${_DIRS_SAMB:-}"*}" ]]; then
 		__DIRS="$(fnDirname "${__TGET_PATH}")"
 		__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
-#		chown "${__OWNR:-"${_SAMB_USER}"}" "${__TGET_PATH}"
-#		chmod g+rw,o+r "${__TGET_PATH}"
+		#chown "${__OWNR:-"${_SAMB_USER}"}" "${__TGET_PATH}"
+		#chmod g+rw,o+r "${__TGET_PATH}"
 #	fi
 	rm -rf "${__TEMP:?}"
 	printf "\033[m\033[92mcomplete: %s\033[m\n" "${__TGET_PATH##*/}"
@@ -1216,7 +1217,7 @@ function fnList_mdia_Put() {
 			split(_line, _arry, "\n")
 			for (i in _arry) {
 				split(_arry[i], _list, " ")
-				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-47s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-59s %-11s \n", \
+				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-47s %-15s %-91s %-47s %-15s %-43s %-91s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-59s %-11s \n", \
 					_list[1], _list[2], _list[3], _list[4], _list[5], _list[6], _list[7], _list[8], _list[9], _list[10], \
 					_list[11], _list[12], _list[13], _list[14], _list[15], _list[16], _list[17], _list[18], _list[19], _list[20], \
 					_list[21], _list[22], _list[23], _list[24], _list[25], _list[26], _list[27], _list[28], _list[29]
@@ -3870,7 +3871,7 @@ function fnMk_pxeboot() {
 			__MDIA=("${__MDIA[@]// /%20}")
 			J="${__MDIA[0]}"
 			_LIST_MDIA[J]="$(
-				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-47s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-59s %-11s \n" \
+				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-47s %-15s %-91s %-47s %-15s %-43s %-91s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-59s %-11s \n" \
 				"${__MDIA[@]:"${_OSET_MDIA}"}"
 			)"
 		done
@@ -4660,8 +4661,8 @@ function fnMk_xorrisofs() {
 				__REAL="$(realpath "${__FILE_ISOS}")"
 				__DIRS="$(fnDirname "${__FILE_ISOS}")"
 				__OWNR="${__DIRS:+"$(stat -c '%U' "${__DIRS}")"}"
-				#chown "${__OWNR:-"${_SAMB_USER}"}" "${__FILE_ISOS}"
-				#chmod ugo+r-x,ug+w "${__FILE_ISOS}"
+				chown "${__OWNR:-"${_SAMB_USER}"}" "${__FILE_ISOS}"
+				chmod ugo+r-x,ug+w "${__FILE_ISOS}"
 				ls -lh "${__FILE_ISOS}"
 				printf "\033[m\033[42m%20.20s: %s\033[m\n" "complete" "${__FILE_ISOS}" 1>&2
 			fi
@@ -4960,7 +4961,7 @@ function fnMk_isofile() {
 			__MDIA=("${__MDIA[@]// /%20}")
 			J="${__MDIA[0]}"
 			_LIST_MDIA[J]="$(
-				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-47s %-15s %-87s %-47s %-15s %-43s %-87s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-59s %-11s \n" \
+				printf "%-11s %-11s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-47s %-15s %-91s %-47s %-15s %-43s %-91s %-47s %-15s %-43s %-87s %-87s %-87s %-47s %-87s %-59s %-11s \n" \
 				"${__MDIA[@]:"${_OSET_MDIA}"}"
 			)"
 		done

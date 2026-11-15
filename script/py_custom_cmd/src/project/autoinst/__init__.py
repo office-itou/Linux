@@ -1,4 +1,4 @@
-"""Common Function Package: autoinst [generated: 2026/11/12 01:01:26 JST (+0900)]"""
+"""Common Function Package: autoinst [generated: 2026/11/15 10:37:00 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -10,12 +10,13 @@ __all__ = [
     "InfoConfiguration",
     "InfoSystem",
     "SystemData",
-    "aaaa",
-    "ffff",
     "file_backup",
     "file_origin",
-    "func",
     "get_conf_file",
+    "get_packages_nocloud",
+    "get_packages_preseed",
+    "package_install",
+    "package_update",
     "setup_wireplumber",
 ]
 
@@ -24,12 +25,13 @@ _MODULE_MAP = {
     "InfoConfiguration": ".autoinst_fn_common_cfg",
     "InfoSystem": ".autoinst_fn_sysinfo",
     "SystemData": ".autoinst_def_sysinfo",
-    "aaaa": ".test_networ",
-    "ffff": ".test_networ",
     "file_backup": ".autoinst_fn_file_backup",
     "file_origin": ".autoinst_fn_file_backup",
-    "func": ".test_networ",
     "get_conf_file": ".autoinst_fn_get_conf_file",
+    "get_packages_nocloud": ".autoinst_fn_package_install",
+    "get_packages_preseed": ".autoinst_fn_package_install",
+    "package_install": ".autoinst_fn_package_install",
+    "package_update": ".autoinst_fn_package_update",
     "setup_wireplumber": ".autoinst_fn_setup_wireplumber",
 }
 

@@ -29,8 +29,8 @@ class Text_fmat:
         r"{version:<23} {latest:<23} {release:<15} {support:<15} "
         r"{web_regexp:<143} {web_path:<143} {web_tstamp:<47} {web_size:<15} "
         r"{web_check:<47} {web_status:<15} "
-        r"{iso_path:<87} {iso_tstamp:<47} {iso_size:<15} {iso_volume:<43} "
-        r"{rmk_path:<87} {rmk_tstamp:<47} {rmk_size:<15} {rmk_volume:<43} "
+        r"{iso_path:<91} {iso_tstamp:<47} {iso_size:<15} {iso_volume:<43} "
+        r"{rmk_path:<91} {rmk_tstamp:<47} {rmk_size:<15} {rmk_volume:<43} "
         r"{ldr_initrd:<87} {ldr_kernel:<87} {cfg_path:<87} {cfg_tstamp:<47} "
         r"{lnk_path:<87} {options:<59} {create_flag:<11} {target_flag:<11} "
     )

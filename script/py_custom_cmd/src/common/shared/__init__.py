@@ -1,4 +1,4 @@
-"""Common Function Package: shared [generated: 2026/11/12 01:01:26 JST (+0900)]"""
+"""Common Function Package: shared [generated: 2026/11/15 10:37:00 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402

@@ -181,7 +181,8 @@
 	declare       _DIRS_XNBD=""			# exports (network block device)
 	declare       _DIRS_XNFS=""			# exports (network file system)
 	# --- working directory parameter -----------------------------------------
-	declare -r    _DIRS_VADM="/var/admin"	# top of admin working directory
+#	declare -r    _DIRS_VADM="/var/admin"	# top of admin working directory
+	declare       _DIRS_VADM=""			# top of admin working directory
 	declare       _DIRS_INST=""			# auto-install working directory
 	declare       _DIRS_BACK=""			# top of backup directory
 	declare       _DIRS_ORIG=""			# original file directory

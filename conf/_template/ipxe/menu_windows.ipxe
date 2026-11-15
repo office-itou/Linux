@@ -1,7 +1,7 @@
 #!ipxe
 
 # --- Menu block --------------------------------------------------------------
-# 
+#
 #set edition server
 :menu
 menu Select the OS type you want to boot
@@ -12,10 +12,18 @@ item -- return                                  - Return
 #item -- desktop                                - Desktop
 #item --gap --                                  [ Development ]
 item --gap --                                   [ Current (supported) ]
-item -- windows-10                              - Windows 10
-item -- windows-11                              - Windows 11
-#item --gap --                                  [ Extended LTS support ]
-#item --gap --                                  [ End of life (unsupported) ]
+item -- windows-11-26h2                         - Windows 11 26H2
+item -- windows-11-26h2-arm64                   - Windows 11 26H2 Arm64
+item --gap --                                   [ Extended LTS support ]
+item -- windows-10-22h2                         - Windows 10 22h2
+item --gap --                                  [ End of life (unsupported) ]
+#item -- windows-11-25h2                         - Windows 11 25H2
+#item -- windows-11-24h2                         - Windows 11 24H2
+#item -- windows-11-23h2                         - Windows 11 23H2
+#item -- windows-11-22h2                         - Windows 11 22H2
+#item -- windows-11-21h2                         - Windows 11 21H2
+item -- windows-8.1                             - Windows 8.1
+item -- windows-7                               - Windows 7
 item --gap --                                   [ System tools ]
 item -- memtest86plus                           - Memtest86+ 8.10
 item -- winpe-x64                               - WinPE x64
@@ -31,10 +39,46 @@ iseq ${selected} desktop                        && set edition desktop ||
 isset ${selected}                               && goto ${selected} ||
 goto menu
 
-:windows-10
-echo Loading Windows 10 ...
+:windows-11-26h2
+echo Loading Windows 11 26H2 ...
 set ipxaddr ${srvrhttp}/tftp/ipxe
-set knladdr ${srvrhttp}/imgs/windows-10
+set knladdr ${srvrhttp}/imgs/windows-11-26h2
+set cfgaddr ${srvrhttp}/conf/windows
+echo Loading boot files ...
+kernel ${ipxaddr}/wimboot
+initrd -n install.cmd ${cfgaddr}/inst_w11.cmd  install.cmd  || goto error
+initrd ${cfgaddr}/unattend.xml                 unattend.xml || goto error
+initrd ${cfgaddr}/shutdown.cmd                 shutdown.cmd || goto error
+initrd ${cfgaddr}/winpeshl.ini                 winpeshl.ini || goto error
+initrd ${knladdr}/bootmgr                      bootmgr      || goto error
+initrd ${knladdr}/boot/bcd                     BCD          || goto error
+initrd ${knladdr}/boot/boot.sdi                boot.sdi     || goto error
+initrd ${knladdr}/sources/boot.wim             boot.wim     || goto error
+boot || goto error
+exit
+
+:windows-11-26h2-arm64
+echo Loading Windows 11 26H2 Arm64 ...
+set ipxaddr ${srvrhttp}/tftp/ipxe
+set knladdr ${srvrhttp}/imgs/windows-11-26h2-arm64
+set cfgaddr ${srvrhttp}/conf/windows
+echo Loading boot files ...
+kernel ${ipxaddr}/wimboot
+initrd -n install.cmd ${cfgaddr}/inst_w11.cmd  install.cmd  || goto error
+initrd ${cfgaddr}/unattend.xml                 unattend.xml || goto error
+initrd ${cfgaddr}/shutdown.cmd                 shutdown.cmd || goto error
+initrd ${cfgaddr}/winpeshl.ini                 winpeshl.ini || goto error
+initrd ${knladdr}/bootmgr                      bootmgr      || goto error
+initrd ${knladdr}/boot/bcd                     BCD          || goto error
+initrd ${knladdr}/boot/boot.sdi                boot.sdi     || goto error
+initrd ${knladdr}/sources/boot.wim             boot.wim     || goto error
+boot || goto error
+exit
+
+:windows-10-22h2
+echo Loading Windows 10 22H2 ...
+set ipxaddr ${srvrhttp}/tftp/ipxe
+set knladdr ${srvrhttp}/imgs/windows-10-22h2
 set cfgaddr ${srvrhttp}/conf/windows
 echo Loading boot files ...
 kernel ${ipxaddr}/wimboot
@@ -49,14 +93,32 @@ initrd ${knladdr}/sources/boot.wim             boot.wim     || goto error
 boot || goto error
 exit
 
-:windows-11
-echo Loading Windows 11 ...
+:windows-8.1
+echo Loading Windows 8.1 ...
 set ipxaddr ${srvrhttp}/tftp/ipxe
-set knladdr ${srvrhttp}/imgs/windows-11
+set knladdr ${srvrhttp}/imgs/windows-8.1
 set cfgaddr ${srvrhttp}/conf/windows
 echo Loading boot files ...
 kernel ${ipxaddr}/wimboot
-initrd -n install.cmd ${cfgaddr}/inst_w11.cmd  install.cmd  || goto error
+initrd -n install.cmd ${cfgaddr}/inst_w8.1.cmd install.cmd  || goto error
+initrd ${cfgaddr}/unattend.xml                 unattend.xml || goto error
+initrd ${cfgaddr}/shutdown.cmd                 shutdown.cmd || goto error
+initrd ${cfgaddr}/winpeshl.ini                 winpeshl.ini || goto error
+initrd ${knladdr}/bootmgr                      bootmgr      || goto error
+initrd ${knladdr}/boot/bcd                     BCD          || goto error
+initrd ${knladdr}/boot/boot.sdi                boot.sdi     || goto error
+initrd ${knladdr}/sources/boot.wim             boot.wim     || goto error
+boot || goto error
+exit
+
+:windows-7
+echo Loading Windows 7 ...
+set ipxaddr ${srvrhttp}/tftp/ipxe
+set knladdr ${srvrhttp}/imgs/windows-7
+set cfgaddr ${srvrhttp}/conf/windows
+echo Loading boot files ...
+kernel ${ipxaddr}/wimboot
+initrd -n install.cmd ${cfgaddr}/inst_w7.cmd   install.cmd  || goto error
 initrd ${cfgaddr}/unattend.xml                 unattend.xml || goto error
 initrd ${cfgaddr}/shutdown.cmd                 shutdown.cmd || goto error
 initrd ${cfgaddr}/winpeshl.ini                 winpeshl.ini || goto error
