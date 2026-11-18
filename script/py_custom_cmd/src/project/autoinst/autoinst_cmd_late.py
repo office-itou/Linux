@@ -15,8 +15,17 @@ from common.utils import (
 )
 
 # --- import module -----------------------------------------------------------
+from autoinst_fn_mkdir_share import mkdir_share
 from autoinst_fn_package_install import package_install
 from autoinst_fn_package_update import package_update
+from autoinst_fn_setup_connman import setup_connman
+from autoinst_fn_setup_dnsmasq import setup_dnsmasq
+from autoinst_fn_setup_firewalld import setup_firewalld
+from autoinst_fn_setup_hostname import setup_hostname
+from autoinst_fn_setup_hosts import setup_hosts
+from autoinst_fn_setup_netman import setup_netman
+from autoinst_fn_setup_netplan import setup_netplan
+from autoinst_fn_setup_tcp_wrapper import setup_tcp_wrapper
 
 from autoinst_fn_initialize import initialize
 
@@ -37,17 +46,17 @@ def main() -> None:
     # --- initial setup -------------------------------------------------------
     package_update(info_syst=_info_syst)  # package updates
     package_install(info_syst=_info_syst)  # package install
-    # fnMkdir_share						# creating a shared directory
+    mkdir_share(info_syst=_info_syst)  # creating a shared directory
     # --- network manager -----------------------------------------------------
-    # fnSetup_connman						# connman
-    # fnSetup_netplan						# netplan
-    # fnSetup_netman						# network manager
+    setup_connman(info_syst=_info_syst)  # connman
+    setup_netplan(info_syst=_info_syst)  # netplan
+    setup_netman(info_syst=_info_syst)  # network manager
     # --- application setup ---------------------------------------------------
-    # fnSetup_hostname					# hostname
-    # fnSetup_hosts						# hosts
-    # fnSetup_tcp_wrapper					# tcp wrapper
-    # fnSetup_firewalld					# firewalld
-    # fnSetup_dnsmasq						# dnsmasq
+    setup_hostname(info_syst=_info_syst)  # hostname
+    setup_hosts(info_syst=_info_syst)  # hosts
+    setup_tcp_wrapper(info_syst=_info_syst)  # tcp wrapper
+    setup_firewalld(info_syst=_info_syst)  # firewalld
+    setup_dnsmasq(info_syst=_info_syst)						# dnsmasq
     # fnSetup_resolv						# resolv.conf
     # 	#fnSetup_clamav						# clamav
     # fnSetup_apache						# apache

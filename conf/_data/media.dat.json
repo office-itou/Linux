@@ -2049,7 +2049,7 @@
     },
     {
         "mdia_type": "dvd",
-        "entry_flag": "o",
+        "entry_flag": "x",
         "entry_name": "windows-7",
         "entry_disp": "Windows%207",
         "version": "windows-7",
@@ -2081,7 +2081,7 @@
     },
     {
         "mdia_type": "dvd",
-        "entry_flag": "o",
+        "entry_flag": "x",
         "entry_name": "windows-8.1",
         "entry_disp": "Windows%208.1",
         "version": "windows-8.1",

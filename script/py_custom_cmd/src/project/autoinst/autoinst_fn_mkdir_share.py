@@ -83,7 +83,7 @@ def mkdir_share_change_file_mode(info_dirs) -> None:
                     _envs_list = os.environ.copy()
                     _envs_list["_SAMB_USER"] = _data.samb_user
                     _envs_list["_SAMB_GRUP"] = _data.samb_grup
-                    _envs_list["_DIRS_SAMB"] = _dirs_path
+                    _envs_list["_DIRS_SAMB"] = str(_dirs_path)
                     _envs_list["_DIRS_ATTR"] = _dirs_attr
                     _shel_comd = r"""
                         chown -Rf "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_SAMB:?}/"
@@ -167,7 +167,7 @@ def mkdir_share_create_symlink(info_dirs):
             if not _srcs_path.exists():
                 message_warn(_caller, f"create: [{_srcs_path}]", omit=True)
                 if str(_srcs_path).endswith("syslinux.cfg"):
-                    _srcs_path.write_text("", encoding="utf-8")
+                    fwrite(dest_path=_srcs_path, data="", text=True, backup=False)
                     file_backup(
                         info_syst=info_dirs.syst, orig_path=_srcs_path, mode="init"
                     )
@@ -192,8 +192,11 @@ def mkdir_share_create_index_html(info_dirs):
     try:
         message_info(_caller, f"{'info':<10}:create index.html", omit=True)
         _indx_path: Path = addpath(base=_tget_path, path=_data.html_path) / "index.html"
-        _indx_path.write_text(
-            f'"Hello, world!" from {_data.nics_fqdn}', encoding="utf-8"
+        fwrite(
+            dest_path=_indx_path,
+            data=f'"Hello, world!" from {_data.nics_fqdn}',
+            text=True,
+            backup=False,
         )
         file_backup(info_syst=info_dirs.syst, orig_path=_indx_path, mode="init")
     except (OSError, Exception) as e:  # noqa: BLE001

@@ -38,7 +38,7 @@ def package_update(info_syst) -> None:
                 file_backup(info_syst=info_syst, orig_path=_conf_path)
                 file_origin(info_syst=info_syst, orig_path=_conf_path)
                 _envs_list = os.environ.copy()
-                _envs_list["_CONF_PATH"] = _conf_path
+                _envs_list["_CONF_PATH"] = str(_conf_path)
                 _shel_comd = r"""
                     sed -i "${_CONF_PATH}"                     \
                         -e '/^[ \t]*deb[ \t]\+cdrom:/ s/^/#/g'

@@ -1,6 +1,6 @@
     @Echo Off
 Rem SetLocal
-    Set WindowsVer=10
+    Set WindowsVer=10-22h2
     Set ShareName=\\sv-server\public-imgs\windows-%WindowsVer%
     Set ShareDrv=Z:
     Set SetupExe=%ShareDrv%\setup.exe

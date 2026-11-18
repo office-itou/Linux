@@ -1,4 +1,4 @@
-"""Common Function Package: utils [generated: 2026/11/15 10:37:00 JST (+0900)]"""
+"""Common Function Package: utils [generated: 2026/11/19 02:24:04 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -28,6 +28,7 @@ __all__ = [
     "async_subprocess",
     "build_buttons",
     "build_menu_bar",
+    "cat",
     "chmod",
     "cmdline",
     "count_full_width",
@@ -137,6 +138,7 @@ _MODULE_MAP = {
     "async_subprocess": ".my_process",
     "build_buttons": ".my_gui_build_helper",
     "build_menu_bar": ".my_gui_build_helper",
+    "cat": ".my_cat",
     "chmod": ".my_path",
     "cmdline": ".my_cmdline",
     "count_full_width": ".my_string",

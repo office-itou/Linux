@@ -52,6 +52,7 @@ def fwrite(
     data: str | bytes | None = None,
     text: bool = True,
     backup: bool = False,
+    append: bool = False,
 ) -> None:
     """File write (line break codes in text files are standardized to "\n")
     Args:
@@ -66,7 +67,9 @@ def fwrite(
     _caller = get_caller_name()
     try:
         _dest_path: Path = dest_path.resolve()
-        _mode: str = "w" if text else "wb"
+        _mode: str = "a" if append and _dest_path.exists() else "w"
+        if not text:
+            _mode += "b"
         _encoding: None | str = "utf-8" if text else None
         _newline: None | str = "\n" if text else None
         if data is None:
