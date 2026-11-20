@@ -1,49 +1,26 @@
 #!/usr/bin/env python3
 
 import os
-
-#import shutil
 import subprocess
+import tempfile
+from dataclasses import dataclass
 from pathlib import Path
 from subprocess import CompletedProcess
 
-from common.utils import addpath
+from common.utils import (
+    debug_logger,
+    find_serivce,
+    get_caller_name,
+    handle_fatal_error,
+    run_subprocess,
+)
 
 
-_envs_list = os.environ.copy()
-_dirs_path: Path = addpath(base="", path=Path("/etc/dnsmasq.d"))
-_envs_list["_DIRS_PATH"] = str(_dirs_path)
-_shel_comd = r"""
-    cat "${_DIRS_PATH:?}"/*          | \
-    sed -ne '/^[^#]/              {'   \
-        -e  's/#.*$//g             '   \
-        -e  's/^\([^=]\+=\).*$/\1/g'   \
-        -e  's/ \+$//g             '   \
-        -e  'p                    }' | \
-    sed -e ':l; N; s/[\r\n]\+/\\|/; b l' || true \
-"""
-_result: CompletedProcess = subprocess.run(
-    _shel_comd,
-    shell=True,
-    env=_envs_list,
-    executable="/bin/bash",
-    capture_output=True,
-    text=True,
-)
-if _result.returncode != 0:
-    print(_result.stderr)
-_find_parm: str = ""
-if _result.stdout:
-    _find_parm: str = str(_result.stdout).strip("\n").strip() + r"\|"
-_find_parm += r"bind-dynamic\|bind-interfaces"
-_envs_list["_FIND_PARM"] = _find_parm
-_envs_list["_CONF_PATH"] = "./dnsmasq.conf"
-_shel_comd = r"""
-    sed -e '/^\('"${_FIND_PARM:?}"'\)/ s/^/#/g' \
-        "${_CONF_PATH:?}"
-"""
-_result: CompletedProcess = subprocess.run(
-    _shel_comd, shell=True, env=_envs_list, executable="/bin/bash"
-)
-if _result.returncode != 0:
-    print(_result.stderr)
+_tget_path: Path | None = None
+_srvc_name: str = "nbdkit.service"
+_srvc_name: str = "nfs-server.service"
+print(_srvc_name)
+_srvc_path: Path = find_serivce(tget_path=_tget_path, srvc_name=_srvc_name)
+print(type(_srvc_path), _srvc_path)
+_sock_path: Path = _srvc_path.with_suffix(".socket")
+print(type(_sock_path), _sock_path)

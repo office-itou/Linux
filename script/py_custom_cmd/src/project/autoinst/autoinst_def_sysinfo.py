@@ -1,4 +1,5 @@
 # --- python library ----------------------------------------------------------
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -194,3 +195,6 @@ class SystemData:
     init_path: Path | None = None  # initial file directory
     samp_path: Path | None = None  # sample file directory
     logs_path: Path | None = None  # log file directory
+    # --- temporary parameter -------------------------------------------------
+    temp_objs: tempfile.TemporaryDirectory | None = None
+    temp_path: Path | None = None  # temporary directory

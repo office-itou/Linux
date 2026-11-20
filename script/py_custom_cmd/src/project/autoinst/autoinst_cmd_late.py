@@ -15,19 +15,84 @@ from common.utils import (
 )
 
 # --- import module -----------------------------------------------------------
-from autoinst_fn_mkdir_share import mkdir_share
-from autoinst_fn_package_install import package_install
-from autoinst_fn_package_update import package_update
-from autoinst_fn_setup_connman import setup_connman
-from autoinst_fn_setup_dnsmasq import setup_dnsmasq
-from autoinst_fn_setup_firewalld import setup_firewalld
-from autoinst_fn_setup_hostname import setup_hostname
-from autoinst_fn_setup_hosts import setup_hosts
-from autoinst_fn_setup_netman import setup_netman
-from autoinst_fn_setup_netplan import setup_netplan
-from autoinst_fn_setup_tcp_wrapper import setup_tcp_wrapper
-
-from autoinst_fn_initialize import initialize
+# from autoinst_fn_initialize import initialize
+# from autoinst_fn_package_update import package_update
+# from autoinst_fn_package_install import package_install
+# from autoinst_fn_mkdir_share import mkdir_share
+# from autoinst_fn_setup_connman import setup_connman
+# from autoinst_fn_setup_netplan import setup_netplan
+# from autoinst_fn_setup_netman import setup_netman
+# from autoinst_fn_setup_hostname import setup_hostname
+# from autoinst_fn_setup_hosts import setup_hosts
+# from autoinst_fn_setup_tcp_wrapper import setup_tcp_wrapper
+# from autoinst_fn_setup_firewalld import setup_firewalld
+# from autoinst_fn_setup_dnsmasq import setup_dnsmasq
+# from autoinst_fn_setup_resolv import setup_resolv
+# from autoinst_fn_setup_clamav import setup_clamav
+# from autoinst_fn_setup_apache import setup_apache
+# from autoinst_fn_setup_samba import setup_samba
+# from autoinst_fn_setup_timesyncd import setup_timesyncd
+# from autoinst_fn_setup_chronyd import setup_chronyd
+# from autoinst_fn_setup_ssh import setup_ssh
+# from autoinst_fn_setup_nfs import setup_nfs
+# from autoinst_fn_setup_nbd import setup_nbd
+# from  import setup_vmware
+# from  import setup_wireplumber
+# from  import setup_input_method
+# from  import setup_locale
+# from  import setup_desktop
+# from  import setup_skel_user
+# from  import setup_skel_im
+# from  import setup_skel_copy
+# from  import setup_dconf
+# from  import setup_sudo
+# from  import setup_blacklist
+# from  import setup_module_ipxe
+# from  import setup_apparmor
+# from  import setup_selinux
+# from  import setup_ipfilter
+# from  import setup_service
+# from  import setup_grub_menu
+from project.autoinst import (
+    initialize,
+    mkdir_share,
+    package_install,
+    package_update,
+    setup_apache,
+    setup_apparmor,
+    setup_blacklist,
+    setup_chronyd,
+    setup_clamav,
+    setup_connman,
+    setup_dconf,
+    setup_desktop,
+    setup_dnsmasq,
+    setup_firewalld,
+    setup_grub_menu,
+    setup_hostname,
+    setup_hosts,
+    setup_input_method,
+    setup_ipfilter,
+    setup_locale,
+    setup_module_ipxe,
+    setup_nbd,
+    setup_netman,
+    setup_netplan,
+    setup_nfs,
+    setup_resolv,
+    setup_samba,
+    setup_selinux,
+    setup_service,
+    setup_skel_copy,
+    setup_skel_im,
+    setup_skel_user,
+    setup_ssh,
+    setup_sudo,
+    setup_tcp_wrapper,
+    setup_timesyncd,
+    setup_vmware,
+    setup_wireplumber,
+)
 
 
 # --- class and function ------------------------------------------------------
@@ -56,34 +121,34 @@ def main() -> None:
     setup_hosts(info_syst=_info_syst)  # hosts
     setup_tcp_wrapper(info_syst=_info_syst)  # tcp wrapper
     setup_firewalld(info_syst=_info_syst)  # firewalld
-    setup_dnsmasq(info_syst=_info_syst)						# dnsmasq
-    # fnSetup_resolv						# resolv.conf
-    # 	#fnSetup_clamav						# clamav
-    # fnSetup_apache						# apache
-    # fnSetup_samba						# samba
-    # fnSetup_timesyncd					# timesyncd
-    # fnSetup_chronyd						# chronyd
-    # fnSetup_ssh							# openssh-server
-    # fnSetup_nfs							# nfs
-    # fnSetup_nbd							# nbd
-    # fnSetup_vmware						# vmware shared directory
-    # fnSetup_wireplumber					# wireplumber
-    # fnSetup_input_method				# input method
-    # fnSetup_locale						# locale
-    # fnSetup_desktop						# desktop
-    # fnSetup_skel_user					# skeleton for user environment
-    # fnSetup_skel_im						# input method skeleton
-    # fnSetup_skel_copy					# copy skeleton to user
-    # fnSetup_dconf						# dconf
-    # fnSetup_sudo						# sudoers
-    # fnSetup_blacklist					# blacklist
-    # fnSetup_module_ipxe					# ipxe module
-    # fnSetup_apparmor					# apparmor
-    # fnSetup_selinux						# selinux
-    # fnSetup_ipfilter					# ipfilter
-    # fnSetup_service						# service
+    setup_dnsmasq(info_syst=_info_syst)  # dnsmasq
+    setup_resolv(info_syst=_info_syst)  # resolv.conf
+    setup_clamav(info_syst=_info_syst)  # clamav
+    setup_apache(info_syst=_info_syst)  # apache
+    setup_samba(info_syst=_info_syst)  # samba
+    setup_timesyncd(info_syst=_info_syst)  # timesyncd
+    setup_chronyd(info_syst=_info_syst)  # chronyd
+    setup_ssh(info_syst=_info_syst)  # openssh-server
+    setup_nfs(info_syst=_info_syst)  # nfs
+    setup_nbd(info_syst=_info_syst)  # nbd
+    setup_vmware(info_syst=_info_syst)  # vmware shared directory
+    setup_wireplumber(info_syst=_info_syst)  # wireplumber
+    setup_input_method(info_syst=_info_syst)  # input method
+    setup_locale(info_syst=_info_syst)  # locale
+    setup_desktop(info_syst=_info_syst)  # desktop
+    setup_skel_user(info_syst=_info_syst)  # skeleton for user environment
+    setup_skel_im(info_syst=_info_syst)  # input method skeleton
+    setup_skel_copy(info_syst=_info_syst)  # copy skeleton to user
+    setup_dconf(info_syst=_info_syst)  # dconf
+    setup_sudo(info_syst=_info_syst)  # sudoers
+    setup_blacklist(info_syst=_info_syst)  # blacklist
+    setup_module_ipxe(info_syst=_info_syst)  # ipxe module
+    setup_apparmor(info_syst=_info_syst)  # apparmor
+    setup_selinux(info_syst=_info_syst)  # selinux
+    setup_ipfilter(info_syst=_info_syst)  # ipfilter
+    setup_service(info_syst=_info_syst)  # service
     # --- booting setup -------------------------------------------------------
-    # fnSetup_grub_menu					# grub menu settings
+    setup_grub_menu(info_syst=_info_syst)  # grub menu settings
     # --- success -------------------------------------------------------------
     _stat_name: str = f"{_info_syst.data.prog_name}.success"
     _stat_path: Path = _info_syst.data.acmd_path / _stat_name

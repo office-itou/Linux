@@ -15,6 +15,7 @@ from common.utils import (
     get_caller_name,
     handle_fatal_error,
     message_info,
+    restart_service,
 )
 
 # --- import module -----------------------------------------------------------
@@ -254,5 +255,11 @@ def setup_dnsmasq(info_syst) -> None:
         if _result.returncode != 0:
             print(_result.stderr)
         file_backup(info_syst=info_syst, orig_path=_conf_path, mode="init")
+        # --- service restart -------------------------------------------------
+        if not info_syst.data.tget_chrt:
+            restart_service(srvc_name=_srvc_name)
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e)
+
+
+# --- eof ---------------------------------------------------------------------

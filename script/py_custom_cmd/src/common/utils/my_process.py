@@ -20,19 +20,32 @@ from common.utils import (
 @debug_logger
 def run_subprocess(*args, **kwargs) -> CompletedProcess:
     """Subprocess wrapper
-
     Returns:
         CompletedProcess: _description_
     """
     _caller = get_caller_name()
     _result = None
     try:
-        if not isinstance(kwargs.get("env"), dict):
+        # args_list: list[str] = (
+        #    [s for arg in args for s in arg]
+        #    if not isinstance(*args, str)
+        #    else [s for arg in args for s in arg.split()]
+        # )
+        args_text: str = (
+            " ".join(s for arg in args for s in arg)
+            if not isinstance(*args, str)
+            else " ".join(s for arg in args for s in arg.split())
+        )
+        kwargs.setdefault("executable", "/bin/bash")
+        kwargs.setdefault("shell", True)
+        if not isinstance(kwargs.get("env"), dict) or "LANG" not in kwargs["env"]:
             kwargs["env"] = {"LANG": "C"}
         kwargs.setdefault("capture_output", True)
+        kwargs.setdefault("check", False)
         kwargs.setdefault("text", True)
-        kwargs.setdefault("check", True)
-        _result: CompletedProcess = subprocess.run(*args, **kwargs)
+        _result: CompletedProcess = subprocess.run(args_text, **kwargs)
+        # if _result.returncode != 0 and _result.stderr:
+        #    print(_result.stderr)
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e)
     return _result

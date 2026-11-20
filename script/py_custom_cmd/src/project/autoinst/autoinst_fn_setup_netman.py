@@ -14,8 +14,9 @@ from common.utils import (
     is_service_active,
     message_alert,
     message_info,
-    restart_user_service,
+    restart_service,
     run_subprocess,
+    service_mask,
 )
 
 # --- import module -----------------------------------------------------------
@@ -206,14 +207,10 @@ def setup_netman(info_syst) -> None:
         # --- service restart -------------------------------------------------
         if not info_syst.data.tget_chrt:
             _svex_name: str = "systemd-networkd.service"
-            _result = run_subprocess(["systemctl", "--quiet", "is-enabled", _svex_name])
-            if _result.returncode == 0:
-                message_info(_caller, f"{'mask':<10}:{_svex_name}", omit=True)
-                _result = run_subprocess(["systemctl", "--quiet", "mask", _svex_name])
-                _result = run_subprocess(
-                    ["systemctl", "--quiet", "mask", f"{Path(_svex_name).stem}.socket"]
-                )
-            if restart_user_service(srvc_name=_srvc_name):
+            _svex_path: Path = find_serivce(tget_path=_tget_path, srvc_name=_svex_name)
+            if _svex_path and _svex_path.exists():
+                service_mask([_svex_path.name, f"{_svex_path.stem}.socket"])
+            if restart_service(srvc_name=_srvc_name):
                 _comd_list: list[str] = ["nmcli", "connection", "reload"]
                 _result = run_subprocess(_comd_list)
                 if _result.returncode == 0:
@@ -224,7 +221,6 @@ def setup_netman(info_syst) -> None:
                     message_alert(
                         _caller, f"{'failed':<10}:{' '.join(_comd_list)}", omit=True
                     )
-
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e)
 

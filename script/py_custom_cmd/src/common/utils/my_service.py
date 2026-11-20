@@ -15,11 +15,23 @@ from common.utils import (
 # --- import module -----------------------------------------------------------
 # --- class and function ------------------------------------------------------
 @debug_logger
-def find_serivce(tget_path: Path, srvc_name: str) -> Path | None:
-    for _find_dir in ["/lib/systemd", "/usr/lib/systemd"]:
-        _find_path: Path = addpath(base=tget_path, path=f"{_find_dir}/{srvc_name}")
-        if _find_path.exists():
-            return _find_path
+def find_serivce(
+    tget_path: Path, srvc_name: str | None = None, srvc_list: list[str] | None = None
+) -> Path | None:
+    def _find_serivce(tget_path: Path, srvc_name: str) -> Path | None:
+        for _find_dir in ["/lib/systemd", "/usr/lib/systemd"]:
+            for _find_path in addpath(base=tget_path, path=_find_dir).rglob(srvc_name):
+                if _find_path and _find_path.exists():
+                    return _find_path
+        return None
+
+    if srvc_name:
+        return _find_serivce(tget_path=tget_path, srvc_name=srvc_name)
+    elif srvc_list:
+        for _srvc_name in srvc_list:
+            _find_path: Path = _find_serivce(tget_path=tget_path, srvc_name=_srvc_name)
+            if _find_path:
+                return _find_path
     return None
 
 
@@ -37,6 +49,22 @@ def daemon_reload() -> bool:
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e)
     return False
+
+
+@debug_logger
+def is_service_enabled(srvc_name: str) -> bool | None:
+    _caller = get_caller_name()
+    try:
+        _proc_name = srvc_name.split(".")[0]
+        # --- is active -------------------------------------------------------
+        _is_enabled_cmd = ["systemctl", "is-enabled", srvc_name]
+        _res_enabled = subprocess.run(
+            _is_enabled_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
+        return bool(_res_enabled.returncode == 0)
+    except (OSError, Exception) as e:  # noqa: BLE001
+        handle_fatal_error(_caller, e)
+    return None
 
 
 @debug_logger
@@ -132,6 +160,34 @@ def restart_user_service(srvc_name: str) -> bool | None:
                     message_info(
                         _caller, f"{'failed':<10}:{_user}@ {srvc_name}", omit=True
                     )
+        return True
+    except (OSError, Exception) as e:  # noqa: BLE001
+        handle_fatal_error(_caller, e)
+    return False
+
+
+@debug_logger
+def service_mask(srvc_list: list[str]) -> bool | None:
+    _caller = get_caller_name()
+    try:
+        _srvc_name: str = srvc_list[0]
+        _proc_name: str = _srvc_name.split(".")[0]
+        # --- is enabled ------------------------------------------------------
+        _res_enabled = is_service_enabled(_srvc_name)
+        if not _res_enabled:
+            message_info(_caller, f"{'not enabled':<10}:{_srvc_name}", omit=True)
+            return None
+        # --- systemctl service mask ------------------------------------------
+        for _srvc_name in srvc_list:
+            message_info(_caller, f"{'restart':<10}:{_srvc_name}", omit=True)
+            restart_cmd = ["systemctl", "--quiet", "--now", "mask", _srvc_name]
+            res_restart = subprocess.run(
+                restart_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            )
+            if res_restart.returncode == 0:
+                message_info(_caller, f"{'success':<10}:{_srvc_name}", omit=True)
+            else:
+                message_info(_caller, f"{'failed':<10}:{_srvc_name}", omit=True)
         return True
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e)

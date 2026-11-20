@@ -13,6 +13,7 @@ from common.utils import (
     get_caller_name,
     handle_fatal_error,
     message_warn,
+    run_subprocess,
 )
 
 
@@ -112,33 +113,22 @@ def package_install(info_syst) -> None:
                 LANG=C dpkg-query --no-pager --show --showformat='${Status}\t${Architecture}\t${binary:Package}\n' "${_PAKG_LIST[@]:-}" 2>&1 | \
                 awk '!/^install[ \t]+ok[ \t]+installed[ \t]+/ {gsub(/^.+[ \t]/,""); print}'
             """  # noqa: E501
-            if _shel_comd:
-                _result: CompletedProcess = subprocess.run(
-                    _shel_comd, shell=True, env=_envs_list, executable="/bin/bash"
-                )
-                if _result.returncode != 0:
+            _result: CompletedProcess = run_subprocess(_shel_comd)
+            if _result.returncode != 0 and _result.stderr:
+                print(_result.stderr)
+            if _result.stdout:
+                _find_list: list[str] = [s for s in str(_result.stdout).splitlines()]
+                _envs_list["_FIND_LIST"] = _find_list
+                _shel_comd: str = r"""
+                    apt-get --quiet              update                        && \
+                    apt-get --quiet --assume-yes install "${_FINMD_LIST[@]:-}" && \
+                    apt-get --quiet --assume-yes autoremove                    && \
+                    apt-get --quiet --assume-yes autoclean                     && \
+                    apt-get --quiet --assume-yes clean
+                """
+                _result: CompletedProcess = run_subprocess(_shel_comd, env=_envs_list)
+                if _result.returncode != 0 and _result.stderr:
                     print(_result.stderr)
-                if _result.stdout:
-                    _find_list: list[str] = [
-                        s for s in str(_result.stdout).splitlines()
-                    ]
-                    _envs_list["_FIND_LIST"] = _find_list
-                    _shel_comd: str = r"""
-                        apt-get --quiet              update                        && \
-                        apt-get --quiet --assume-yes install "${_FINMD_LIST[@]:-}" && \
-                        apt-get --quiet --assume-yes autoremove                    && \
-                        apt-get --quiet --assume-yes autoclean                     && \
-                        apt-get --quiet --assume-yes clean
-                    """
-                    if _shel_comd:
-                        _result: CompletedProcess = subprocess.run(
-                            _shel_comd,
-                            shell=True,
-                            env=_envs_list,
-                            executable="/bin/bash",
-                        )
-                        if _result.returncode != 0:
-                            print(_result.stderr)
 
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e, omit=False, raise_exit=False)

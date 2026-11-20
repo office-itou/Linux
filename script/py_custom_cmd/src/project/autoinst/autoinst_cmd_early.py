@@ -15,10 +15,14 @@ from common.utils import (
 )
 
 # --- import module -----------------------------------------------------------
-from autoinst_fn_get_conf_file import get_conf_file
-from autoinst_fn_setup_wireplumber import setup_wireplumber
-
-from autoinst_fn_initialize import initialize
+# from autoinst_fn_get_conf_file import get_conf_file
+# from autoinst_fn_setup_wireplumber import setup_wireplumber
+# from autoinst_fn_initialize import initialize
+from project.autoinst import (
+    get_conf_file,
+    initialize,
+    setup_wireplumber,
+)
 
 
 # --- class and function ------------------------------------------------------

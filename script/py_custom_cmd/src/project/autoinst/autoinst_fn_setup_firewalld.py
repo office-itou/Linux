@@ -18,6 +18,7 @@ from common.utils import (
     handle_fatal_error,
     is_service_active,
     message_info,
+    restart_service,
     run_subprocess,
 )
 
@@ -304,6 +305,9 @@ def setup_firewalld(info_syst) -> None:
         if not _data.tget_chrt and is_service_active(_srvc_name):
             message_info(_caller, f"{'active':<10}:{_srvc_name}", omit=True)
             setup_firewalld_active(info_syst=info_syst)
+            # --- service restart ---------------------------------------------
+            if not info_syst.data.tget_chrt:
+                restart_service(srvc_name=_srvc_name)
         else:
             message_info(_caller, f"{'inactive':<10}:{_srvc_name}", omit=True)
             setup_firewalld_inactive(info_syst=info_syst)

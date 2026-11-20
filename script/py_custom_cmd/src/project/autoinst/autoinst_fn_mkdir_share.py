@@ -2,7 +2,6 @@
 import grp
 import os
 import pwd
-import subprocess
 from pathlib import Path
 from subprocess import CompletedProcess
 
@@ -33,24 +32,21 @@ def mkdir_share_create_system_user(info_dirs) -> None:
     _data = info_dirs.syst.data
     try:
         message_info(_caller, f"{'info':<10}:create system user id", omit=True)
-        _sudo_list: list[str] = ["sudo", "-n"]
         if not grp.getgrnam(_data.samb_grup):
-            run_subprocess([*_sudo_list, "groupadd", "--system", _data.samb_grup])
+            _shel_comd: str = rf"sudo -n groupadd --system {_data.samb_grup}"
+            _result: CompletedProcess = run_subprocess(_shel_comd)
+            if _result.returncode != 0 and _result.stderr:
+                print(_result.stderr)
         if not grp.getgrnam(_data.samb_gadm):
-            run_subprocess([*_sudo_list, "groupadd", "--system", _data.samb_gadm])
+            _shel_comd: str = rf"sudo -n groupadd --system {_data.samb_gadm}"
+            _result: CompletedProcess = run_subprocess(_shel_comd)
+            if _result.returncode != 0 and _result.stderr:
+                print(_result.stderr)
         if not pwd.getpwnam(_data.samb_user):
-            run_subprocess(
-                [
-                    *_sudo_list,
-                    "useradd",
-                    "--system",
-                    "--shell",
-                    str(_data.nlin_path),
-                    "--groups",
-                    _data.samb_grup,
-                    _data.samb_gadm,
-                ]
-            )
+            _shel_comd: str = rf"useradd --system --shell {str(_data.nlin_path)} --groups {_data.samb_grup} {_data.samb_gadm}"  # noqa: E501
+            _result: CompletedProcess = run_subprocess(_shel_comd)
+            if _result.returncode != 0 and _result.stderr:
+                print(_result.stderr)
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e, omit=False, raise_exit=False)
 
@@ -85,16 +81,15 @@ def mkdir_share_change_file_mode(info_dirs) -> None:
                     _envs_list["_SAMB_GRUP"] = _data.samb_grup
                     _envs_list["_DIRS_SAMB"] = str(_dirs_path)
                     _envs_list["_DIRS_ATTR"] = _dirs_attr
-                    _shel_comd = r"""
+                    _shel_comd: str = r"""
                         chown -Rf "${_SAMB_USER:?}":"${_SAMB_GRUP:?}" "${_DIRS_SAMB:?}/"
                         chmod -Rf "${_DIRS_ATTR:?}" "${_DIRS_SAMB:?}/"
                     """
-                    if _shel_comd:
-                        _result: CompletedProcess = subprocess.run(
-                            _shel_comd, shell=True, executable="/bin/bash"
-                        )
-                        if _result.returncode != 0:
-                            print(_result.stderr)
+                    _result: CompletedProcess = run_subprocess(
+                        _shel_comd, env=_envs_list
+                    )
+                if _result.returncode != 0 and _result.stderr:
+                    print(_result.stderr)
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e, omit=False, raise_exit=False)
 
@@ -136,7 +131,8 @@ def mkdir_share_create_fstab(info_dirs):
                 daemon_reload()
                 for _line in info_dirs.data.mntp:
                     _mntp_path = _line["mntp"]
-                    _result = run_subprocess(["mount", str(_mntp_path)])
+                    _shel_comd: str = rf"mount {str(_mntp_path)}"
+                    _result: CompletedProcess = run_subprocess(_shel_comd)
                     if _result.returncode == 0:
                         message_info(
                             _caller, f"{'success':<10}:mounted:{_mntp_path}", omit=True

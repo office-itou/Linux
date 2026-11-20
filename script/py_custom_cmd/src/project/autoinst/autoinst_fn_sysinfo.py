@@ -1,6 +1,7 @@
 # --- python library ----------------------------------------------------------
 import os
 import re
+import tempfile
 from dataclasses import fields
 from datetime import datetime
 from pathlib import Path
@@ -42,6 +43,12 @@ class InfoSystem:
         message_info(_caller, f"{'initialize':<10}:system data", omit=True)
         self._valid_fields: set[str] = {f.name for f in fields(SystemData)}
         self.data: SystemData = SystemData()
+        if not self.data.temp_objs:
+            self.data.temp_objs = tempfile.TemporaryDirectory(
+                ignore_cleanup_errors=True
+            )
+        if not self.data.temp_path:
+            self.data.temp_path = Path(self.data.temp_objs.name)
         self.conf = info_conf
         message_info(_caller, f"{'complete':<10}:system data", omit=True)
         # ---------------------------------------------------------------------
@@ -55,6 +62,16 @@ class InfoSystem:
         self._get_command_line()
         self._get_target_nics_info()
         message_info(_caller, f"{'complete':<10}:user data", omit=True)
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, exc_type, exc, tb):
+        pass
+
+    def __delete__(self, instance):
+        if self.data.temp_objs:
+            self.data.temp_objs.cleanup()
 
     @debug_logger
     def _get_target_dir(self) -> None:
