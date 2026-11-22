@@ -109,7 +109,7 @@ def fcopy(src_path: Path, dest_path: Path, backup: bool = False) -> None:
         _dest_path.parent.mkdir(parents=True, exist_ok=True)
         if bool:
             fbackup(_dest_path)
-            shutil.copy2(_src_path, _dest_path)
+        shutil.copy2(_src_path, _dest_path)
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e)
 

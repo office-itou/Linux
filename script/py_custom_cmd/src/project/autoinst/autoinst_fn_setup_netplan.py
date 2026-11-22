@@ -119,19 +119,15 @@ def setup_netplan(info_syst) -> None:
             os.chmod(path=_conf_path, mode=0o600)
             file_backup(info_syst=info_syst, orig_path=_conf_path, mode="init")
         # --- netplan ---------------------------------------------------------
-        _comd_list: list[str] = ["netplan", "status"]
-        _result = run_subprocess(_comd_list)
+        _shel_comd: str = r"netplan status"
+        _result = run_subprocess(_shel_comd)
         if _result.returncode == 0:
-            _comd_list: list[str] = ["netplan", "apply"]
-            _result = run_subprocess(_comd_list)
+            _shel_comd: str = r"netplan apply"
+            _result = run_subprocess(_shel_comd)
             if _result.returncode == 0:
-                message_info(
-                    _caller, f"{'success':<10}:{' '.join(_comd_list)}", omit=True
-                )
+                message_info(_caller, f"{'success':<10}:{_shel_comd}", omit=True)
             else:
-                message_alert(
-                    _caller, f"{'failed':<10}:{' '.join(_comd_list)}", omit=True
-                )
+                message_alert(_caller, f"{'failed':<10}:{_shel_comd}", omit=True)
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e)
 

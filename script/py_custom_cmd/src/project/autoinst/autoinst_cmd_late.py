@@ -36,20 +36,20 @@ from common.utils import (
 # from autoinst_fn_setup_ssh import setup_ssh
 # from autoinst_fn_setup_nfs import setup_nfs
 # from autoinst_fn_setup_nbd import setup_nbd
-# from  import setup_vmware
-# from  import setup_wireplumber
-# from  import setup_input_method
-# from  import setup_locale
-# from  import setup_desktop
-# from  import setup_skel_user
-# from  import setup_skel_im
-# from  import setup_skel_copy
-# from  import setup_dconf
-# from  import setup_sudo
-# from  import setup_blacklist
-# from  import setup_module_ipxe
-# from  import setup_apparmor
-# from  import setup_selinux
+# from autoinst_fn_setup_vmware import setup_vmware
+# from autoinst_fn_setup_wireplumber import setup_wireplumber
+# from autoinst_fn_setup_input_method import setup_input_method
+# from autoinst_fn_setup_locale import setup_locale
+# from autoinst_fn_setup_desktop import setup_desktop
+# from autoinst_fn_setup_skel_user import setup_skel_user
+# from autoinst_fn_setup_skel_im import setup_skel_im
+# from autoinst_fn_setup_skel_copy import setup_skel_copy
+# from autoinst_fn_setup_dconf import setup_dconf
+# from autoinst_fn_setup_sudo import setup_sudo
+# from autoinst_fn_setup_blacklist import setup_blacklist
+# from autoinst_fn_setup_module_ipxe import setup_module_ipxe
+# from autoinst_fn_setup_apparmor import setup_apparmor
+# from autoinst_fn_setup_selinux import setup_selinux
 # from  import setup_ipfilter
 # from  import setup_service
 # from  import setup_grub_menu

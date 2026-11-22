@@ -103,10 +103,10 @@ def mkdir_share_create_fstab(info_dirs):
         message_info(_caller, f"{'info':<10}:create fstab", omit=True)
         _ftab_path: Path = addpath(base=_tget_path, path=Path("/etc/fstab"))
         _read_text = fread(src_path=_ftab_path, text=True)
-        if "/srv/" in _read_text:
+        if "/srv/" not in _read_text:
             file_backup(info_syst=info_dirs.syst, orig_path=_ftab_path)
             file_origin(info_syst=info_dirs.syst, orig_path=_ftab_path)
-            _fmat_parm = "{:<27} {:<35} {:<7} {:<27} {:<7} {}\n"
+            _fmat_parm = "{:<27} {:<35} {:<7} {:<27} {:<7} {}"
             _fmat_list = [
                 _fmat_parm.format(
                     "# <file system>",

@@ -1,4 +1,4 @@
-"""Common Function Package: utils [generated: 2026/11/19 02:24:04 JST (+0900)]"""
+"""Common Function Package: utils [generated: 2026/11/22 10:48:37 JST (+0900)]"""
 
 # --- Python library ----------------------------------------------------------
 import importlib  # noqa: E402
@@ -85,6 +85,7 @@ __all__ = [
     "is_chroot",
     "is_container",
     "is_service_active",
+    "is_service_enabled",
     "is_vm_type",
     "json_load",
     "json_save",
@@ -111,6 +112,7 @@ __all__ = [
     "run_subprocess",
     "run_subprocess_stdout",
     "safe_format",
+    "service_mask",
     "set_gui_log_window",
     "split_by_width",
 ]
@@ -195,6 +197,7 @@ _MODULE_MAP = {
     "is_chroot": ".my_hypervisor",
     "is_container": ".my_hypervisor",
     "is_service_active": ".my_service",
+    "is_service_enabled": ".my_service",
     "is_vm_type": ".my_hypervisor",
     "json_load": ".my_json",
     "json_save": ".my_json",
@@ -221,6 +224,7 @@ _MODULE_MAP = {
     "run_subprocess": ".my_process",
     "run_subprocess_stdout": ".my_process",
     "safe_format": ".my_format",
+    "service_mask": ".my_service",
     "set_gui_log_window": ".my_string",
     "split_by_width": ".my_string",
 }

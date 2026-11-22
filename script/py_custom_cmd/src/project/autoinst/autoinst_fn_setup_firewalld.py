@@ -300,6 +300,7 @@ def setup_firewalld(info_syst) -> None:
         )
         if _drop_path.exists():
             fcopy(src_path=_drop_path, dest_path=_fwal_path, backup=False)
+        if _fwal_path.exists():
             file_backup(info_syst=info_syst, orig_path=_fwal_path)
             file_origin(info_syst=info_syst, orig_path=_fwal_path)
         if not _data.tget_chrt and is_service_active(_srvc_name):

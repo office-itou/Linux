@@ -72,7 +72,7 @@ def setup_ssh(info_syst) -> None:
                 if _tags_text not in _read_text:
                     _writ_text: str = cat(rf"""
 						{_tags_text}
-				
+						
 						# port number to listen to ssh
 						#Port 22
 						
