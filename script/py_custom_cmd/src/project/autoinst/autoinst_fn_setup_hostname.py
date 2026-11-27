@@ -25,7 +25,7 @@ def setup_hostname(info_syst) -> None:
     _data = info_syst.data
     _tget_path: Path = getattr(_data, "tget_path", None)
     # --- check parameter -----------------------------------------------------
-    if not _data.nics_fqdn:
+    if not _data.nwrk_fqdn:
         message_info(_caller, f"{'skip':<10}:hostname", omit=True)
         return
     try:
@@ -35,7 +35,7 @@ def setup_hostname(info_syst) -> None:
         file_backup(info_syst=info_syst, orig_path=_conf_path)
         file_origin(info_syst=info_syst, orig_path=_conf_path)
         if shutil.which("hostnamectl"):
-            _comd_list: list[str] = ["hostnamectl", "hostname", _data.nics_fqdn]
+            _comd_list: list[str] = ["hostnamectl", "hostname", _data.nwrk_fqdn]
             _result = run_subprocess(_comd_list)
             if _result.returncode == 0:
                 message_info(
@@ -54,7 +54,7 @@ def setup_hostname(info_syst) -> None:
                     _caller, f"{'failed':<10}:{' '.join(_comd_list)}", omit=True
                 )
         elif shutil.which("hostname"):
-            _comd_list: list[str] = ["hostname", _data.nics_fqdn]
+            _comd_list: list[str] = ["hostname", _data.nwrk_fqdn]
             _result = run_subprocess(_comd_list)
             if _result.returncode == 0:
                 message_info(
@@ -73,7 +73,7 @@ def setup_hostname(info_syst) -> None:
                     _caller, f"{'failed':<10}:{' '.join(_comd_list)}", omit=True
                 )
         elif _conf_path.exists():
-            fwrite(dest_path=_conf_path, data=_data.nics_fqdn, text=True, backup=False)
+            fwrite(dest_path=_conf_path, data=_data.nwrk_fqdn, text=True, backup=False)
         file_backup(info_syst=info_syst, orig_path=_conf_path, mode="init")
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e)

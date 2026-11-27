@@ -118,6 +118,7 @@ class SystemData:
     )
     # --- network parameter: input value  -------------------------------------
     nwrk_devs: str | None = None  # network device  (ex. ens160)
+    nwrk_madr: str | None = None  # mac             (ex. 00:00:00:00:00:00)
     nwrk_fqdn: str | None = None  # hostname fqdn   (ex. sv-server.workgroup)
     nwrk_host: str | None = None  # hostname        (ex. sv-server)
     nwrk_wgrp: str | None = None  # domain          (ex. workgroup)

@@ -2,7 +2,6 @@
 import os
 import re
 import shutil
-import subprocess
 from pathlib import Path
 from subprocess import CompletedProcess
 
@@ -82,12 +81,23 @@ def get_packages_nocloud(seed_path: Path) -> list[str]:
 def package_install(info_syst) -> None:
     _caller = get_caller_name()
     # --- check file ----------------------------------------------------------
+    if not info_syst.data.acmd_path:
+        message_warn(
+            _caller, f"{'skip':<10}:not found:{info_syst.data.acmd_path}", omit=True
+        )
+        return
+    if not info_syst.data.seed_path:
+        message_warn(
+            _caller, f"{'skip':<10}:not found:{info_syst.data.seed_path}", omit=True
+        )
+        return
     _seed_path: Path = info_syst.data.acmd_path / info_syst.data.seed_path.name
     if not _seed_path.exists():
         message_warn(_caller, f"{'skip':<10}:not found:{_seed_path}", omit=True)
         return
     # --- get package list ----------------------------------------------------
     try:
+        message_warn(_caller, f"{'info':<10}:package install", omit=True)
         _pakg_list: list[str] = []
         match _seed_path.name:
             case s if re.search(r"preseed*.cfg|ps*.cfg"):  # (preseed)

@@ -74,7 +74,7 @@ def setup_connman(info_syst) -> None:
         fwrite(dest_path=_conf_path, data=_writ_text, text=True, backup=False)
         file_backup(info_syst=info_syst, orig_path=_conf_path, mode="init")
         # --- settings --------------------------------------------------------
-        _madr_text = _data.nics_madr.replace(":")
+        _madr_text = _data.nwrk_madr.replace(":")
         _conf_path: Path = addpath(
             base=_tget_path,
             path=Path(f"/var/lib/connman/ethernet_{_madr_text}_cable/settings"),
@@ -97,13 +97,13 @@ def setup_connman(info_syst) -> None:
         else:
             _writ_text += cat(fr"""
 				IPv4.method=manual
-				IPv4.netmask_prefixlen=${_data.nics_prfx}
-				IPv4.local_address=${_data.nics_ipv4}
-				IPv4.gateway=${_data.nics_gway}
+				IPv4.netmask_prefixlen=${_data.ipv4_prfx}
+				IPv4.local_address=${_data.ipv4_addr}
+				IPv4.gateway=${_data.ipv4_gway}
 				IPv6.method=auto
 				IPv6.privacy=prefered
-				Nameservers=${_data.nics_nsvr};
-				Domains=${_data.nics_wgrp};
+				Nameservers=${_data.ipv4_nsvr};
+				Domains=${_data.nwrk_wgrp};
 				IPv6.DHCP.DUID=
 			""")
         fwrite(dest_path=_conf_path, data=_writ_text, text=True, backup=False)

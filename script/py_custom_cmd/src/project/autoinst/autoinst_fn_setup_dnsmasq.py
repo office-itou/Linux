@@ -1,6 +1,5 @@
 # --- python library ----------------------------------------------------------
 import os
-import subprocess
 from pathlib import Path
 from subprocess import CompletedProcess
 
@@ -16,6 +15,7 @@ from common.utils import (
     handle_fatal_error,
     message_info,
     restart_service,
+    run_subprocess,
 )
 
 # --- import module -----------------------------------------------------------
@@ -49,10 +49,8 @@ def setup_dnsmasq(info_syst) -> None:
                 -e '                                              }' \
                 -i "${_SRVC_PATH:?}"
         """
-        _result: CompletedProcess = subprocess.run(
-            _shel_comd, shell=True, env=_envs_list, executable="/bin/bash"
-        )
-        if _result.returncode != 0:
+        _result: CompletedProcess = run_subprocess(_shel_comd, env=_envs_list)
+        if _result.returncode != 0 and _result.stderr:
             print(_result.stderr)
         file_backup(info_syst=info_syst, orig_path=_srvc_path, mode="init")
         # --- dnsmasq ---------------------------------------------------------
@@ -65,10 +63,8 @@ def setup_dnsmasq(info_syst) -> None:
                     -e 's/^#\(DNSMASQ_EXCEPT\)=.*$/\1="lo"/'   \
                     -i "${_SRVC_PATH:?}"
             """
-            _result: CompletedProcess = subprocess.run(
-                _shel_comd, shell=True, env=_envs_list, executable="/bin/bash"
-            )
-            if _result.returncode != 0:
+            _result: CompletedProcess = run_subprocess(_shel_comd, env=_envs_list)
+            if _result.returncode != 0 and _result.stderr:
                 print(_result.stderr)
             file_backup(info_syst=info_syst, orig_path=_srvc_path, mode="init")
         # --- default.conf ----------------------------------------------------
@@ -141,10 +137,8 @@ def setup_dnsmasq(info_syst) -> None:
                 sed -e '/^interface=/ s/^/#/g' \
                     -i "${_CONF_PATH:?}"
             """
-            _result: CompletedProcess = subprocess.run(
-                _shel_comd, shell=True, env=_envs_list, executable="/bin/bash"
-            )
-            if _result.returncode != 0:
+            _result: CompletedProcess = run_subprocess(_shel_comd, env=_envs_list)
+            if _result.returncode != 0 and _result.stderr:
                 print(_result.stderr)
         file_backup(info_syst=info_syst, orig_path=_conf_path, mode="init")
         # --- pxeboot.conf ----------------------------------------------------
@@ -229,30 +223,21 @@ def setup_dnsmasq(info_syst) -> None:
                 -e  'p                    }' | \
             sed -e ':l; N; s/[\r\n]\+/\\|/; b l' || true \
         """
-        _result: CompletedProcess = subprocess.run(
-            _shel_comd,
-            shell=True,
-            env=_envs_list,
-            executable="/bin/bash",
-            capture_output=True,
-            text=True,
-        )
-        if _result.returncode != 0:
-            print(_result.stderr)
         _find_parm: str = ""
-        if _result.stdout:
+        _result: CompletedProcess = run_subprocess(_shel_comd, env=_envs_list)
+        if _result.returncode != 0 and _result.stderr:
+            print(_result.stderr)
+        elif _result.stdout:
             _find_parm: str = str(_result.stdout).strip("\n").strip() + r"\|"
         _find_parm += r"bind-dynamic\|bind-interfaces"
         _envs_list["_FIND_PARM"] = _find_parm
-        _envs_list["_CONF_PATH"] = "./dnsmasq.conf"
+        _envs_list["_CONF_PATH"] = _conf_path
         _shel_comd = r"""
             sed -e '/^\('"${_FIND_PARM:?}"'\)/ s/^/#/g' \
                 -i "${_CONF_PATH:?}"
         """
-        _result: CompletedProcess = subprocess.run(
-            _shel_comd, shell=True, env=_envs_list, executable="/bin/bash"
-        )
-        if _result.returncode != 0:
+        _result: CompletedProcess = run_subprocess(_shel_comd, env=_envs_list)
+        if _result.returncode != 0 and _result.stderr:
             print(_result.stderr)
         file_backup(info_syst=info_syst, orig_path=_conf_path, mode="init")
         # --- service restart -------------------------------------------------

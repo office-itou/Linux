@@ -14,85 +14,88 @@ from common.utils import (
     infosystem,
 )
 
+from autoinst_fn_mkdir_share import mkdir_share
+from autoinst_fn_package_install import package_install
+from autoinst_fn_package_update import package_update
+from autoinst_fn_setup_apache import setup_apache
+from autoinst_fn_setup_apparmor import setup_apparmor
+from autoinst_fn_setup_blacklist import setup_blacklist
+from autoinst_fn_setup_chronyd import setup_chronyd
+from autoinst_fn_setup_clamav import setup_clamav
+from autoinst_fn_setup_connman import setup_connman
+from autoinst_fn_setup_dconf import setup_dconf
+from autoinst_fn_setup_desktop import setup_desktop
+from autoinst_fn_setup_dnsmasq import setup_dnsmasq
+from autoinst_fn_setup_firewalld import setup_firewalld
+from autoinst_fn_setup_grub_menu import setup_grub_menu
+from autoinst_fn_setup_hostname import setup_hostname
+from autoinst_fn_setup_hosts import setup_hosts
+from autoinst_fn_setup_input_method import setup_input_method
+from autoinst_fn_setup_ipfilter import setup_ipfilter
+from autoinst_fn_setup_locale import setup_locale
+from autoinst_fn_setup_module_ipxe import setup_module_ipxe
+from autoinst_fn_setup_nbd import setup_nbd
+from autoinst_fn_setup_netman import setup_netman
+from autoinst_fn_setup_netplan import setup_netplan
+from autoinst_fn_setup_nfs import setup_nfs
+from autoinst_fn_setup_resolv import setup_resolv
+from autoinst_fn_setup_samba import setup_samba
+from autoinst_fn_setup_selinux import setup_selinux
+from autoinst_fn_setup_service import setup_service
+from autoinst_fn_setup_skel_copy import setup_skel_copy
+from autoinst_fn_setup_skel_im import setup_skel_im
+from autoinst_fn_setup_skel_user import setup_skel_user
+from autoinst_fn_setup_ssh import setup_ssh
+from autoinst_fn_setup_sudo import setup_sudo
+from autoinst_fn_setup_tcp_wrapper import setup_tcp_wrapper
+from autoinst_fn_setup_timesyncd import setup_timesyncd
+from autoinst_fn_setup_vmware import setup_vmware
+from autoinst_fn_setup_wireplumber import setup_wireplumber
+
 # --- import module -----------------------------------------------------------
-# from autoinst_fn_initialize import initialize
-# from autoinst_fn_package_update import package_update
-# from autoinst_fn_package_install import package_install
-# from autoinst_fn_mkdir_share import mkdir_share
-# from autoinst_fn_setup_connman import setup_connman
-# from autoinst_fn_setup_netplan import setup_netplan
-# from autoinst_fn_setup_netman import setup_netman
-# from autoinst_fn_setup_hostname import setup_hostname
-# from autoinst_fn_setup_hosts import setup_hosts
-# from autoinst_fn_setup_tcp_wrapper import setup_tcp_wrapper
-# from autoinst_fn_setup_firewalld import setup_firewalld
-# from autoinst_fn_setup_dnsmasq import setup_dnsmasq
-# from autoinst_fn_setup_resolv import setup_resolv
-# from autoinst_fn_setup_clamav import setup_clamav
-# from autoinst_fn_setup_apache import setup_apache
-# from autoinst_fn_setup_samba import setup_samba
-# from autoinst_fn_setup_timesyncd import setup_timesyncd
-# from autoinst_fn_setup_chronyd import setup_chronyd
-# from autoinst_fn_setup_ssh import setup_ssh
-# from autoinst_fn_setup_nfs import setup_nfs
-# from autoinst_fn_setup_nbd import setup_nbd
-# from autoinst_fn_setup_vmware import setup_vmware
-# from autoinst_fn_setup_wireplumber import setup_wireplumber
-# from autoinst_fn_setup_input_method import setup_input_method
-# from autoinst_fn_setup_locale import setup_locale
-# from autoinst_fn_setup_desktop import setup_desktop
-# from autoinst_fn_setup_skel_user import setup_skel_user
-# from autoinst_fn_setup_skel_im import setup_skel_im
-# from autoinst_fn_setup_skel_copy import setup_skel_copy
-# from autoinst_fn_setup_dconf import setup_dconf
-# from autoinst_fn_setup_sudo import setup_sudo
-# from autoinst_fn_setup_blacklist import setup_blacklist
-# from autoinst_fn_setup_module_ipxe import setup_module_ipxe
-# from autoinst_fn_setup_apparmor import setup_apparmor
-# from autoinst_fn_setup_selinux import setup_selinux
-# from  import setup_ipfilter
-# from  import setup_service
-# from  import setup_grub_menu
-from project.autoinst import (
-    initialize,
-    mkdir_share,
-    package_install,
-    package_update,
-    setup_apache,
-    setup_apparmor,
-    setup_blacklist,
-    setup_chronyd,
-    setup_clamav,
-    setup_connman,
-    setup_dconf,
-    setup_desktop,
-    setup_dnsmasq,
-    setup_firewalld,
-    setup_grub_menu,
-    setup_hostname,
-    setup_hosts,
-    setup_input_method,
-    setup_ipfilter,
-    setup_locale,
-    setup_module_ipxe,
-    setup_nbd,
-    setup_netman,
-    setup_netplan,
-    setup_nfs,
-    setup_resolv,
-    setup_samba,
-    setup_selinux,
-    setup_service,
-    setup_skel_copy,
-    setup_skel_im,
-    setup_skel_user,
-    setup_ssh,
-    setup_sudo,
-    setup_tcp_wrapper,
-    setup_timesyncd,
-    setup_vmware,
-    setup_wireplumber,
-)
+from autoinst_fn_initialize import initialize
+
+
+# from .autoinst import (
+#    initialize,
+#    mkdir_share,
+#    package_install,
+#    package_update,
+#    setup_apache,
+#    setup_apparmor,
+#    setup_blacklist,
+#    setup_chronyd,
+#    setup_clamav,
+#    setup_connman,
+#    setup_dconf,
+#    setup_desktop,
+#    setup_dnsmasq,
+#    setup_firewalld,
+#    setup_grub_menu,
+#    setup_hostname,
+#    setup_hosts,
+#    setup_input_method,
+#    setup_ipfilter,
+#    setup_locale,
+#    setup_module_ipxe,
+#    setup_nbd,
+#    setup_netman,
+#    setup_netplan,
+#    setup_nfs,
+#    setup_resolv,
+#    setup_samba,
+#    setup_selinux,
+#    setup_service,
+#    setup_skel_copy,
+#    setup_skel_im,
+#    setup_skel_user,
+#    setup_ssh,
+#    setup_sudo,
+#    setup_tcp_wrapper,
+#    setup_timesyncd,
+#    setup_vmware,
+#    setup_wireplumber,
+# )
 
 
 # --- class and function ------------------------------------------------------

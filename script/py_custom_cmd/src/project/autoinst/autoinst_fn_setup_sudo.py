@@ -104,8 +104,8 @@ def setup_sudo(info_syst) -> None:
                 _envs_list: dict[str, str] = os.environ.copy()
                 _envs_list["_LCAL_PATH"] = str(_lcal_path)
                 _shel_comd: str = r"""
-                    chown --changes root:root "${_LCAL_PATH:?}"
-                    chmod ---changes 0440 "${_LCAL_PATH:?}"
+                    chown --changes root:root "${_LCAL_PATH:?}";
+                    chmod --changes 0440 "${_LCAL_PATH:?}"
                 """
                 _result: CompletedProcess = run_subprocess(_shel_comd, env=_envs_list)
                 if _result.returncode != 0 and _result.stderr:
@@ -147,8 +147,8 @@ def setup_sudo(info_syst) -> None:
                         file_backup(info_syst=info_syst, orig_path=_conf_path)
                         file_origin(info_syst=info_syst, orig_path=_conf_path)
                     _shel_comd: str = r"""
-                        chown --changes root:root "${_CONF_PATH:?}"
-                        chmod ---changes 0440 "${_CONF_PATH:?}"
+                        chown --changes root:root "${_CONF_PATH:?}";
+                        chmod --changes 0440 "${_CONF_PATH:?}"
                     """
                     _result: CompletedProcess = run_subprocess(
                         _shel_comd, env=_envs_list

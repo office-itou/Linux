@@ -2,6 +2,7 @@
 
 # --- python library ----------------------------------------------------------
 import asyncio
+import shutil
 import subprocess
 from asyncio.subprocess import Process
 from subprocess import CompletedProcess
@@ -33,16 +34,22 @@ def run_subprocess(*args, **kwargs) -> CompletedProcess:
         # )
         args_text: str = (
             " ".join(s for arg in args for s in arg)
-            if not isinstance(*args, str)
-            else " ".join(s for arg in args for s in arg.split())
+            if isinstance(*args, list)
+            else " ".join(str(s).rstrip(r"\\") for arg in args for s in arg.split())
         )
-        kwargs.setdefault("executable", "/bin/bash")
+        # print(f"args_text:{args_text}")
+        if _shel_file := shutil.which("bash"):
+            kwargs.setdefault("executable", _shel_file)
+        elif _shel_file := shutil.which("sh"):
+            kwargs.setdefault("executable", _shel_file)
         kwargs.setdefault("shell", True)
         if not isinstance(kwargs.get("env"), dict) or "LANG" not in kwargs["env"]:
             kwargs["env"] = {"LANG": "C"}
-        kwargs.setdefault("capture_output", True)
+        if not isinstance(kwargs.get("capture_output"), bool):
+            kwargs.setdefault("capture_output", True)
         kwargs.setdefault("check", False)
         kwargs.setdefault("text", True)
+        # print(f"kwargs:{kwargs}")
         _result: CompletedProcess = subprocess.run(args_text, **kwargs)
         # if _result.returncode != 0 and _result.stderr:
         #    print(_result.stderr)

@@ -19,10 +19,18 @@ def find_serivce(
     tget_path: Path, srvc_name: str | None = None, srvc_list: list[str] | None = None
 ) -> Path | None:
     def _find_serivce(tget_path: Path, srvc_name: str) -> Path | None:
-        for _find_dir in ["/lib/systemd", "/usr/lib/systemd"]:
-            for _find_path in addpath(base=tget_path, path=_find_dir).rglob(srvc_name):
-                if _find_path and _find_path.exists():
-                    return _find_path
+        _dirs_list: list[str] = [
+            "/lib/systemd/system",
+            "/lib/systemd/user",
+            "/usr/lib/systemd/system",
+            "/usr/lib/systemd/user",
+            "/etc/systemd/system",
+            "/etc/systemd/user",
+        ]
+        for _find_dir in _dirs_list:
+            _find_path: Path = addpath(base=tget_path, path=Path(_find_dir)) / srvc_name
+            if _find_path and _find_path.exists() and _find_path.is_file():
+                return _find_path
         return None
 
     if srvc_name:
@@ -179,7 +187,7 @@ def service_mask(srvc_list: list[str]) -> bool | None:
             return None
         # --- systemctl service mask ------------------------------------------
         for _srvc_name in srvc_list:
-            message_info(_caller, f"{'restart':<10}:{_srvc_name}", omit=True)
+            message_info(_caller, f"{'mask':<10}:{_srvc_name}", omit=True)
             restart_cmd = ["systemctl", "--quiet", "--now", "mask", _srvc_name]
             res_restart = subprocess.run(
                 restart_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL

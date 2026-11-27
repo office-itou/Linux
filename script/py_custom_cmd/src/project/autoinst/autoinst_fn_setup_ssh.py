@@ -46,7 +46,7 @@ def setup_ssh(info_syst) -> None:
             awk -F ':' 'BEGIN {ret="yes"}
             {
                 if (($1 != "root") && ($4 >= 1000) && ($4 < "65534") && ($7 !~ /nologin|false/)) {
-                    ret="no"
+                    ret="no";
                     exit
                 }
             }

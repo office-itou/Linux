@@ -23,7 +23,7 @@ def setup_hosts(info_syst) -> None:
     _data = info_syst.data
     _tget_path: Path = getattr(_data, "tget_path", None)
     # --- check parameter -----------------------------------------------------
-    if not _data.nics_fqdn:
+    if not _data.nwrk_fqdn:
         message_info(_caller, f"{'skip':<10}:hosts", omit=True)
         return
     try:
@@ -32,15 +32,17 @@ def setup_hosts(info_syst) -> None:
         _conf_path: Path = addpath(base=_tget_path, path=Path("/etc/hosts"))
         file_backup(info_syst=info_syst, orig_path=_conf_path)
         file_origin(info_syst=info_syst, orig_path=_conf_path)
-        _nics_ipv4: str = (
-            _data.ipv4_dumy if _data.nics_ipv4.split(".")[3] == "0" else _data.nics_ipv4
+        _ipv4_addr: str = (
+            _data.ipv4_dumy
+            if _data.ipv4_addr and _data.ipv4_addr.split(".")[3] == "0"
+            else _data.ipv4_addr
         )
         _ipv4_lhst: str = _data.ipv4_lhst if _data.ipv4_lhst else "127.0.0.1"
         _ipv6_lhst: str = _data.ipv6_lhst if _data.ipv6_lhst else "::1"
         _fmat_parm: str = "{:<16} {}"
         _writ_text: str = cat(rf"""
 			{_fmat_parm.format(_ipv4_lhst, r"localhost")}
-			{_fmat_parm.format(_nics_ipv4, f"{_data.nics_fqdn} {_data.nics_host}")}
+			{_fmat_parm.format(_ipv4_addr, f"{_data.nwrk_fqdn} {_data.nwrk_host}")}
 			
 			# The following lines are desirable for IPv6 capable hosts
 			{_fmat_parm.format(_ipv6_lhst, r"localhost ip6-localhost ip6-loopback")}

@@ -376,12 +376,59 @@ class InfoSystem:
             if not self.data.seed_urls or "://" in self.data.seed_urls
             else Path(self.data.seed_urls)
         )
-        # --- network ---------------------------------------------------------
+        # --- network: nic for active -----------------------------------------
+        _base_path: Path = addpath(
+            base=self.data.tget_path, path=Path("/sys/class/net")
+        )
+        self.data.nics_name = find_nic(base_path=_base_path)
+        self.data.nics_path = _base_path / self.data.nics_name
+        self.data.nics_madr = ""
+        if self.data.nics_name:
+            _nics_info: InfoNetworkIF = InfoNetworkIF(self.data.nics_name)
+            self.data.nics_madr = _nics_info.data.madr
+            self.data.nics_gway = _nics_info.data.gway
+            self.data.nics_nsvr = _nics_info.data.nsvr
+            self.data.nics_fqdn = _nics_info.data.fqdn
+            self.data.nics_host = _nics_info.data.host
+            self.data.nics_wgrp = _nics_info.data.wgrp
+            self.data.nics_stat = _nics_info.data.stat
+            self.data.nics_ipv4.auto = _nics_info.data.ipv4.auto
+            self.data.nics_ipv4.addr = _nics_info.data.ipv4.addr
+            self.data.nics_ipv4.prfx = _nics_info.data.ipv4.prfx
+            self.data.nics_ipv4.cidr = _nics_info.data.ipv4.cidr
+            self.data.nics_ipv4.mask = _nics_info.data.ipv4.mask
+            self.data.nics_ipv4.fadr = _nics_info.data.ipv4.fadr
+            self.data.nics_ipv4.uadr = _nics_info.data.ipv4.uadr
+            self.data.nics_ipv4.ladr = _nics_info.data.ipv4.ladr
+            self.data.nics_ipv4.radr = _nics_info.data.ipv4.radr
+            self.data.nics_ipv6.auto = _nics_info.data.ipv6.auto
+            self.data.nics_ipv6.addr = _nics_info.data.ipv6.addr
+            self.data.nics_ipv6.prfx = _nics_info.data.ipv6.prfx
+            self.data.nics_ipv6.cidr = _nics_info.data.ipv6.cidr
+            self.data.nics_ipv6.mask = _nics_info.data.ipv6.mask
+            self.data.nics_ipv6.fadr = _nics_info.data.ipv6.fadr
+            self.data.nics_ipv6.uadr = _nics_info.data.ipv6.uadr
+            self.data.nics_ipv6.ladr = _nics_info.data.ipv6.ladr
+            self.data.nics_ipv6.radr = _nics_info.data.ipv6.radr
+            self.data.nics_link.auto = _nics_info.data.link.auto
+            self.data.nics_link.addr = _nics_info.data.link.addr
+            self.data.nics_link.prfx = _nics_info.data.link.prfx
+            self.data.nics_link.cidr = _nics_info.data.link.cidr
+            self.data.nics_link.mask = _nics_info.data.link.mask
+            self.data.nics_link.fadr = _nics_info.data.link.fadr
+            self.data.nics_link.uadr = _nics_info.data.link.uadr
+            self.data.nics_link.ladr = _nics_info.data.link.ladr
+            self.data.nics_link.radr = _nics_info.data.link.radr
+        # --- network: nic for target -----------------------------------------
         if not self.data.nwrk_devs:
             _base_path: Path = addpath(
-                base=self.data.tget_path, path=Path("/sys/devices")
+                base=self.data.tget_path, path=Path("/sys/class/net")
             )
             self.data.nwrk_devs = find_nic(base_path=_base_path)
+            self.data.nwrk_madr = ""
+        _nics_info: InfoNetworkIF = InfoNetworkIF(self.data.nwrk_devs)
+        self.data.nwrk_madr = _nics_info.data.madr
+        # --- network: ipv4 ---------------------------------------------------
         if "/" in str(self.data.ipv4_addr):
             self.data.ipv4_cidr = self.data.ipv4_addr
             self.data.ipv4_addr = ipv4_addr(cidr=self.data.ipv4_cidr)

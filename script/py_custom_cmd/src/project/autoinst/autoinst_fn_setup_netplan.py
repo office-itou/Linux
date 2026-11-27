@@ -82,7 +82,7 @@ def setup_netplan(info_syst) -> None:
         else:
             _conf_path: Path = addpath(
                 base=_tget_path,
-                path=Path(f"/etc/netplan/99-network-config-{_data.nics_name}.yaml"),
+                path=Path(f"/etc/netplan/99-network-config-{_data.nwrk_devs}.yaml"),
             )
             file_backup(info_syst=info_syst, orig_path=_conf_path)
             file_origin(info_syst=info_syst, orig_path=_conf_path)
@@ -91,7 +91,7 @@ def setup_netplan(info_syst) -> None:
 					version: 2
 					renderer: networkd
 					ethernets:
-					${_data.nics_name}:
+					${_data.nwrk_devs}:
 			""")  # noqa: E101
             if _data.ipv4_auto:
                 _writ_text += cat(r"""
@@ -102,15 +102,15 @@ def setup_netplan(info_syst) -> None:
             else:
                 _writ_text += cat(rf"""
 					addresses:
-					- ${_data.nics_cidr}
+					- ${_data.ipv4_cidr}
 					routes:
 					- to: default
-					via: ${_data.nics_gway}
+					via: ${_data.ipv4_gway}
 					nameservers:
 					search:
-					- ${_data.nics_wgrp}
+					- ${_data.nwrk_wgrp}
 					addresses:
-					- ${_data.nics_nsvr}
+					- ${_data.ipv4_nsvr}
 					dhcp4: false
 					dhcp6: true
 					ipv6-privacy: true

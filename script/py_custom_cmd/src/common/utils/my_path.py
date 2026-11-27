@@ -93,14 +93,14 @@ def chmod(path: Path, mode: str, follow_symlinks: bool = True) -> None:
 
 
 @debug_logger
-def addpath(base: Path, path: Path) -> Path | None:
+def addpath(base: Path | None, path: Path | None) -> Path | None:
     _caller = get_caller_name()
     try:
-        if base and path:
+        if isinstance(base, Path) and isinstance(path, Path):
             return Path(base) / str(path).lstrip("/")
-        if not base and path:
+        if not isinstance(base, Path) and isinstance(path, Path):
             return Path(path)
-        if base and not path:
+        if isinstance(base, Path) and not isinstance(path, Path):
             return Path(base)
         return None
     except (OSError, Exception) as e:  # noqa: BLE001
@@ -109,14 +109,14 @@ def addpath(base: Path, path: Path) -> Path | None:
 
 
 @debug_logger
-def delpath(base: Path, path: Path) -> Path | None:
+def delpath(base: Path | None, path: Path | None) -> Path | None:
     _caller = get_caller_name()
     try:
-        if base and path:
+        if isinstance(base, Path) and isinstance(path, Path):
             return Path(path.relative_to(str(base))).resolve()
-        if not base and path:
+        if not isinstance(base, Path) and isinstance(path, Path):
             return Path(path).resolve()
-        if base and not path:
+        if isinstance(base, Path) and not isinstance(path, Path):
             return None
         return None
     except (OSError, Exception) as e:  # noqa: BLE001

@@ -17,10 +17,12 @@ from common.utils import (
 )
 
 # --- import module -----------------------------------------------------------
-# from autoinst_fn_initialize import initialize
-from project.autoinst import (
-    initialize,
-)
+from autoinst_fn_initialize import initialize
+
+
+#from .autoinst import (
+#    initialize,
+#)
 
 
 # --- class and function ------------------------------------------------------

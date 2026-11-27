@@ -23,7 +23,7 @@ def setup_tcp_wrapper(info_syst) -> None:
     _data = info_syst.data
     _tget_path: Path = getattr(_data, "tget_path", None)
     # --- check parameter -----------------------------------------------------
-    if not _data.nics_fqdn:
+    if not _data.nwrk_fqdn:
         message_info(_caller, f"{'skip':<10}:tcp wrapper", omit=True)
         return
     try:
@@ -34,7 +34,7 @@ def setup_tcp_wrapper(info_syst) -> None:
         file_origin(info_syst=info_syst, orig_path=_conf_path)
         _writ_text: str = cat(rf"""
 			ALL: [fe80::]/10
-			ALL: {_data.nics_uadr}.0/{_data.nics_prfx}
+			ALL: {_data.ipv4_uadr}.0/{_data.ipv4_prfx}
 		""")
         fwrite(
             dest_path=_conf_path,

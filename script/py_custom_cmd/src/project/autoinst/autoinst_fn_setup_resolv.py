@@ -66,13 +66,18 @@ def setup_resolv(info_syst) -> None:
                 file_backup(info_syst=info_syst, orig_path=_conf_path)
                 file_origin(info_syst=info_syst, orig_path=_conf_path)
                 _conf_real = _conf_path.resolve()
-                _stub_path = "${_DIRS_TGET:-}/run/systemd/resolve/stub-resolv.conf"
+                _stub_path: Path = addpath(
+                    base=_tget_path, path=Path("/run/systemd/resolve/stub-resolv.conf")
+                )
                 if str(_conf_real) != str(_stub_path):
                     message_info(
                         _caller, f"{'caution':<10}:created:{_conf_path}", omit=True
                     )
                     os.remove(_conf_path)
-                    _link_path = f"../{delpath(base=_tget_path, path=_stub_path)}/"
+                    _link_path = f"../{delpath(base=_tget_path, path=_stub_path)}"
+                    message_info(
+                        _caller, f"{'info':<10}:target :{_link_path}", omit=True
+                    )
                     _conf_path.symlink_to(target=_link_path)
                     file_backup(info_syst=info_syst, orig_path=_conf_path, mode="init")
                     file_backup(info_syst=info_syst, orig_path=_stub_path, mode="init")

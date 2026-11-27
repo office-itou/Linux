@@ -156,7 +156,7 @@ class InfoSrvDir:
             _data.xsmb_path / _data.imgs_path.name,
             _data.xsmb_path / _data.isos_path.name,
             _data.xsmb_path / _data.load_path.name,
-            _data.xsmb_path / _data.rmak_path,
+            _data.xsmb_path / _data.rmak_path.name,
         ]
         # ---------------------------------------------------------------------
         self.data.attr = [
@@ -208,58 +208,58 @@ class InfoSrvDir:
             {"tget": f"{_data.load_path}", "dest": f"{_data.html_path}/"},
             {"tget": f"{_data.rmak_path}", "dest": f"{_data.html_path}/"},
             {"tget": f"{_data.tftp_path}", "dest": f"{_data.html_path}/"},
-            {"tget": f"{_data.conf_path}", "dest": f"{_data.tftpl_path}/exports/"},
-            {"tget": f"{_data.imgs_path}", "dest": f"{_data.tftpl_path}/exports/"},
-            {"tget": f"{_data.isos_path}", "dest": f"{_data.tftpl_path}/exports/"},
-            {"tget": f"{_data.load_path}", "dest": f"{_data.tftpl_path}/exports/"},
-            {"tget": f"{_data.rmak_path}", "dest": f"{_data.tftpl_path}/exports/"},
+            {"tget": f"{_data.conf_path}", "dest": f"{_data.tftp_path}/exports/"},
+            {"tget": f"{_data.imgs_path}", "dest": f"{_data.tftp_path}/exports/"},
+            {"tget": f"{_data.isos_path}", "dest": f"{_data.tftp_path}/exports/"},
+            {"tget": f"{_data.load_path}", "dest": f"{_data.tftp_path}/exports/"},
+            {"tget": f"{_data.rmak_path}", "dest": f"{_data.tftp_path}/exports/"},
             {
                 "tget": f"../exports/{_data.conf_path.name}",
-                "dest": f"{_data.tftpl_path}/menu-bios/",
+                "dest": f"{_data.tftp_path}/menu-bios/",
             },
             {
                 "tget": f"../exports/{_data.imgs_path.name}",
-                "dest": f"{_data.tftpl_path}/menu-bios/",
+                "dest": f"{_data.tftp_path}/menu-bios/",
             },
             {
                 "tget": f"../exports/{_data.isos_path.name}",
-                "dest": f"{_data.tftpl_path}/menu-bios/",
+                "dest": f"{_data.tftp_path}/menu-bios/",
             },
             {
                 "tget": f"../exports/{_data.load_path.name}",
-                "dest": f"{_data.tftpl_path}/menu-bios/",
+                "dest": f"{_data.tftp_path}/menu-bios/",
             },
             {
                 "tget": f"../exports/{_data.rmak_path.name}",
-                "dest": f"{_data.tftpl_path}/menu-bios/",
+                "dest": f"{_data.tftp_path}/menu-bios/",
             },
             {
                 "tget": r"../syslinux.cfg",
-                "dest": f"{_data.tftpl_path}/menu-bios/pxelinux.cfg/default",
+                "dest": f"{_data.tftp_path}/menu-bios/pxelinux.cfg/default",
             },
             {
                 "tget": f"../exports/{_data.conf_path.name}",
-                "dest": f"{_data.tftpl_path}/menu-efi64/",
+                "dest": f"{_data.tftp_path}/menu-efi64/",
             },
             {
                 "tget": f"../exports/{_data.imgs_path.name}",
-                "dest": f"{_data.tftpl_path}/menu-efi64/",
+                "dest": f"{_data.tftp_path}/menu-efi64/",
             },
             {
                 "tget": f"../exports/{_data.isos_path.name}",
-                "dest": f"{_data.tftpl_path}/menu-efi64/",
+                "dest": f"{_data.tftp_path}/menu-efi64/",
             },
             {
                 "tget": f"../exports/{_data.load_path.name}",
-                "dest": f"{_data.tftpl_path}/menu-efi64/",
+                "dest": f"{_data.tftp_path}/menu-efi64/",
             },
             {
                 "tget": f"../exports/{_data.rmak_path.name}",
-                "dest": f"{_data.tftpl_path}/menu-efi64/",
+                "dest": f"{_data.tftp_path}/menu-efi64/",
             },
             {
                 "tget": r"../syslinux.cfg",
-                "dest": f"{_data.tftpl_path}/menu-efi64/pxelinux.cfg/default",
+                "dest": f"{_data.tftp_path}/menu-efi64/pxelinux.cfg/default",
             },
         ]
         # ---------------------------------------------------------------------

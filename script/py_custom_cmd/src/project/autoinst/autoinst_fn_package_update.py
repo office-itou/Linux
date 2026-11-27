@@ -1,7 +1,6 @@
 # --- python library ----------------------------------------------------------
 import os
 import shutil
-import subprocess
 from pathlib import Path
 from subprocess import CompletedProcess
 
@@ -12,6 +11,7 @@ from common.utils import (
     get_caller_name,
     handle_fatal_error,
     message_warn,
+    run_subprocess,
 )
 
 # --- import module -----------------------------------------------------------
@@ -28,8 +28,10 @@ def package_update(info_syst) -> None:
         return
     # --- check command -------------------------------------------------------
     try:
+        message_warn(_caller, f"{'info':<10}:package update", omit=True)
         _shel_comd: str = ""
         if shutil.which("apt-get"):
+            message_warn(_caller, f"{'info':<10}:apt-get", omit=True)
             _tget_path: Path = getattr(info_syst.data, "tget_path", None)
             _conf_path: Path = addpath(
                 base=_tget_path, path=Path("/etc/apt/sources.list")
@@ -37,19 +39,19 @@ def package_update(info_syst) -> None:
             if _conf_path.exists():
                 file_backup(info_syst=info_syst, orig_path=_conf_path)
                 file_origin(info_syst=info_syst, orig_path=_conf_path)
-                _envs_list = os.environ.copy()
+                _envs_list: dict[str, str] = os.environ.copy()
                 _envs_list["_CONF_PATH"] = str(_conf_path)
-                _shel_comd = r"""
-                    sed -i "${_CONF_PATH}"                     \
-                        -e '/^[ \t]*deb[ \t]\+cdrom:/ s/^/#/g'
+                _shel_comd: str = r"""
+                    sed -e '/^[ \t]*deb[ \t]\+cdrom:/ s/^/#/g' \
+                        -i "${_CONF_PATH:?}"
                 """
-                _result: CompletedProcess = subprocess.run(
-                    _shel_comd, shell=True, env=_envs_list, executable="/bin/bash"
+                _result: CompletedProcess = run_subprocess(
+                    _shel_comd, env=_envs_list, capture_output=False
                 )
-                if _result.returncode != 0:
+                if _result.returncode != 0 and _result.stderr:
                     print(_result.stderr)
                 file_backup(info_syst=info_syst, orig_path=_conf_path, mode="init")
-            _shel_comd = r"""
+            _shel_comd: str = r"""
                 apt-get --quiet              update       && \
                 apt-get --quiet --assume-yes upgrade      && \
                 apt-get --quiet --assume-yes dist-upgrade && \
@@ -60,21 +62,22 @@ def package_update(info_syst) -> None:
                 apt --assume-yes modernize-sources
             """
         elif shutil.which("dnf"):
-            _shel_comd = r"dnf --quiet --assumeyes update"
+            message_warn(_caller, f"{'info':<10}:dnf", omit=True)
+            _shel_comd: str = r"dnf --quiet --assumeyes update"
         elif shutil.which("yum"):
-            _shel_comd = r"yum --quiet --assumeyes update"
+            message_warn(_caller, f"{'info':<10}:yum", omit=True)
+            _shel_comd: str = r"yum --quiet --assumeyes update"
         elif shutil.which("zypper"):
-            _shel_comd = r"""
+            message_warn(_caller, f"{'info':<10}:zypper", omit=True)
+            _shel_comd: str = r"""
                 _WORK_TEXT="$(LANG=C zypper repos | awk -F '|' '$1==1&&$2~/http/ {gsub(/^[ \t]+/,"",$2); gsub(/[ \t]+$/,"",$2); print $2;}' || true)"
                 [ -n "${_WORK_TEXT:-}" ] && zypper modifyrepo --disable "${_WORK_TEXT}"
                 zypper --quiet --non-interactive refresh && \
                 zypper --quiet --non-interactive update
             """  # noqa: E501
         if _shel_comd:
-            _result: CompletedProcess = subprocess.run(
-                _shel_comd, shell=True, executable="/bin/bash"
-            )
-            if _result.returncode != 0:
+            _result: CompletedProcess = run_subprocess(_shel_comd, capture_output=False)
+            if _result.returncode != 0 and _result.stderr:
                 print(_result.stderr)
     except (OSError, Exception) as e:  # noqa: BLE001
         handle_fatal_error(_caller, e, omit=False, raise_exit=False)

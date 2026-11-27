@@ -1,7 +1,6 @@
 # --- python library ----------------------------------------------------------
 import os
 import shutil
-import subprocess
 from ipaddress import IPv4Interface, IPv6Interface
 from pathlib import Path
 from subprocess import CompletedProcess
@@ -11,8 +10,6 @@ from common.utils import (
     addpath,
     debug_logger,
     fcopy,
-    file_backup,
-    file_origin,
     find_serivce,
     get_caller_name,
     handle_fatal_error,
@@ -22,8 +19,10 @@ from common.utils import (
     run_subprocess,
 )
 
-
 # --- import module -----------------------------------------------------------
+from autoinst_fn_file_backup import file_backup, file_origin
+
+
 # --- class and function ------------------------------------------------------
 @debug_logger
 def setup_firewalld_active(info_syst) -> None:
@@ -34,31 +33,54 @@ def setup_firewalld_active(info_syst) -> None:
         message_info(_caller, f"{'skip':<10}:firewalld", omit=True)
         return
     # --- firewalld -----------------------------------------------------------
-    _nics_name: str = _data.nics_name
+    _nwrk_devs: str = _data.nwrk_devs
     _fwal_zone: str = _data.fwal_zone
-    _interface_ipv4 = IPv4Interface(f"{_data.ipv4_uadr}.0/{_data.ipv4_prfx}")
-    _interface_ipv6 = IPv6Interface(f"{_data.ipv6_uadr}:0/{_data.ipv6_prfx}")
-    _interface_link = IPv6Interface(f"{_data.link_uadr}:0/10")
+    message_info(
+        _caller, f"{'sinfo':<10}:dev={_nwrk_devs},zone={_fwal_zone}", omit=True
+    )
+    # --- ipv4 ----------------------------------------------------------------
+    if _data.ipv4_uadr and _data.ipv4_prfx:
+        _interface_ipv4 = IPv4Interface(f"{_data.ipv4_uadr}.0/{_data.ipv4_prfx}")
+    elif _data.nics_ipv4.uadr and _data.nics_ipv4.prfx:
+        _interface_ipv4 = IPv4Interface(
+            f"{_data.nics_ipv4.uadr}.0/{_data.nics_ipv4.prfx}"
+        )
+    else:
+        _interface_ipv4 = IPv4Interface("0.0.0.0/24")
+    # --- ipv6 ----------------------------------------------------------------
+    if _data.ipv6_uadr and _data.ipv6_prfx:
+        _interface_ipv6 = IPv6Interface(f"{_data.ipv6_uadr}::0/{_data.ipv6_prfx}")
+    elif _data.nics_ipv6.uadr and _data.nics_ipv6.prfx:
+        _interface_ipv6 = IPv6Interface(
+            f"{_data.nics_ipv6.uadr}::0/{_data.nics_ipv6.prfx}"
+        )
+    else:
+        _interface_ipv6 = IPv6Interface("::0/64")
+    # --- link local ----------------------------------------------------------
+    if _data.link_uadr and _data.link_prfx:
+        _interface_link = IPv6Interface(f"{_data.link_uadr}::0/{_data.link_prfx}")
+    elif _data.nics_link.uadr and _data.nics_link.prfx:
+        _interface_link = IPv6Interface(
+            f"{_data.nics_link.uadr}::0/{_data.nics_link.prfx}"
+        )
+    else:
+        _interface_link = IPv6Interface("::0/10")
     _ipv4_rang = _interface_ipv4.network
     _ipv6_rang = _interface_ipv6.network
     _link_rang = _interface_link.network
     # --- set default zone ----------------------------------------------------
     _shel_comd = rf"firewall-cmd --quiet --permanent --set-default-zone={_fwal_zone}"
-    _result: CompletedProcess = subprocess.run(
-        _shel_comd, shell=True, executable="/bin/bash"
-    )
-    if _result.returncode != 0:
+    _result: CompletedProcess = run_subprocess(_shel_comd, capture_output=False)
+    if _result.returncode != 0 and _result.stderr:
         print(_result.stderr)
     # --- change interface ----------------------------------------------------
-    if _nics_name:
+    if _nwrk_devs:
         _shel_comd = rf'''
             firewall-cmd --quiet --permanent --zone="{_fwal_zone}"
-            --change-interface="{_nics_name}"
+            --change-interface="{_nwrk_devs}"
         '''
-        _result: CompletedProcess = subprocess.run(
-            _shel_comd, shell=True, executable="/bin/bash"
-        )
-        if _result.returncode != 0:
+        _result: CompletedProcess = run_subprocess(_shel_comd, capture_output=False)
+        if _result.returncode != 0 and _result.stderr:
             print(_result.stderr)
     # --- set firewall rule ---------------------------------------------------
     for _addr in [
@@ -74,10 +96,8 @@ def setup_firewalld_active(info_syst) -> None:
                 service name="{_name}"
                 accept'
             '''
-            _result: CompletedProcess = subprocess.run(
-                _shel_comd, shell=True, executable="/bin/bash"
-            )
-            if _result.returncode != 0:
+            _result: CompletedProcess = run_subprocess(_shel_comd, capture_output=False)
+            if _result.returncode != 0 and _result.stderr:
                 print(_result.stderr)
         # --- port ------------------------------------------------------------
         for _port in _data.fwal_port:
@@ -89,10 +109,8 @@ def setup_firewalld_active(info_syst) -> None:
                 port="{_port.split("/")[0]}"
                 accept'
             '''
-            _result: CompletedProcess = subprocess.run(
-                _shel_comd, shell=True, executable="/bin/bash"
-            )
-            if _result.returncode != 0:
+            _result: CompletedProcess = run_subprocess(_shel_comd, capture_output=False)
+            if _result.returncode != 0 and _result.stderr:
                 print(_result.stderr)
         # --- icmp ------------------------------------------------------------
         _shel_comd = rf'''
@@ -102,10 +120,8 @@ def setup_firewalld_active(info_syst) -> None:
             protocol value="icmp"
             accept'
         '''
-        _result: CompletedProcess = subprocess.run(
-            _shel_comd, shell=True, executable="/bin/bash"
-        )
-        if _result.returncode != 0:
+        _result: CompletedProcess = run_subprocess(_shel_comd, capture_output=False)
+        if _result.returncode != 0 and _result.stderr:
             print(_result.stderr)
     # --- ipv4: tftp ----------------------------------------------------------
     _shel_comd = rf'''
@@ -115,10 +131,8 @@ def setup_firewalld_active(info_syst) -> None:
         service name="tftp"
         accept'
     '''
-    _result: CompletedProcess = subprocess.run(
-        _shel_comd, shell=True, executable="/bin/bash"
-    )
-    if _result.returncode != 0:
+    _result: CompletedProcess = run_subprocess(_shel_comd, capture_output=False)
+    if _result.returncode != 0 and _result.stderr:
         print(_result.stderr)
     # --- ipv4: port ----------------------------------------------------------
     _shel_comd = rf'''
@@ -128,18 +142,13 @@ def setup_firewalld_active(info_syst) -> None:
         port protocol="udp" port="67-68"
         accept'
     '''
-    _result: CompletedProcess = subprocess.run(
-        _shel_comd, shell=True, executable="/bin/bash"
-    )
-    if _result.returncode != 0:
+    _result: CompletedProcess = run_subprocess(_shel_comd, capture_output=False)
+    if _result.returncode != 0 and _result.stderr:
         print(_result.stderr)
     # --- reload --------------------------------------------------------------
-    _result = run_subprocess(["firewall-cmd", "--quiet", "--reload"])
     _shel_comd = r"firewall-cmd --quiet --reload"
-    _result: CompletedProcess = subprocess.run(
-        _shel_comd, shell=True, executable="/bin/bash"
-    )
-    if _result.returncode != 0:
+    _result: CompletedProcess = run_subprocess(_shel_comd, capture_output=False)
+    if _result.returncode != 0 and _result.stderr:
         print(_result.stderr)
 
 
@@ -152,31 +161,54 @@ def setup_firewalld_inactive(info_syst) -> None:
         message_info(_caller, f"{'skip':<10}:firewalld", omit=True)
         return
     # --- firewalld -----------------------------------------------------------
-    _nics_name: str = _data.nics_name
+    _nwrk_devs: str = _data.nwrk_devs
     _fwal_zone: str = _data.fwal_zone
-    _interface_ipv4 = IPv4Interface(f"{_data.ipv4_uadr}.0/{_data.ipv4_prfx}")
-    _interface_ipv6 = IPv6Interface(f"{_data.ipv6_uadr}:0/{_data.ipv6_prfx}")
-    _interface_link = IPv6Interface(f"{_data.link_uadr}:0/10")
+    message_info(
+        _caller, f"{'sinfo':<10}:dev={_nwrk_devs},zone={_fwal_zone}", omit=True
+    )
+    # --- ipv4 ----------------------------------------------------------------
+    if _data.ipv4_uadr and _data.ipv4_prfx:
+        _interface_ipv4 = IPv4Interface(f"{_data.ipv4_uadr}.0/{_data.ipv4_prfx}")
+    elif _data.nics_ipv4.uadr and _data.nics_ipv4.prfx:
+        _interface_ipv4 = IPv4Interface(
+            f"{_data.nics_ipv4.uadr}.0/{_data.nics_ipv4.prfx}"
+        )
+    else:
+        _interface_ipv4 = IPv4Interface("0.0.0.0/24")
+    # --- ipv6 ----------------------------------------------------------------
+    if _data.ipv6_uadr and _data.ipv6_prfx:
+        _interface_ipv6 = IPv6Interface(f"{_data.ipv6_uadr}::0/{_data.ipv6_prfx}")
+    elif _data.nics_ipv6.uadr and _data.nics_ipv6.prfx:
+        _interface_ipv6 = IPv6Interface(
+            f"{_data.nics_ipv6.uadr}::0/{_data.nics_ipv6.prfx}"
+        )
+    else:
+        _interface_ipv6 = IPv6Interface("::0/64")
+    # --- link local ----------------------------------------------------------
+    if _data.link_uadr and _data.link_prfx:
+        _interface_link = IPv6Interface(f"{_data.link_uadr}::0/{_data.link_prfx}")
+    elif _data.nics_link.uadr and _data.nics_link.prfx:
+        _interface_link = IPv6Interface(
+            f"{_data.nics_link.uadr}::0/{_data.nics_link.prfx}"
+        )
+    else:
+        _interface_link = IPv6Interface("::0/10")
     _ipv4_rang = _interface_ipv4.network
     _ipv6_rang = _interface_ipv6.network
     _link_rang = _interface_link.network
     # --- set default zone ----------------------------------------------------
     _shel_comd = rf"firewall-offline-cmd --quiet --set-default-zone={_fwal_zone}"
-    _result: CompletedProcess = subprocess.run(
-        _shel_comd, shell=True, executable="/bin/bash"
-    )
-    if _result.returncode != 0:
+    _result: CompletedProcess = run_subprocess(_shel_comd, capture_output=False)
+    if _result.returncode != 0 and _result.stderr:
         print(_result.stderr)
     # --- change interface ----------------------------------------------------
-    if _nics_name:
+    if _nwrk_devs:
         _shel_comd = rf'''
             firewall-offline-cmd --quiet --zone="{_fwal_zone}"
-            --change-interface="{_nics_name}"
+            --change-interface="{_nwrk_devs}"
         '''
-        _result: CompletedProcess = subprocess.run(
-            _shel_comd, shell=True, executable="/bin/bash"
-        )
-        if _result.returncode != 0:
+        _result: CompletedProcess = run_subprocess(_shel_comd, capture_output=False)
+        if _result.returncode != 0 and _result.stderr:
             print(_result.stderr)
     # --- set firewall rule ---------------------------------------------------
     for _addr in [
@@ -192,10 +224,8 @@ def setup_firewalld_inactive(info_syst) -> None:
                 service name="{_name}"
                 accept'
             '''
-            _result: CompletedProcess = subprocess.run(
-                _shel_comd, shell=True, executable="/bin/bash"
-            )
-            if _result.returncode != 0:
+            _result: CompletedProcess = run_subprocess(_shel_comd, capture_output=False)
+            if _result.returncode != 0 and _result.stderr:
                 print(_result.stderr)
         # --- port ------------------------------------------------------------
         for _port in _data.fwal_port:
@@ -207,10 +237,8 @@ def setup_firewalld_inactive(info_syst) -> None:
                 port="{_port.split("/")[0]}"
                 accept'
             '''
-            _result: CompletedProcess = subprocess.run(
-                _shel_comd, shell=True, executable="/bin/bash"
-            )
-            if _result.returncode != 0:
+            _result: CompletedProcess = run_subprocess(_shel_comd, capture_output=False)
+            if _result.returncode != 0 and _result.stderr:
                 print(_result.stderr)
         # --- icmp ------------------------------------------------------------
         _shel_comd = rf'''
@@ -220,10 +248,8 @@ def setup_firewalld_inactive(info_syst) -> None:
             protocol value="icmp"
             accept'
         '''
-        _result: CompletedProcess = subprocess.run(
-            _shel_comd, shell=True, executable="/bin/bash"
-        )
-        if _result.returncode != 0:
+        _result: CompletedProcess = run_subprocess(_shel_comd, capture_output=False)
+        if _result.returncode != 0 and _result.stderr:
             print(_result.stderr)
     # --- ipv4: tftp ----------------------------------------------------------
     _shel_comd = rf'''
@@ -233,10 +259,8 @@ def setup_firewalld_inactive(info_syst) -> None:
         service name="tftp"
         accept'
     '''
-    _result: CompletedProcess = subprocess.run(
-        _shel_comd, shell=True, executable="/bin/bash"
-    )
-    if _result.returncode != 0:
+    _result: CompletedProcess = run_subprocess(_shel_comd, capture_output=False)
+    if _result.returncode != 0 and _result.stderr:
         print(_result.stderr)
     # --- ipv4: port ----------------------------------------------------------
     _shel_comd = rf'''
@@ -246,10 +270,8 @@ def setup_firewalld_inactive(info_syst) -> None:
         port protocol="udp" port="67-68"
         accept'
     '''
-    _result: CompletedProcess = subprocess.run(
-        _shel_comd, shell=True, executable="/bin/bash"
-    )
-    if _result.returncode != 0:
+    _result: CompletedProcess = run_subprocess(_shel_comd, capture_output=False)
+    if _result.returncode != 0 and _result.stderr:
         print(_result.stderr)
     # --- reload --------------------------------------------------------------
 
@@ -278,10 +300,8 @@ def setup_firewalld(info_syst) -> None:
                 -e '                                   }' \
                 -i "${_SRVC_PATH:?}"
         """
-        _result: CompletedProcess = subprocess.run(
-            _shel_comd, shell=True, env=_envs_list, executable="/bin/bash"
-        )
-        if _result.returncode != 0:
+        _result: CompletedProcess = run_subprocess(_shel_comd, env=_envs_list)
+        if _result.returncode != 0 and _result.stderr:
             print(_result.stderr)
         file_backup(info_syst=info_syst, orig_path=_srvc_path, mode="init")
         # --- firewalld -------------------------------------------------------

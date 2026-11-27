@@ -84,7 +84,11 @@ def setup_wireplumber(info_syst) -> None:
             )
             file_backup(info_syst=info_syst, orig_path=_conf_path)
             file_origin(info_syst=info_syst, orig_path=_conf_path)
-            _read_text: str = fread(src_path=_conf_path, text=True)
+            _read_text: str = (
+                fread(src_path=_conf_path, text=True) + "\n"
+                if _conf_path.exists()
+                else ""
+            )
             if "bluez_monitor.properties" not in _read_text:
                 _writ_text: str = cat(r"""
 					bluez_monitor.properties = {
@@ -132,7 +136,11 @@ def setup_wireplumber(info_syst) -> None:
             )
             file_backup(info_syst=info_syst, orig_path=_conf_path)
             file_origin(info_syst=info_syst, orig_path=_conf_path)
-            _read_text: str = fread(src_path=_conf_path, text=True)
+            _read_text: str = (
+                fread(src_path=_conf_path, text=True) + "\n"
+                if _conf_path.exists()
+                else ""
+            )
             if "monitor.alsa.rules" not in _read_text:
                 _writ_text: str = cat(r"""
 					monitor.alsa.rules = [
@@ -167,7 +175,11 @@ def setup_wireplumber(info_syst) -> None:
             )
             file_backup(info_syst=info_syst, orig_path=_conf_path)
             file_origin(info_syst=info_syst, orig_path=_conf_path)
-            _read_text: str = fread(src_path=_conf_path, text=True)
+            _read_text: str = (
+                fread(src_path=_conf_path, text=True) + "\n"
+                if _conf_path.exists()
+                else ""
+            )
             if "monitor.alsa.rules" not in _read_text:
                 _writ_text: str = cat(r"""
 					monitor.alsa.rules = [
@@ -204,7 +216,11 @@ def setup_wireplumber(info_syst) -> None:
             )
             file_backup(info_syst=info_syst, orig_path=_conf_path)
             file_origin(info_syst=info_syst, orig_path=_conf_path)
-            _read_text: str = fread(src_path=_conf_path, text=True)
+            _read_text: str = (
+                fread(src_path=_conf_path, text=True) + "\n"
+                if _conf_path.exists()
+                else ""
+            )
             if "monitor.bluez.properties" not in _read_text:
                 _writ_text: str = cat(r"""
 					monitor.bluez.properties = {
@@ -239,8 +255,6 @@ def setup_wireplumber(info_syst) -> None:
                     append=True,
                 )
                 file_backup(info_syst=info_syst, orig_path=_conf_path, mode="init")
-        fwrite(dest_path=_conf_path, data=_writ_text, text=True, backup=False)
-        file_backup(info_syst=info_syst, orig_path=_conf_path, mode="init")
         # --- service restart -------------------------------------------------
         if not info_syst.data.tget_chrt:
             restart_user_service(srvc_name=_srvc_name)

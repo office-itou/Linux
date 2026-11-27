@@ -31,19 +31,35 @@ def mkdir_share_create_system_user(info_dirs) -> None:
     _caller = get_caller_name()
     _data = info_dirs.syst.data
     try:
+
+        def _check_group(name: str) -> bool:
+            try:
+                return bool(grp.getgrnam(name))
+            except KeyError:
+                return False
+
+        def _check_user(name: str) -> bool:
+            try:
+                return bool(pwd.getpwnam(name))
+            except KeyError:
+                return False
+
         message_info(_caller, f"{'info':<10}:create system user id", omit=True)
-        if not grp.getgrnam(_data.samb_grup):
-            _shel_comd: str = rf"sudo -n groupadd --system {_data.samb_grup}"
+        if not _check_group(_data.samb_grup):
+            message_info(_caller, f"{'info':<10}:create {_data.samb_grup}", omit=True)
+            _shel_comd: str = rf"groupadd --system {_data.samb_grup}"
             _result: CompletedProcess = run_subprocess(_shel_comd)
             if _result.returncode != 0 and _result.stderr:
                 print(_result.stderr)
-        if not grp.getgrnam(_data.samb_gadm):
-            _shel_comd: str = rf"sudo -n groupadd --system {_data.samb_gadm}"
+        if not _check_group(_data.samb_gadm):
+            message_info(_caller, f"{'info':<10}:create {_data.samb_gadm}", omit=True)
+            _shel_comd: str = rf"groupadd --system {_data.samb_gadm}"
             _result: CompletedProcess = run_subprocess(_shel_comd)
             if _result.returncode != 0 and _result.stderr:
                 print(_result.stderr)
-        if not pwd.getpwnam(_data.samb_user):
-            _shel_comd: str = rf"useradd --system --shell {str(_data.nlin_path)} --groups {_data.samb_grup} {_data.samb_gadm}"  # noqa: E501
+        if not _check_user(_data.samb_user):
+            message_info(_caller, f"{'info':<10}:create {_data.samb_user}", omit=True)
+            _shel_comd: str = rf"useradd --system --shell {str(_data.nlin_path)} --groups {_data.samb_grup} {_data.samb_user}"  # noqa: E501
             _result: CompletedProcess = run_subprocess(_shel_comd)
             if _result.returncode != 0 and _result.stderr:
                 print(_result.stderr)
@@ -108,6 +124,7 @@ def mkdir_share_create_fstab(info_dirs):
             file_origin(info_syst=info_dirs.syst, orig_path=_ftab_path)
             _fmat_parm = "{:<27} {:<35} {:<7} {:<27} {:<7} {}"
             _fmat_list = [
+                _read_text,
                 _fmat_parm.format(
                     "# <file system>",
                     "<mount point>",
@@ -123,7 +140,7 @@ def mkdir_share_create_fstab(info_dirs):
                         _line["fsys"], _line["mntp"], "none", "bind,ro", "0", "0"
                     ),
                 )
-            _writ_text = "\n".join(s for s in _read_text + _fmat_list)
+            _writ_text = "\n".join(_fmat_list)
             fwrite(dest_path=_ftab_path, data=_writ_text, text=True, backup=False)
             # --- check mount -------------------------------------------------
             message_info(_caller, f"{'info':<10}:check mount", omit=True)
@@ -156,10 +173,12 @@ def mkdir_share_create_symlink(info_dirs):
     try:
         message_info(_caller, f"{'info':<10}:create symbolic link", omit=True)
         for _line in info_dirs.data.slnk:
-            _srcs_path: Path = addpath(base=_tget_path, path=_line["tget"])
-            _dest_path: Path = addpath(base=_tget_path, path=_line["dest"])
-            if _line["dest"].endswith("/"):
+            _srcs_path: Path = addpath(base=_tget_path, path=Path(_line["tget"]))
+            _dest_path: Path = addpath(base=_tget_path, path=Path(_line["dest"]))
+            if str(_line["dest"]).endswith("/"):
+                #print(f"_dest_path:{Path(_line["tget"]).name}")
                 _dest_path = _dest_path / Path(_line["tget"]).name
+                #print(f"_dest_path:{_dest_path}")
             if not _srcs_path.exists():
                 message_warn(_caller, f"create: [{_srcs_path}]", omit=True)
                 if str(_srcs_path).endswith("syslinux.cfg"):
@@ -206,7 +225,7 @@ def mkdir_share_create_ipxe_menu(info_dirs):
     _tget_path: Path = getattr(_data, "tget_path", None)
     try:
         message_info(_caller, f"{'info':<10}:create index.html", omit=True)
-        _ipxe_path: Path = addpath(base=_tget_path, path=_data.tftpl_path) / "ipxe"
+        _ipxe_path: Path = addpath(base=_tget_path, path=_data.tftp_path) / "ipxe"
         # --- autoexec.ipxe ---------------------------------------------------
         _auto_path: Path = _ipxe_path / "autoexec.ipxe"
         _writ_text: str = info_dirs.data.ipxe["autoexec.ipxe"]

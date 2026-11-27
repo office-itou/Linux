@@ -50,24 +50,24 @@ def setup_samba(info_syst) -> None:
             pdbedit -L > /dev/null 2>&1 || true
         """
         _result: CompletedProcess = run_subprocess(_shel_comd)
-        if _result.returncode != 0:
+        if _result.returncode != 0 and _result.stderr:
             print(_result.stderr)
         # --- nsswitch.conf ---------------------------------------------------
+        _envs_list: dict[str, str] = os.environ.copy()
         _conf_path: Path = addpath(base=_tget_path, path=Path("/etc/nsswitch.conf"))
         if _conf_path.exists():
             file_backup(info_syst=info_syst, orig_path=_conf_path)
             file_origin(info_syst=info_syst, orig_path=_conf_path)
-            _envs_list: dict[str, str] = os.environ.copy()
             _envs_list["_CONF_PATH"] = str(_conf_path)
             _shel_comd: str = r"""
                 sed -e '/^hosts:[ \t]\+/       {' \
                     -e 's/\(files\).*$/\1/'       \
                     -e 's/$/ '"${_SAMB_NSSW}"'/}' \
                     -e '/^\(passwd\|group\|shadow\|gshadow\):[ \t]\+/ s/[ \t]\+winbind//' \
-                    -i "${__PATH}"
+                    -i "${_CONF_PATH}"
             """  # noqa: E501
             _result: CompletedProcess = run_subprocess(_shel_comd, env=_envs_list)
-            if _result.returncode != 0:
+            if _result.returncode != 0 and _result.stderr:
                 print(_result.stderr)
             file_backup(info_syst=info_syst, orig_path=_conf_path, mode="init")
         # --- smb.conf --------------------------------------------------------
@@ -139,17 +139,22 @@ def setup_samba(info_syst) -> None:
                     -e  '                                                                       }' \
                     -e  '/^[ \t]*hosts allow[ \t]*=/                                            {' \
                     -e  '                                             s/^/#/'                      \
-                    -e  '                                             s/=.*$/= '"${_HOST_ALOW}"'/' \
+                    -e  '                                             s%=.*$%= '"${_HOST_ALOW}"'%' \
                     -e  '                                                                       }' \
                     -e  '/^[ \t]*hosts deny[ \t]*=/                                             {' \
                     -e  '                                             s/^/#/'                      \
                     -e  '                                             s/=.*$/= ALL/'               \
                     -e  '                                                                       }' \
                     -e  'p                                                                      }' \
-                > "${_CONF_TEMP}" 2> /dev/null || true
-                [ -z "${_NICS_HOST##-}" ] && sed -i "${_CONF_TEMP}" -e '/^[ \t]*netbios name[ \t]*=/d'
-                [ -z "${_NICS_WGRP##-}" ] && sed -i "${_CONF_TEMP}" -e '/^[ \t]*workgroup[ \t]*=/d'
-                [ -z "${_NICS_NAME##-}" ] && sed -i "${_CONF_TEMP}" -e '/^[ \t]*interfaces[ \t]*=/d'
+                > "${_CONF_TEMP:?}"
+            """  # noqa: E501
+            _result: CompletedProcess = run_subprocess(_shel_comd, env=_envs_list)
+            if _result.returncode != 0 and _result.stderr:
+                print(_result.stderr)
+            _shel_comd: str = r"""
+                [ -z "${_NICS_HOST##-}" ] && sed -e '/^[ \t]*netbios name[ \t]*=/d' -i "${_CONF_TEMP:?}"
+                [ -z "${_NICS_WGRP##-}" ] && sed -e '/^[ \t]*workgroup[ \t]*=/d'    -i "${_CONF_TEMP:?}"
+                [ -z "${_NICS_NAME##-}" ] && sed -e '/^[ \t]*interfaces[ \t]*=/d'   -i "${_CONF_TEMP:?}"
             """  # noqa: E501
             _result: CompletedProcess = run_subprocess(_shel_comd, env=_envs_list)
             if _result.returncode != 0 and _result.stderr:

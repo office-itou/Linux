@@ -34,9 +34,13 @@ def setup_selinux(info_syst) -> None:
         # --- backup original file --------------------------------------------
         _slnx_path: Path = addpath(base=_tget_path, path=Path("/etc/selinux"))
         for _find_path in _slnx_path.glob("*"):
-            if "targeted" in _find_path or "default" in _find_path:
+            if not _find_path.is_dir():
+                continue
+            _find_dirs: str = str(_find_path)
+            if "targeted" in _find_dirs or "default" in _find_dirs:
                 for _file_path in _find_path.rglob("*"):
-                    file_backup(info_syst=info_syst, orig_path=_file_path)
+                    if _file_path.is_file():
+                        file_backup(info_syst=info_syst, orig_path=_file_path)
         # --- application -----------------------------------------------------
         _envs_list: dict[str, str] = os.environ.copy()
         _envs_list["_DIRS_SHAR"] = str(_data.shar_path)
@@ -73,9 +77,13 @@ def setup_selinux(info_syst) -> None:
         # --- backup initial file ---------------------------------------------
         _slnx_path: Path = addpath(base=_tget_path, path=Path("/etc/selinux"))
         for _find_path in _slnx_path.glob("*"):
-            if "targeted" in _find_path or "default" in _find_path:
+            if not _find_path.is_dir():
+                continue
+            _find_dirs: str = str(_find_path)
+            if "targeted" in _find_dirs or "default" in _find_dirs:
                 for _file_path in _find_path.rglob("*"):
-                    file_backup(info_syst=info_syst, orig_path=_file_path, mode="init")
+                    if _file_path.is_file():
+                        file_backup(info_syst=info_syst, orig_path=_file_path)
         # --- restore context labels ------------------------------------------
         message_info(_caller, f"{'restore':<10}:context labels", omit=True)
         _shel_comd: str = r"fixfiles onboot || true"
@@ -83,14 +91,14 @@ def setup_selinux(info_syst) -> None:
         if _result.returncode != 0 and _result.stderr:
             print(_result.stderr)
         # --- debug out -----------------------------------------------------------
-        print(rf"# --- start: status {"-" * 58} #")
+        print(rf"# --- start: status {'-' * 58} #")
         _shel_comd: str = r"getenforce || true"
         _result: CompletedProcess = run_subprocess(_shel_comd)
         if _result.returncode != 0 and _result.stderr:
             print(_result.stderr)
         else:
             print(_result.stdout)
-        print(rf"# --- end  : status {"-" * 58} #")
+        print(rf"# --- end  : status {'-' * 58} #")
         if not shutil.which("sestatus"):
             _shel_comd: str = r"sestatus || true"
             _result: CompletedProcess = run_subprocess(_shel_comd)
@@ -98,7 +106,7 @@ def setup_selinux(info_syst) -> None:
                 print(_result.stderr)
             else:
                 print(_result.stdout)
-            print(rf"# --- end  : status {"-" * 58} #")
+            print(rf"# --- end  : status {'-' * 58} #")
         _shel_comd: str = r"fcontext -l | grep -E '^/srv' || true"
         _result: CompletedProcess = run_subprocess(_shel_comd)
         if _result.returncode != 0 and _result.stderr:
